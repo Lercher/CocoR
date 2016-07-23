@@ -4,10 +4,11 @@ using System;
 
 
 public class Parser {
-	public const int _EOF = 0;
-	public const int _ident = 1;
-	public const int _keyword = 2;
-	public const int _var = 3;
+	public const int _EOF = 0; // TOKEN EOF
+	public const int _ident = 1; // TOKEN ident
+	public const int _keyword = 2; // TOKEN keyword
+	public const int _var = 3; // TOKEN var
+	int[] tBase = {0, 0, 0, 1, 0, 0};
 	public const int maxT = 5;
 
 	const bool _T = true;
@@ -49,8 +50,11 @@ public class Parser {
 	}
 
 	bool isKind(Token t, int n) {
-		if (t.kind == n)
-			return true;
+		int k = t.kind;
+		while(k > 0) {
+			if (k == n) return true;
+			k = tBase[k];
+		}
 		return false;
 	}
 	
@@ -63,7 +67,7 @@ public class Parser {
 	}
 	
 	void ExpectWeak (int n, int follow) {
-		if (la.kind == n) Get();
+		if (isKind(la, n)) Get();
 		else {
 			SynErr(n);
 			while (!StartOf(follow)) Get();
@@ -73,7 +77,7 @@ public class Parser {
 
 	bool WeakSeparator(int n, int syFol, int repFol) {
 		int kind = la.kind;
-		if (kind == n) {Get(); return true;}
+		if (isKind(la, n)) {Get(); return true;}
 		else if (StartOf(repFol)) {return false;}
 		else {
 			SynErr(n);

@@ -293,8 +293,22 @@ public class ParserGen {
 	void GenTokens() {
 		foreach (Symbol sym in tab.terminals) {
 			if (Char.IsLetter(sym.name[0]))
-				gen.WriteLine("\tpublic const int _{0} = {1};", sym.name, sym.n);
+				gen.WriteLine("\tpublic const int _{0} = {1}; // TOKEN {0}", sym.name, sym.n);
 		}
+	}
+
+	void GenTokenBase() {
+		bool first = true;
+		gen.Write("\tint[] tBase = {"); // we don't have a token with n == 0, so we add an elephant -1 at index 0
+		foreach (Symbol sym in tab.terminals) {
+			if (!first) gen.Write(", ");
+			first = false;
+			if (sym.inherits == null)
+				gen.Write("0"); // not inherited
+			else
+				gen.Write("{0}", sym.inherits.n);				
+		}
+		gen.WriteLine("};");
 	}
 	
 	void GenPragmas() {
@@ -359,6 +373,7 @@ public class ParserGen {
 		}
 		g.CopyFramePart("-->constants");
 		GenTokens(); /* ML 2002/09/07 write the token kinds */
+		GenTokenBase(); // write all tokens base types
 		gen.WriteLine("\tpublic const int maxT = {0};", tab.terminals.Count-1);
 		GenPragmas(); /* ML 2005/09/23 write the pragma kinds */
 		g.CopyFramePart("-->declarations"); CopySourcePart(tab.semDeclPos, 0);
