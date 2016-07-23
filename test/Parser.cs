@@ -8,7 +8,7 @@ public class Parser {
 	public const int _ident = 1; // TOKEN ident
 	public const int _keyword = 2; // TOKEN keyword
 	public const int _var = 3; // TOKEN var
-	int[] tBase = {0, 0, 0, 1, 0, 0};
+	int[] tBase = {-1, -1, -1, 1, -1, -1};
 	public const int maxT = 5;
 
 	const bool _T = true;
@@ -51,7 +51,7 @@ public class Parser {
 
 	bool isKind(Token t, int n) {
 		int k = t.kind;
-		while(k > 0) {
+		while(k >= 0) {
 			if (k == n) return true;
 			k = tBase[k];
 		}
@@ -97,9 +97,9 @@ public class Parser {
 	}
 
 	void Declaration() {
-		Expect(3);
-		Expect(1);
-		Expect(4);
+		Expect(3); // var
+		Expect(1); // ident
+		Expect(4); // ";"
 	}
 
 

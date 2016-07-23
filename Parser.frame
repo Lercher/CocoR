@@ -71,7 +71,7 @@ public class Parser {
 
 	bool isKind(Token t, int n) {
 		int k = t.kind;
-		while(k > 0) {
+		while(k >= 0) {
 			if (k == n) return true;
 			k = tBase[k];
 		}

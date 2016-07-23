@@ -180,14 +180,14 @@ public class ParserGen {
 					Indent(indent);
 					// assert: if isChecked[p.sym.n] is true, then isChecked contains only p.sym.n
 					if (isChecked[p.sym.n]) gen.WriteLine("Get();");
-					else gen.WriteLine("Expect({0});", p.sym.n);
+					else gen.WriteLine("Expect({0}); // {1}", p.sym.n, p.sym.name);
 					break;
 				}
 				case Node.wt: {
 					Indent(indent);
 					s1 = tab.Expected(p.next, curSy);
 					s1.Or(tab.allSyncSets);
-					gen.WriteLine("ExpectWeak({0}, {1});", p.sym.n, NewCondSet(s1));
+					gen.WriteLine("ExpectWeak({0}, {1}); // {2}", p.sym.n, NewCondSet(s1), p.sym.name);
 					break;
 				}
 				case Node.any: {
@@ -304,7 +304,7 @@ public class ParserGen {
 			if (!first) gen.Write(", ");
 			first = false;
 			if (sym.inherits == null)
-				gen.Write("0"); // not inherited
+				gen.Write("-1"); // not inherited
 			else
 				gen.Write("{0}", sym.inherits.n);				
 		}
