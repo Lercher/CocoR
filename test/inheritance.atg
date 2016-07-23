@@ -1,0 +1,35 @@
+COMPILER Inheritance
+
+CHARACTERS
+	letter    = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".
+	cr        = '\r'.
+	lf        = '\n'.
+	tab       = '\t'.
+
+TOKENS
+	ident = letter { letter }.
+    keyword = "keyword".
+    var : ident = "var".
+    /*
+    error1 : unknown = "error1". // unknown symbol unknown
+    error2 : letter = "error2".  // has to be a token symbol
+    error3 : error3 = "error3".  // must not inherit from self 
+    */
+    /* Coco/R (Jul 23, 2016)
+    -- line 14 col 14: token 'error1' can't inherit from 'unknown', name not declared
+    -- line 15 col 14: token 'error2' can't inherit from 'letter', name not declared
+    -- line 16 col 14: token 'error3' must not inherit from self
+    3 errors detected */
+    
+
+COMMENTS FROM "/*" TO "*/" NESTED
+COMMENTS FROM "//" TO lf
+
+IGNORE cr + lf + tab
+
+
+PRODUCTIONS
+    Inheritance = { Declaration }.
+    Declaration = var ident ';'.
+
+END Inheritance.

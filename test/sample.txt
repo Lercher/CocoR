@@ -1,0 +1,26 @@
+// test token inheritance, see inheritance.atg
+
+var shouldBeOk;     // OK
+var var;            // OK
+var keyword;        // ident expected
+
+/* ---------------------------------------- Coco/R without token inheritance
+var shouldBeOk;     // OK
+var var;            // ident expected
+var keyword;        // ident expected
+
+scanning sample.txt ...
+-- line 4 col 5: ident expected
+-- line 5 col 5: ident expected
+2 error(s) detected
+*/
+
+/* ---------------------------------------- Coco/R with token inheritance
+var shouldBeOk;     // OK
+var var;            // OK
+var keyword;        // ident expected
+
+scanning sample.txt ...
+-- line 5 col 5: ident expected
+1 error(s) detected
+*/

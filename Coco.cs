@@ -48,7 +48,7 @@ namespace at.jku.ssw.Coco {
 public class Coco {
 		
 	public static int Main (string[] arg) {
-		Console.WriteLine("Coco/R (Apr 19, 2011)");
+		Console.WriteLine("Coco/R (Jul 23, 2016)");
 		string srcName = null, nsName = null, frameDir = null, ddtString = null,
 		traceFileName = null, outDir = null;
 		bool emitLines = false;
