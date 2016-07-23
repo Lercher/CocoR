@@ -2,7 +2,11 @@
 
 var shouldBeOk;     // OK
 var var;            // OK
-var keyword;        // ident expected
+//var keyword;        // ident expected
+var a, b, c;
+var a as int, b as int, c as int;
+var a | b | c | as as as;
+var a, b, c;
 
 /* ---------------------------------------- Coco/R without token inheritance
 var shouldBeOk;     // OK

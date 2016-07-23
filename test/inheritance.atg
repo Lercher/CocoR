@@ -10,6 +10,7 @@ TOKENS
 	ident = letter { letter }.
     keyword = "keyword".
     var : ident = "var".
+    as : ident = "as".
     /*
     error1 : unknown = "error1". // unknown symbol unknown
     error2 : letter = "error2".  // has to be a token symbol
@@ -30,6 +31,8 @@ IGNORE cr + lf + tab
 
 PRODUCTIONS
     Inheritance = { Declaration }.
-    Declaration = var ident ';'.
+    Declaration = var Ident { Separator Ident } SYNC ';'.
+    Separator = (WEAK ',') | (WEAK '|').
+    Ident = ident [ as ident ].
 
 END Inheritance.

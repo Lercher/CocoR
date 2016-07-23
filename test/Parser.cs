@@ -8,8 +8,9 @@ public class Parser {
 	public const int _ident = 1; // TOKEN ident
 	public const int _keyword = 2; // TOKEN keyword
 	public const int _var = 3; // TOKEN var
-	int[] tBase = {-1, -1, -1, 1, -1, -1};
-	public const int maxT = 5;
+	public const int _as = 4; // TOKEN as
+	int[] tBase = {-1, -1, -1, 1, 1, -1, -1, -1, -1};
+	public const int maxT = 8;
 
 	const bool _T = true;
 	const bool _x = false;
@@ -98,8 +99,29 @@ public class Parser {
 
 	void Declaration() {
 		Expect(3); // var
+		Ident();
+		while (la.kind == 6 || la.kind == 7) {
+			Separator();
+			Ident();
+		}
+		while (!(la.kind == 0 || la.kind == 5)) {SynErr(9); Get();}
+		Expect(5); // ";"
+	}
+
+	void Ident() {
 		Expect(1); // ident
-		Expect(4); // ";"
+		if (la.kind == 4) {
+			Get();
+			Expect(1); // ident
+		}
+	}
+
+	void Separator() {
+		if (la.kind == 6) {
+			ExpectWeak(6, 1); // ","
+		} else if (la.kind == 7) {
+			ExpectWeak(7, 1); // "|"
+		} else SynErr(10);
 	}
 
 
@@ -114,7 +136,8 @@ public class Parser {
 	}
 	
 	static readonly bool[,] set = {
-		{_T,_x,_x,_x, _x,_x,_x}
+		{_T,_x,_x,_x, _x,_T,_x,_x, _x,_x},
+		{_T,_T,_x,_x, _x,_T,_x,_x, _x,_x}
 
 	};
 } // end Parser
@@ -132,8 +155,13 @@ public class Errors {
 			case 1: s = "ident expected"; break;
 			case 2: s = "keyword expected"; break;
 			case 3: s = "var expected"; break;
-			case 4: s = "\";\" expected"; break;
-			case 5: s = "??? expected"; break;
+			case 4: s = "as expected"; break;
+			case 5: s = "\";\" expected"; break;
+			case 6: s = "\",\" expected"; break;
+			case 7: s = "\"|\" expected"; break;
+			case 8: s = "??? expected"; break;
+			case 9: s = "this symbol not expected in Declaration"; break;
+			case 10: s = "invalid Separator"; break;
 
 			default: s = "error " + n; break;
 		}
