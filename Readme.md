@@ -7,6 +7,11 @@ context that expects a more general token.
 The base type of a token has to be declared explicitly
 in the TOKENS section of the grammar file.
 
+A typical usage scenario for the extension
+would be to have keywords as identifiers 
+based on parsing context such as in "var var = 5;"
+with the production D = "var" ident '=' number. 
+
 see http://www.ssw.uni-linz.ac.at/Coco/#CS for the
 so called 2011 version of Coco/R.
 
