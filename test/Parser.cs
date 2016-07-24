@@ -16,8 +16,8 @@ public class Parser {
 	public const int _var6 = 9; // TOKEN var6
 	public const int _as = 10; // TOKEN as
 	public const int _colon = 11; // TOKEN colon
-	int[] tBase = {-1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1};
-	public const int maxT = 15;
+	static readonly int[] tBase = {-1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1};
+	public const int maxT = 18;
 
 	const bool _T = true;
 	const bool _x = false;
@@ -70,8 +70,17 @@ public class Parser {
 		if (isKind(la, n)) Get(); else { SynErr(n); }
 	}
 	
+	// is the lookahead token la a start of the production s?
+	// this is true, if it itself is in the array 'set' 
+	// or any of its base kinds is a start of production s
+	// so this is compatible with isKind()
 	bool StartOf (int s) {
-		return set[s, la.kind];
+		int k = la.kind;
+		while(k >= 0) {
+			if (set[s, k]) return true;
+			k = tBase[k];
+		}
+		return false;
 	}
 	
 	void ExpectWeak (int n, int follow) {
@@ -102,6 +111,9 @@ public class Parser {
 		while (StartOf(1)) {
 			Declaration();
 		}
+		while (StartOf(2)) {
+			IdentOrNumber();
+		}
 	}
 
 	void Declaration() {
@@ -111,8 +123,16 @@ public class Parser {
 			Separator();
 			Ident();
 		}
-		while (!(isKind(la, 0) || isKind(la, 12))) {SynErr(16); Get();}
+		while (!(isKind(la, 0) || isKind(la, 12))) {SynErr(19); Get();}
 		Expect(12); // ";"
+	}
+
+	void IdentOrNumber() {
+		if (isKind(la, 1)) {
+			Get();
+		} else if (isKind(la, 15) || isKind(la, 16) || isKind(la, 17)) {
+			Number();
+		} else SynErr(20);
 	}
 
 	void Var() {
@@ -130,7 +150,7 @@ public class Parser {
 			Get();
 		} else if (isKind(la, 9)) {
 			Get();
-		} else SynErr(17);
+		} else SynErr(21);
 	}
 
 	void Ident() {
@@ -147,10 +167,20 @@ public class Parser {
 
 	void Separator() {
 		if (isKind(la, 13)) {
-			ExpectWeak(13, 2); // "," followed by keyword
+			ExpectWeak(13, 3); // "," followed by var
 		} else if (isKind(la, 14)) {
-			ExpectWeak(14, 2); // "|" followed by keyword
-		} else SynErr(18);
+			ExpectWeak(14, 3); // "|" followed by var
+		} else SynErr(22);
+	}
+
+	void Number() {
+		if (isKind(la, 15)) {
+			Get();
+		} else if (isKind(la, 16)) {
+			Get();
+		} else if (isKind(la, 17)) {
+			Get();
+		} else SynErr(23);
 	}
 
 
@@ -165,9 +195,10 @@ public class Parser {
 	}
 	
 	static readonly bool[,] set = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x},
-		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x},
-		{_T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x}
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x},
+		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x},
+		{_x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_x,_x},
+		{_T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x}
 
 	};
 } // end Parser
@@ -196,10 +227,15 @@ public class Errors {
 			case 12: s = "\";\" expected"; break;
 			case 13: s = "\",\" expected"; break;
 			case 14: s = "\"|\" expected"; break;
-			case 15: s = "??? expected"; break;
-			case 16: s = "this symbol not expected in Declaration"; break;
-			case 17: s = "invalid Var"; break;
-			case 18: s = "invalid Separator"; break;
+			case 15: s = "\"0\" expected"; break;
+			case 16: s = "\"1\" expected"; break;
+			case 17: s = "\"2\" expected"; break;
+			case 18: s = "??? expected"; break;
+			case 19: s = "this symbol not expected in Declaration"; break;
+			case 20: s = "invalid IdentOrNumber"; break;
+			case 21: s = "invalid Var"; break;
+			case 22: s = "invalid Separator"; break;
+			case 23: s = "invalid Number"; break;
 
 			default: s = "error " + n; break;
 		}

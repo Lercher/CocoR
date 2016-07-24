@@ -82,8 +82,17 @@ public class Parser {
 		if (isKind(la, n)) Get(); else { SynErr(n); }
 	}
 	
+	// is the lookahead token la a start of the production s?
+	// this is true, if it itself is in the array 'set' 
+	// or any of its base kinds is a start of production s
+	// so this is compatible with isKind()
 	bool StartOf (int s) {
-		return set[s, la.kind];
+		int k = la.kind;
+		while(k >= 0) {
+			if (set[s, k]) return true;
+			k = tBase[k];
+		}
+		return false;
 	}
 	
 	void ExpectWeak (int n, int follow) {

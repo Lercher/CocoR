@@ -15,7 +15,7 @@ TOKENS
     var3 : ident = "var3".
     var4 : ident = "var4".
     var5 : ident = "var5".
-    var6 : ident = "var6".
+    var6 : ident = "var6".  
     as   : ident = "as".
     colon = ':'.
     /*
@@ -37,10 +37,27 @@ IGNORE cr + lf + tab
 
 
 PRODUCTIONS
-    Inheritance = { Declaration }.
+
+    Inheritance = { Declaration } { IdentOrNumber } .
+    
+    // with iter node
     Declaration = Var Ident { Separator Ident } SYNC ';'.
-    Var = var | var1 | var2 | var3 | var4 | var5 | var6.
+
+    // we need more than 5 alt nodes to test the switch optimization code of coco's new c# version:
+    Var = var | var1 | var2 | var3 | var4 | var5 | var6. 
+    
+    // forces ExpectWeak()
     Separator = (WEAK ',') | (WEAK '|').
+    
+    // has an opt node
     Ident = ident [ (as | colon) ident ].
 
+    // This IdentOrNumber declaration forces a StartOf(2) call at Inheritance()
+    // with ident as StartOf(2) in the 'set' array but not var..var6 in it
+    // so we can test our new implementation of StartOf() 
+    IdentOrNumber = ident | Number.    
+    Number = '0' | '1' | '2'.
+
+    // note: the 'set' array might be a good starting point to
+    // derive language services for the grammar, i.e. autocomplete/intellisense
 END Inheritance.
