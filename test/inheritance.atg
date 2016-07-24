@@ -9,8 +9,15 @@ CHARACTERS
 TOKENS
 	ident = letter { letter }.
     keyword = "keyword".
-    var : ident = "var".
-    as : ident = "as".
+    var  : ident = "var".
+    var1 : ident = "var1".  // note that we can now use 1 in an ident!
+    var2 : ident = "var2".
+    var3 : ident = "var3".
+    var4 : ident = "var4".
+    var5 : ident = "var5".
+    var6 : ident = "var6".
+    as   : ident = "as".
+    colon = ':'.
     /*
     error1 : unknown = "error1". // unknown symbol unknown
     error2 : letter = "error2".  // has to be a token symbol
@@ -19,7 +26,7 @@ TOKENS
     /* Coco/R (Jul 23, 2016)
     -- line 14 col 14: token 'error1' can't inherit from 'unknown', name not declared
     -- line 15 col 14: token 'error2' can't inherit from 'letter', name not declared
-    -- line 16 col 14: token 'error3' must not inherit from self
+    -- line 16 col 414: token 'error3' must not inherit from self
     3 errors detected */
     
 
@@ -31,8 +38,9 @@ IGNORE cr + lf + tab
 
 PRODUCTIONS
     Inheritance = { Declaration }.
-    Declaration = var Ident { Separator Ident } SYNC ';'.
+    Declaration = Var Ident { Separator Ident } SYNC ';'.
+    Var = var | var1 | var2 | var3 | var4 | var5 | var6.
     Separator = (WEAK ',') | (WEAK '|').
-    Ident = ident [ as ident ].
+    Ident = ident [ (as | colon) ident ].
 
 END Inheritance.

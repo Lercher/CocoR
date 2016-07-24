@@ -6,7 +6,8 @@ var var;            // OK
 var a, b, c;
 var a as int, b as int, c as int;
 var a | b | c | as as as;
-var a, b, c;
+var a:int, b:int, c:int;
+var var1 as var2 | var3 : var4, var5;
 
 /* ---------------------------------------- Coco/R without token inheritance
 var shouldBeOk;     // OK

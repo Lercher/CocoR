@@ -8,9 +8,16 @@ public class Parser {
 	public const int _ident = 1; // TOKEN ident
 	public const int _keyword = 2; // TOKEN keyword
 	public const int _var = 3; // TOKEN var
-	public const int _as = 4; // TOKEN as
-	int[] tBase = {-1, -1, -1, 1, 1, -1, -1, -1, -1};
-	public const int maxT = 8;
+	public const int _var1 = 4; // TOKEN var1
+	public const int _var2 = 5; // TOKEN var2
+	public const int _var3 = 6; // TOKEN var3
+	public const int _var4 = 7; // TOKEN var4
+	public const int _var5 = 8; // TOKEN var5
+	public const int _var6 = 9; // TOKEN var6
+	public const int _as = 10; // TOKEN as
+	public const int _colon = 11; // TOKEN colon
+	int[] tBase = {-1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1};
+	public const int maxT = 15;
 
 	const bool _T = true;
 	const bool _x = false;
@@ -92,36 +99,58 @@ public class Parser {
 
 	
 	void Inheritance() {
-		while (la.kind == 3) {
+		while (StartOf(1)) {
 			Declaration();
 		}
 	}
 
 	void Declaration() {
-		Expect(3); // var
+		Var();
 		Ident();
-		while (la.kind == 6 || la.kind == 7) {
+		while (isKind(la, 13) || isKind(la, 14)) {
 			Separator();
 			Ident();
 		}
-		while (!(la.kind == 0 || la.kind == 5)) {SynErr(9); Get();}
-		Expect(5); // ";"
+		while (!(isKind(la, 0) || isKind(la, 12))) {SynErr(16); Get();}
+		Expect(12); // ";"
+	}
+
+	void Var() {
+		if (isKind(la, 3)) {
+			Get();
+		} else if (isKind(la, 4)) {
+			Get();
+		} else if (isKind(la, 5)) {
+			Get();
+		} else if (isKind(la, 6)) {
+			Get();
+		} else if (isKind(la, 7)) {
+			Get();
+		} else if (isKind(la, 8)) {
+			Get();
+		} else if (isKind(la, 9)) {
+			Get();
+		} else SynErr(17);
 	}
 
 	void Ident() {
 		Expect(1); // ident
-		if (la.kind == 4) {
-			Get();
+		if (isKind(la, 10) || isKind(la, 11)) {
+			if (isKind(la, 10)) {
+				Get();
+			} else {
+				Get();
+			}
 			Expect(1); // ident
 		}
 	}
 
 	void Separator() {
-		if (la.kind == 6) {
-			ExpectWeak(6, 1); // ","
-		} else if (la.kind == 7) {
-			ExpectWeak(7, 1); // "|"
-		} else SynErr(10);
+		if (isKind(la, 13)) {
+			ExpectWeak(13, 2); // "," followed by keyword
+		} else if (isKind(la, 14)) {
+			ExpectWeak(14, 2); // "|" followed by keyword
+		} else SynErr(18);
 	}
 
 
@@ -136,8 +165,9 @@ public class Parser {
 	}
 	
 	static readonly bool[,] set = {
-		{_T,_x,_x,_x, _x,_T,_x,_x, _x,_x},
-		{_T,_T,_x,_x, _x,_T,_x,_x, _x,_x}
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x},
+		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x},
+		{_T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x}
 
 	};
 } // end Parser
@@ -155,13 +185,21 @@ public class Errors {
 			case 1: s = "ident expected"; break;
 			case 2: s = "keyword expected"; break;
 			case 3: s = "var expected"; break;
-			case 4: s = "as expected"; break;
-			case 5: s = "\";\" expected"; break;
-			case 6: s = "\",\" expected"; break;
-			case 7: s = "\"|\" expected"; break;
-			case 8: s = "??? expected"; break;
-			case 9: s = "this symbol not expected in Declaration"; break;
-			case 10: s = "invalid Separator"; break;
+			case 4: s = "var1 expected"; break;
+			case 5: s = "var2 expected"; break;
+			case 6: s = "var3 expected"; break;
+			case 7: s = "var4 expected"; break;
+			case 8: s = "var5 expected"; break;
+			case 9: s = "var6 expected"; break;
+			case 10: s = "as expected"; break;
+			case 11: s = "colon expected"; break;
+			case 12: s = "\";\" expected"; break;
+			case 13: s = "\",\" expected"; break;
+			case 14: s = "\"|\" expected"; break;
+			case 15: s = "??? expected"; break;
+			case 16: s = "this symbol not expected in Declaration"; break;
+			case 17: s = "invalid Var"; break;
+			case 18: s = "invalid Separator"; break;
 
 			default: s = "error " + n; break;
 		}

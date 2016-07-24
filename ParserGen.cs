@@ -72,7 +72,11 @@ public class ParserGen {
 		return false;
 	}
 	
-	// use a switch if more than 5 alternatives and none starts with a resolver, and no LL1 warning
+	// use a switch if 
+	//   more than 5 alternatives 
+	//   and none starts with a resolver
+	//   and no LL1 warning
+    //   and no inheritance
 	bool UseSwitch (Node p) {
 		BitArray s1, s2;
 		if (p.typ != Node.alt) return false;
@@ -86,6 +90,10 @@ public class ParserGen {
 			++nAlts;
 			// must not optimize with switch-statement, if alt uses a resolver expression
 			if (p.sub.typ == Node.rslv) return false;
+			// must not optimize with switch statement, if token symbol inherits
+			foreach (Symbol sym in tab.terminals)
+				if (s2[sym.n] && (sym.inherits != null)) 
+					return false;
 			p = p.down;
 		}
 		return nAlts > 5;
@@ -149,7 +157,7 @@ public class ParserGen {
 			else if (n <= maxTerm)
 				foreach (Symbol sym in tab.terminals) {
 					if (s[sym.n]) {
-						gen.Write("la.kind == {0}", sym.n);
+						gen.Write("isKind(la, {0})", sym.n);
 						--n;
 						if (n > 0) gen.Write(" || ");
 					}
@@ -159,9 +167,12 @@ public class ParserGen {
 		}
 	}
 		
-	void PutCaseLabels (BitArray s) {
+	void PutCaseLabels (BitArray s, int indent) {
 		foreach (Symbol sym in tab.terminals)
-			if (s[sym.n]) gen.Write("case {0}: ", sym.n);
+			if (s[sym.n]) {
+				gen.WriteLine("case {0}: // {1}", sym.n, sym.name);
+				Indent(indent);
+			}
 	}
 	
 	void GenCode (Node p, int indent, BitArray isChecked) {
@@ -187,7 +198,9 @@ public class ParserGen {
 					Indent(indent);
 					s1 = tab.Expected(p.next, curSy);
 					s1.Or(tab.allSyncSets);
-					gen.WriteLine("ExpectWeak({0}, {1}); // {2}", p.sym.n, NewCondSet(s1), p.sym.name);
+					int ncs1 = NewCondSet(s1);
+					Symbol ncs1sym = (Symbol)tab.terminals[ncs1];
+					gen.WriteLine("ExpectWeak({0}, {1}); // {2} followed by {3}", p.sym.n, ncs1, p.sym.name, ncs1sym.name);
 					break;
 				}
 				case Node.any: {
@@ -228,7 +241,8 @@ public class ParserGen {
 						s1 = tab.Expected(p2.sub, curSy);
 						Indent(indent);
 						if (useSwitch) { 
-							PutCaseLabels(s1); gen.WriteLine("{");
+							PutCaseLabels(s1, indent);
+							gen.WriteLine("{");
 						} else if (p2 == p) { 
 							gen.Write("if ("); GenCond(s1, p2.sub); gen.WriteLine(") {"); 
 						} else if (p2.down == null && equal) { gen.WriteLine("} else {");
