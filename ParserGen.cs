@@ -313,7 +313,7 @@ public class ParserGen {
 
 	void GenTokenBase() {
 		bool first = true;
-		gen.Write("\tint[] tBase = {"); // we don't have a token with n == 0, so we add an elephant -1 at index 0
+		gen.Write("\tstatic readonly int[] tBase = {"); // we don't have a token with n == 0, so we add an elephant -1 at index 0
 		foreach (Symbol sym in tab.terminals) {
 			if (!first) gen.Write(", ");
 			first = false;
