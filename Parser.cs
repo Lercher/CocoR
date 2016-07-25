@@ -9,12 +9,13 @@ namespace at.jku.ssw.Coco {
 
 
 public class Parser {
-	public const int _EOF = 0;
-	public const int _ident = 1;
-	public const int _number = 2;
-	public const int _string = 3;
-	public const int _badString = 4;
-	public const int _char = 5;
+	public const int _EOF = 0; // TOKEN EOF
+	public const int _ident = 1; // TOKEN ident
+	public const int _number = 2; // TOKEN number
+	public const int _string = 3; // TOKEN string
+	public const int _badString = 4; // TOKEN badString
+	public const int _char = 5; // TOKEN char
+	static readonly int[] tBase = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 	public const int maxT = 42;
 	public const int _ddtSym = 43;
 	public const int _optionSym = 44;
@@ -76,17 +77,27 @@ const int id = 0;
 			la = t;
 		}
 	}
-	
-	void Expect (int n) {
-		if (la.kind==n) Get(); else { SynErr(n); }
+
+	bool isKind(Token t, int n) {
+		int k = t.kind;
+		while(k >= 0) {
+			if (k == n) return true;
+			k = tBase[k];
+		}
+		return false;
 	}
 	
+	void Expect (int n) {
+		if (isKind(la, n)) Get(); else { SynErr(n); }
+	}
+	
+	// is the lookahead token la a start of the production s?
 	bool StartOf (int s) {
 		return set[s, la.kind];
 	}
 	
 	void ExpectWeak (int n, int follow) {
-		if (la.kind == n) Get();
+		if (isKind(la, n)) Get();
 		else {
 			SynErr(n);
 			while (!StartOf(follow)) Get();
@@ -96,7 +107,7 @@ const int id = 0;
 
 	bool WeakSeparator(int n, int syFol, int repFol) {
 		int kind = la.kind;
-		if (kind == n) {Get(); return true;}
+		if (isKind(la, n)) {Get(); return true;}
 		else if (StartOf(repFol)) {return false;}
 		else {
 			SynErr(n);
@@ -119,10 +130,10 @@ const int id = 0;
 			}
 			pgen.usingPos = new Position(beg, la.pos, 0, line); 
 		}
-		Expect(6);
+		Expect(6); // "COMPILER"
 		genScanner = true; 
 		tab.ignored = new CharSet(); 
-		Expect(1);
+		Expect(1); // ident
 		gramName = t.val;
 		beg = la.pos; line = la.line;
 		
@@ -130,52 +141,52 @@ const int id = 0;
 			Get();
 		}
 		tab.semDeclPos = new Position(beg, la.pos, 0, line); 
-		if (la.kind == 7) {
+		if (isKind(la, 7)) {
 			Get();
 			dfa.ignoreCase = true; 
 		}
-		if (la.kind == 8) {
+		if (isKind(la, 8)) {
 			Get();
-			while (la.kind == 1) {
+			while (isKind(la, 1)) {
 				SetDecl();
 			}
 		}
-		if (la.kind == 9) {
+		if (isKind(la, 9)) {
 			Get();
-			while (la.kind == 1 || la.kind == 3 || la.kind == 5) {
+			while (isKind(la, 1) || isKind(la, 3) || isKind(la, 5)) {
 				TokenDecl(Node.t);
 			}
 		}
-		if (la.kind == 10) {
+		if (isKind(la, 10)) {
 			Get();
-			while (la.kind == 1 || la.kind == 3 || la.kind == 5) {
+			while (isKind(la, 1) || isKind(la, 3) || isKind(la, 5)) {
 				TokenDecl(Node.pr);
 			}
 		}
-		while (la.kind == 11) {
+		while (isKind(la, 11)) {
 			Get();
 			bool nested = false; 
-			Expect(12);
+			Expect(12); // "FROM"
 			TokenExpr(out g1);
-			Expect(13);
+			Expect(13); // "TO"
 			TokenExpr(out g2);
-			if (la.kind == 14) {
+			if (isKind(la, 14)) {
 				Get();
 				nested = true; 
 			}
 			dfa.NewComment(g1.l, g2.l, nested); 
 		}
-		while (la.kind == 15) {
+		while (isKind(la, 15)) {
 			Get();
 			Set(out s);
 			tab.ignored.Or(s); 
 		}
-		while (!(la.kind == 0 || la.kind == 16)) {SynErr(43); Get();}
-		Expect(16);
+		while (!(isKind(la, 0) || isKind(la, 16))) {SynErr(43); Get();}
+		Expect(16); // "PRODUCTIONS"
 		if (genScanner) dfa.MakeDeterministic();
 		tab.DeleteNodes();
 		
-		while (la.kind == 1) {
+		while (isKind(la, 1)) {
 			Get();
 			sym = tab.FindSym(t.val);
 			bool undef = sym == null;
@@ -189,25 +200,25 @@ const int id = 0;
 			bool noAttrs = sym.attrPos == null;
 			sym.attrPos = null;
 			
-			if (la.kind == 25 || la.kind == 27) {
+			if (isKind(la, 25) || isKind(la, 27)) {
 				AttrDecl(sym);
 			}
 			if (!undef)
 			 if (noAttrs != (sym.attrPos == null))
 			   SemErr("attribute mismatch between declaration and use of this symbol");
 			
-			if (la.kind == 40) {
+			if (isKind(la, 40)) {
 				SemText(out sym.semPos);
 			}
-			ExpectWeak(17, 3);
+			ExpectWeak(17, 3); // "=" followed by string
 			Expression(out g);
 			sym.graph = g.l;
 			tab.Finish(g);
 			
-			ExpectWeak(18, 4);
+			ExpectWeak(18, 4); // "." followed by badString
 		}
-		Expect(19);
-		Expect(1);
+		Expect(19); // "END"
+		Expect(1); // ident
 		if (gramName != t.val)
 		 SemErr("name does not match grammar name");
 		tab.gramSy = tab.FindSym(gramName);
@@ -240,22 +251,22 @@ const int id = 0;
 		}
 		if (tab.ddt[6]) tab.PrintSymbolTable();
 		
-		Expect(18);
+		Expect(18); // "."
 	}
 
 	void SetDecl() {
 		CharSet s; 
-		Expect(1);
+		Expect(1); // ident
 		string name = t.val;
 		CharClass c = tab.FindCharClass(name);
 		if (c != null) SemErr("name declared twice");
 		
-		Expect(17);
+		Expect(17); // "="
 		Set(out s);
 		if (s.Elements() == 0) SemErr("character set must not be empty");
 		tab.NewCharClass(name, s);
 		
-		Expect(18);
+		Expect(18); // "."
 	}
 
 	void TokenDecl(int typ) {
@@ -271,7 +282,7 @@ const int id = 0;
 		}
 		tokenString = null;
 		
-		if (la.kind == 24) {
+		if (isKind(la, 24)) {
 			Get();
 			Sym(out inheritsName, out inheritsKind);
 			inheritsSym = tab.FindSym(inheritsName);
@@ -282,10 +293,10 @@ const int id = 0;
 			
 		}
 		while (!(StartOf(5))) {SynErr(44); Get();}
-		if (la.kind == 17) {
+		if (isKind(la, 17)) {
 			Get();
 			TokenExpr(out g);
-			Expect(18);
+			Expect(18); // "."
 			if (kind == str) SemErr("a literal must not be declared with a structure");
 			tab.Finish(g);
 			if (tokenString == null || tokenString.Equals(noString))
@@ -302,7 +313,7 @@ const int id = 0;
 			else dfa.MatchLiteral(sym.name, sym);
 			
 		} else SynErr(45);
-		if (la.kind == 40) {
+		if (isKind(la, 40)) {
 			SemText(out sym.semPos);
 			if (typ != Node.pr) SemErr("semantic action not allowed here"); 
 		}
@@ -323,8 +334,8 @@ const int id = 0;
 	void Set(out CharSet s) {
 		CharSet s2; 
 		SimSet(out s);
-		while (la.kind == 20 || la.kind == 21) {
-			if (la.kind == 20) {
+		while (isKind(la, 20) || isKind(la, 21)) {
+			if (isKind(la, 20)) {
 				Get();
 				SimSet(out s2);
 				s.Or(s2); 
@@ -337,7 +348,7 @@ const int id = 0;
 	}
 
 	void AttrDecl(Symbol sym) {
-		if (la.kind == 25) {
+		if (isKind(la, 25)) {
 			Get();
 			int beg = la.pos; int col = la.col; int line = la.line; 
 			while (StartOf(9)) {
@@ -348,10 +359,10 @@ const int id = 0;
 					SemErr("bad string in attributes"); 
 				}
 			}
-			Expect(26);
+			Expect(26); // ">"
 			if (t.pos > beg)
 			 sym.attrPos = new Position(beg, t.pos, col, line); 
-		} else if (la.kind == 27) {
+		} else if (isKind(la, 27)) {
 			Get();
 			int beg = la.pos; int col = la.col; int line = la.line; 
 			while (StartOf(11)) {
@@ -362,19 +373,19 @@ const int id = 0;
 					SemErr("bad string in attributes"); 
 				}
 			}
-			Expect(28);
+			Expect(28); // ".>"
 			if (t.pos > beg)
 			 sym.attrPos = new Position(beg, t.pos, col, line); 
 		} else SynErr(46);
 	}
 
 	void SemText(out Position pos) {
-		Expect(40);
+		Expect(40); // "(."
 		int beg = la.pos; int col = la.col; int line = la.line; 
 		while (StartOf(13)) {
 			if (StartOf(14)) {
 				Get();
-			} else if (la.kind == 4) {
+			} else if (isKind(la, 4)) {
 				Get();
 				SemErr("bad string in semantic action"); 
 			} else {
@@ -382,7 +393,7 @@ const int id = 0;
 				SemErr("missing end of previous semantic action"); 
 			}
 		}
-		Expect(41);
+		Expect(41); // ".)"
 		pos = new Position(beg, t.pos, col, line); 
 	}
 
@@ -401,34 +412,34 @@ const int id = 0;
 	void SimSet(out CharSet s) {
 		int n1, n2; 
 		s = new CharSet(); 
-		if (la.kind == 1) {
+		if (isKind(la, 1)) {
 			Get();
 			CharClass c = tab.FindCharClass(t.val);
 			if (c == null) SemErr("undefined name"); else s.Or(c.set);
 			
-		} else if (la.kind == 3) {
+		} else if (isKind(la, 3)) {
 			Get();
 			string name = t.val;
 			name = tab.Unescape(name.Substring(1, name.Length-2));
 			foreach (char ch in name)
 			 if (dfa.ignoreCase) s.Set(char.ToLower(ch));
 			 else s.Set(ch); 
-		} else if (la.kind == 5) {
+		} else if (isKind(la, 5)) {
 			Char(out n1);
 			s.Set(n1); 
-			if (la.kind == 22) {
+			if (isKind(la, 22)) {
 				Get();
 				Char(out n2);
 				for (int i = n1; i <= n2; i++) s.Set(i); 
 			}
-		} else if (la.kind == 23) {
+		} else if (isKind(la, 23)) {
 			Get();
 			s = new CharSet(); s.Fill(); 
 		} else SynErr(47);
 	}
 
 	void Char(out int n) {
-		Expect(5);
+		Expect(5); // char
 		string name = t.val; n = 0;
 		name = tab.Unescape(name.Substring(1, name.Length-2));
 		if (name.Length == 1) n = name[0];
@@ -439,11 +450,11 @@ const int id = 0;
 
 	void Sym(out string name, out int kind) {
 		name = "???"; kind = id; 
-		if (la.kind == 1) {
+		if (isKind(la, 1)) {
 			Get();
 			kind = id; name = t.val; 
-		} else if (la.kind == 3 || la.kind == 5) {
-			if (la.kind == 3) {
+		} else if (isKind(la, 3) || isKind(la, 5)) {
+			if (isKind(la, 3)) {
 				Get();
 				name = t.val; 
 			} else {
@@ -460,7 +471,7 @@ const int id = 0;
 	void Term(out Graph g) {
 		Graph g2; Node rslv = null; g = null; 
 		if (StartOf(17)) {
-			if (la.kind == 38) {
+			if (isKind(la, 38)) {
 				rslv = tab.NewNode(Node.rslv, null, la.line); 
 				Resolver(out rslv.pos);
 				g = new Graph(rslv); 
@@ -482,8 +493,8 @@ const int id = 0;
 	}
 
 	void Resolver(out Position pos) {
-		Expect(38);
-		Expect(31);
+		Expect(38); // "IF"
+		Expect(31); // "("
 		int beg = la.pos; int col = la.col; int line = la.line; 
 		Condition();
 		pos = new Position(beg, t.pos, col, line); 
@@ -494,8 +505,12 @@ const int id = 0;
 		g = null;
 		
 		switch (la.kind) {
-		case 1: case 3: case 5: case 30: {
-			if (la.kind == 30) {
+		case 1: // ident
+		case 3: // string
+		case 5: // char
+		case 30: // "WEAK"
+		{
+			if (isKind(la, 30)) {
 				Get();
 				weak = true; 
 			}
@@ -524,7 +539,7 @@ const int id = 0;
 			Node p = tab.NewNode(typ, sym, t.line);
 			g = new Graph(p);
 			
-			if (la.kind == 25 || la.kind == 27) {
+			if (isKind(la, 25) || isKind(la, 27)) {
 				Attribs(p);
 				if (kind != id) SemErr("a literal must not have attributes"); 
 			}
@@ -535,27 +550,31 @@ const int id = 0;
 			
 			break;
 		}
-		case 31: {
+		case 31: // "("
+		{
 			Get();
 			Expression(out g);
-			Expect(32);
+			Expect(32); // ")"
 			break;
 		}
-		case 33: {
+		case 33: // "["
+		{
 			Get();
 			Expression(out g);
-			Expect(34);
+			Expect(34); // "]"
 			tab.MakeOption(g); 
 			break;
 		}
-		case 35: {
+		case 35: // "{"
+		{
 			Get();
 			Expression(out g);
-			Expect(36);
+			Expect(36); // "}"
 			tab.MakeIteration(g); 
 			break;
 		}
-		case 40: {
+		case 40: // "(."
+		{
 			SemText(out pos);
 			Node p = tab.NewNode(Node.sem, null, 0);
 			p.pos = pos;
@@ -563,14 +582,16 @@ const int id = 0;
 			
 			break;
 		}
-		case 23: {
+		case 23: // "ANY"
+		{
 			Get();
 			Node p = tab.NewNode(Node.any, null, 0);  // p.set is set in tab.SetupAnys
 			g = new Graph(p);
 			
 			break;
 		}
-		case 37: {
+		case 37: // "SYNC"
+		{
 			Get();
 			Node p = tab.NewNode(Node.sync, null, 0);
 			g = new Graph(p);
@@ -585,7 +606,7 @@ const int id = 0;
 	}
 
 	void Attribs(Node p) {
-		if (la.kind == 25) {
+		if (isKind(la, 25)) {
 			Get();
 			int beg = la.pos; int col = la.col; int line = la.line; 
 			while (StartOf(9)) {
@@ -596,9 +617,9 @@ const int id = 0;
 					SemErr("bad string in attributes"); 
 				}
 			}
-			Expect(26);
+			Expect(26); // ">"
 			if (t.pos > beg) p.pos = new Position(beg, t.pos, col, line); 
-		} else if (la.kind == 27) {
+		} else if (isKind(la, 27)) {
 			Get();
 			int beg = la.pos; int col = la.col; int line = la.line; 
 			while (StartOf(11)) {
@@ -609,21 +630,21 @@ const int id = 0;
 					SemErr("bad string in attributes"); 
 				}
 			}
-			Expect(28);
+			Expect(28); // ".>"
 			if (t.pos > beg) p.pos = new Position(beg, t.pos, col, line); 
 		} else SynErr(51);
 	}
 
 	void Condition() {
 		while (StartOf(20)) {
-			if (la.kind == 31) {
+			if (isKind(la, 31)) {
 				Get();
 				Condition();
 			} else {
 				Get();
 			}
 		}
-		Expect(32);
+		Expect(32); // ")"
 	}
 
 	void TokenTerm(out Graph g) {
@@ -633,20 +654,20 @@ const int id = 0;
 			TokenFactor(out g2);
 			tab.MakeSequence(g, g2); 
 		}
-		if (la.kind == 39) {
+		if (isKind(la, 39)) {
 			Get();
-			Expect(31);
+			Expect(31); // "("
 			TokenExpr(out g2);
 			tab.SetContextTrans(g2.l); dfa.hasCtxMoves = true;
 			tab.MakeSequence(g, g2); 
-			Expect(32);
+			Expect(32); // ")"
 		}
 	}
 
 	void TokenFactor(out Graph g) {
 		string name; int kind; 
 		g = null; 
-		if (la.kind == 1 || la.kind == 3 || la.kind == 5) {
+		if (isKind(la, 1) || isKind(la, 3) || isKind(la, 5)) {
 			Sym(out name, out kind);
 			if (kind == id) {
 			 CharClass c = tab.FindCharClass(name);
@@ -663,19 +684,19 @@ const int id = 0;
 			 else tokenString = noString;
 			}
 			
-		} else if (la.kind == 31) {
+		} else if (isKind(la, 31)) {
 			Get();
 			TokenExpr(out g);
-			Expect(32);
-		} else if (la.kind == 33) {
+			Expect(32); // ")"
+		} else if (isKind(la, 33)) {
 			Get();
 			TokenExpr(out g);
-			Expect(34);
+			Expect(34); // "]"
 			tab.MakeOption(g); tokenString = noString; 
-		} else if (la.kind == 35) {
+		} else if (isKind(la, 35)) {
 			Get();
 			TokenExpr(out g);
-			Expect(36);
+			Expect(36); // "}"
 			tab.MakeIteration(g); tokenString = noString; 
 		} else SynErr(52);
 		if (g == null) // invalid start of TokenFactor
@@ -693,6 +714,33 @@ const int id = 0;
 
 	}
 	
+	// states that a particular production (1st index) can start with a particular token (2nd index)
+	static readonly bool[,] set0 = {
+		{_T,_T,_x,_T, _x,_T,_x,_x, _x,_x,_T,_T, _x,_x,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x},
+		{_x,_T,_T,_T, _T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x},
+		{_x,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _T,_T,_T,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x},
+		{_T,_T,_x,_T, _x,_T,_x,_x, _x,_x,_T,_T, _x,_x,_x,_T, _T,_T,_T,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_T,_T,_T, _x,_T,_x,_T, _x,_T,_T,_x, _T,_x,_x,_x},
+		{_T,_T,_x,_T, _x,_T,_x,_x, _x,_x,_T,_T, _x,_x,_x,_T, _T,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x},
+		{_T,_T,_x,_T, _x,_T,_x,_x, _x,_x,_T,_T, _x,_x,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x},
+		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_T,_T, _x,_x,_x,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x},
+		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_T,_T,_T, _T,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x},
+		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x},
+		{_x,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x},
+		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x},
+		{_x,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x},
+		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_T,_x},
+		{_x,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_x,_T,_x},
+		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _T,_x,_x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x},
+		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_T,_T, _x,_T,_x,_T, _x,_T,_T,_x, _T,_x,_x,_x},
+		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_T,_T, _x,_T,_x,_T, _x,_T,_x,_x, _T,_x,_x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _T,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x},
+		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x}
+
+	};
+
+	// as set0 but with token inheritance taken into account
 	static readonly bool[,] set = {
 		{_T,_T,_x,_T, _x,_T,_x,_x, _x,_x,_T,_T, _x,_x,_x,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x},
 		{_x,_T,_T,_T, _T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x},

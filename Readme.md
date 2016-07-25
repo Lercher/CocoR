@@ -22,17 +22,12 @@ so called 2011 version of Coco/R.
 
 ## Known Bugs
 
-* 'set' array related methods caclulate based on
-  non inheritance aware tables at parse time.
-  This could probably be moved to compiler
-  generation time.
-  -> Needs to be investigated.
-
 * There are probably more keywords in the Coco grammar
   as stated in the user manual, because there could
   be conflicts of the production methods in the generated
   parser with utility methods such as isKind() or 
-  StartOf(). 
+  StartOf(). This is by design of the 2011 version, but
+  it can easily improved. 
   -> Needs to be investigated.
 
 ## Resolved Bugs
@@ -40,4 +35,14 @@ so called 2011 version of Coco/R.
 * The switch optimization, used with 5+ alternatives, 
   has to be implemented contravariantly in base types. 
   It is currently covariant, which is wrong.
-  -> Testable example NumberIdent in test\inheritance.atg  
+  -> Testable example NumberIdent in test\inheritance.atg
+  -> Fixed. 
+
+* 'set' array related methods caclulate based on
+  non inheritance aware tables at parse time.
+  This could probably be moved to compiler
+  generation time.
+  -> there are now set0 without and set with
+  inheritance taken into account. So StartOf() and
+  error synchronization honor token inheritance.
+  -> Fixed.

@@ -7,14 +7,14 @@ public class Parser {
 	public const int _EOF = 0; // TOKEN EOF
 	public const int _ident = 1; // TOKEN ident
 	public const int _keyword = 2; // TOKEN keyword
-	public const int _var = 3; // TOKEN var
-	public const int _var1 = 4; // TOKEN var1
-	public const int _var2 = 5; // TOKEN var2
-	public const int _var3 = 6; // TOKEN var3
-	public const int _var4 = 7; // TOKEN var4
-	public const int _var5 = 8; // TOKEN var5
-	public const int _var6 = 9; // TOKEN var6
-	public const int _as = 10; // TOKEN as
+	public const int _var = 3; // TOKEN var INHERITS ident
+	public const int _var1 = 4; // TOKEN var1 INHERITS ident
+	public const int _var2 = 5; // TOKEN var2 INHERITS ident
+	public const int _var3 = 6; // TOKEN var3 INHERITS ident
+	public const int _var4 = 7; // TOKEN var4 INHERITS ident
+	public const int _var5 = 8; // TOKEN var5 INHERITS ident
+	public const int _var6 = 9; // TOKEN var6 INHERITS ident
+	public const int _as = 10; // TOKEN as INHERITS ident
 	public const int _colon = 11; // TOKEN colon
 	static readonly int[] tBase = {-1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 	public const int maxT = 26;
@@ -71,16 +71,8 @@ public class Parser {
 	}
 	
 	// is the lookahead token la a start of the production s?
-	// this is true, if it itself is in the array 'set' 
-	// or any of its base kinds is a start of production s
-	// so this is compatible with isKind()
 	bool StartOf (int s) {
-		int k = la.kind;
-		while(k >= 0) {
-			if (set[s, k]) return true;
-			k = tBase[k];
-		}
-		return false;
+		return set[s, la.kind];
 	}
 	
 	void ExpectWeak (int n, int follow) {
@@ -343,12 +335,23 @@ public class Parser {
 
 	}
 	
-	static readonly bool[,] set = {
+	// states that a particular production (1st index) can start with a particular token (2nd index)
+	static readonly bool[,] set0 = {
 		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x},
 		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x},
 		{_x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x},
 		{_x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x},
 		{_T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x}
+
+	};
+
+	// as set0 but with token inheritance taken into account
+	static readonly bool[,] set = {
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x},
+		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x},
+		{_x,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x},
+		{_x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x},
+		{_T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x}
 
 	};
 } // end Parser
