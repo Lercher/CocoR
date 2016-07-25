@@ -9,6 +9,13 @@ var a | b | c | as as as;
 var a:int, b:int, c:int;
 var var1 as var2 | var3 : var4, var5;
 
+// NumberIdent here. We choose var6
+NumberIdent var6;
+NumberIdent 1;
+NumberIdent as;
+NumberIdent SomeTextIsAnIdent;
+// NumberIdent keyword; // invalid NumberIdent b/c keyword is not an ident
+
 // at last an ident or number list
 1
 2

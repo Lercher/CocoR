@@ -22,11 +22,6 @@ so called 2011 version of Coco/R.
 
 ## Known Bugs
 
-* The switch optimization, used with 5+ alternatives, 
-  has to be implemented contravariantly in base types. 
-  It is currently covariant, which is wrong.
-  -> Testable example missing. Fix missing.
-
 * 'set' array related methods caclulate based on
   non inheritance aware tables at parse time.
   This could probably be moved to compiler
@@ -39,3 +34,10 @@ so called 2011 version of Coco/R.
   parser with utility methods such as isKind() or 
   StartOf(). 
   -> Needs to be investigated.
+
+## Resolved Bugs
+
+* The switch optimization, used with 5+ alternatives, 
+  has to be implemented contravariantly in base types. 
+  It is currently covariant, which is wrong.
+  -> Testable example NumberIdent in test\inheritance.atg  

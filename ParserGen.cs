@@ -76,7 +76,6 @@ public class ParserGen {
 	//   more than 5 alternatives 
 	//   and none starts with a resolver
 	//   and no LL1 warning
-    //   and no inheritance
 	bool UseSwitch (Node p) {
 		BitArray s1, s2;
 		if (p.typ != Node.alt) return false;
@@ -90,10 +89,6 @@ public class ParserGen {
 			++nAlts;
 			// must not optimize with switch-statement, if alt uses a resolver expression
 			if (p.sub.typ == Node.rslv) return false;
-			// must not optimize with switch statement, if token symbol inherits
-			foreach (Symbol sym in tab.terminals)
-				if (s2[sym.n] && (sym.inherits != null)) 
-					return false;
 			p = p.down;
 		}
 		return nAlts > 5;
@@ -167,12 +162,32 @@ public class ParserGen {
 		}
 	}
 		
-	void PutCaseLabels (BitArray s, int indent) {
+	void PutCaseLabels (BitArray s0, int indent) {
+		BitArray s = DerivationsOf(s0);
 		foreach (Symbol sym in tab.terminals)
 			if (s[sym.n]) {
 				gen.WriteLine("case {0}: // {1}", sym.n, sym.name);
 				Indent(indent);
 			}
+	}
+
+	BitArray DerivationsOf(BitArray s0) {
+		BitArray s = (BitArray) s0.Clone();
+		bool done = false;
+		while (!done) {
+			done = true;
+			foreach (Symbol sym in tab.terminals) {
+				if (s[sym.n]) {
+					foreach (Symbol baseSym in tab.terminals) {
+						if (baseSym.inherits == sym && !s[baseSym.n]) {
+							s[baseSym.n] = true;
+							done = false;
+						}
+					}
+				}
+			}			
+		}
+		return s;
 	}
 	
 	void GenCode (Node p, int indent, BitArray isChecked) {

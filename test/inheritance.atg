@@ -1,3 +1,5 @@
+// cd .. & build.bat & cd test & cocbuild
+
 COMPILER Inheritance
 
 CHARACTERS
@@ -16,7 +18,7 @@ TOKENS
     var4 : ident = "var4".
     var5 : ident = "var5".
     var6 : ident = "var6".  
-    as   : ident = "as".
+    as   : ident = "as".    
     colon = ':'.
     /*
     error1 : unknown = "error1". // unknown symbol unknown
@@ -38,7 +40,14 @@ IGNORE cr + lf + tab
 
 PRODUCTIONS
 
-    Inheritance = { Declaration } { IdentOrNumber } .
+    Inheritance =
+         { Declaration } 
+         {
+           "NumberIdent" 
+            NumberIdent (. Console.WriteLine("NumberIdent {0}", t.val); .)
+            ";"
+         } 
+         { IdentOrNumber }.
     
     // with iter node
     Declaration = Var Ident { Separator Ident } SYNC ';'.
@@ -55,8 +64,14 @@ PRODUCTIONS
     // This IdentOrNumber declaration forces a StartOf(2) call at Inheritance()
     // with ident as StartOf(2) in the 'set' array but not var..var6 in it
     // so we can test our new implementation of StartOf() 
-    IdentOrNumber = ident | Number.    
-    Number = '0' | '1' | '2'.
+    IdentOrNumber = ident | NumberVar.
+
+    // void NumberVar() shoud be rendered as a switch statement 
+    NumberVar = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | var .
+    
+    // void NumberVar() shoud be rendered as a switch statement, 
+    // but the last switch should have many cases for ident, namely ident+var+..+var6 
+    NumberIdent = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | ident .
 
     // note: the 'set' array might be a good starting point to
     // derive language services for the grammar, i.e. autocomplete/intellisense

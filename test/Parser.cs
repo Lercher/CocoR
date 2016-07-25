@@ -16,8 +16,8 @@ public class Parser {
 	public const int _var6 = 9; // TOKEN var6
 	public const int _as = 10; // TOKEN as
 	public const int _colon = 11; // TOKEN colon
-	static readonly int[] tBase = {-1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1};
-	public const int maxT = 18;
+	static readonly int[] tBase = {-1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+	public const int maxT = 26;
 
 	const bool _T = true;
 	const bool _x = false;
@@ -111,6 +111,12 @@ public class Parser {
 		while (StartOf(1)) {
 			Declaration();
 		}
+		while (isKind(la, 12)) {
+			Get();
+			NumberIdent();
+			Console.WriteLine("NumberIdent {0}", t.val); 
+			Expect(13); // ";"
+		}
 		while (StartOf(2)) {
 			IdentOrNumber();
 		}
@@ -119,38 +125,130 @@ public class Parser {
 	void Declaration() {
 		Var();
 		Ident();
-		while (isKind(la, 13) || isKind(la, 14)) {
+		while (isKind(la, 14) || isKind(la, 15)) {
 			Separator();
 			Ident();
 		}
-		while (!(isKind(la, 0) || isKind(la, 12))) {SynErr(19); Get();}
-		Expect(12); // ";"
+		while (!(isKind(la, 0) || isKind(la, 13))) {SynErr(27); Get();}
+		Expect(13); // ";"
+	}
+
+	void NumberIdent() {
+		switch (la.kind) {
+		case 16: // "0"
+		{
+			Get();
+			break;
+		}
+		case 17: // "1"
+		{
+			Get();
+			break;
+		}
+		case 18: // "2"
+		{
+			Get();
+			break;
+		}
+		case 19: // "3"
+		{
+			Get();
+			break;
+		}
+		case 20: // "4"
+		{
+			Get();
+			break;
+		}
+		case 21: // "5"
+		{
+			Get();
+			break;
+		}
+		case 22: // "6"
+		{
+			Get();
+			break;
+		}
+		case 23: // "7"
+		{
+			Get();
+			break;
+		}
+		case 24: // "8"
+		{
+			Get();
+			break;
+		}
+		case 25: // "9"
+		{
+			Get();
+			break;
+		}
+		case 1: // ident
+		case 3: // var
+		case 4: // var1
+		case 5: // var2
+		case 6: // var3
+		case 7: // var4
+		case 8: // var5
+		case 9: // var6
+		case 10: // as
+		{
+			Get();
+			break;
+		}
+		default: SynErr(28); break;
+		}
 	}
 
 	void IdentOrNumber() {
 		if (isKind(la, 1)) {
 			Get();
-		} else if (isKind(la, 15) || isKind(la, 16) || isKind(la, 17)) {
-			Number();
-		} else SynErr(20);
+		} else if (StartOf(3)) {
+			NumberVar();
+		} else SynErr(29);
 	}
 
 	void Var() {
-		if (isKind(la, 3)) {
+		switch (la.kind) {
+		case 3: // var
+		{
 			Get();
-		} else if (isKind(la, 4)) {
+			break;
+		}
+		case 4: // var1
+		{
 			Get();
-		} else if (isKind(la, 5)) {
+			break;
+		}
+		case 5: // var2
+		{
 			Get();
-		} else if (isKind(la, 6)) {
+			break;
+		}
+		case 6: // var3
+		{
 			Get();
-		} else if (isKind(la, 7)) {
+			break;
+		}
+		case 7: // var4
+		{
 			Get();
-		} else if (isKind(la, 8)) {
+			break;
+		}
+		case 8: // var5
+		{
 			Get();
-		} else if (isKind(la, 9)) {
+			break;
+		}
+		case 9: // var6
+		{
 			Get();
-		} else SynErr(21);
+			break;
+		}
+		default: SynErr(30); break;
+		}
 	}
 
 	void Ident() {
@@ -166,21 +264,72 @@ public class Parser {
 	}
 
 	void Separator() {
-		if (isKind(la, 13)) {
-			ExpectWeak(13, 3); // "," followed by var
-		} else if (isKind(la, 14)) {
-			ExpectWeak(14, 3); // "|" followed by var
-		} else SynErr(22);
+		if (isKind(la, 14)) {
+			ExpectWeak(14, 4); // "," followed by var1
+		} else if (isKind(la, 15)) {
+			ExpectWeak(15, 4); // "|" followed by var1
+		} else SynErr(31);
 	}
 
-	void Number() {
-		if (isKind(la, 15)) {
+	void NumberVar() {
+		switch (la.kind) {
+		case 16: // "0"
+		{
 			Get();
-		} else if (isKind(la, 16)) {
+			break;
+		}
+		case 17: // "1"
+		{
 			Get();
-		} else if (isKind(la, 17)) {
+			break;
+		}
+		case 18: // "2"
+		{
 			Get();
-		} else SynErr(23);
+			break;
+		}
+		case 19: // "3"
+		{
+			Get();
+			break;
+		}
+		case 20: // "4"
+		{
+			Get();
+			break;
+		}
+		case 21: // "5"
+		{
+			Get();
+			break;
+		}
+		case 22: // "6"
+		{
+			Get();
+			break;
+		}
+		case 23: // "7"
+		{
+			Get();
+			break;
+		}
+		case 24: // "8"
+		{
+			Get();
+			break;
+		}
+		case 25: // "9"
+		{
+			Get();
+			break;
+		}
+		case 3: // var
+		{
+			Get();
+			break;
+		}
+		default: SynErr(32); break;
+		}
 	}
 
 
@@ -195,10 +344,11 @@ public class Parser {
 	}
 	
 	static readonly bool[,] set = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x},
-		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x},
-		{_x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _T,_T,_x,_x},
-		{_T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x}
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x},
+		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x},
+		{_x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x},
+		{_x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x},
+		{_T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x}
 
 	};
 } // end Parser
@@ -224,18 +374,27 @@ public class Errors {
 			case 9: s = "var6 expected"; break;
 			case 10: s = "as expected"; break;
 			case 11: s = "colon expected"; break;
-			case 12: s = "\";\" expected"; break;
-			case 13: s = "\",\" expected"; break;
-			case 14: s = "\"|\" expected"; break;
-			case 15: s = "\"0\" expected"; break;
-			case 16: s = "\"1\" expected"; break;
-			case 17: s = "\"2\" expected"; break;
-			case 18: s = "??? expected"; break;
-			case 19: s = "this symbol not expected in Declaration"; break;
-			case 20: s = "invalid IdentOrNumber"; break;
-			case 21: s = "invalid Var"; break;
-			case 22: s = "invalid Separator"; break;
-			case 23: s = "invalid Number"; break;
+			case 12: s = "\"NumberIdent\" expected"; break;
+			case 13: s = "\";\" expected"; break;
+			case 14: s = "\",\" expected"; break;
+			case 15: s = "\"|\" expected"; break;
+			case 16: s = "\"0\" expected"; break;
+			case 17: s = "\"1\" expected"; break;
+			case 18: s = "\"2\" expected"; break;
+			case 19: s = "\"3\" expected"; break;
+			case 20: s = "\"4\" expected"; break;
+			case 21: s = "\"5\" expected"; break;
+			case 22: s = "\"6\" expected"; break;
+			case 23: s = "\"7\" expected"; break;
+			case 24: s = "\"8\" expected"; break;
+			case 25: s = "\"9\" expected"; break;
+			case 26: s = "??? expected"; break;
+			case 27: s = "this symbol not expected in Declaration"; break;
+			case 28: s = "invalid NumberIdent"; break;
+			case 29: s = "invalid IdentOrNumber"; break;
+			case 30: s = "invalid Var"; break;
+			case 31: s = "invalid Separator"; break;
+			case 32: s = "invalid NumberVar"; break;
 
 			default: s = "error " + n; break;
 		}
