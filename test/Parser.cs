@@ -16,10 +16,6 @@ public class Parser {
 	public const int _var6 = 9; // TOKEN var6 INHERITS ident
 	public const int _as = 10; // TOKEN as INHERITS ident
 	public const int _colon = 11; // TOKEN colon
-	static readonly int[] tBase = {
-		 -1,  -1,  -1,   1,    1,   1,   1,   1,    1,   1,   1,  -1,   -1,  -1,  -1,  -1, 
-		 -1,  -1,  -1,  -1,   -1,  -1,  -1,  -1,   -1,  -1,  -1
-	};
 	public const int maxT = 26;
 
 	const bool _T = true;
@@ -338,6 +334,12 @@ public class Parser {
 
 	}
 	
+	// a tokens base type
+	static readonly int[] tBase = {
+		-1,-1,-1, 1,  1, 1, 1, 1,  1, 1, 1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+		-1,-1,-1,-1, -1,-1,-1
+	};
+
 	// states that a particular production (1st index) can start with a particular token (2nd index)
 	static readonly bool[,] set0 = {
 		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x},

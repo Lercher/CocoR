@@ -120,6 +120,11 @@ public class Parser {
 -->parseRoot
 	}
 	
+	// a tokens base type
+	static readonly int[] tBase = {
+-->tbase
+	};
+
 	// states that a particular production (1st index) can start with a particular token (2nd index)
 	static readonly bool[,] set0 = {
 -->initialization0

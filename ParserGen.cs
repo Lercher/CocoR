@@ -327,21 +327,20 @@ public class ParserGen {
 	}
 
 	void GenTokenBase() {
-		gen.Write("\tstatic readonly int[] tBase = {"); // we don't have a token with n == 0, so we add an elephant -1 at index 0
 		int n = 0;
 		foreach (Symbol sym in tab.terminals) {
-			if (n > 0) gen.Write(", ");
-			if (n%16 == 0) {
-				gen.Write("\n\t\t");
-			} else if (n%4 == 0)
+			if (n%20 == 0)
+				gen.Write("\t\t");
+			else if (n%4 == 0)
 				gen.Write(" ");			
 			n++;
 			if (sym.inherits == null)
-				gen.Write("{0,3}", -1); // not inherited
+				gen.Write("{0,2}", -1); // not inherited
 			else
-				gen.Write("{0,3}", sym.inherits.n);
+				gen.Write("{0,2}", sym.inherits.n);
+			if (n < tab.terminals.Count) gen.Write(",");
+			if (n%20 == 0) gen.WriteLine();
 		}
-		gen.WriteLine("\n\t};");
 	}
 	
 	void GenPragmas() {
@@ -419,14 +418,14 @@ public class ParserGen {
 			gen.WriteLine();
 		}
 		g.CopyFramePart("-->constants");
-		GenTokens(); /* ML 2002/09/07 write the token kinds */
-		GenTokenBase(); // write all tokens base types
+		GenTokens(); /* ML 2002/09/07 write the token kinds */		
 		gen.WriteLine("\tpublic const int maxT = {0};", tab.terminals.Count-1);
 		GenPragmas(); /* ML 2005/09/23 write the pragma kinds */
 		g.CopyFramePart("-->declarations"); CopySourcePart(tab.semDeclPos, 0);
 		g.CopyFramePart("-->pragmas"); GenCodePragmas();
 		g.CopyFramePart("-->productions"); GenProductions();
 		g.CopyFramePart("-->parseRoot"); gen.WriteLine("\t\t{0}();", tab.gramSy.name); if (tab.checkEOF) gen.WriteLine("\t\tExpect(0);");
+		g.CopyFramePart("-->tbase"); GenTokenBase(); // write all tokens base types
 		g.CopyFramePart("-->initialization0"); InitSets0();
 		g.CopyFramePart("-->initialization"); InitSets();
 		g.CopyFramePart("-->errors"); gen.Write(err.ToString());
