@@ -15,7 +15,11 @@ public class Parser {
 	public const int _string = 3; // TOKEN string
 	public const int _badString = 4; // TOKEN badString
 	public const int _char = 5; // TOKEN char
-	static readonly int[] tBase = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+	static readonly int[] tBase = {
+		 -1,  -1,  -1,  -1,   -1,  -1,  -1,  -1,   -1,  -1,  -1,  -1,   -1,  -1,  -1,  -1, 
+		 -1,  -1,  -1,  -1,   -1,  -1,  -1,  -1,   -1,  -1,  -1,  -1,   -1,  -1,  -1,  -1, 
+		 -1,  -1,  -1,  -1,   -1,  -1,  -1,  -1,   -1,  -1,  -1
+	};
 	public const int maxT = 42;
 	public const int _ddtSym = 43;
 	public const int _optionSym = 44;

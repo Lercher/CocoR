@@ -327,17 +327,21 @@ public class ParserGen {
 	}
 
 	void GenTokenBase() {
-		bool first = true;
 		gen.Write("\tstatic readonly int[] tBase = {"); // we don't have a token with n == 0, so we add an elephant -1 at index 0
+		int n = 0;
 		foreach (Symbol sym in tab.terminals) {
-			if (!first) gen.Write(", ");
-			first = false;
+			if (n > 0) gen.Write(", ");
+			if (n%16 == 0) {
+				gen.Write("\n\t\t");
+			} else if (n%4 == 0)
+				gen.Write(" ");			
+			n++;
 			if (sym.inherits == null)
-				gen.Write("-1"); // not inherited
+				gen.Write("{0,3}", -1); // not inherited
 			else
-				gen.Write("{0}", sym.inherits.n);				
+				gen.Write("{0,3}", sym.inherits.n);
 		}
-		gen.WriteLine("};");
+		gen.WriteLine("\n\t};");
 	}
 	
 	void GenPragmas() {

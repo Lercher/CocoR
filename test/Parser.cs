@@ -16,7 +16,10 @@ public class Parser {
 	public const int _var6 = 9; // TOKEN var6 INHERITS ident
 	public const int _as = 10; // TOKEN as INHERITS ident
 	public const int _colon = 11; // TOKEN colon
-	static readonly int[] tBase = {-1, -1, -1, 1, 1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+	static readonly int[] tBase = {
+		 -1,  -1,  -1,   1,    1,   1,   1,   1,    1,   1,   1,  -1,   -1,  -1,  -1,  -1, 
+		 -1,  -1,  -1,  -1,   -1,  -1,  -1,  -1,   -1,  -1,  -1
+	};
 	public const int maxT = 26;
 
 	const bool _T = true;
