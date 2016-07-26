@@ -4,6 +4,7 @@
 'Copyright (c) 1990, 2004 Hanspeter Moessenboeck, University of Linz
 'extended by M. Loeberbauer & A. Woess, Univ. of Linz
 'with improvements by Pat Terry, Rhodes University
+'with token inheritance by Martin Lercher, Singhammer dtSoftware Munich
 '
 'This program is free software; you can redistribute it and/or modify it
 'under the terms of the GNU General Public License as published by the
@@ -336,7 +337,7 @@ Namespace at.jku.ssw.Coco
 				ElseIf n <= maxTerm Then
 					For Each sym As Symbol In tab.terminals
 						If s(sym.n) Then
-							gen.Write("la.kind = {0}", sym.n)
+							gen.Write("isKind(la, {0})", sym.n)
 							n -= 1
 							If n > 0 Then
 								gen.Write(" OrElse ")
@@ -348,20 +349,49 @@ Namespace at.jku.ssw.Coco
 				End If
 			End If
 		End Sub
-		Private Sub PutCaseLabels(ByVal s As BitArray)
-			Dim blnDirty As Boolean = False
+		Private Sub PutCaseLabels(ByVal s0 As BitArray)
+			Dim s as BitArray = DerivationsOf(s0)
+			Dim n as Integer = 0
 			gen.Write("Case ")
 			For Each sym As Symbol In tab.terminals
 				If s(sym.n) Then
-					If blnDirty Then
+					If n > 0 Then
 						gen.Write(", ")
 					End If
 					gen.Write("{0}", sym.n)
-					blnDirty = True
+					n += 1
+				End If
+			Next
+			gen.Write(" ' ")
+			For Each sym As Symbol In tab.terminals
+				If s(sym.n) Then
+					If n > 1 Then
+						gen.Write("{0}:{1} ", sym.n, sym.name)
+					Else
+						gen.Write(sym.name)
+					End If
 				End If
 			Next
 			gen.WriteLine()
-		End Sub
+		End Sub		
+		Private Function DerivationsOf(ByVal s0 as BitArray) as BitArray
+			Dim s as BitArray = DirectCast(s0.Clone(), BitArray)
+			Dim done as Boolean = False
+			Do Until done
+				done = true
+				For Each sym as Symbol in tab.terminals
+					If s(sym.n) Then
+						For Each baseSym as Symbol in tab.terminals
+							If baseSym.inherits is sym AndAlso Not s(baseSym.n) Then
+								s(baseSym.n) = True
+								done = false
+							End If
+						Next
+					End If
+				Next
+			Loop
+			Return s
+		End Function
 		Private Sub GenCode(ByVal p As Node, ByVal indent As Integer, ByVal isChecked As BitArray)
 			Dim p2 As Node
 			Dim s1 As BitArray
@@ -379,13 +409,15 @@ Namespace at.jku.ssw.Coco
 						If isChecked(p.sym.n) Then
 							gen.WriteLine("[Get]()")
 						Else
-							gen.WriteLine("Expect({0})", p.sym.n)
+							gen.WriteLine("Expect({0}) ' {1}", p.sym.n, p.sym.name)
 						End If
 					Case Node.wt
 						Me.Indent(indent)
 						s1 = tab.Expected(p.[next], curSy)
 						s1.[Or](tab.allSyncSets)
-						gen.WriteLine("ExpectWeak({0}, {1})", p.sym.n, NewCondSet(s1))
+						Dim ncs1 As Integer = NewCondSet(s1)
+						Dim ncs1sym as Symbol = DirectCast(tab.terminals(ncs1), Symbol)
+						gen.WriteLine("ExpectWeak({0}, {1}) ' {2} followed by {3}", p.sym.n, ncs1, p.sym.name, ncs1sym.name)
 					Case Node.any
 						Me.Indent(indent)
 						Dim acc As Integer = Sets.Elements(p.set)
@@ -531,9 +563,31 @@ Namespace at.jku.ssw.Coco
 		Private Sub GenTokens(ByVal indent As Integer)
 			For Each sym As Symbol In tab.terminals
 				If [Char].IsLetter(sym.name(0)) Then
-					gen.WriteLine(StrDup(indent, vbTab) & "Public  Const   _{0,-10} As Integer = {1,2}", sym.name, sym.n)
+					Dim inh as String = String.Empty
+					If sym.inherits IsNot Nothing Then inh = "INHERITS " & sym.inherits.name
+					gen.WriteLine(StrDup(indent, vbTab) & "Public  Const   _{0,-10} As Integer = {1,2} ' TOKEN {0,-10}{2}", sym.name, sym.n, inh)
 				End If
 			Next
+		End Sub
+		Private Sub GenTokenBase(ByVal indent as Integer)
+			Dim n as Integer = 0
+			For Each sym As Symbol In tab.terminals
+				If n Mod 20 = 0 Then 
+					Me.Indent(indent)
+				Else If n Mod 4 = 0 Then
+					gen.Write(" "c)
+				End If
+				n += 1
+				If sym.inherits is Nothing Then
+					gen.Write("{0,2}", -1)
+				Else
+					gen.Write("{0,2}", sym.inherits.n)
+				End If
+				If n < tab.terminals.Count Then gen.Write(","c)
+				If n Mod 20 = 0 Then gen.WriteLine(" _")
+			Next
+			If n Mod 20 = 0 Then Return
+			gen.WriteLine(" _")			
 		End Sub
 		Private Sub GenPragmas(ByVal indent As Integer)
 			For Each sym As Symbol In tab.pragmas
@@ -558,26 +612,51 @@ Namespace at.jku.ssw.Coco
 				gen.WriteLine(StrDup(indent, vbTab) & "End Sub")
 			Next
 		End Sub
-		Private Sub InitSets(ByVal indent As Integer)
+		Private Sub InitSets0(ByVal indent As Integer)
 			For i As Integer = 0 To symSet.Count - 1
 				Dim s As BitArray = DirectCast(symSet(i), BitArray)
 				gen.Write(StrDup(indent, vbTab) & "{")
 				Dim j As Integer = 0
 				For Each sym As Symbol In tab.terminals
 					If s(sym.n) Then
-						gen.Write("blnT,")
+						gen.Write("_T,")
 					Else
-						gen.Write("blnX,")
+						gen.Write("_x,")
 					End If
 					j += 1
 					If j Mod 4 = 0 Then
 						gen.Write(" ")
 					End If
 				Next
+				' now write an elephant at the last position to not fiddle with the commas:
 				If i = symSet.Count - 1 Then
-					gen.WriteLine("blnX} _")
+					gen.WriteLine("_x} _")
 				Else
-					gen.WriteLine("blnX}, _")
+					gen.WriteLine("_x}, _")
+				End If
+			Next
+		End Sub
+		Private Sub InitSets(ByVal indent As Integer)
+			For i As Integer = 0 To symSet.Count - 1
+				Dim s As BitArray = DerivationsOf(DirectCast(symSet(i), BitArray))
+				gen.Write(StrDup(indent, vbTab) & "{")
+				Dim j As Integer = 0
+				For Each sym As Symbol In tab.terminals
+					If s(sym.n) Then
+						gen.Write("_T,")
+					Else
+						gen.Write("_x,")
+					End If
+					j += 1
+					If j Mod 4 = 0 Then
+						gen.Write(" ")
+					End If
+				Next
+				' now write an elephant at the last position to not fiddle with the commas:
+				If i = symSet.Count - 1 Then
+					gen.WriteLine("_x} _")
+				Else
+					gen.WriteLine("_x}, _")
 				End If
 			Next
 		End Sub
@@ -619,6 +698,10 @@ Namespace at.jku.ssw.Coco
 			GenProductions(indent + 1)
 			g.CopyFramePart("-->parseRoot", indent)
 			gen.WriteLine(StrDup(indent + 2, vbTab) & "{0}()", tab.gramSy.name)
+			g.CopyFramePart("-->tbase", indent)
+			GenTokenBase(indent + 2)
+			g.CopyFramePart("-->initialization0", indent)
+			InitSets0(indent + 2)
 			g.CopyFramePart("-->initialization", indent)
 			InitSets(indent + 2)
 			g.CopyFramePart("-->errors", indent)

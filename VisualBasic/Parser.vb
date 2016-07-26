@@ -34,17 +34,17 @@ Imports System.IO
 Namespace at.jku.ssw.Coco
 
 	Public Class Parser
-		Public  Const   _EOF        As Integer =  0
-		Public  Const   _ident      As Integer =  1
-		Public  Const   _number     As Integer =  2
-		Public  Const   _string     As Integer =  3
-		Public  Const   _badString  As Integer =  4
-		Public  Const   _char       As Integer =  5
+		Public  Const   _EOF        As Integer =  0 ' TOKEN EOF       
+		Public  Const   _ident      As Integer =  1 ' TOKEN ident     
+		Public  Const   _number     As Integer =  2 ' TOKEN number    
+		Public  Const   _string     As Integer =  3 ' TOKEN string    
+		Public  Const   _badString  As Integer =  4 ' TOKEN badString 
+		Public  Const   _char       As Integer =  5 ' TOKEN char      
 		Public  Const   maxT        As Integer = 43
 		Public  Const   _ddtSym     As Integer = 44
 		Public  Const   _optionSym  As Integer = 45
-		Private Const   blnT        As Boolean = True
-		Private Const   blnX        As Boolean = False
+		Private Const   _T        As Boolean = True
+		Private Const   _x        As Boolean = False
 		Private Const   minErrDist  As Integer =  2
 		Public          scanner     As Scanner
 		Public          errors      As Errors
@@ -121,18 +121,27 @@ Namespace at.jku.ssw.Coco
 				la = t
 			End While
 		End Sub
+		Private Function isKind(ByVal t as Token, ByVal n as Integer) as Boolean
+			Dim k as Integer = t.kind
+			Do While k >= 0
+				If k = n Then Return True
+				k = tBase(k)
+			Loop
+			Return False
+		End Function
 		Private Sub Expect(ByVal n As Integer)
-			If la.kind = n Then
+			If isKind(la, n) Then
 				[Get]()
 			Else
 				SynErr(n)
 			End If
 		End Sub
+		' is the lookahead token la a start of the production s?
 		Private Function StartOf(ByVal s As Integer) As Boolean
 			Return blnSet(s, la.kind)
 		End Function
 		Private Sub ExpectWeak(ByVal n As Integer, ByVal follow As Integer)
-			If la.kind = n Then
+			If isKind(la, n) Then
 				[Get]()
 			Else
 				SynErr(n)
@@ -143,7 +152,7 @@ Namespace at.jku.ssw.Coco
 		End Sub
 		Private Function WeakSeparator(ByVal n As Integer, ByVal syFol As Integer, ByVal repFol As Integer) As Boolean
 			Dim kind As Integer = la.kind
-			If kind = n Then
+			If isKind(la, n) Then
 				[Get]()
 				Return True
 			ElseIf StartOf(repFol) Then
@@ -166,7 +175,7 @@ Namespace at.jku.ssw.Coco
 			Dim s        As CharSet = Nothing
 			Dim beg      As Integer
 			Dim line     As Integer
-			If la.kind = 6 Then
+			If isKind(la, 6) Then
 				[Get]()
 				beg  = t.pos
 				line = t.line
@@ -175,10 +184,10 @@ Namespace at.jku.ssw.Coco
 				End While
 				pgen.importPos = New Position(beg, la.pos, 0, line)
 			End If
-			Expect(7)
+			Expect(7) ' "COMPILER"
 			genScanner  = True
 			tab.ignored = New CharSet()
-			Expect(1)
+			Expect(1) ' ident
 			gramName = t.val
 			beg      = la.pos
 			line     = la.line
@@ -186,56 +195,56 @@ Namespace at.jku.ssw.Coco
 				[Get]()
 			End While
 			tab.semDeclPos = New Position(beg, la.pos, 0, line)
-			If la.kind = 8 Then
+			If isKind(la, 8) Then
 				[Get]()
 				dfa.ignoreCase = True ' pdt
 			End If
-			If la.kind = 9 Then
+			If isKind(la, 9) Then
 				[Get]()
-				While la.kind = 1
+				While isKind(la, 1)
 					SetDecl()
 				End While
 			End If
-			If la.kind = 10 Then
+			If isKind(la, 10) Then
 				[Get]()
-				While la.kind = 1 OrElse la.kind = 3 OrElse la.kind = 5
+				While isKind(la, 1) OrElse isKind(la, 3) OrElse isKind(la, 5)
 					TokenDecl(Node.t)
 				End While
 			End If
-			If la.kind = 11 Then
+			If isKind(la, 11) Then
 				[Get]()
-				While la.kind = 1 OrElse la.kind = 3 OrElse la.kind = 5
+				While isKind(la, 1) OrElse isKind(la, 3) OrElse isKind(la, 5)
 					TokenDecl(Node.pr)
 				End While
 			End If
-			While la.kind = 12
+			While isKind(la, 12)
 				[Get]()
 				Dim nested As Boolean = False
-				Expect(13)
+				Expect(13) ' "FROM"
 				TokenExpr(g1)
-				Expect(14)
+				Expect(14) ' "TO"
 				TokenExpr(g2)
-				If la.kind = 15 Then
+				If isKind(la, 15) Then
 					[Get]()
 					nested = True
 				End If
 				dfa.NewComment(g1.l, g2.l, nested)
 			End While
-			While la.kind = 16
+			While isKind(la, 16)
 				[Get]()
 				[Set](s)
 				tab.ignored.[Or](s)
 			End While
-			While Not (la.kind = 0 OrElse la.kind = 17)
+			While Not (isKind(la, 0) OrElse isKind(la, 17))
 				SynErr(44)
 				[Get]()
 			End While
-			Expect(17)
+			Expect(17) ' "PRODUCTIONS"
 			If genScanner Then
 				dfa.MakeDeterministic()
 			End If
 			tab.DeleteNodes()
-			While la.kind = 1
+			While isKind(la, 1)
 				[Get]()
 				sym = tab.FindSym(t.val)
 				Dim undef As Boolean = sym Is Nothing
@@ -253,7 +262,7 @@ Namespace at.jku.ssw.Coco
 				End If
 				Dim noAttrs As Boolean = sym.attrPos Is Nothing
 				sym.attrPos = Nothing
-				If la.kind = 26 OrElse la.kind = 28 Then
+				If isKind(la, 26) OrElse isKind(la, 28) Then
 					AttrDecl(sym)
 				End If
 				If Not undef Then
@@ -261,17 +270,17 @@ Namespace at.jku.ssw.Coco
 						SemErr("attribute mismatch between declaration and use of this symbol")
 					End If
 				End If
-				If la.kind = 41 Then
+				If isKind(la, 41) Then
 					SemText(sym.semPos)
 				End If
-				ExpectWeak(18, 3)
+				ExpectWeak(18, 3) ' "=" followed by string
 				Expression(g)
 				sym.graph = g.l
 				tab.Finish(g)
-				ExpectWeak(19, 4)
+				ExpectWeak(19, 4) ' "." followed by badString
 			End While
-			Expect(20)
-			Expect(1)
+			Expect(20) ' "END"
+			Expect(1) ' ident
 			If gramName <> t.val Then
 				SemErr("name does not match grammar name")
 			End If
@@ -315,23 +324,23 @@ Namespace at.jku.ssw.Coco
 			If tab.ddt(6) Then
 				tab.PrintSymbolTable()
 			End If
-			Expect(19)
+			Expect(19) ' "."
 		End Sub
 		Private Sub SetDecl()
 			Dim s As CharSet = Nothing
-			Expect(1)
+			Expect(1) ' ident
 			Dim name As String = t.val
 			Dim c As CharClass = tab.FindCharClass(name)
 			If c IsNot Nothing Then
 				SemErr("name declared twice")
 			End If
-			Expect(18)
+			Expect(18) ' "="
 			[Set](s)
 			If s.Elements() = 0 Then
 				SemErr("character set must not be empty")
 			End If
 			tab.NewCharClass(name, s)
-			Expect(19)
+			Expect(19) ' "."
 		End Sub
 		Private Sub TokenDecl(ByVal typ As Integer)
 			Dim name As String = Nothing
@@ -351,7 +360,7 @@ Namespace at.jku.ssw.Coco
 				_sym.tokenKind = Symbol.fixedToken
 			End If
 			tokenString = Nothing
-			If la.kind = 25 Then
+			If isKind(la, 25) Then
 				[Get]()
 				Sym(inheritsName, inheritsKind)
 				inheritsSym = tab.FindSym(inheritsName)
@@ -370,10 +379,10 @@ Namespace at.jku.ssw.Coco
 				SynErr(45)
 				[Get]()
 			End While
-			If la.kind = 18 Then
+			If isKind(la, 18) Then
 				[Get]()
 				TokenExpr(g)
-				Expect(19)
+				Expect(19) ' "."
 				If kind = str Then
 					SemErr("a literal must not be declared with a structure")
 				End If
@@ -397,7 +406,7 @@ Namespace at.jku.ssw.Coco
 			Else
 				SynErr(46)
 			End If
-			If la.kind = 41 Then
+			If isKind(la, 41) Then
 				SemText(_sym.semPos)
 				If typ <> Node.pr Then
 					SemErr("semantic action not allowed here")
@@ -420,8 +429,8 @@ Namespace at.jku.ssw.Coco
 		Private Sub [Set](ByRef s As CharSet)
 			Dim s2 As CharSet = Nothing
 			SimSet(s)
-			While la.kind = 21 OrElse la.kind = 22
-				If la.kind = 21 Then
+			While isKind(la, 21) OrElse isKind(la, 22)
+				If isKind(la, 21) Then
 					[Get]()
 					SimSet(s2)
 					s.[Or](s2)
@@ -433,7 +442,7 @@ Namespace at.jku.ssw.Coco
 			End While
 		End Sub
 		Private Sub AttrDecl(ByVal sym As Symbol)
-			If la.kind = 26 Then
+			If isKind(la, 26) Then
 				[Get]()
 				Dim beg  As Integer = la.pos
 				Dim col  As Integer = la.col
@@ -446,11 +455,11 @@ Namespace at.jku.ssw.Coco
 						SemErr("bad string in attributes")
 					End If
 				End While
-				Expect(27)
+				Expect(27) ' ">"
 				If t.pos > beg Then
 					sym.attrPos = New Position(beg, t.pos, col, line)
 				End If
-			ElseIf la.kind = 28 Then
+			ElseIf isKind(la, 28) Then
 				[Get]()
 				Dim beg  As Integer = la.pos
 				Dim col  As Integer = la.col
@@ -463,7 +472,7 @@ Namespace at.jku.ssw.Coco
 						SemErr("bad string in attributes")
 					End If
 				End While
-				Expect(29)
+				Expect(29) ' ".>"
 				If t.pos > beg Then
 					sym.attrPos = New Position(beg, t.pos, col, line)
 				End If
@@ -472,14 +481,14 @@ Namespace at.jku.ssw.Coco
 			End If
 		End Sub
 		Private Sub SemText(ByRef pos As Position)
-			Expect(41)
+			Expect(41) ' "(."
 			Dim beg  As Integer = la.pos
 			Dim col  As Integer = la.col
 			Dim line As Integer = la.line
 			While StartOf(13)
 				If StartOf(14) Then
 					[Get]()
-				ElseIf la.kind = 4 Then
+				ElseIf isKind(la, 4) Then
 					[Get]()
 					SemErr("bad string in semantic action")
 				Else
@@ -487,7 +496,7 @@ Namespace at.jku.ssw.Coco
 					SemErr("missing end of previous semantic action")
 				End If
 			End While
-			Expect(42)
+			Expect(42) ' ".)"
 			pos = New Position(beg, t.pos, col, line)
 		End Sub
 		Private Sub Expression(ByRef g As Graph)
@@ -507,7 +516,7 @@ Namespace at.jku.ssw.Coco
 			Dim n1 As Integer
 			Dim n2 As Integer
 			s = New CharSet()
-			If la.kind = 1 Then
+			If isKind(la, 1) Then
 				[Get]()
 				Dim c As CharClass = tab.FindCharClass(t.val)
 				If c Is Nothing Then
@@ -515,7 +524,7 @@ Namespace at.jku.ssw.Coco
 				Else
 					s.[Or](c.[set])
 				End If
-			ElseIf la.kind = 3 Then
+			ElseIf isKind(la, 3) Then
 				[Get]()
 				Dim name As String = t.val
 				name = tab.Unescape(name.Substring(1, name.Length - 2))
@@ -526,17 +535,17 @@ Namespace at.jku.ssw.Coco
 						s.[Set](AscW(ch))
 					End If
 				Next
-			ElseIf la.kind = 5 Then
+			ElseIf isKind(la, 5) Then
 				[Char](n1)
 				s.[Set](n1)
-				If la.kind = 23 Then
+				If isKind(la, 23) Then
 					[Get]()
 					[Char](n2)
 					For i As Integer = n1 + 1 To n2
 						s.[Set](i)
 					Next
 				End If
-			ElseIf la.kind = 24 Then
+			ElseIf isKind(la, 24) Then
 				[Get]()
 				s = New CharSet()
 				s.Fill()
@@ -545,7 +554,7 @@ Namespace at.jku.ssw.Coco
 			End If
 		End Sub
 		Private Sub [Char](ByRef n As Integer)
-			Expect(5)
+			Expect(5) ' char
 			Dim name As String = t.val
 			n = 0
 			name = tab.Unescape(name.Substring(1, name.Length - 2))
@@ -561,12 +570,12 @@ Namespace at.jku.ssw.Coco
 		Private Sub Sym(ByRef name As String, ByRef kind As Integer)
 			name = "???"
 			kind = id
-			If la.kind = 1 Then
+			If isKind(la, 1) Then
 				[Get]()
 				kind = id
 				name = t.val
-			ElseIf la.kind = 3 OrElse la.kind = 5 Then
-				If la.kind = 3 Then
+			ElseIf isKind(la, 3) OrElse isKind(la, 5) Then
+				If isKind(la, 3) Then
 					[Get]()
 					name = t.val
 				Else
@@ -589,7 +598,7 @@ Namespace at.jku.ssw.Coco
 			Dim rslv As Node = Nothing
 			g = Nothing
 			If StartOf(17) Then
-				If la.kind = 39 Then
+				If isKind(la, 39) Then
 					rslv = tab.NewNode(Node.rslv, DirectCast(Nothing, Symbol), la.line)
 					Resolver(rslv.pos)
 					g = New Graph(rslv)
@@ -614,8 +623,8 @@ Namespace at.jku.ssw.Coco
 			End If
 		End Sub
 		Private Sub Resolver(ByRef pos As Position)
-			Expect(39)
-			Expect(32)
+			Expect(39) ' "IF"
+			Expect(32) ' "("
 			Dim beg  As Integer = la.pos
 			Dim col  As Integer = la.col
 			Dim line As Integer = la.line
@@ -630,7 +639,8 @@ Namespace at.jku.ssw.Coco
 			g = Nothing
 			Select Case la.kind
 				Case 1, 3, 5, 31
-					If la.kind = 31 Then
+					' ident/1 string/3 char/5 "WEAK"/31 
+					If isKind(la, 31) Then
 						[Get]()
 						weak = True
 					End If
@@ -666,7 +676,7 @@ Namespace at.jku.ssw.Coco
 					End If
 					Dim p As Node = tab.NewNode(typ, _sym, t.line)
 					g = New Graph(p)
-					If la.kind = 26 OrElse la.kind = 28 Then
+					If isKind(la, 26) OrElse isKind(la, 28) Then
 						Attribs(p)
 						If kind <> id Then
 							SemErr("a literal must not have attributes")
@@ -678,29 +688,35 @@ Namespace at.jku.ssw.Coco
 						SemErr("attribute mismatch between declaration and use of this symbol") ' dummy
 					End If
 				Case 32
+					' "("/32 
 					[Get]()
 					Expression(g)
-					Expect(33)
+					Expect(33) ' ")"
 				Case 34
+					' "["/34 
 					[Get]()
 					Expression(g)
-					Expect(35)
+					Expect(35) ' "]"
 					tab.MakeOption(g)
 				Case 36
+					' "{"/36 
 					[Get]()
 					Expression(g)
-					Expect(37)
+					Expect(37) ' "}"
 					tab.MakeIteration(g)
 				Case 41
+					' "(."/41 
 					SemText(pos)
 					Dim p As Node = tab.NewNode(Node.sem, DirectCast(Nothing, Symbol), 0)
 					p.pos = pos
 					g = New Graph(p)
 				Case 24
+					' "ANY"/24 
 					[Get]()
 					Dim p As Node = tab.NewNode(Node.any, DirectCast(Nothing, Symbol), 0) ' p.set is set in tab.SetupAnys
 					g = New Graph(p)
 				Case 38
+					' "SYNC"/38 
 					[Get]()
 					Dim p As Node = tab.NewNode(Node.sync, DirectCast(Nothing, Symbol), 0)
 					g = New Graph(p)
@@ -712,7 +728,7 @@ Namespace at.jku.ssw.Coco
 			End If
 		End Sub
 		Private Sub Attribs(ByVal p As Node)
-			If la.kind = 26 Then
+			If isKind(la, 26) Then
 				[Get]()
 				Dim beg  As Integer = la.pos
 				Dim col  As Integer = la.col
@@ -725,11 +741,11 @@ Namespace at.jku.ssw.Coco
 						SemErr("bad string in attributes")
 					End If
 				End While
-				Expect(27)
+				Expect(27) ' ">"
 				If t.pos > beg Then
 					p.pos = New Position(beg, t.pos, col, line)
 				End If
-			ElseIf la.kind = 28 Then
+			ElseIf isKind(la, 28) Then
 				[Get]()
 				Dim beg  As Integer = la.pos
 				Dim col  As Integer = la.col
@@ -742,7 +758,7 @@ Namespace at.jku.ssw.Coco
 						SemErr("bad string in attributes")
 					End If
 				End While
-				Expect(29)
+				Expect(29) ' ".>"
 				If t.pos > beg Then
 					p.pos = New Position(beg, t.pos, col, line )
 				End If
@@ -752,14 +768,14 @@ Namespace at.jku.ssw.Coco
 		End Sub
 		Private Sub Condition()
 			While StartOf(20)
-				If la.kind = 32 Then
+				If isKind(la, 32) Then
 					[Get]()
 					Condition()
 				Else
 					[Get]()
 				End If
 			End While
-			Expect(33)
+			Expect(33) ' ")"
 		End Sub
 		Private Sub TokenTerm(ByRef g As Graph)
 			Dim g2 As Graph = Nothing
@@ -768,21 +784,21 @@ Namespace at.jku.ssw.Coco
 				TokenFactor(g2)
 				tab.MakeSequence(g, g2)
 			End While
-			If la.kind = 40 Then
+			If isKind(la, 40) Then
 				[Get]()
-				Expect(32)
+				Expect(32) ' "("
 				TokenExpr(g2)
 				tab.SetContextTrans(g2.l)
 				dfa.hasCtxMoves = True
 				tab.MakeSequence(g, g2)
-				Expect(33)
+				Expect(33) ' ")"
 			End If
 		End Sub
 		Private Sub TokenFactor(ByRef g As Graph)
 			Dim name As String = Nothing
 			Dim kind As Integer
 			g = Nothing
-			If la.kind = 1 OrElse la.kind = 3 OrElse la.kind = 5 Then
+			If isKind(la, 1) OrElse isKind(la, 3) OrElse isKind(la, 5) Then
 				Sym(name, kind)
 				If kind = id Then
 					Dim c As CharClass = tab.FindCharClass(name)
@@ -803,20 +819,20 @@ Namespace at.jku.ssw.Coco
 						tokenString = noString
 					End If
 				End If
-			ElseIf la.kind = 32 Then
+			ElseIf isKind(la, 32) Then
 				[Get]()
 				TokenExpr(g)
-				Expect(33)
-			ElseIf la.kind = 34 Then
+				Expect(33) ' ")"
+			ElseIf isKind(la, 34) Then
 				[Get]()
 				TokenExpr(g)
-				Expect(35)
+				Expect(35) ' "]"
 				tab.MakeOption(g)
 				tokenString = noString
-			ElseIf la.kind = 36 Then
+			ElseIf isKind(la, 36) Then
 				[Get]()
 				TokenExpr(g)
-				Expect(37)
+				Expect(37) ' "}"
 				tab.MakeIteration(g)
 				tokenString = noString
 			Else
@@ -832,28 +848,59 @@ Namespace at.jku.ssw.Coco
 			[Get]()
 			Coco()
 		End Sub
+		' a token's base type
+		Private Shared ReadOnly tBase() as Integer = { _
+			-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, _
+			-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, _
+			-1,-1,-1,-1 _
+		}
+		' states that a particular production (1st index) can start with a particular token (2nd index)
+		Private Shared ReadOnly blnSet0(,) As Boolean = { _
+			{_T,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_T, _T,_x,_x,_x, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x}, _
+			{_x,_T,_T,_T, _T,_T,_T,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}, _
+			{_x,_T,_T,_T, _T,_T,_T,_T, _x,_x,_x,_x, _x,_T,_T,_T, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}, _
+			{_T,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_T, _T,_x,_x,_x, _T,_T,_T,_T, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_T,_T, _T,_x,_T,_x, _T,_x,_T,_T, _x,_T,_x,_x, _x}, _
+			{_T,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_T, _T,_x,_x,_x, _T,_T,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x}, _
+			{_T,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_T, _T,_x,_x,_x, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x}, _
+			{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_T, _T,_x,_x,_x, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x}, _
+			{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x}, _
+			{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_T,_T, _T,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x}, _
+			{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}, _
+			{_x,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}, _
+			{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}, _
+			{_x,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}, _
+			{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_T, _x}, _
+			{_x,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_T, _x}, _
+			{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_T,_x,_x, _x}, _
+			{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x}, _
+			{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_T, _T,_x,_T,_x, _T,_x,_T,_T, _x,_T,_x,_x, _x}, _
+			{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_T, _T,_x,_T,_x, _T,_x,_T,_x, _x,_T,_x,_x, _x}, _
+			{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x}, _
+			{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x} _
+		}
+		' as blnSet0 but with token inheritance taken into account
 		Private Shared ReadOnly blnSet(,) As Boolean = { _
-			{blnT,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnX,blnX, blnT,blnT,blnT,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnT,blnX,blnX, blnX}, _
-			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnX, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX}, _
-			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX,blnX,blnX,blnX, blnX,blnT,blnT,blnT, blnX,blnX,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX}, _
-			{blnT,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnX,blnX, blnT,blnT,blnT,blnT, blnX,blnX,blnX,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnT,blnT, blnT,blnX,blnT,blnX, blnT,blnX,blnT,blnT, blnX,blnT,blnX,blnX, blnX}, _
-			{blnT,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnX,blnX, blnT,blnT,blnT,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnT,blnX,blnX, blnX}, _
-			{blnT,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnX,blnX, blnT,blnT,blnT,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnT,blnX,blnX, blnX}, _
-			{blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnX,blnX, blnT,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnT,blnX,blnX, blnX}, _
-			{blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnT,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX}, _
-			{blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnT,blnT, blnT,blnT,blnX,blnT, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX}, _
-			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnX, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX}, _
-			{blnX,blnT,blnT,blnT, blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnX, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX}, _
-			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnX,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX}, _
-			{blnX,blnT,blnT,blnT, blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnX,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX}, _
-			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnX,blnT, blnX}, _
-			{blnX,blnT,blnT,blnT, blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnX,blnX,blnT, blnX}, _
-			{blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnT, blnX,blnX,blnX,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX,blnT,blnX,blnX, blnX}, _
-			{blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnT, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX}, _
-			{blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnT,blnX, blnT,blnX,blnT,blnT, blnX,blnT,blnX,blnX, blnX}, _
-			{blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnT,blnX, blnT,blnX,blnT,blnX, blnX,blnT,blnX,blnX, blnX}, _
-			{blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnT, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnT,blnX, blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX}, _
-			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnX,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX} _
+			{_T,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_T, _T,_x,_x,_x, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x}, _
+			{_x,_T,_T,_T, _T,_T,_T,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}, _
+			{_x,_T,_T,_T, _T,_T,_T,_T, _x,_x,_x,_x, _x,_T,_T,_T, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}, _
+			{_T,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_T, _T,_x,_x,_x, _T,_T,_T,_T, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_T,_T, _T,_x,_T,_x, _T,_x,_T,_T, _x,_T,_x,_x, _x}, _
+			{_T,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_T, _T,_x,_x,_x, _T,_T,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x}, _
+			{_T,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_T, _T,_x,_x,_x, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x}, _
+			{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_T, _T,_x,_x,_x, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x}, _
+			{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x}, _
+			{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_T,_T, _T,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x}, _
+			{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}, _
+			{_x,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}, _
+			{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}, _
+			{_x,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}, _
+			{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_T, _x}, _
+			{_x,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_T, _x}, _
+			{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_T,_x,_x, _x}, _
+			{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x}, _
+			{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_T, _T,_x,_T,_x, _T,_x,_T,_T, _x,_T,_x,_x, _x}, _
+			{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_T, _T,_x,_T,_x, _T,_x,_T,_x, _x,_T,_x,_x, _x}, _
+			{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x}, _
+			{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x} _
 		}
 	End Class
 

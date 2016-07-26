@@ -4,6 +4,7 @@ Compiler Generator Coco/R,
 Copyright (c) 1990, 2004 Hanspeter Moessenboeck, University of Linz
 extended by M. Loeberbauer & A. Woess, Univ. of Linz
 with improvements by Pat Terry, Rhodes University
+with token inheritance by Martin Lercher, Singhammer dtSoftware Munich
 
 This program is free software; you can redistribute it and/or modify it 
 under the terms of the GNU General Public License as published by the 
@@ -379,6 +380,7 @@ public class ParserGen {
 				++j;
 				if (j%4 == 0) gen.Write(" ");
 			}
+			// now write an elephant at the last position to not fiddle with the commas:
 			if (i == symSet.Count-1) gen.WriteLine("_x}"); else gen.WriteLine("_x},");
 		}
 	}

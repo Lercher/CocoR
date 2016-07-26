@@ -3,6 +3,7 @@
 'Copyright (c) 1990, 2004 Hanspeter Moessenboeck, University of Linz
 'extended by M. Loeberbauer & A. Woess, Univ. of Linz
 'with improvements by Pat Terry, Rhodes University
+'with token inheritance by Martin Lercher, Singhammer dtSoftware Munich
 '
 'This program is free software; you can redistribute it and/or modify it
 'under the terms of the GNU General Public License as published by the
@@ -36,8 +37,8 @@ Imports System.IO
 
 Public Class Parser
 -->constants
-	Private Const   blnT        As Boolean = True
-	Private Const   blnX        As Boolean = False
+	Private Const   _T        As Boolean = True
+	Private Const   _x        As Boolean = False
 	Private Const   minErrDist  As Integer =  2
 	Public          scanner     As Scanner
 	Public          errors      As Errors
@@ -73,18 +74,27 @@ Public Class Parser
 			la = t
 		End While
 	End Sub
+	Private Function isKind(ByVal t as Token, ByVal n as Integer) as Boolean
+		Dim k as Integer = t.kind
+		Do While k >= 0
+			If k = n Then Return True
+			k = tBase(k)
+		Loop
+		Return False
+	End Function
 	Private Sub Expect(ByVal n As Integer)
-		If la.kind = n Then
+		If isKind(la, n) Then
 			[Get]()
 		Else
 			SynErr(n)
 		End If
 	End Sub
+	' is the lookahead token la a start of the production s?
 	Private Function StartOf(ByVal s As Integer) As Boolean
 		Return blnSet(s, la.kind)
 	End Function
 	Private Sub ExpectWeak(ByVal n As Integer, ByVal follow As Integer)
-		If la.kind = n Then
+		If isKind(la, n) Then
 			[Get]()
 		Else
 			SynErr(n)
@@ -95,7 +105,7 @@ Public Class Parser
 	End Sub
 	Private Function WeakSeparator(ByVal n As Integer, ByVal syFol As Integer, ByVal repFol As Integer) As Boolean
 		Dim kind As Integer = la.kind
-		If kind = n Then
+		If isKind(la, n) Then
 			[Get]()
 			Return True
 		ElseIf StartOf(repFol) Then
@@ -116,6 +126,15 @@ Public Class Parser
 		[Get]()
 -->parseRoot
 	End Sub
+	' a token's base type
+	Private Shared ReadOnly tBase() as Integer = { _
+-->tbase
+	}
+	' states that a particular production (1st index) can start with a particular token (2nd index)
+	Private Shared ReadOnly blnSet0(,) As Boolean = { _
+-->initialization0
+	}
+	' as blnSet0 but with token inheritance taken into account
 	Private Shared ReadOnly blnSet(,) As Boolean = { _
 -->initialization
 	}

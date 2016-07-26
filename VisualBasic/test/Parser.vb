@@ -33,21 +33,21 @@ Imports System.IO
 
 
 Public Class Parser
-	Public  Const   _EOF        As Integer =  0
-	Public  Const   _ident      As Integer =  1
-	Public  Const   _keyword    As Integer =  2
-	Public  Const   _var        As Integer =  3
-	Public  Const   _var1       As Integer =  4
-	Public  Const   _var2       As Integer =  5
-	Public  Const   _var3       As Integer =  6
-	Public  Const   _var4       As Integer =  7
-	Public  Const   _var5       As Integer =  8
-	Public  Const   _var6       As Integer =  9
-	Public  Const   _as         As Integer = 10
-	Public  Const   _colon      As Integer = 11
+	Public  Const   _EOF        As Integer =  0 ' TOKEN EOF       
+	Public  Const   _ident      As Integer =  1 ' TOKEN ident     
+	Public  Const   _keyword    As Integer =  2 ' TOKEN keyword   
+	Public  Const   _var        As Integer =  3 ' TOKEN var       INHERITS ident
+	Public  Const   _var1       As Integer =  4 ' TOKEN var1      INHERITS ident
+	Public  Const   _var2       As Integer =  5 ' TOKEN var2      INHERITS ident
+	Public  Const   _var3       As Integer =  6 ' TOKEN var3      INHERITS ident
+	Public  Const   _var4       As Integer =  7 ' TOKEN var4      INHERITS ident
+	Public  Const   _var5       As Integer =  8 ' TOKEN var5      INHERITS ident
+	Public  Const   _var6       As Integer =  9 ' TOKEN var6      INHERITS ident
+	Public  Const   _as         As Integer = 10 ' TOKEN as        INHERITS ident
+	Public  Const   _colon      As Integer = 11 ' TOKEN colon     
 	Public  Const   maxT        As Integer = 26
-	Private Const   blnT        As Boolean = True
-	Private Const   blnX        As Boolean = False
+	Private Const   _T        As Boolean = True
+	Private Const   _x        As Boolean = False
 	Private Const   minErrDist  As Integer =  2
 	Public          scanner     As Scanner
 	Public          errors      As Errors
@@ -81,18 +81,27 @@ Public Class Parser
 			la = t
 		End While
 	End Sub
+	Private Function isKind(ByVal t as Token, ByVal n as Integer) as Boolean
+		Dim k as Integer = t.kind
+		Do While k >= 0
+			If k = n Then Return True
+			k = tBase(k)
+		Loop
+		Return False
+	End Function
 	Private Sub Expect(ByVal n As Integer)
-		If la.kind = n Then
+		If isKind(la, n) Then
 			[Get]()
 		Else
 			SynErr(n)
 		End If
 	End Sub
+	' is the lookahead token la a start of the production s?
 	Private Function StartOf(ByVal s As Integer) As Boolean
 		Return blnSet(s, la.kind)
 	End Function
 	Private Sub ExpectWeak(ByVal n As Integer, ByVal follow As Integer)
-		If la.kind = n Then
+		If isKind(la, n) Then
 			[Get]()
 		Else
 			SynErr(n)
@@ -103,7 +112,7 @@ Public Class Parser
 	End Sub
 	Private Function WeakSeparator(ByVal n As Integer, ByVal syFol As Integer, ByVal repFol As Integer) As Boolean
 		Dim kind As Integer = la.kind
-		If kind = n Then
+		If isKind(la, n) Then
 			[Get]()
 			Return True
 		ElseIf StartOf(repFol) Then
@@ -121,11 +130,11 @@ Public Class Parser
 		While StartOf(1)
 			Declaration()
 		End While
-		While la.kind = 12
+		While isKind(la, 12)
 			[Get]()
 			NumberIdent()
 			Console.WriteLine("NumberIdent {0}", t.val)
-			Expect(13)
+			Expect(13) ' ";"
 		End While
 		While StartOf(2)
 			IdentOrNumber()
@@ -134,46 +143,46 @@ Public Class Parser
 	Private Sub Declaration()
 		Var()
 		Ident()
-		While la.kind = 14 OrElse la.kind = 15
+		While isKind(la, 14) OrElse isKind(la, 15)
 			Separator()
 			Ident()
 		End While
-		While Not (la.kind = 0 OrElse la.kind = 13)
+		While Not (isKind(la, 0) OrElse isKind(la, 13))
 			SynErr(27)
 			[Get]()
 		End While
-		Expect(13)
+		Expect(13) ' ";"
 	End Sub
 	Private Sub NumberIdent()
 		Select Case la.kind
-			Case 16
+			Case 16 ' "0"
 				[Get]()
-			Case 17
+			Case 17 ' "1"
 				[Get]()
-			Case 18
+			Case 18 ' "2"
 				[Get]()
-			Case 19
+			Case 19 ' "3"
 				[Get]()
-			Case 20
+			Case 20 ' "4"
 				[Get]()
-			Case 21
+			Case 21 ' "5"
 				[Get]()
-			Case 22
+			Case 22 ' "6"
 				[Get]()
-			Case 23
+			Case 23 ' "7"
 				[Get]()
-			Case 24
+			Case 24 ' "8"
 				[Get]()
-			Case 25
+			Case 25 ' "9"
 				[Get]()
-			Case 1
+			Case 1, 3, 4, 5, 6, 7, 8, 9, 10 ' 1:ident 3:var 4:var1 5:var2 6:var3 7:var4 8:var5 9:var6 10:as 
 				[Get]()
 			Case Else
 				SynErr(28)
 		End Select
 	End Sub
 	Private Sub IdentOrNumber()
-		If la.kind = 1 Then
+		If isKind(la, 1) Then
 			[Get]()
 		ElseIf StartOf(3) Then
 			NumberVar()
@@ -183,67 +192,67 @@ Public Class Parser
 	End Sub
 	Private Sub Var()
 		Select Case la.kind
-			Case 3
+			Case 3 ' var
 				[Get]()
-			Case 4
+			Case 4 ' var1
 				[Get]()
-			Case 5
+			Case 5 ' var2
 				[Get]()
-			Case 6
+			Case 6 ' var3
 				[Get]()
-			Case 7
+			Case 7 ' var4
 				[Get]()
-			Case 8
+			Case 8 ' var5
 				[Get]()
-			Case 9
+			Case 9 ' var6
 				[Get]()
 			Case Else
 				SynErr(30)
 		End Select
 	End Sub
 	Private Sub Ident()
-		Expect(1)
-		If la.kind = 10 OrElse la.kind = 11 Then
-			If la.kind = 10 Then
+		Expect(1) ' ident
+		If isKind(la, 10) OrElse isKind(la, 11) Then
+			If isKind(la, 10) Then
 				[Get]()
 			Else
 				[Get]()
 			End If
-			Expect(1)
+			Expect(1) ' ident
 		End If
 	End Sub
 	Private Sub Separator()
-		If la.kind = 14 Then
-			ExpectWeak(14, 4)
-		ElseIf la.kind = 15 Then
-			ExpectWeak(15, 4)
+		If isKind(la, 14) Then
+			ExpectWeak(14, 4) ' "," followed by var1
+		ElseIf isKind(la, 15) Then
+			ExpectWeak(15, 4) ' "|" followed by var1
 		Else
 			SynErr(31)
 		End If
 	End Sub
 	Private Sub NumberVar()
 		Select Case la.kind
-			Case 16
+			Case 16 ' "0"
 				[Get]()
-			Case 17
+			Case 17 ' "1"
 				[Get]()
-			Case 18
+			Case 18 ' "2"
 				[Get]()
-			Case 19
+			Case 19 ' "3"
 				[Get]()
-			Case 20
+			Case 20 ' "4"
 				[Get]()
-			Case 21
+			Case 21 ' "5"
 				[Get]()
-			Case 22
+			Case 22 ' "6"
 				[Get]()
-			Case 23
+			Case 23 ' "7"
 				[Get]()
-			Case 24
+			Case 24 ' "8"
 				[Get]()
-			Case 25
+			Case 25 ' "9"
 				[Get]()
-			Case 3
+			Case 3 ' var
 				[Get]()
 			Case Else
 				SynErr(32)
@@ -255,12 +264,26 @@ Public Class Parser
 		[Get]()
 		Inheritance()
 	End Sub
+	' a token's base type
+	Private Shared ReadOnly tBase() as Integer = { _
+		-1,-1,-1, 1,  1, 1, 1, 1,  1, 1, 1,-1, -1,-1,-1,-1, -1,-1,-1,-1, _
+		-1,-1,-1,-1, -1,-1,-1 _
+	}
+	' states that a particular production (1st index) can start with a particular token (2nd index)
+	Private Shared ReadOnly blnSet0(,) As Boolean = { _
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x}, _
+		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x}, _
+		{_x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x}, _
+		{_x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x}, _
+		{_T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x} _
+	}
+	' as blnSet0 but with token inheritance taken into account
 	Private Shared ReadOnly blnSet(,) As Boolean = { _
-		{blnT,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX}, _
-		{blnX,blnX,blnX,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX}, _
-		{blnX,blnT,blnX,blnT, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnX,blnX}, _
-		{blnX,blnX,blnX,blnT, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnX,blnX}, _
-		{blnT,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX} _
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x}, _
+		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x}, _
+		{_x,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x}, _
+		{_x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x}, _
+		{_T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x} _
 	}
 End Class
 
