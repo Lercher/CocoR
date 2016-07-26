@@ -21,7 +21,7 @@ in the TOKENS section of the grammar file like that:
 
     TOKENS
       ident = letter { letter }.
-      var : ident = "var".
+      var : ident = "var". //  ": ident" is the new syntax 
       as = "as".
 
 meaning that the keyword "var" is now valid in a 
