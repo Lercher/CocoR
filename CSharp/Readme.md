@@ -8,6 +8,13 @@ so called 2011 version of Coco/R.
 * Compiling
 * with known bugs
 
+## How to Build
+
+* build.bat - build coco.exe 
+* coc.bat - translate coco.atg with coco.exe to parser.cs and scanner.cs
+* test/cocbuild.bat - generate, build and run a test parser against sample.txt
+
+
 ## Known Bugs
 
 * There are probably more keywords in the Coco grammar
