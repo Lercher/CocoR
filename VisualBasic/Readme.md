@@ -5,7 +5,6 @@ so called 2011 version of Coco/R.
 
 ## Status
 
-* In development. Major features missing!
 * Compiling
 * with known bugs
 

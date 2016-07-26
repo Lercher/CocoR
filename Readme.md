@@ -63,9 +63,11 @@ inheritance trees in the grammar.
 ## Languages
 
 * C# - OK, beta testing
-* VB.Net - in development
-* Java - planned
+* VB.Net - OK, beta testing
+* Java - planned but not yet scheduled
 
+Note: The generated code for .Net languages targets
+plain vanilla .Net Framework 2.0 compilers and libraries. 
 
 ## Distributables
 
@@ -75,7 +77,7 @@ these files from the language directory you choose:
 * coco.exe (built with build.bat if you don't have one yet)
 * scanner.frame
 * parser.frame
-* copyright.frame
+* copyright.frame (optional)
 
 There are no dependencies to use the generated scanners and parsers.
 
