@@ -40,9 +40,9 @@ Namespace at.jku.ssw.Coco
 		Public  Const   _string     As Integer =  3
 		Public  Const   _badString  As Integer =  4
 		Public  Const   _char       As Integer =  5
-		Public  Const   maxT        As Integer = 42
-		Public  Const   _ddtSym     As Integer = 43
-		Public  Const   _optionSym  As Integer = 44
+		Public  Const   maxT        As Integer = 43
+		Public  Const   _ddtSym     As Integer = 44
+		Public  Const   _optionSym  As Integer = 45
 		Private Const   blnT        As Boolean = True
 		Private Const   blnX        As Boolean = False
 		Private Const   minErrDist  As Integer =  2
@@ -112,10 +112,10 @@ Namespace at.jku.ssw.Coco
 					errDist += 1
 					Exit While
 				End If
-				If la.kind = 43 Then
+				If la.kind = 44 Then
 					tab.SetDDT(la.val)
 				End If
-				If la.kind = 44 Then
+				If la.kind = 45 Then
 					tab.SetOption(la.val)
 				End If
 				la = t
@@ -227,7 +227,7 @@ Namespace at.jku.ssw.Coco
 				tab.ignored.[Or](s)
 			End While
 			While Not (la.kind = 0 OrElse la.kind = 17)
-				SynErr(43)
+				SynErr(44)
 				[Get]()
 			End While
 			Expect(17)
@@ -253,7 +253,7 @@ Namespace at.jku.ssw.Coco
 				End If
 				Dim noAttrs As Boolean = sym.attrPos Is Nothing
 				sym.attrPos = Nothing
-				If la.kind = 25 OrElse la.kind = 27 Then
+				If la.kind = 26 OrElse la.kind = 28 Then
 					AttrDecl(sym)
 				End If
 				If Not undef Then
@@ -261,7 +261,7 @@ Namespace at.jku.ssw.Coco
 						SemErr("attribute mismatch between declaration and use of this symbol")
 					End If
 				End If
-				If la.kind = 40 Then
+				If la.kind = 41 Then
 					SemText(sym.semPos)
 				End If
 				ExpectWeak(18, 3)
@@ -338,6 +338,10 @@ Namespace at.jku.ssw.Coco
 			Dim kind As Integer
 			Dim _sym As Symbol
 			Dim g    As Graph  = Nothing
+			Dim inheritsName as String = Nothing
+			Dim inheritsSym as Symbol
+			Dim inheritsKind as Integer
+
 			Sym(name, kind)
 			_sym = tab.FindSym(name)
 			If _sym IsNot Nothing Then
@@ -347,8 +351,23 @@ Namespace at.jku.ssw.Coco
 				_sym.tokenKind = Symbol.fixedToken
 			End If
 			tokenString = Nothing
+			If la.kind = 25 Then
+				[Get]()
+				Sym(inheritsName, inheritsKind)
+				inheritsSym = tab.FindSym(inheritsName)
+				If inheritsSym is Nothing Then
+				  SemErr(String.Format("token '{0}' can't inherit from '{1}', name not declared", _sym.name, inheritsName))
+				Else If inheritsSym is _sym Then
+				  SemErr(String.Format("token '{0}' must not inherit from self", _sym.name))
+				Else If inheritsSym.typ <> typ Then
+				  SemErr(String.Format("token '{0}' can't inherit from '{1}'", _sym.name, inheritsSym.name))
+				Else
+				  _sym.inherits = inheritsSym
+				End If
+
+			End If
 			While Not (StartOf(5))
-				SynErr(44)
+				SynErr(45)
 				[Get]()
 			End While
 			If la.kind = 18 Then
@@ -376,9 +395,9 @@ Namespace at.jku.ssw.Coco
 					dfa.MatchLiteral(_sym.name, _sym)
 				End If
 			Else
-				SynErr(45)
+				SynErr(46)
 			End If
-			If la.kind = 40 Then
+			If la.kind = 41 Then
 				SemText(_sym.semPos)
 				If typ <> Node.pr Then
 					SemErr("semantic action not allowed here")
@@ -389,7 +408,7 @@ Namespace at.jku.ssw.Coco
 			Dim g2 As Graph = Nothing
 			TokenTerm(g)
 			Dim first As Boolean = True
-			While WeakSeparator(29, 7, 8)
+			While WeakSeparator(30, 7, 8)
 				TokenTerm(g2)
 				If first Then
 					tab.MakeFirstAlt(g)
@@ -414,7 +433,7 @@ Namespace at.jku.ssw.Coco
 			End While
 		End Sub
 		Private Sub AttrDecl(ByVal sym As Symbol)
-			If la.kind = 25 Then
+			If la.kind = 26 Then
 				[Get]()
 				Dim beg  As Integer = la.pos
 				Dim col  As Integer = la.col
@@ -427,11 +446,11 @@ Namespace at.jku.ssw.Coco
 						SemErr("bad string in attributes")
 					End If
 				End While
-				Expect(26)
+				Expect(27)
 				If t.pos > beg Then
 					sym.attrPos = New Position(beg, t.pos, col, line)
 				End If
-			ElseIf la.kind = 27 Then
+			ElseIf la.kind = 28 Then
 				[Get]()
 				Dim beg  As Integer = la.pos
 				Dim col  As Integer = la.col
@@ -444,16 +463,16 @@ Namespace at.jku.ssw.Coco
 						SemErr("bad string in attributes")
 					End If
 				End While
-				Expect(28)
+				Expect(29)
 				If t.pos > beg Then
 					sym.attrPos = New Position(beg, t.pos, col, line)
 				End If
 			Else
-				SynErr(46)
+				SynErr(47)
 			End If
 		End Sub
 		Private Sub SemText(ByRef pos As Position)
-			Expect(40)
+			Expect(41)
 			Dim beg  As Integer = la.pos
 			Dim col  As Integer = la.col
 			Dim line As Integer = la.line
@@ -468,14 +487,14 @@ Namespace at.jku.ssw.Coco
 					SemErr("missing end of previous semantic action")
 				End If
 			End While
-			Expect(41)
+			Expect(42)
 			pos = New Position(beg, t.pos, col, line)
 		End Sub
 		Private Sub Expression(ByRef g As Graph)
 			Dim g2 As Graph = Nothing
 			Term(g)
 			Dim first As Boolean = True
-			While WeakSeparator(29, 15, 16)
+			While WeakSeparator(30, 15, 16)
 				Term(g2)
 				If first Then
 					tab.MakeFirstAlt(g)
@@ -522,7 +541,7 @@ Namespace at.jku.ssw.Coco
 				s = New CharSet()
 				s.Fill()
 			Else
-				SynErr(47)
+				SynErr(48)
 			End If
 		End Sub
 		Private Sub [Char](ByRef n As Integer)
@@ -562,7 +581,7 @@ Namespace at.jku.ssw.Coco
 					SemErr("literal tokens must not contain blanks")
 				End If
 			Else
-				SynErr(48)
+				SynErr(49)
 			End If
 		End Sub
 		Private Sub Term(ByRef g As Graph)
@@ -570,7 +589,7 @@ Namespace at.jku.ssw.Coco
 			Dim rslv As Node = Nothing
 			g = Nothing
 			If StartOf(17) Then
-				If la.kind = 38 Then
+				If la.kind = 39 Then
 					rslv = tab.NewNode(Node.rslv, DirectCast(Nothing, Symbol), la.line)
 					Resolver(rslv.pos)
 					g = New Graph(rslv)
@@ -588,15 +607,15 @@ Namespace at.jku.ssw.Coco
 			ElseIf StartOf(19) Then
 				g = New Graph(tab.NewNode(Node.eps, DirectCast(Nothing, Symbol), 0))
 			Else
-				SynErr(49)
+				SynErr(50)
 			End If
 			If g Is Nothing Then
 				g = New Graph(tab.NewNode(Node.eps, DirectCast(Nothing, Symbol), 0)) ' invalid start of Term
 			End If
 		End Sub
 		Private Sub Resolver(ByRef pos As Position)
-			Expect(38)
-			Expect(31)
+			Expect(39)
+			Expect(32)
 			Dim beg  As Integer = la.pos
 			Dim col  As Integer = la.col
 			Dim line As Integer = la.line
@@ -610,8 +629,8 @@ Namespace at.jku.ssw.Coco
 			Dim weak As Boolean = False
 			g = Nothing
 			Select Case la.kind
-				Case 1, 3, 5, 30
-					If la.kind = 30 Then
+				Case 1, 3, 5, 31
+					If la.kind = 31 Then
 						[Get]()
 						weak = True
 					End If
@@ -647,7 +666,7 @@ Namespace at.jku.ssw.Coco
 					End If
 					Dim p As Node = tab.NewNode(typ, _sym, t.line)
 					g = New Graph(p)
-					If la.kind = 25 OrElse la.kind = 27 Then
+					If la.kind = 26 OrElse la.kind = 28 Then
 						Attribs(p)
 						If kind <> id Then
 							SemErr("a literal must not have attributes")
@@ -658,21 +677,21 @@ Namespace at.jku.ssw.Coco
 					ElseIf (p.pos Is Nothing) <> (_sym.attrPos Is Nothing) Then
 						SemErr("attribute mismatch between declaration and use of this symbol") ' dummy
 					End If
-				Case 31
+				Case 32
 					[Get]()
 					Expression(g)
-					Expect(32)
-				Case 33
+					Expect(33)
+				Case 34
 					[Get]()
 					Expression(g)
-					Expect(34)
+					Expect(35)
 					tab.MakeOption(g)
-				Case 35
+				Case 36
 					[Get]()
 					Expression(g)
-					Expect(36)
+					Expect(37)
 					tab.MakeIteration(g)
-				Case 40
+				Case 41
 					SemText(pos)
 					Dim p As Node = tab.NewNode(Node.sem, DirectCast(Nothing, Symbol), 0)
 					p.pos = pos
@@ -681,19 +700,19 @@ Namespace at.jku.ssw.Coco
 					[Get]()
 					Dim p As Node = tab.NewNode(Node.any, DirectCast(Nothing, Symbol), 0) ' p.set is set in tab.SetupAnys
 					g = New Graph(p)
-				Case 37
+				Case 38
 					[Get]()
 					Dim p As Node = tab.NewNode(Node.sync, DirectCast(Nothing, Symbol), 0)
 					g = New Graph(p)
 				Case Else
-					SynErr(50)
+					SynErr(51)
 			End Select
 			If g Is Nothing Then
 				g = New Graph(tab.NewNode(Node.eps, DirectCast(Nothing, Symbol), 0)) ' invalid start of Factor
 			End If
 		End Sub
 		Private Sub Attribs(ByVal p As Node)
-			If la.kind = 25 Then
+			If la.kind = 26 Then
 				[Get]()
 				Dim beg  As Integer = la.pos
 				Dim col  As Integer = la.col
@@ -706,11 +725,11 @@ Namespace at.jku.ssw.Coco
 						SemErr("bad string in attributes")
 					End If
 				End While
-				Expect(26)
+				Expect(27)
 				If t.pos > beg Then
 					p.pos = New Position(beg, t.pos, col, line)
 				End If
-			ElseIf la.kind = 27 Then
+			ElseIf la.kind = 28 Then
 				[Get]()
 				Dim beg  As Integer = la.pos
 				Dim col  As Integer = la.col
@@ -723,24 +742,24 @@ Namespace at.jku.ssw.Coco
 						SemErr("bad string in attributes")
 					End If
 				End While
-				Expect(28)
+				Expect(29)
 				If t.pos > beg Then
 					p.pos = New Position(beg, t.pos, col, line )
 				End If
 			Else
-				SynErr(51)
+				SynErr(52)
 			End If
 		End Sub
 		Private Sub Condition()
 			While StartOf(20)
-				If la.kind = 31 Then
+				If la.kind = 32 Then
 					[Get]()
 					Condition()
 				Else
 					[Get]()
 				End If
 			End While
-			Expect(32)
+			Expect(33)
 		End Sub
 		Private Sub TokenTerm(ByRef g As Graph)
 			Dim g2 As Graph = Nothing
@@ -749,14 +768,14 @@ Namespace at.jku.ssw.Coco
 				TokenFactor(g2)
 				tab.MakeSequence(g, g2)
 			End While
-			If la.kind = 39 Then
+			If la.kind = 40 Then
 				[Get]()
-				Expect(31)
+				Expect(32)
 				TokenExpr(g2)
 				tab.SetContextTrans(g2.l)
 				dfa.hasCtxMoves = True
 				tab.MakeSequence(g, g2)
-				Expect(32)
+				Expect(33)
 			End If
 		End Sub
 		Private Sub TokenFactor(ByRef g As Graph)
@@ -784,24 +803,24 @@ Namespace at.jku.ssw.Coco
 						tokenString = noString
 					End If
 				End If
-			ElseIf la.kind = 31 Then
+			ElseIf la.kind = 32 Then
 				[Get]()
 				TokenExpr(g)
-				Expect(32)
-			ElseIf la.kind = 33 Then
+				Expect(33)
+			ElseIf la.kind = 34 Then
 				[Get]()
 				TokenExpr(g)
-				Expect(34)
+				Expect(35)
 				tab.MakeOption(g)
 				tokenString = noString
-			ElseIf la.kind = 35 Then
+			ElseIf la.kind = 36 Then
 				[Get]()
 				TokenExpr(g)
-				Expect(36)
+				Expect(37)
 				tab.MakeIteration(g)
 				tokenString = noString
 			Else
-				SynErr(52)
+				SynErr(53)
 			End If
 			If g Is Nothing Then
 				g = New Graph(tab.NewNode(Node.eps, DirectCast(Nothing, Symbol), 0)) ' invalid start of TokenFactor
@@ -814,27 +833,27 @@ Namespace at.jku.ssw.Coco
 			Coco()
 		End Sub
 		Private Shared ReadOnly blnSet(,) As Boolean = { _
-			{blnT,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnX,blnX, blnT,blnT,blnT,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnX,blnX}, _
-			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnX, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnX}, _
-			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX,blnX,blnX,blnX, blnX,blnT,blnT,blnT, blnX,blnX,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnX}, _
-			{blnT,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnX,blnX, blnT,blnT,blnT,blnT, blnX,blnX,blnX,blnX, blnT,blnX,blnX,blnX, blnX,blnT,blnT,blnT, blnX,blnT,blnX,blnT, blnX,blnT,blnT,blnX, blnT,blnX,blnX,blnX}, _
-			{blnT,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnX,blnX, blnT,blnT,blnT,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnX,blnX}, _
-			{blnT,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnX,blnX, blnT,blnT,blnT,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnX,blnX}, _
-			{blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnX,blnX, blnT,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnX,blnX}, _
-			{blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnT, blnX,blnT,blnX,blnT, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX}, _
-			{blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnT,blnT, blnT,blnT,blnX,blnT, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnT,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnX,blnX}, _
-			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnX,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnX}, _
-			{blnX,blnT,blnT,blnT, blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnX,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnX}, _
-			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnX}, _
-			{blnX,blnT,blnT,blnT, blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnX}, _
-			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnX,blnT,blnX}, _
-			{blnX,blnT,blnT,blnT, blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX,blnX,blnT,blnX}, _
-			{blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnT, blnX,blnX,blnX,blnX, blnT,blnX,blnX,blnX, blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnX, blnT,blnX,blnX,blnX}, _
-			{blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnT, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnT,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnX,blnX}, _
-			{blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnT,blnT, blnX,blnT,blnX,blnT, blnX,blnT,blnT,blnX, blnT,blnX,blnX,blnX}, _
-			{blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnT,blnT, blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnT,blnX,blnX,blnX}, _
-			{blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnT, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnT,blnX,blnX, blnT,blnX,blnT,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnX,blnX}, _
-			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnX} _
+			{blnT,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnX,blnX, blnT,blnT,blnT,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnT,blnX,blnX, blnX}, _
+			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnX, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX}, _
+			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX,blnX,blnX,blnX, blnX,blnT,blnT,blnT, blnX,blnX,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX}, _
+			{blnT,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnX,blnX, blnT,blnT,blnT,blnT, blnX,blnX,blnX,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnT,blnT, blnT,blnX,blnT,blnX, blnT,blnX,blnT,blnT, blnX,blnT,blnX,blnX, blnX}, _
+			{blnT,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnX,blnX, blnT,blnT,blnT,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnT,blnX,blnX, blnX}, _
+			{blnT,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnX,blnX, blnT,blnT,blnT,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnT,blnX,blnX, blnX}, _
+			{blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnX,blnX, blnT,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnT,blnX,blnX, blnX}, _
+			{blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnT,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX}, _
+			{blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnT,blnT, blnT,blnT,blnX,blnT, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX}, _
+			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnX, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX}, _
+			{blnX,blnT,blnT,blnT, blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnX, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX}, _
+			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnX,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX}, _
+			{blnX,blnT,blnT,blnT, blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnX,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX}, _
+			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnX,blnT, blnX}, _
+			{blnX,blnT,blnT,blnT, blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnX,blnX,blnT, blnX}, _
+			{blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnT, blnX,blnX,blnX,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX,blnT,blnX,blnX, blnX}, _
+			{blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnT, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX}, _
+			{blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnT,blnX, blnT,blnX,blnT,blnT, blnX,blnT,blnX,blnX, blnX}, _
+			{blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnT,blnX,blnX,blnX, blnX,blnX,blnX,blnT, blnT,blnX,blnT,blnX, blnT,blnX,blnT,blnX, blnX,blnT,blnX,blnX, blnX}, _
+			{blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnT, blnX,blnX,blnX,blnX, blnX,blnX,blnX,blnX, blnX,blnX,blnT,blnX, blnX,blnT,blnX,blnT, blnX,blnT,blnX,blnX, blnX,blnX,blnX,blnX, blnX}, _
+			{blnX,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnX,blnT,blnT, blnT,blnT,blnT,blnT, blnT,blnT,blnT,blnT, blnX} _
 		}
 	End Class
 
@@ -870,34 +889,35 @@ Namespace at.jku.ssw.Coco
 				Case   22 : s = """-"" expected"
 				Case   23 : s = """.."" expected"
 				Case   24 : s = """ANY"" expected"
-				Case   25 : s = """<"" expected"
-				Case   26 : s = """>"" expected"
-				Case   27 : s = """<."" expected"
-				Case   28 : s = """.>"" expected"
-				Case   29 : s = """|"" expected"
-				Case   30 : s = """WEAK"" expected"
-				Case   31 : s = """("" expected"
-				Case   32 : s = """)"" expected"
-				Case   33 : s = """["" expected"
-				Case   34 : s = """]"" expected"
-				Case   35 : s = """{"" expected"
-				Case   36 : s = """}"" expected"
-				Case   37 : s = """SYNC"" expected"
-				Case   38 : s = """IF"" expected"
-				Case   39 : s = """CONTEXT"" expected"
-				Case   40 : s = """(."" expected"
-				Case   41 : s = """.)"" expected"
-				Case   42 : s = "??? expected"
-				Case   43 : s = "this symbol not expected in Coco"
-				Case   44 : s = "this symbol not expected in TokenDecl"
-				Case   45 : s = "invalid TokenDecl"
-				Case   46 : s = "invalid AttrDecl"
-				Case   47 : s = "invalid SimSet"
-				Case   48 : s = "invalid Sym"
-				Case   49 : s = "invalid Term"
-				Case   50 : s = "invalid Factor"
-				Case   51 : s = "invalid Attribs"
-				Case   52 : s = "invalid TokenFactor"
+				Case   25 : s = """:"" expected"
+				Case   26 : s = """<"" expected"
+				Case   27 : s = """>"" expected"
+				Case   28 : s = """<."" expected"
+				Case   29 : s = """.>"" expected"
+				Case   30 : s = """|"" expected"
+				Case   31 : s = """WEAK"" expected"
+				Case   32 : s = """("" expected"
+				Case   33 : s = """)"" expected"
+				Case   34 : s = """["" expected"
+				Case   35 : s = """]"" expected"
+				Case   36 : s = """{"" expected"
+				Case   37 : s = """}"" expected"
+				Case   38 : s = """SYNC"" expected"
+				Case   39 : s = """IF"" expected"
+				Case   40 : s = """CONTEXT"" expected"
+				Case   41 : s = """(."" expected"
+				Case   42 : s = """.)"" expected"
+				Case   43 : s = "??? expected"
+				Case   44 : s = "this symbol not expected in Coco"
+				Case   45 : s = "this symbol not expected in TokenDecl"
+				Case   46 : s = "invalid TokenDecl"
+				Case   47 : s = "invalid AttrDecl"
+				Case   48 : s = "invalid SimSet"
+				Case   49 : s = "invalid Sym"
+				Case   50 : s = "invalid Term"
+				Case   51 : s = "invalid Factor"
+				Case   52 : s = "invalid Attribs"
+				Case   53 : s = "invalid TokenFactor"
 				Case Else : s = "error " & n
 			End Select
 			errorStream.WriteLine(errMsgFormat, line, col, s)

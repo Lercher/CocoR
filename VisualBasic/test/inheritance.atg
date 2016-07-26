@@ -1,0 +1,78 @@
+// cd .. & build.bat & cd test & cocbuild
+
+COMPILER Inheritance
+
+CHARACTERS
+	letter    = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".
+	cr        = '\r'.
+	lf        = '\n'.
+	tab       = '\t'.
+
+TOKENS
+	ident = letter { letter }.
+    keyword = "keyword".
+    var  : ident = "var".
+    var1 : ident = "var1".  // note that we can now use 1 in an ident!
+    var2 : ident = "var2".
+    var3 : ident = "var3".
+    var4 : ident = "var4".
+    var5 : ident = "var5".
+    var6 : ident = "var6".  
+    as   : ident = "as".    
+    colon = ':'.
+    /*
+    error1 : unknown = "error1". // unknown symbol unknown
+    error2 : letter = "error2".  // has to be a token symbol
+    error3 : error3 = "error3".  // must not inherit from self 
+    */
+    /* Coco/R (Jul 23, 2016)
+    -- line 14 col 14: token 'error1' can't inherit from 'unknown', name not declared
+    -- line 15 col 14: token 'error2' can't inherit from 'letter', name not declared
+    -- line 16 col 414: token 'error3' must not inherit from self
+    3 errors detected */
+    
+
+COMMENTS FROM "/*" TO "*/" NESTED
+COMMENTS FROM "//" TO lf
+
+IGNORE cr + lf + tab
+
+
+PRODUCTIONS
+
+    Inheritance =
+         { Declaration } 
+         {
+           "NumberIdent" 
+            NumberIdent (. Console.WriteLine("NumberIdent {0}", t.val) .)
+            ";"
+         } 
+         { IdentOrNumber }.
+    
+    // with iter node
+    Declaration = Var Ident { Separator Ident } SYNC ';'.
+
+    // we need more than 5 alt nodes to test the switch optimization code of coco's new c# version:
+    Var = var | var1 | var2 | var3 | var4 | var5 | var6. 
+    
+    // forces ExpectWeak()
+    Separator = (WEAK ',') | (WEAK '|').
+    
+    // has an opt node
+    Ident = ident [ (as | colon) ident ].
+
+    // This IdentOrNumber declaration forces a StartOf(2) call at Inheritance()
+    // with ident as StartOf(2) in the 'set' array but not var..var6 in it
+    // so we can test our new implementation of StartOf() 
+    IdentOrNumber = ident | NumberVar.
+
+    // void NumberVar() shoud be rendered as a switch statement 
+    NumberVar = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | var .
+    
+    // void NumberVar() shoud be rendered as a switch statement, 
+    // but the last switch should have many cases for ident, namely ident+var+..+var6 
+    NumberIdent = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | ident .
+
+    // note: the 'set' array might be a good starting point to
+    // derive language services for the grammar, i.e. autocomplete/intellisense
+END Inheritance.

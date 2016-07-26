@@ -249,8 +249,8 @@ Namespace at.jku.ssw.Coco
 	Public Class Scanner
 		Private Const           EOL     As Char      = ChrW(10)
 		Private Const           eofSym  As Integer   =  0                  ' pdt
-		Private Const           maxT    As Integer   = 42
-		Private Const           noSym   As Integer   = 42
+		Private Const           maxT    As Integer   = 43
+		Private Const           noSym   As Integer   = 43
 		Public                  buffer  As Buffer                          ' scanner buffer
 		Private                 t       As Token                           ' current token
 		Private                 ch      As Integer                         ' current input character
@@ -282,18 +282,19 @@ Namespace at.jku.ssw.Coco
 			start(        39) =    5
 			start(        36) =   13
 			start(        61) =   16
-			start(        46) =   31
+			start(        46) =   32
 			start(        43) =   17
 			start(        45) =   18
-			start(        60) =   32
-			start(        62) =   20
-			start(       124) =   23
-			start(        40) =   33
-			start(        41) =   24
-			start(        91) =   25
-			start(        93) =   26
-			start(       123) =   27
-			start(       125) =   28
+			start(        58) =   20
+			start(        60) =   33
+			start(        62) =   21
+			start(       124) =   24
+			start(        40) =   34
+			start(        41) =   25
+			start(        91) =   26
+			start(        93) =   27
+			start(       123) =   28
+			start(       125) =   29
 			start(Buffer.EOF) =   -1
 		End Sub
 		Public Sub New(ByVal fileName As String)
@@ -457,10 +458,10 @@ Namespace at.jku.ssw.Coco
 				Case "PRODUCTIONS"   : t.kind = 17
 				Case "END"           : t.kind = 20
 				Case "ANY"           : t.kind = 24
-				Case "WEAK"          : t.kind = 30
-				Case "SYNC"          : t.kind = 37
-				Case "IF"            : t.kind = 38
-				Case "CONTEXT"       : t.kind = 39
+				Case "WEAK"          : t.kind = 31
+				Case "SYNC"          : t.kind = 38
+				Case "IF"            : t.kind = 39
+				Case "CONTEXT"       : t.kind = 40
 				Case Else
 			End Select
 		End Sub
@@ -570,22 +571,22 @@ Namespace at.jku.ssw.Coco
 				Case 10
 				Case_10:
 					recEnd = pos
-					recKind = 43
+					recKind = 44
 					If ch >= AscW("0"C) AndAlso ch <= AscW("9"C) OrElse ch >= AscW("A"C) AndAlso ch <= AscW("Z"C) OrElse ch = AscW("_"C) OrElse ch >= AscW("a"C) AndAlso ch <= AscW("z"C) Then
 						AddCh()
 						GoTo Case_10
 					Else
-						t.kind = 43
+						t.kind = 44
 					End If
 				Case 11
 				Case_11:
 					recEnd = pos
-					recKind = 44
+					recKind = 45
 					If ch >= AscW("-"C) AndAlso ch <= AscW("."C) OrElse ch >= AscW("0"C) AndAlso ch <= AscW(":"C) OrElse ch >= AscW("A"C) AndAlso ch <= AscW("Z"C) OrElse ch = AscW("_"C) OrElse ch >= AscW("a"C) AndAlso ch <= AscW("z"C) Then
 						AddCh()
 						GoTo Case_11
 					Else
-						t.kind = 44
+						t.kind = 45
 					End If
 				Case 12
 				Case_12:
@@ -607,7 +608,7 @@ Namespace at.jku.ssw.Coco
 				Case 13
 				Case_13:
 					recEnd = pos
-					recKind = 43
+					recKind = 44
 					If ch >= AscW("0"C) AndAlso ch <= AscW("9"C) Then
 						AddCh()
 						GoTo Case_10
@@ -615,7 +616,7 @@ Namespace at.jku.ssw.Coco
 						AddCh()
 						GoTo Case_15
 					Else
-						t.kind = 43
+						t.kind = 44
 					End If
 				Case 14
 				Case_14:
@@ -628,7 +629,7 @@ Namespace at.jku.ssw.Coco
 				Case 15
 				Case_15:
 					recEnd = pos
-					recKind = 43
+					recKind = 44
 					If ch >= AscW("0"C) AndAlso ch <= AscW("9"C) Then
 						AddCh()
 						GoTo Case_10
@@ -639,7 +640,7 @@ Namespace at.jku.ssw.Coco
 						AddCh()
 						GoTo Case_11
 					Else
-						t.kind = 43
+						t.kind = 44
 					End If
 				Case 16
 				Case_16:
@@ -655,7 +656,7 @@ Namespace at.jku.ssw.Coco
 					t.kind = 23
 				Case 20
 				Case_20:
-					t.kind = 26
+					t.kind = 25
 				Case 21
 				Case_21:
 					t.kind = 27
@@ -667,7 +668,7 @@ Namespace at.jku.ssw.Coco
 					t.kind = 29
 				Case 24
 				Case_24:
-					t.kind = 32
+					t.kind = 30
 				Case 25
 				Case_25:
 					t.kind = 33
@@ -682,12 +683,15 @@ Namespace at.jku.ssw.Coco
 					t.kind = 36
 				Case 29
 				Case_29:
-					t.kind = 40
+					t.kind = 37
 				Case 30
 				Case_30:
 					t.kind = 41
 				Case 31
 				Case_31:
+					t.kind = 42
+				Case 32
+				Case_32:
 					recEnd = pos
 					recKind = 19
 					If ch = AscW("."C) Then
@@ -695,32 +699,32 @@ Namespace at.jku.ssw.Coco
 						GoTo Case_19
 					ElseIf ch = AscW(">"C) Then
 						AddCh()
-						GoTo Case_22
+						GoTo Case_23
 					ElseIf ch = AscW(")"C) Then
 						AddCh()
-						GoTo Case_30
+						GoTo Case_31
 					Else
 						t.kind = 19
-					End If
-				Case 32
-				Case_32:
-					recEnd = pos
-					recKind = 25
-					If ch = AscW("."C) Then
-						AddCh()
-						GoTo Case_21
-					Else
-						t.kind = 25
 					End If
 				Case 33
 				Case_33:
 					recEnd = pos
-					recKind = 31
+					recKind = 26
 					If ch = AscW("."C) Then
 						AddCh()
-						GoTo Case_29
+						GoTo Case_22
 					Else
-						t.kind = 31
+						t.kind = 26
+					End If
+				Case 34
+				Case_34:
+					recEnd = pos
+					recKind = 32
+					If ch = AscW("."C) Then
+						AddCh()
+						GoTo Case_30
+					Else
+						t.kind = 32
 					End If
 			End Select
 			t.val = New String(tval, 0, tlen)

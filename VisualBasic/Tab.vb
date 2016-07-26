@@ -69,6 +69,8 @@ Namespace at.jku.ssw.Coco
 		Public       attrPos       As Position    ' nt: position of attributes in source text (or null)
 		Public       semPos        As Position    ' pr: pos of semantic action in source text (or null)
 		                                          ' nt: pos of local declarations in source text (or null)
+		Public 		 [inherits]    As Symbol 	  ' optional, token from which this token derives
+		
 		Public Sub New(ByVal typ As Integer, ByVal name As String, ByVal line As Integer)
 			Me.typ = typ
 			Me.name = name

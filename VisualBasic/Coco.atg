@@ -299,7 +299,11 @@ PRODUCTIONS
   TokenDecl<ByVal typ As Integer>                                               (. Dim name As String = Nothing
                                                                                    Dim kind As Integer
                                                                                    Dim _sym As Symbol
-                                                                                   Dim g    As Graph  = Nothing .)
+                                                                                   Dim g    As Graph  = Nothing
+                                                                                   Dim inheritsName as String = Nothing
+                                                                                   Dim inheritsSym as Symbol
+                                                                                   Dim inheritsKind as Integer
+                                                                                .)
   =
     Sym<name, kind>                                                             (. _sym = tab.FindSym(name)
                                                                                    If _sym IsNot Nothing Then
@@ -309,6 +313,19 @@ PRODUCTIONS
                                                                                    	_sym.tokenKind = Symbol.fixedToken
                                                                                    End If
                                                                                    tokenString = Nothing .)
+    [ ':' Sym<inheritsName, inheritsKind>
+                                                                                (. inheritsSym = tab.FindSym(inheritsName)
+                                                                                   If inheritsSym is Nothing Then
+                                                                                     SemErr(String.Format("token '{0}' can't inherit from '{1}', name not declared", _sym.name, inheritsName))
+                                                                                   Else If inheritsSym is _sym Then 
+                                                                                     SemErr(String.Format("token '{0}' must not inherit from self", _sym.name))
+                                                                                   Else If inheritsSym.typ <> typ Then 
+                                                                                     SemErr(String.Format("token '{0}' can't inherit from '{1}'", _sym.name, inheritsSym.name))
+                                                                                   Else 
+                                                                                     _sym.inherits = inheritsSym
+                                                                                   End If
+                                                                                .)
+    ]
     SYNC
     ( '=' TokenExpr<g> '.'                                                      (. If kind = str Then
                                                                                    	SemErr("a literal must not be declared with a structure")

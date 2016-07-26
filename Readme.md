@@ -63,7 +63,7 @@ inheritance trees in the grammar.
 ## Languages
 
 * C# - OK, beta testing
-* VB.Net - planned
+* VB.Net - in development
 * Java - planned
 
 

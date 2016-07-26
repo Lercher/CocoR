@@ -1,0 +1,46 @@
+// test token inheritance, see inheritance.atg
+
+var shouldBeOk;     // OK
+var var;            // OK now (var inherits ident) but 'ident expected' with the 2011 version
+//var keyword;      // 'ident expected' b/c keyword is not an ident
+var a, b, c;
+var a as int, b as int, c as int;
+var a | b | c | as as as;
+var a:int, b:int, c:int;
+var var1 as var2 | var3 : var4, var5;
+
+// NumberIdent here. We choose var6
+NumberIdent var6;
+NumberIdent 1;
+NumberIdent as;
+NumberIdent SomeTextIsAnIdent;
+// NumberIdent keyword; // invalid NumberIdent b/c keyword is not an ident
+
+// at last an ident or number list
+1
+2
+var3 // OK now (var3 inherits ident) but 'EOF expected' with the 2011 version
+//keyword // 'EOF expected' b/c keyword is not an ident
+
+
+
+/* ---------------------------------------- Coco/R without token inheritance, 2011
+var shouldBeOk;     // OK
+var var;            // ident expected
+var keyword;        // ident expected
+
+scanning sample.txt ...
+-- line 4 col 5: ident expected
+-- line 5 col 5: ident expected
+2 error(s) detected
+*/
+
+/* ---------------------------------------- Coco/R with token inheritance, 2016
+var shouldBeOk;     // OK
+var var;            // OK
+var keyword;        // ident expected
+
+scanning sample.txt ...
+-- line 5 col 5: ident expected
+1 error(s) detected
+*/
