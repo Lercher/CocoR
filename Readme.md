@@ -67,6 +67,30 @@ inheritance trees in the grammar.
 * Java - planned
 
 
+## Distributables
+
+To generate parsers from attributed grammars, you only need
+these files from the language directory you choose:
+
+* coco.exe (built with build.bat if you don't have one yet)
+* scanner.frame
+* parser.frame
+* copyright.frame
+
+There are no dependencies to use the generated scanners and parsers.
+
+
+## License
+
+Coco/R, including this extension, is distributed under the terms
+of the GNU General Public License (slightly extended).
+
+This means that you have to open source any extension to
+Coco/R itself but you are licensed to use generated
+scanners and parsers in any software that you build, 
+even in closed source projects.
+
+
 ## Known Bugs
 
 see readme.md in the respective language folder
