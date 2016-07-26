@@ -50,7 +50,7 @@ Namespace at.jku.ssw.Coco
 
 	Public Class Coco
 		Public Shared Function Main(ByVal arg() As String) As Integer
-			Console.WriteLine("Coco/R (Dec 22, 2014)")
+			Console.WriteLine("Coco/R (Jul 26, 2016)")
 			Dim srcName As String = Nothing
 			Dim nsName As String = Nothing
 			Dim frameDir As String = Nothing
