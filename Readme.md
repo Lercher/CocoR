@@ -96,3 +96,9 @@ even in closed source projects.
 ## Known Bugs
 
 see readme.md in the respective language folder
+
+## Git Branches
+
+* master - main development
+* autocomplete - experimental branch to record possible
+  alternatives for an editor with autocomplete/intellisense  
