@@ -1,7 +1,14 @@
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 
+
+public class Alternative {
+	public Token t;
+	public List<Token> alt;
+}
 
 public class Parser {
 	public const int _EOF = 0; // TOKEN EOF
@@ -24,6 +31,7 @@ public class Parser {
 	
 	public Scanner scanner;
 	public Errors  errors;
+	public List<Alternative> alternatives = new List<Alternative>();
 
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
@@ -334,7 +342,7 @@ public class Parser {
 
 	}
 	
-	// a tokens base type
+	// a token's base type
 	static readonly int[] tBase = {
 		-1,-1,-1, 1,  1, 1, 1, 1,  1, 1, 1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
 		-1,-1,-1,-1, -1,-1,-1

@@ -27,8 +27,15 @@ Coco/R itself) does not fall under the GNU General Public License.
 ----------------------------------------------------------------------*/
 -->begin
 using System;
+using System.Collections;
+using System.Collections.Generic;
 
 -->namespace
+
+public class Alternative {
+	public Token t;
+	public List<Token> alt;
+}
 
 public class Parser {
 -->constants
@@ -38,6 +45,7 @@ public class Parser {
 	
 	public Scanner scanner;
 	public Errors  errors;
+	public List<Alternative> alternatives = new List<Alternative>();
 
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
