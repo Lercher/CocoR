@@ -17,6 +17,19 @@ parser that records to any parsed terminal symbol
 all alternative terminal symbols that would be valid
 instead of the actually parsed token.
 
+* symbol tables -
+Having autocomplete information is quite useless
+for token classes, unless you can specify from where
+you will take all valid identifiers. In this version
+of Coco/R you can declare global symbol tables for
+a parser and mark tokenclasses in productions to 
+create a new symbol, error out if it was already
+declared and mark a tokenclass to use such a symbol,
+i.e. error out if it was not declared before. At such 
+a symbol use point, when looking at alternatives, you
+can ask the parser of which symbols it knows at this
+point to provide autocomplete for token classes. 
+
 
 ## Token Inheritance
 
