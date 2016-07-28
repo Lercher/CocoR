@@ -33,8 +33,13 @@ using System.Collections.Generic;
 -->namespace
 
 public class Alternative {
-	public Token t;
-	public List<Token> alt;
+	public readonly Token t;
+	public BitArray alt;
+
+	public Alternative(Token t, BitArray alt) {
+		this.t = t;
+		this.alt = alt;
+	}
 }
 
 public class Parser {
@@ -45,8 +50,8 @@ public class Parser {
 	
 	public Scanner scanner;
 	public Errors  errors;
-	public List<Alternative> alternatives = new List<Alternative>();
-	public List<Token> tokens = new List<Token>();
+	public List<Alternative> tokens = new List<Alternative>();
+	public BitArray alt;
 
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
@@ -72,12 +77,24 @@ public class Parser {
 	void Get () {
 		for (;;) {
 			t = la;
+			if (t.kind != _EOF) {
+				tokens.Add(new Alternative(t, alt));
+				alt = new BitArray(maxT);
+			}
 			la = scanner.Scan();
-			tokens.Add(la);
 			if (la.kind <= maxT) { ++errDist; break; }
 -->pragmas
 			la = t;
 		}
+	}
+
+	void addAlt(int kind) {
+		alt[kind] = true;
+	}
+
+	void addAlt(int[] range) {
+		foreach(int kind in range)
+			addAlt(kind);
 	}
 
 	bool isKind(Token t, int n) {
@@ -90,6 +107,7 @@ public class Parser {
 	}
 	
 	void Expect (int n) {
+		addAlt(n);
 		if (isKind(la, n)) Get(); else { SynErr(n); }
 	}
 	
@@ -99,6 +117,7 @@ public class Parser {
 	}
 	
 	void ExpectWeak (int n, int follow) {
+		addAlt(n);
 		if (isKind(la, n)) Get();
 		else {
 			SynErr(n);
@@ -126,7 +145,8 @@ public class Parser {
 
 	public void Parse() {
 		la = new Token();
-		la.val = "";		
+		la.val = "";
+		alt = new BitArray(maxT);		
 		Get();
 -->parseRoot
 	}

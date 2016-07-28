@@ -6,8 +6,13 @@ using System.Collections.Generic;
 
 
 public class Alternative {
-	public Token t;
-	public List<Token> alt;
+	public readonly Token t;
+	public BitArray alt;
+
+	public Alternative(Token t, BitArray alt) {
+		this.t = t;
+		this.alt = alt;
+	}
 }
 
 public class Parser {
@@ -31,8 +36,8 @@ public class Parser {
 	
 	public Scanner scanner;
 	public Errors  errors;
-	public List<Alternative> alternatives = new List<Alternative>();
-	public List<Token> tokens = new List<Token>();
+	public List<Alternative> tokens = new List<Alternative>();
+	public BitArray alt;
 
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
@@ -58,12 +63,24 @@ public class Parser {
 	void Get () {
 		for (;;) {
 			t = la;
+			if (t.kind != _EOF) {
+				tokens.Add(new Alternative(t, alt));
+				alt = new BitArray(maxT);
+			}
 			la = scanner.Scan();
-			tokens.Add(la);
 			if (la.kind <= maxT) { ++errDist; break; }
 
 			la = t;
 		}
+	}
+
+	void addAlt(int kind) {
+		alt[kind] = true;
+	}
+
+	void addAlt(int[] range) {
+		foreach(int kind in range)
+			addAlt(kind);
 	}
 
 	bool isKind(Token t, int n) {
@@ -76,6 +93,7 @@ public class Parser {
 	}
 	
 	void Expect (int n) {
+		addAlt(n);
 		if (isKind(la, n)) Get(); else { SynErr(n); }
 	}
 	
@@ -85,6 +103,7 @@ public class Parser {
 	}
 	
 	void ExpectWeak (int n, int follow) {
+		addAlt(n);
 		if (isKind(la, n)) Get();
 		else {
 			SynErr(n);
@@ -109,15 +128,18 @@ public class Parser {
 
 	
 	void Inheritance() {
+		addAlt(new int[] {3, 4, 5, 6, 7, 8, 9});
 		while (StartOf(1)) {
 			Declaration();
 		}
+		addAlt(12);
 		while (isKind(la, 12)) {
 			Get();
 			NumberIdent();
 			Console.WriteLine("NumberIdent {0}", t.val); 
 			Expect(13); // ";"
 		}
+		addAlt(new int[] {1, 3, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25});
 		while (StartOf(2)) {
 			IdentOrNumber();
 		}
@@ -126,6 +148,7 @@ public class Parser {
 	void Declaration() {
 		Var();
 		Ident();
+		addAlt(new int[] {14, 15});
 		while (isKind(la, 14) || isKind(la, 15)) {
 			Separator();
 			Ident();
@@ -135,6 +158,17 @@ public class Parser {
 	}
 
 	void NumberIdent() {
+		addAlt(16);
+		addAlt(17);
+		addAlt(18);
+		addAlt(19);
+		addAlt(20);
+		addAlt(21);
+		addAlt(22);
+		addAlt(23);
+		addAlt(24);
+		addAlt(25);
+		addAlt(1);
 		switch (la.kind) {
 		case 16: // "0"
 		{
@@ -204,7 +238,9 @@ public class Parser {
 	}
 
 	void IdentOrNumber() {
-		if (isKind(la, 1)) {
+		addAlt(1);
+		addAlt(new int[] {3, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25});
+				if (isKind(la, 1)) {
 			Get();
 		} else if (StartOf(3)) {
 			NumberVar();
@@ -212,6 +248,13 @@ public class Parser {
 	}
 
 	void Var() {
+		addAlt(3);
+		addAlt(4);
+		addAlt(5);
+		addAlt(6);
+		addAlt(7);
+		addAlt(8);
+		addAlt(9);
 		switch (la.kind) {
 		case 3: // var
 		{
@@ -254,8 +297,11 @@ public class Parser {
 
 	void Ident() {
 		Expect(1); // ident
+		addAlt(new int[] {10, 11});
 		if (isKind(la, 10) || isKind(la, 11)) {
-			if (isKind(la, 10)) {
+			addAlt(10);
+			addAlt(11);
+						if (isKind(la, 10)) {
 				Get();
 			} else {
 				Get();
@@ -265,7 +311,9 @@ public class Parser {
 	}
 
 	void Separator() {
-		if (isKind(la, 14)) {
+		addAlt(14);
+		addAlt(15);
+				if (isKind(la, 14)) {
 			ExpectWeak(14, 4); // "," followed by var1
 		} else if (isKind(la, 15)) {
 			ExpectWeak(15, 4); // "|" followed by var1
@@ -273,6 +321,17 @@ public class Parser {
 	}
 
 	void NumberVar() {
+		addAlt(16);
+		addAlt(17);
+		addAlt(18);
+		addAlt(19);
+		addAlt(20);
+		addAlt(21);
+		addAlt(22);
+		addAlt(23);
+		addAlt(24);
+		addAlt(25);
+		addAlt(3);
 		switch (la.kind) {
 		case 16: // "0"
 		{
@@ -337,7 +396,8 @@ public class Parser {
 
 	public void Parse() {
 		la = new Token();
-		la.val = "";		
+		la.val = "";
+		alt = new BitArray(maxT);		
 		Get();
 		Inheritance();
 		Expect(0);
