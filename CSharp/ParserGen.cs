@@ -180,6 +180,12 @@ public class ParserGen {
 		Indent(indent);
 	}
 
+	void GenAutocomplete(int kind, int indent) {
+		gen.WriteLine("addAlt({0});", kind);
+		Indent(indent);
+	}
+
+
 	void GenCond (BitArray s, Node p) {
 		if (p.typ == Node.rslv) 
 			CopySourcePart(p.pos, 0);
@@ -245,7 +251,10 @@ public class ParserGen {
 					Indent(indent);
 					// assert: if isChecked[p.sym.n] is true, then isChecked contains only p.sym.n
 					if (isChecked[p.sym.n]) gen.WriteLine("Get();");
-					else gen.WriteLine("Expect({0}); // {1}", p.sym.n, p.sym.name);
+					else {
+						GenAutocomplete(p.sym.n, indent);
+						gen.WriteLine("Expect({0}); // {1}", p.sym.n, p.sym.name);
+					}
 					break;
 				}
 				case Node.wt: {
@@ -254,6 +263,7 @@ public class ParserGen {
 					s1.Or(tab.allSyncSets);
 					int ncs1 = NewCondSet(s1);
 					Symbol ncs1sym = (Symbol)tab.terminals[ncs1];
+					GenAutocomplete(p.sym.n, indent);
 					gen.WriteLine("ExpectWeak({0}, {1}); // {2} followed by {3}", p.sym.n, ncs1, p.sym.name, ncs1sym.name);
 					break;
 				}

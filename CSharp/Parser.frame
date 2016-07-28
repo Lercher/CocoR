@@ -107,7 +107,6 @@ public class Parser {
 	}
 	
 	void Expect (int n) {
-		addAlt(n);
 		if (isKind(la, n)) Get(); else { SynErr(n); }
 	}
 	
@@ -117,7 +116,6 @@ public class Parser {
 	}
 	
 	void ExpectWeak (int n, int follow) {
-		addAlt(n);
 		if (isKind(la, n)) Get();
 		else {
 			SynErr(n);

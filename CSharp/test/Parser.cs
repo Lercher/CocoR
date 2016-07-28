@@ -93,7 +93,6 @@ public class Parser {
 	}
 	
 	void Expect (int n) {
-		addAlt(n);
 		if (isKind(la, n)) Get(); else { SynErr(n); }
 	}
 	
@@ -103,7 +102,6 @@ public class Parser {
 	}
 	
 	void ExpectWeak (int n, int follow) {
-		addAlt(n);
 		if (isKind(la, n)) Get();
 		else {
 			SynErr(n);
@@ -137,6 +135,7 @@ public class Parser {
 			Get();
 			NumberIdent();
 			Console.WriteLine("NumberIdent {0}", t.val); 
+			addAlt(13);
 			Expect(13); // ";"
 		}
 		addAlt(new int[] {1, 3, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25});
@@ -154,6 +153,7 @@ public class Parser {
 			Ident();
 		}
 		while (!(isKind(la, 0) || isKind(la, 13))) {SynErr(27); Get();}
+		addAlt(13);
 		Expect(13); // ";"
 	}
 
@@ -296,6 +296,7 @@ public class Parser {
 	}
 
 	void Ident() {
+		addAlt(1);
 		Expect(1); // ident
 		addAlt(new int[] {10, 11});
 		if (isKind(la, 10) || isKind(la, 11)) {
@@ -306,6 +307,7 @@ public class Parser {
 			} else {
 				Get();
 			}
+			addAlt(1);
 			Expect(1); // ident
 		}
 	}
@@ -314,8 +316,10 @@ public class Parser {
 		addAlt(14);
 		addAlt(15);
 				if (isKind(la, 14)) {
+			addAlt(14);
 			ExpectWeak(14, 4); // "," followed by var1
 		} else if (isKind(la, 15)) {
+			addAlt(15);
 			ExpectWeak(15, 4); // "|" followed by var1
 		} else SynErr(31);
 	}
