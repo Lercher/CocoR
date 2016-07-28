@@ -97,7 +97,7 @@ public class Parser {
 			addAlt(kind);
 	}
 
-	void addAlt(bool[] pred, int line) {
+	void addAlt(bool[,] pred, int line) {
 		for(int kind = 0; kind < maxT; kind++)
 			if (pred[line, kind])
 				addAlt(kind);
