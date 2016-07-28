@@ -83,6 +83,12 @@ public class Parser {
 			addAlt(kind);
 	}
 
+	void addAlt(bool[] pred, int line) {
+		for(int kind = 0; kind < maxT; kind++)
+			if (pred[line, kind])
+				addAlt(kind);
+	}
+
 	bool isKind(Token t, int n) {
 		int k = t.kind;
 		while(k >= 0) {
@@ -126,49 +132,53 @@ public class Parser {
 
 	
 	void Inheritance() {
-		addAlt(new int[] {3, 4, 5, 6, 7, 8, 9});
+		addAlt(set0, 1); // ITER start
 		while (StartOf(1)) {
 			Declaration();
+			addAlt(set0, 1); // ITER end
 		}
-		addAlt(12);
+		addAlt(12); // ITER start
 		while (isKind(la, 12)) {
 			Get();
 			NumberIdent();
 			Console.WriteLine("NumberIdent {0}", t.val); 
-			addAlt(13);
+			addAlt(13); // T
 			Expect(13); // ";"
+			addAlt(12); // ITER end
 		}
-		addAlt(new int[] {1, 3, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25});
+		addAlt(set0, 2); // ITER start
 		while (StartOf(2)) {
 			IdentOrNumber();
+			addAlt(set0, 2); // ITER end
 		}
 	}
 
 	void Declaration() {
 		Var();
 		Ident();
-		addAlt(new int[] {14, 15});
+		addAlt(new int[] {14, 15}); // ITER start
 		while (isKind(la, 14) || isKind(la, 15)) {
 			Separator();
 			Ident();
+			addAlt(new int[] {14, 15}); // ITER end
 		}
 		while (!(isKind(la, 0) || isKind(la, 13))) {SynErr(27); Get();}
-		addAlt(13);
+		addAlt(13); // T
 		Expect(13); // ";"
 	}
 
 	void NumberIdent() {
-		addAlt(16);
-		addAlt(17);
-		addAlt(18);
-		addAlt(19);
-		addAlt(20);
-		addAlt(21);
-		addAlt(22);
-		addAlt(23);
-		addAlt(24);
-		addAlt(25);
-		addAlt(1);
+		addAlt(16); // ALT
+		addAlt(17); // ALT
+		addAlt(18); // ALT
+		addAlt(19); // ALT
+		addAlt(20); // ALT
+		addAlt(21); // ALT
+		addAlt(22); // ALT
+		addAlt(23); // ALT
+		addAlt(24); // ALT
+		addAlt(25); // ALT
+		addAlt(1); // ALT
 		switch (la.kind) {
 		case 16: // "0"
 		{
@@ -238,9 +248,9 @@ public class Parser {
 	}
 
 	void IdentOrNumber() {
-		addAlt(1);
-		addAlt(new int[] {3, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25});
-				if (isKind(la, 1)) {
+		addAlt(1); // ALT
+		addAlt(set0, 3); // ALT
+		if (isKind(la, 1)) {
 			Get();
 		} else if (StartOf(3)) {
 			NumberVar();
@@ -248,13 +258,13 @@ public class Parser {
 	}
 
 	void Var() {
-		addAlt(3);
-		addAlt(4);
-		addAlt(5);
-		addAlt(6);
-		addAlt(7);
-		addAlt(8);
-		addAlt(9);
+		addAlt(3); // ALT
+		addAlt(4); // ALT
+		addAlt(5); // ALT
+		addAlt(6); // ALT
+		addAlt(7); // ALT
+		addAlt(8); // ALT
+		addAlt(9); // ALT
 		switch (la.kind) {
 		case 3: // var
 		{
@@ -296,46 +306,46 @@ public class Parser {
 	}
 
 	void Ident() {
-		addAlt(1);
+		addAlt(1); // T
 		Expect(1); // ident
-		addAlt(new int[] {10, 11});
+		addAlt(new int[] {10, 11}); // OPT
 		if (isKind(la, 10) || isKind(la, 11)) {
-			addAlt(10);
-			addAlt(11);
-						if (isKind(la, 10)) {
+			addAlt(10); // ALT
+			addAlt(11); // ALT
+			if (isKind(la, 10)) {
 				Get();
 			} else {
 				Get();
 			}
-			addAlt(1);
+			addAlt(1); // T
 			Expect(1); // ident
 		}
 	}
 
 	void Separator() {
-		addAlt(14);
-		addAlt(15);
-				if (isKind(la, 14)) {
-			addAlt(14);
+		addAlt(14); // ALT
+		addAlt(15); // ALT
+		if (isKind(la, 14)) {
+			addAlt(14); // weak T
 			ExpectWeak(14, 4); // "," followed by var1
 		} else if (isKind(la, 15)) {
-			addAlt(15);
+			addAlt(15); // weak T
 			ExpectWeak(15, 4); // "|" followed by var1
 		} else SynErr(31);
 	}
 
 	void NumberVar() {
-		addAlt(16);
-		addAlt(17);
-		addAlt(18);
-		addAlt(19);
-		addAlt(20);
-		addAlt(21);
-		addAlt(22);
-		addAlt(23);
-		addAlt(24);
-		addAlt(25);
-		addAlt(3);
+		addAlt(16); // ALT
+		addAlt(17); // ALT
+		addAlt(18); // ALT
+		addAlt(19); // ALT
+		addAlt(20); // ALT
+		addAlt(21); // ALT
+		addAlt(22); // ALT
+		addAlt(23); // ALT
+		addAlt(24); // ALT
+		addAlt(25); // ALT
+		addAlt(3); // ALT
 		switch (la.kind) {
 		case 16: // "0"
 		{

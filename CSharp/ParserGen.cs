@@ -146,42 +146,39 @@ public class ParserGen {
 		return symSet.Count - 1;
 	}
 
-	int CountTrues(BitArray s) {
-		int n = 0;
-		for(int i=0; i < s.Count; i++)
-			if (s[i]) n++;
-		return n;			
-	}
-
 	// for autocomplete/intellisense
 	// same as GenCond(), but we only notfiy the 'alt' list of alternatives of new members		
-	void GenAutocomplete(BitArray s, Node p, int indent)
+	void GenAutocomplete(BitArray s, Node p, int indent, string comment)
 	{
 		if (!GenerateAutocompleteInformation) return; // we don't want autocomplete information in the parser
 		if (p.typ == Node.rslv) return; // if we have a resolver, we don't know what to do (yet), so we do nothing
-		int c = CountTrues(s);
-		if (c == 0) return;		
-		gen.Write("addAlt(");
-		if (c > 1) gen.Write("new int[] {");
-		int n = 0;
-		foreach (Symbol sym in tab.terminals) {
-			if (s[sym.n]) {
-				n++;
-				if (n > 1) gen.Write(", ");
-				gen.Write(sym.n);
-				// note: we don't need to take sym.inherits or isKind() into account here
-				// because we only want to see alternatives as specified in the parser productions.
-				// So a keyword:indent = "keyword". token spec will produce only an "ident" variant
-				// and not a "keyword" as well as an "ident".
+		int c = Sets.Elements(s);
+		if (c == 0) return;
+		if (c > maxTerm) {
+			gen.WriteLine("addAlt(set0, {0}); // {1}", NewCondSet(s), comment);
+		} else {
+			gen.Write("addAlt(");
+			if (c > 1) gen.Write("new int[] {");
+			int n = 0;
+			foreach (Symbol sym in tab.terminals) {
+				if (s[sym.n]) {
+					n++;
+					if (n > 1) gen.Write(", ");
+					gen.Write(sym.n);
+					// note: we don't need to take sym.inherits or isKind() into account here
+					// because we only want to see alternatives as specified in the parser productions.
+					// So a keyword:indent = "keyword". token spec will produce only an "ident" variant
+					// and not a "keyword" as well as an "ident".
+				}
 			}
+			if (c > 1) gen.Write("}");
+			gen.WriteLine("); // {0}", comment);
 		}
-		if (c > 1) gen.Write("}");
-		gen.WriteLine(");");
 		Indent(indent);
 	}
 
-	void GenAutocomplete(int kind, int indent) {
-		gen.WriteLine("addAlt({0});", kind);
+	void GenAutocomplete(int kind, int indent, string comment) {
+		gen.WriteLine("addAlt({0}); // {1}", kind, comment);
 		Indent(indent);
 	}
 
@@ -211,9 +208,10 @@ public class ParserGen {
 		BitArray s = DerivationsOf(s0);
 		foreach (Symbol sym in tab.terminals)
 			if (s[sym.n]) {
+				Indent(indent); 
 				gen.WriteLine("case {0}: // {1}", sym.n, sym.name);
-				Indent(indent);
 			}
+		Indent(indent);
 	}
 
 	BitArray DerivationsOf(BitArray s0) {
@@ -252,7 +250,7 @@ public class ParserGen {
 					// assert: if isChecked[p.sym.n] is true, then isChecked contains only p.sym.n
 					if (isChecked[p.sym.n]) gen.WriteLine("Get();");
 					else {
-						GenAutocomplete(p.sym.n, indent);
+						GenAutocomplete(p.sym.n, indent, "T");
 						gen.WriteLine("Expect({0}); // {1}", p.sym.n, p.sym.name);
 					}
 					break;
@@ -263,7 +261,7 @@ public class ParserGen {
 					s1.Or(tab.allSyncSets);
 					int ncs1 = NewCondSet(s1);
 					Symbol ncs1sym = (Symbol)tab.terminals[ncs1];
-					GenAutocomplete(p.sym.n, indent);
+					GenAutocomplete(p.sym.n, indent, "weak T");
 					gen.WriteLine("ExpectWeak({0}, {1}); // {2} followed by {3}", p.sym.n, ncs1, p.sym.name, ncs1sym.name);
 					break;
 				}
@@ -276,7 +274,7 @@ public class ParserGen {
 					} else {
 						GenErrorMsg(altErr, curSy);
 						if (acc > 0) {
-							GenAutocomplete(p.set, p, indent);
+							GenAutocomplete(p.set, p, indent, "ANY");
 							gen.Write("if ("); GenCond(p.set, p); gen.WriteLine(") Get(); else SynErr({0});", errorNr);
 						} else gen.WriteLine("SynErr({0}); // ANY node that matches no symbol", errorNr);
 					}
@@ -306,7 +304,7 @@ public class ParserGen {
 					while (p2 != null)
 					{
 						s1 = tab.Expected(p2.sub, curSy);						
-						GenAutocomplete(s1, p2.sub, indent);
+						GenAutocomplete(s1, p2.sub, indent, "ALT");
 						p2 = p2.down;
 					}
 					// end intellisense
@@ -318,15 +316,16 @@ public class ParserGen {
 					p2 = p;
 					while (p2 != null) {
 						s1 = tab.Expected(p2.sub, curSy);
-						Indent(indent);
 						if (useSwitch) { 
 							PutCaseLabels(s1, indent);
 							gen.WriteLine("{");
 						} else if (p2 == p) {
 							gen.Write("if ("); GenCond(s1, p2.sub); gen.WriteLine(") {"); 
-						} else if (p2.down == null && equal) { 
+						} else if (p2.down == null && equal) {
+							Indent(indent);  
 							gen.WriteLine("} else {");
 						} else { 
+							Indent(indent); 
 							gen.Write("} else if (");  GenCond(s1, p2.sub); gen.WriteLine(") {"); 
 						}
 						GenCode(p2.sub, indent + 1, s1);
@@ -353,27 +352,34 @@ public class ParserGen {
 				case Node.iter: {
 					Indent(indent);
 					p2 = p.sub;
-					s1 = tab.First(p2);
-					GenAutocomplete(s1, p2, indent);
+					Node pac = p2;
+					BitArray sac = (BitArray) tab.First(pac);
+					GenAutocomplete(sac, pac, indent, "ITER start");
 					gen.Write("while (");
 					if (p2.typ == Node.wt) {
 						s1 = tab.Expected(p2.next, curSy);
 						s2 = tab.Expected(p.next, curSy);
 						gen.Write("WeakSeparator({0},{1},{2}) ", p2.sym.n, NewCondSet(s1), NewCondSet(s2));
 						s1 = new BitArray(tab.terminals.Count);  // for inner structure
-						if (p2.up || p2.next == null) p2 = null; else p2 = p2.next;
+						if (p2.up || p2.next == null) 
+							p2 = null; 
+						else 
+							p2 = p2.next;
 					} else {
+						s1 = tab.First(p2);
 						GenCond(s1, p2);
 					}
 					gen.WriteLine(") {");
 					GenCode(p2, indent + 1, s1);
+					Indent(indent + 1);
+					GenAutocomplete(sac, pac, 0, "ITER end");
 					Indent(indent); gen.WriteLine("}");
 					break;
 				}
 				case Node.opt:
 					s1 = tab.First(p.sub);
 					Indent(indent);
-					GenAutocomplete(s1, p.sub, indent);
+					GenAutocomplete(s1, p.sub, indent, "OPT");
 					gen.Write("if ("); GenCond(s1, p.sub); gen.WriteLine(") {");
 					GenCode(p.sub, indent + 1, s1);
 					Indent(indent); gen.WriteLine("}");

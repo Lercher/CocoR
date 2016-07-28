@@ -97,6 +97,12 @@ public class Parser {
 			addAlt(kind);
 	}
 
+	void addAlt(bool[] pred, int line) {
+		for(int kind = 0; kind < maxT; kind++)
+			if (pred[line, kind])
+				addAlt(kind);
+	}
+
 	bool isKind(Token t, int n) {
 		int k = t.kind;
 		while(k >= 0) {
