@@ -4,10 +4,18 @@ Based on the Coco/R Sources at
 http://www.ssw.uni-linz.ac.at/Coco
 that we call the "2011 version".
 
-This code includes an enhancement called "token inheritance".
+This code includes these enhancements
+
+* token inheritance -
 A typical usage scenario for the extension
 would be to allow keywords as identifiers 
 based on a parsing context that expects an identifier.
+
+* autocomplete information -
+If the switch -ac is set, the generator produces a
+parser that records to any parsed terminal symbol
+all alternative terminal symbols that would be valid
+instead of the actually parsed token.
 
 
 ## Token Inheritance
@@ -43,6 +51,49 @@ would be invalid, just as the first text would
 with a parser generated with the 2011 version of Coco/R.
 
 
+## Autocomplete Information
+
+After parsing, the parser has a list of all relevant
+tokens `public List<Alternative> tokens` in text ordering,
+i.e. no comments, no whitespace and no pragmas.
+
+For each such element the property `t` holds the actually
+parsed token. The property `alt` holds a BitArray of all
+Terminal symbols that would be valid before the current 
+token `t` was parsed. With the help of the `Parser.tName`
+array and the index in the `alt` array, a client can resolve
+the name of the token from the TOKENS section of the atg grammar
+file or the literal of an inline declared keyword.
+
+Currently there is a flaw in the implementiation, because
+the calculation of possible alternatives stops as soon as the 
+actual token gets validly parsed. So this list can be truncated.
+-> this has to be investigated.
+
+
+
+### Sample Code
+
+This Sample Code lists all tokens and their respective
+variants. See CSharp/Test/main.cs for a more elaborate
+example.
+
+    foreach (Alternative a in parser.tokens)
+    {
+        Token t = a.t;
+        Console.Write("({0,3},{1,3}) {2,3} {3,-20} {4, -20}", 
+          t.line, t.col, t.kind, Parser.tName[t.kind], t.val);
+        Console.Write(" alt: ");
+        for (int k = 0; k < Parser.maxT; k++)
+        {
+            if (a.alt[k])
+                Console.Write("{1} ", k, Parser.tName[k]);
+        }
+        Console.WriteLine();
+    }
+
+
+
 ## Extended Syntax
 
 see http://www.ssw.uni-linz.ac.at/Coco/Doc/UserManual.pdf 
@@ -60,14 +111,20 @@ However, it would be bad design to have complicated
 inheritance trees in the grammar.
 
 
+## Extended command line arguments
+
+* -ac - Turn on generation of autocomplete / intellisense information
+
+
 ## Languages
 
-* C# - OK, beta testing
+* C# - OK, beta testing, autocomplete information
 * VB.Net - OK, beta testing
 * Java - planned but not yet scheduled
 
 Note: The generated code for .Net languages targets
 plain vanilla .Net Framework 2.0 compilers and libraries. 
+
 
 ## Distributables
 
@@ -96,6 +153,7 @@ even in closed source projects.
 ## Known Bugs
 
 see readme.md in the respective language folder
+
 
 ## Git Branches
 
