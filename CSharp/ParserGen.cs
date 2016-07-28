@@ -45,7 +45,7 @@ public class ParserGen {
 	const int syncErr = 2;
 	
 	public Position usingPos; // "using" definitions from the attributed grammar
-	public bool GenerateAutocompleteInformation = true;  // generate addAlt() calls to fill the "alt" set with alternatives to the next to Get() token. 
+	public bool GenerateAutocompleteInformation = false;  // generate addAlt() calls to fill the "alt" set with alternatives to the next to Get() token. 
 
 	int errorNr;      // highest parser error number
 	Symbol curSy;     // symbol whose production is currently generated
@@ -178,6 +178,7 @@ public class ParserGen {
 	}
 
 	void GenAutocomplete(int kind, int indent, string comment) {
+		if (!GenerateAutocompleteInformation) return; // we don't want autocomplete information in the parser
 		gen.WriteLine("addAlt({0}); // {1}", kind, comment);
 		Indent(indent);
 	}
