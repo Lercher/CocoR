@@ -46,6 +46,7 @@ public class Parser {
 	public Scanner scanner;
 	public Errors  errors;
 	public List<Alternative> alternatives = new List<Alternative>();
+	public List<Token> tokens = new List<Token>();
 
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
@@ -72,6 +73,7 @@ public class Parser {
 		for (;;) {
 			t = la;
 			la = scanner.Scan();
+			tokens.Add(la);
 			if (la.kind <= maxT) { ++errDist; break; }
 -->pragmas
 			la = t;
@@ -132,6 +134,11 @@ public class Parser {
 	// a token's base type
 	static readonly int[] tBase = {
 -->tbase
+	};
+
+	// a token's name
+	public static readonly string[] tName = {
+-->tname
 	};
 
 	// states that a particular production (1st index) can start with a particular token (2nd index)

@@ -327,7 +327,7 @@ public class ParserGen {
 		}
 	}
 
-	void GenTokenBase() {
+	void ForAllTerminals(Action<Symbol> write) {
 		int n = 0;
 		foreach (Symbol sym in tab.terminals) {
 			if (n%20 == 0)
@@ -335,13 +335,25 @@ public class ParserGen {
 			else if (n%4 == 0)
 				gen.Write(" ");			
 			n++;
+			write.Invoke(sym);
+			if (n < tab.terminals.Count) gen.Write(",");
+			if (n%20 == 0) gen.WriteLine();
+		}
+	}
+
+	void GenTokenBase() {
+		ForAllTerminals(delegate(Symbol sym) {
 			if (sym.inherits == null)
 				gen.Write("{0,2}", -1); // not inherited
 			else
 				gen.Write("{0,2}", sym.inherits.n);
-			if (n < tab.terminals.Count) gen.Write(",");
-			if (n%20 == 0) gen.WriteLine();
-		}
+		});
+	}
+
+	void GenTokenNames() {
+		ForAllTerminals(delegate(Symbol sym) {
+			gen.Write("\"{0}\"", tab.Escape(sym.name));
+		});
 	}
 	
 	void GenPragmas() {
@@ -428,6 +440,7 @@ public class ParserGen {
 		g.CopyFramePart("-->productions"); GenProductions();
 		g.CopyFramePart("-->parseRoot"); gen.WriteLine("\t\t{0}();", tab.gramSy.name); if (tab.checkEOF) gen.WriteLine("\t\tExpect(0);");
 		g.CopyFramePart("-->tbase"); GenTokenBase(); // write all tokens base types
+		g.CopyFramePart("-->tname"); GenTokenNames(); // write all token names
 		g.CopyFramePart("-->initialization0"); InitSets0();
 		g.CopyFramePart("-->initialization"); InitSets();
 		g.CopyFramePart("-->errors"); gen.Write(err.ToString());

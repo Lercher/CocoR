@@ -32,6 +32,7 @@ public class Parser {
 	public Scanner scanner;
 	public Errors  errors;
 	public List<Alternative> alternatives = new List<Alternative>();
+	public List<Token> tokens = new List<Token>();
 
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
@@ -58,6 +59,7 @@ public class Parser {
 		for (;;) {
 			t = la;
 			la = scanner.Scan();
+			tokens.Add(la);
 			if (la.kind <= maxT) { ++errDist; break; }
 
 			la = t;
@@ -346,6 +348,12 @@ public class Parser {
 	static readonly int[] tBase = {
 		-1,-1,-1, 1,  1, 1, 1, 1,  1, 1, 1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
 		-1,-1,-1,-1, -1,-1,-1
+	};
+
+	// a token's name
+	public static readonly string[] tName = {
+		"EOF","ident","keyword","var", "var1","var2","var3","var4", "var5","var6","as","colon", "\"NumberIdent\"","\";\"","\",\"","\"|\"", "\"0\"","\"1\"","\"2\"","\"3\"",
+		"\"4\"","\"5\"","\"6\"","\"7\"", "\"8\"","\"9\"","???"
 	};
 
 	// states that a particular production (1st index) can start with a particular token (2nd index)
