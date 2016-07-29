@@ -1,25 +1,35 @@
 // test token inheritance, see inheritance.atg
 
+type as;
+type var2;
+type var4;
+
 var shouldBeOk;     // OK
 var var;            // OK now (var inherits ident) but 'ident expected' with the 2011 version
 //var keyword;      // 'ident expected' b/c keyword is not an ident
 var a, b, c;
-var a as int, b as int, c as int;
-var a | b | c | as as as;
-var a:int, b:int, c:int;
+var d as int, e as int, f as int;
+var g | h | i | as as as;
+var j:int, k:int, l:int;
 var var1 as var2 | var3 : var4, var5;
+var var6;
+// var z:unknown; // ident 'unknown' not declared in 'types'
 
-// NumberIdent here. We choose var6
+// NumberIdent here:
+
 NumberIdent var6;
 NumberIdent 1;
 NumberIdent as;
-NumberIdent SomeTextIsAnIdent;
+// NumberIdent SomeTextIsAnIdent;  // ident 'SomeTextIsAnIdent' not declared in 'variables'
+// NumberIdent ShouldBeAnError;  // ident 'ShouldBeAnError' not declared in 'variables'
 // NumberIdent keyword; // invalid NumberIdent b/c keyword is not an ident
 
-// at last an ident or number list
+// ident or number list:
+
 1
 2
 var3 // OK now (var3 inherits ident) but 'EOF expected' with the 2011 version
+shouldBeOk;     // OK
 //keyword // 'EOF expected' b/c keyword is not an ident
 
 

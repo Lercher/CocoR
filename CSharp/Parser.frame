@@ -85,7 +85,6 @@ public class Parser {
 	public Token la;   // lookahead token
 	int errDist = minErrDist;
 
-	// declarations
 -->declarations
 
 	public Parser(Scanner scanner) {

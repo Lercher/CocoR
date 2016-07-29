@@ -22,19 +22,28 @@ public class Alternative {
 
 public class Symboltable {
 	private List<string> list = new List<string>();
+	public readonly string name;
+	public readonly bool ignoreCase;
 
-	bool Add(string s) {
+	public Symboltable(string name, bool ignoreCase) {
+		this.name = name;
+		this.ignoreCase = ignoreCase;
+	}
+
+	public bool Add(string s) {
+		if (ignoreCase) s = s.ToLower();
 		if (list.Contains(s))
 			return false;
 		list.Add(s);
 		return true;
 	}
 
-	bool Contains(string s) {
+	public bool Contains(string s) {
+		if (ignoreCase) s = s.ToLower();
 		return list.Contains(s);
 	}
 
-	IEnumerable<string> Items() {
+	public IEnumerable<string> Items() {
 		return list;
 	}
 }
@@ -62,6 +71,10 @@ public class Parser {
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
 	int errDist = minErrDist;
+
+	public Symboltable symbols(string name) {
+		return null;
+	}
 
 const int id = 0;
 	const int str = 1;
@@ -623,11 +636,15 @@ const int id = 0;
 				} else if (isKind(la, 27)) {
 					Get();
 					Expect(1); // ident
-					sym.declares = t.val.ToLower(); 
+					if (typ != Node.t && typ != Node.wt) SemErr("only terminals or weak terminals can declare a name in a symbol table"); 
+					p.declares = t.val.ToLower(); 
+					
 				} else {
 					Get();
 					Expect(1); // ident
-					sym.declared = t.val.ToLower(); 
+					if (typ != Node.t && typ != Node.wt) SemErr("only terminals or weak terminals can lookup a name in a symbol table"); 
+					p.declared = t.val.ToLower(); 
+					
 				}
 			}
 			if (undef)

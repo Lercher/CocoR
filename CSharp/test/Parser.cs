@@ -56,7 +56,7 @@ public class Parser {
 	public const int _var6 = 9; // TOKEN var6 INHERITS ident
 	public const int _as = 10; // TOKEN as INHERITS ident
 	public const int _colon = 11; // TOKEN colon
-	public const int maxT = 26;
+	public const int maxT = 27;
 
 	const bool _T = true;
 	const bool _x = false;
@@ -71,9 +71,14 @@ public class Parser {
 	public Token la;   // lookahead token
 	int errDist = minErrDist;
 
-	// declarations
 	public readonly Symboltable variables = new Symboltable("variables", false);
 	public readonly Symboltable types = new Symboltable("types", false);
+	public Symboltable symbols(string name) {
+		if (name == "variables") return variables;
+		if (name == "types") return types;
+		return null;
+	}
+
 
 
 	public Parser(Scanner scanner) {
@@ -163,6 +168,11 @@ public class Parser {
 
 	
 	void Inheritance() {
+		addAlt(14); // ITER start
+		while (isKind(la, 14)) {
+			Type();
+			addAlt(14); // ITER end
+		}
 		addAlt(set0, 1); // ITER start
 		while (StartOf(1)) {
 			Declaration();
@@ -184,22 +194,31 @@ public class Parser {
 		}
 	}
 
+	void Type() {
+		addAlt(14); // T
+		Expect(14); // "type"
+		if (!types.Add(la.val)) SemErr(string.Format("ident '{0}' declared twice in 'types'", la.val));
+		addAlt(1); // T
+		Expect(1); // ident
+		addAlt(13); // T
+		Expect(13); // ";"
+	}
+
 	void Declaration() {
 		Var();
 		Ident();
-		addAlt(new int[] {14, 15}); // ITER start
-		while (isKind(la, 14) || isKind(la, 15)) {
+		addAlt(new int[] {15, 16}); // ITER start
+		while (isKind(la, 15) || isKind(la, 16)) {
 			Separator();
 			Ident();
-			addAlt(new int[] {14, 15}); // ITER end
+			addAlt(new int[] {15, 16}); // ITER end
 		}
-		while (!(isKind(la, 0) || isKind(la, 13))) {SynErr(27); Get();}
+		while (!(isKind(la, 0) || isKind(la, 13))) {SynErr(28); Get();}
 		addAlt(13); // T
 		Expect(13); // ";"
 	}
 
 	void NumberIdent() {
-		addAlt(16); // ALT
 		addAlt(17); // ALT
 		addAlt(18); // ALT
 		addAlt(19); // ALT
@@ -209,54 +228,55 @@ public class Parser {
 		addAlt(23); // ALT
 		addAlt(24); // ALT
 		addAlt(25); // ALT
+		addAlt(26); // ALT
 		addAlt(1); // ALT
 		switch (la.kind) {
-		case 16: // "0"
+		case 17: // "0"
 		{
 			Get();
 			break;
 		}
-		case 17: // "1"
+		case 18: // "1"
 		{
 			Get();
 			break;
 		}
-		case 18: // "2"
+		case 19: // "2"
 		{
 			Get();
 			break;
 		}
-		case 19: // "3"
+		case 20: // "3"
 		{
 			Get();
 			break;
 		}
-		case 20: // "4"
+		case 21: // "4"
 		{
 			Get();
 			break;
 		}
-		case 21: // "5"
+		case 22: // "5"
 		{
 			Get();
 			break;
 		}
-		case 22: // "6"
+		case 23: // "6"
 		{
 			Get();
 			break;
 		}
-		case 23: // "7"
+		case 24: // "7"
 		{
 			Get();
 			break;
 		}
-		case 24: // "8"
+		case 25: // "8"
 		{
 			Get();
 			break;
 		}
-		case 25: // "9"
+		case 26: // "9"
 		{
 			Get();
 			break;
@@ -271,10 +291,11 @@ public class Parser {
 		case 9: // var6
 		case 10: // as
 		{
+			if (!variables.Contains(la.val)) SemErr(string.Format("ident '{0}' not declared in 'variables'", la.val));
 			Get();
 			break;
 		}
-		default: SynErr(28); break;
+		default: SynErr(29); break;
 		}
 	}
 
@@ -285,7 +306,7 @@ public class Parser {
 			Get();
 		} else if (StartOf(3)) {
 			NumberVar();
-		} else SynErr(29);
+		} else SynErr(30);
 	}
 
 	void Var() {
@@ -332,11 +353,12 @@ public class Parser {
 			Get();
 			break;
 		}
-		default: SynErr(30); break;
+		default: SynErr(31); break;
 		}
 	}
 
 	void Ident() {
+		if (!variables.Add(la.val)) SemErr(string.Format("ident '{0}' declared twice in 'variables'", la.val));
 		addAlt(1); // T
 		Expect(1); // ident
 		addAlt(new int[] {10, 11}); // OPT
@@ -348,25 +370,25 @@ public class Parser {
 			} else {
 				Get();
 			}
+			if (!types.Contains(la.val)) SemErr(string.Format("ident '{0}' not declared in 'types'", la.val));
 			addAlt(1); // T
 			Expect(1); // ident
 		}
 	}
 
 	void Separator() {
-		addAlt(14); // ALT
 		addAlt(15); // ALT
-		if (isKind(la, 14)) {
-			addAlt(14); // weak T
-			ExpectWeak(14, 4); // "," followed by var1
-		} else if (isKind(la, 15)) {
+		addAlt(16); // ALT
+		if (isKind(la, 15)) {
 			addAlt(15); // weak T
-			ExpectWeak(15, 4); // "|" followed by var1
-		} else SynErr(31);
+			ExpectWeak(15, 4); // "," followed by var1
+		} else if (isKind(la, 16)) {
+			addAlt(16); // weak T
+			ExpectWeak(16, 4); // "|" followed by var1
+		} else SynErr(32);
 	}
 
 	void NumberVar() {
-		addAlt(16); // ALT
 		addAlt(17); // ALT
 		addAlt(18); // ALT
 		addAlt(19); // ALT
@@ -376,54 +398,55 @@ public class Parser {
 		addAlt(23); // ALT
 		addAlt(24); // ALT
 		addAlt(25); // ALT
+		addAlt(26); // ALT
 		addAlt(3); // ALT
 		switch (la.kind) {
-		case 16: // "0"
+		case 17: // "0"
 		{
 			Get();
 			break;
 		}
-		case 17: // "1"
+		case 18: // "1"
 		{
 			Get();
 			break;
 		}
-		case 18: // "2"
+		case 19: // "2"
 		{
 			Get();
 			break;
 		}
-		case 19: // "3"
+		case 20: // "3"
 		{
 			Get();
 			break;
 		}
-		case 20: // "4"
+		case 21: // "4"
 		{
 			Get();
 			break;
 		}
-		case 21: // "5"
+		case 22: // "5"
 		{
 			Get();
 			break;
 		}
-		case 22: // "6"
+		case 23: // "6"
 		{
 			Get();
 			break;
 		}
-		case 23: // "7"
+		case 24: // "7"
 		{
 			Get();
 			break;
 		}
-		case 24: // "8"
+		case 25: // "8"
 		{
 			Get();
 			break;
 		}
-		case 25: // "9"
+		case 26: // "9"
 		{
 			Get();
 			break;
@@ -433,7 +456,7 @@ public class Parser {
 			Get();
 			break;
 		}
-		default: SynErr(32); break;
+		default: SynErr(33); break;
 		}
 	}
 
@@ -455,32 +478,32 @@ public class Parser {
 	// a token's base type
 	static readonly int[] tBase = {
 		-1,-1,-1, 1,  1, 1, 1, 1,  1, 1, 1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
-		-1,-1,-1,-1, -1,-1,-1
+		-1,-1,-1,-1, -1,-1,-1,-1
 	};
 
 	// a token's name
 	public static readonly string[] tName = {
-		"EOF","ident","keyword","var", "var1","var2","var3","var4", "var5","var6","as","colon", "\"NumberIdent\"","\";\"","\",\"","\"|\"", "\"0\"","\"1\"","\"2\"","\"3\"",
-		"\"4\"","\"5\"","\"6\"","\"7\"", "\"8\"","\"9\"","???"
+		"EOF","ident","keyword","var", "var1","var2","var3","var4", "var5","var6","as","colon", "\"NumberIdent\"","\";\"","\"type\"","\",\"", "\"|\"","\"0\"","\"1\"","\"2\"",
+		"\"3\"","\"4\"","\"5\"","\"6\"", "\"7\"","\"8\"","\"9\"","???"
 	};
 
 	// states that a particular production (1st index) can start with a particular token (2nd index)
 	static readonly bool[,] set0 = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x},
-		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x},
-		{_x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x},
-		{_x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x},
-		{_T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x}
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
+		{_x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
+		{_T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x}
 
 	};
 
 	// as set0 but with token inheritance taken into account
 	static readonly bool[,] set = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x},
-		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x},
-		{_x,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x},
-		{_x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x},
-		{_T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x}
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_x,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
+		{_x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
+		{_T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x}
 
 	};
 } // end Parser
@@ -508,25 +531,26 @@ public class Errors {
 			case 11: s = "colon expected"; break;
 			case 12: s = "\"NumberIdent\" expected"; break;
 			case 13: s = "\";\" expected"; break;
-			case 14: s = "\",\" expected"; break;
-			case 15: s = "\"|\" expected"; break;
-			case 16: s = "\"0\" expected"; break;
-			case 17: s = "\"1\" expected"; break;
-			case 18: s = "\"2\" expected"; break;
-			case 19: s = "\"3\" expected"; break;
-			case 20: s = "\"4\" expected"; break;
-			case 21: s = "\"5\" expected"; break;
-			case 22: s = "\"6\" expected"; break;
-			case 23: s = "\"7\" expected"; break;
-			case 24: s = "\"8\" expected"; break;
-			case 25: s = "\"9\" expected"; break;
-			case 26: s = "??? expected"; break;
-			case 27: s = "this symbol not expected in Declaration"; break;
-			case 28: s = "invalid NumberIdent"; break;
-			case 29: s = "invalid IdentOrNumber"; break;
-			case 30: s = "invalid Var"; break;
-			case 31: s = "invalid Separator"; break;
-			case 32: s = "invalid NumberVar"; break;
+			case 14: s = "\"type\" expected"; break;
+			case 15: s = "\",\" expected"; break;
+			case 16: s = "\"|\" expected"; break;
+			case 17: s = "\"0\" expected"; break;
+			case 18: s = "\"1\" expected"; break;
+			case 19: s = "\"2\" expected"; break;
+			case 20: s = "\"3\" expected"; break;
+			case 21: s = "\"4\" expected"; break;
+			case 22: s = "\"5\" expected"; break;
+			case 23: s = "\"6\" expected"; break;
+			case 24: s = "\"7\" expected"; break;
+			case 25: s = "\"8\" expected"; break;
+			case 26: s = "\"9\" expected"; break;
+			case 27: s = "??? expected"; break;
+			case 28: s = "this symbol not expected in Declaration"; break;
+			case 29: s = "invalid NumberIdent"; break;
+			case 30: s = "invalid IdentOrNumber"; break;
+			case 31: s = "invalid Var"; break;
+			case 32: s = "invalid Separator"; break;
+			case 33: s = "invalid NumberVar"; break;
 
 			default: s = "error " + n; break;
 		}

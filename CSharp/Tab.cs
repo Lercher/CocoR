@@ -72,8 +72,6 @@ public class Symbol {
 	public Position semPos;      // pr: pos of semantic action in source text (or null)
 	                             // nt: pos of local declarations in source text (or null)
 	public Symbol 	inherits;    // optional, token from which this token derives
-	public string   declares;    // this symbol declares a new entry to the symboltable with this name
-	public string   declared;    // this symbol has to be declared in the symboltable with this name
 
 	public Symbol(int typ, string name, int line) {
 		this.typ = typ; this.name = name; this.line = line;
@@ -122,6 +120,8 @@ public class Node {
 	public int      line;		// source text line number of item in this node
 	public State    state;	// DFA state corresponding to this node
 													// (only used in DFA.ConvertToStates)
+	public string   declares;    // t, wt: the symbol declares a new entry to the symboltable with this name
+	public string   declared;    // t, wt: the symbol has to be declared in the symboltable with this name
 
 	public Node(int typ, Symbol sym, int line) {
 		this.typ = typ; this.sym = sym; this.line = line;

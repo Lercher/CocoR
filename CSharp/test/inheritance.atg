@@ -45,6 +45,7 @@ SYMBOLTABLES
 PRODUCTIONS
 
     Inheritance =
+         { Type }
          { Declaration } 
          {
            "NumberIdent" 
@@ -52,6 +53,8 @@ PRODUCTIONS
             ";"
          } 
          { IdentOrNumber }.
+    
+    Type = "type" ident>types ';'.
     
     // with iter node
     Declaration = Var Ident { Separator Ident } SYNC ';'.
@@ -62,7 +65,7 @@ PRODUCTIONS
     // forces ExpectWeak()
     Separator = (WEAK ',') | (WEAK '|').
     
-    // has an opt node
+    // has an opt node, 1st ident declares a name in variables, 2nd ident uses a name in types   
     Ident = ident>variables [ (as | colon) ident:types ].
 
     // This IdentOrNumber declaration forces a StartOf(2) call at Inheritance()

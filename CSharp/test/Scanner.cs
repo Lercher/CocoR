@@ -203,8 +203,8 @@ public class UTF8Buffer: Buffer {
 public class Scanner {
 	const char EOL = '\n';
 	const int eofSym = 0; /* pdt */
-	const int maxT = 26;
-	const int noSym = 26;
+	const int maxT = 27;
+	const int noSym = 27;
 
 
 	public Buffer buffer; // scanner buffer
@@ -361,6 +361,7 @@ public class Scanner {
 			case "var": t.kind = 3; break;
 			case "as": t.kind = 10; break;
 			case "NumberIdent": t.kind = 12; break;
+			case "type": t.kind = 14; break;
 			default: break;
 		}
 	}
@@ -428,29 +429,29 @@ public class Scanner {
 			case 12:
 				{t.kind = 13; break;}
 			case 13:
-				{t.kind = 14; break;}
-			case 14:
 				{t.kind = 15; break;}
-			case 15:
+			case 14:
 				{t.kind = 16; break;}
-			case 16:
+			case 15:
 				{t.kind = 17; break;}
-			case 17:
+			case 16:
 				{t.kind = 18; break;}
-			case 18:
+			case 17:
 				{t.kind = 19; break;}
-			case 19:
+			case 18:
 				{t.kind = 20; break;}
-			case 20:
+			case 19:
 				{t.kind = 21; break;}
-			case 21:
+			case 20:
 				{t.kind = 22; break;}
-			case 22:
+			case 21:
 				{t.kind = 23; break;}
-			case 23:
+			case 22:
 				{t.kind = 24; break;}
-			case 24:
+			case 23:
 				{t.kind = 25; break;}
+			case 24:
+				{t.kind = 26; break;}
 
 		}
 		t.val = new String(tval, 0, tlen);

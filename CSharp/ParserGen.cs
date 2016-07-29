@@ -235,6 +235,16 @@ public class ParserGen {
 		}
 		return s;
 	}
+
+	void GenSymboltableCheck(Node p, int indent) {
+		if (!string.IsNullOrEmpty(p.declares)) {
+			Indent(indent);
+			gen.WriteLine("if (!{0}.Add(la.val)) SemErr(string.Format(\"{2} '{{0}}' declared twice in '{1}'\", la.val));", p.declares, tab.Escape(p.declares), tab.Escape(p.sym.name));
+		} else if (!string.IsNullOrEmpty(p.declared)) {
+			Indent(indent);
+			gen.WriteLine("if (!{0}.Contains(la.val)) SemErr(string.Format(\"{2} '{{0}}' not declared in '{1}'\", la.val));", p.declared, tab.Escape(p.declared), tab.Escape(p.sym.name));
+		} 
+	}
 	
 	void GenCode (Node p, int indent, BitArray isChecked) {
 		Node p2;
@@ -249,6 +259,7 @@ public class ParserGen {
 					break;
 				}
 				case Node.t: {
+					GenSymboltableCheck(p, indent);
 					Indent(indent);
 					// assert: if isChecked[p.sym.n] is true, then isChecked contains only p.sym.n
 					if (isChecked[p.sym.n]) gen.WriteLine("Get();");
@@ -259,6 +270,7 @@ public class ParserGen {
 					break;
 				}
 				case Node.wt: {
+					GenSymboltableCheck(p, indent);
 					Indent(indent);
 					s1 = tab.Expected(p.next, curSy);
 					s1.Or(tab.allSyncSets);
@@ -495,6 +507,14 @@ public class ParserGen {
 				foreach(string s in st.predefined)
 					gen.WriteLine("\t\t{0}.Add(\"{1}\");", st.name, tab.Escape(s));
 		}
+		if (declare) {
+			gen.WriteLine("\tpublic Symboltable symbols(string name) {");
+			foreach (SymTab st in tab.symtabs)
+				gen.WriteLine("\t\tif (name == \"{1}\") return {0};", st.name, tab.Escape(st.name));
+			gen.WriteLine("\t\treturn null;");
+			gen.WriteLine("\t}\n");
+		}
+
 	} 
 
 	public void WriteParser () {
