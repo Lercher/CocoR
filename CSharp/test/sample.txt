@@ -17,15 +17,26 @@ var var6;
 
 // NumberIdent here:
 
-NumberIdent var6;
-NumberIdent 1;
-NumberIdent as;
-// NumberIdent SomeTextIsAnIdent;  // ident 'SomeTextIsAnIdent' not declared in 'variables'
-// NumberIdent ShouldBeAnError;  // ident 'ShouldBeAnError' not declared in 'variables'
-// NumberIdent keyword; // invalid NumberIdent b/c keyword is not an ident
+NumberIdent(var6);
+NumberIdent(shouldBeOk);
+NumberIdent(1);
+NumberIdent(as);
+// NumberIdent(SomeTextIsAnIdent);  // ident 'SomeTextIsAnIdent' not declared in 'variables'
+// NumberIdent(ShouldBeAnError);  // ident 'ShouldBeAnError' not declared in 'variables'
+// NumberIdent(keyword); // invalid NumberIdent b/c keyword is not an ident
+
+// calls:
+call(a, b, c);
+call(var1, var3, var5);
+
+// check
+check t int;
+check v var1;
+check t string;
+check v as;
+
 
 // ident or number list:
-
 1
 2
 var3 // OK now (var3 inherits ident) but 'EOF expected' with the 2011 version

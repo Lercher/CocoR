@@ -239,10 +239,18 @@ public class ParserGen {
 	void GenSymboltableCheck(Node p, int indent) {
 		if (!string.IsNullOrEmpty(p.declares)) {
 			Indent(indent);
-			gen.WriteLine("if (!{0}.Add(la.val)) SemErr(string.Format(_DuplicateSymbol, \"{2}\", la.val, \"{1}\"));", p.declares, tab.Escape(p.declares), tab.Escape(p.sym.name));
+			gen.WriteLine("if (!{0}.Add(la.val)) SemErr(string.Format(_DuplicateSymbol, \"{1}\", la.val, {0}.name));", p.declares, tab.Escape(p.sym.name));
 		} else if (!string.IsNullOrEmpty(p.declared)) {
 			Indent(indent);
-			gen.WriteLine("if (!{0}.Contains(la.val)) SemErr(string.Format(_MissingSymbol, \"{2}\", la.val, \"{1}\"));", p.declared, tab.Escape(p.declared), tab.Escape(p.sym.name));
+			gen.WriteLine("if (!{0}.Contains(la.val)) SemErr(string.Format(_MissingSymbol, \"{1}\", la.val, {0}.name));", p.declared, tab.Escape(p.sym.name));
+		} 
+	}
+
+	void GenAutocompleteSymboltable(Node p, int indent, string comment) {
+		if (!GenerateAutocompleteInformation) return;
+		if (!string.IsNullOrEmpty(p.declared)) {
+			gen.WriteLine("addAlt({0}, {1}); // {3} {2} uses symbol table '{1}'", p.sym.n, p.declared, p.sym.name, comment);
+			Indent(indent);
 		} 
 	}
 	
@@ -265,6 +273,7 @@ public class ParserGen {
 					if (isChecked[p.sym.n]) gen.WriteLine("Get();");
 					else {
 						GenAutocomplete(p.sym.n, indent, "T");
+						GenAutocompleteSymboltable(p, indent, "T");
 						gen.WriteLine("Expect({0}); // {1}", p.sym.n, p.sym.name);
 					}
 					break;
@@ -276,7 +285,8 @@ public class ParserGen {
 					s1.Or(tab.allSyncSets);
 					int ncs1 = NewCondSet(s1);
 					Symbol ncs1sym = (Symbol)tab.terminals[ncs1];
-					GenAutocomplete(p.sym.n, indent, "weak T");
+					GenAutocomplete(p.sym.n, indent, "WT");
+					GenAutocompleteSymboltable(p, indent, "WT");
 					gen.WriteLine("ExpectWeak({0}, {1}); // {2} followed by {3}", p.sym.n, ncs1, p.sym.name, ncs1sym.name);
 					break;
 				}
@@ -320,6 +330,7 @@ public class ParserGen {
 					{
 						s1 = tab.Expected(p2.sub, curSy);						
 						GenAutocomplete(s1, p2.sub, indent, "ALT");
+						GenAutocompleteSymboltable(p2.sub, indent, "ALT");
 						p2 = p2.down;
 					}
 					// end intellisense
@@ -370,6 +381,7 @@ public class ParserGen {
 					Node pac = p2;
 					BitArray sac = (BitArray) tab.First(pac);
 					GenAutocomplete(sac, pac, indent, "ITER start");
+					GenAutocompleteSymboltable(pac, indent, "ITER start");
 					gen.Write("while (");
 					if (p2.typ == Node.wt) {
 						s1 = tab.Expected(p2.next, curSy);
@@ -388,6 +400,7 @@ public class ParserGen {
 					GenCode(p2, indent + 1, s1);
 					Indent(indent + 1);
 					GenAutocomplete(sac, pac, 0, "ITER end");
+					GenAutocompleteSymboltable(pac, indent, "ITER end");
 					Indent(indent); gen.WriteLine("}");
 					break;
 				}

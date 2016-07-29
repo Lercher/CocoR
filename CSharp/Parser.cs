@@ -12,11 +12,13 @@ namespace at.jku.ssw.Coco {
 
 public class Alternative {
 	public readonly Token t;
-	public BitArray alt;
+	public readonly BitArray alt;
+	public readonly Symboltable[] st;
 
-	public Alternative(Token t, BitArray alt) {
+	public Alternative(Token t, BitArray alt, Symboltable[] st) {
 		this.t = t;
 		this.alt = alt;
+		this.st = st;
 	}
 }
 
@@ -61,12 +63,16 @@ public class Parser {
 
 	const bool _T = true;
 	const bool _x = false;
+	const string _DuplicateSymbol = "{0} '{1}' declared twice in '{2}'";
+	const string _MissingSymbol ="{0} '{1}' not declared in '{2}'";
 	const int minErrDist = 2;
 	
 	public Scanner scanner;
 	public Errors  errors;
 	public List<Alternative> tokens = new List<Alternative>();
-	public BitArray alt;
+	
+	BitArray alt;
+	Symboltable[] altst;
 
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
@@ -107,12 +113,13 @@ const int id = 0;
 		errDist = 0;
 	}
 	
+
 	void Get () {
 		for (;;) {
 			t = la;
 			if (t.kind != _EOF) {
-				tokens.Add(new Alternative(t, alt));
-				alt = new BitArray(maxT);
+				tokens.Add(new Alternative(t, alt, altst));
+				_newAlt();
 			}
 			la = scanner.Scan();
 			if (la.kind <= maxT) { ++errDist; break; }
@@ -127,8 +134,18 @@ const int id = 0;
 		}
 	}
 
+	void _newAlt() {
+		alt = new BitArray(maxT+1);
+		altst = new Symboltable[maxT+1];
+	}
+
 	void addAlt(int kind) {
 		alt[kind] = true;
+	}
+
+	// a terminal tokenclass of kind kind is restricted to this symbol table 
+	void addAlt(int kind, Symboltable st) {
+		altst[kind] = st;
 	}
 
 	void addAlt(int[] range) {
@@ -638,13 +655,15 @@ const int id = 0;
 					Get();
 					Expect(1); // ident
 					if (typ != Node.t && typ != Node.wt) SemErr("only terminals or weak terminals can declare a name in a symbol table"); 
-					p.declares = t.val.ToLower(); 
+					p.declares = t.val.ToLower();
+					if (null == tab.FindSymtab(p.declares)) SemErr(string.Format("undeclared symbol table '{0}'", p.declares));
 					
 				} else {
 					Get();
 					Expect(1); // ident
 					if (typ != Node.t && typ != Node.wt) SemErr("only terminals or weak terminals can lookup a name in a symbol table"); 
 					p.declared = t.val.ToLower(); 
+					if (null == tab.FindSymtab(p.declared)) SemErr(string.Format("undeclared symbol table '{0}'", p.declared));
 					
 				}
 			}
@@ -813,7 +832,7 @@ const int id = 0;
 	public void Parse() {
 		la = new Token();
 		la.val = "";
-		alt = new BitArray(maxT);		
+		_newAlt();		
 		Get();
 		Coco();
 		Expect(0);
@@ -829,7 +848,7 @@ const int id = 0;
 
 	// a token's name
 	public static readonly string[] tName = {
-		"EOF","ident","number","\\\"\\\"\\\"", "\\\"\\\"\\\"","\\\"\\\\\\\'\\\"","\"COMPILER\"","\"IGNORECASE\"", "\"CHARACTERS\"","\"TOKENS\"","\"PRAGMAS\"","\"COMMENTS\"", "\"FROM\"","\"TO\"","\"NESTED\"","\"IGNORE\"", "\"SYMBOLTABLES\"","\"PRODUCTIONS\"","\"=\"","\".\"",
+		"EOF","ident","number","\"\"\"", "\"\"\"","\"\\\'\"","\"COMPILER\"","\"IGNORECASE\"", "\"CHARACTERS\"","\"TOKENS\"","\"PRAGMAS\"","\"COMMENTS\"", "\"FROM\"","\"TO\"","\"NESTED\"","\"IGNORE\"", "\"SYMBOLTABLES\"","\"PRODUCTIONS\"","\"=\"","\".\"",
 		"\"END\"","\"+\"","\"-\"","\"..\"", "\"ANY\"","\":\"","\"<\"","\">\"", "\"<.\"","\".>\"","\"|\"","\"WEAK\"", "\"(\"","\")\"","\"[\"","\"]\"", "\"{\"","\"}\"","\"SYNC\"","\"IF\"",
 		"\"CONTEXT\"","\"(.\"","\".)\"","???"
 	};

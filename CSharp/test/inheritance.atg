@@ -48,12 +48,16 @@ PRODUCTIONS
          { Type }
          { Declaration } 
          {
-           "NumberIdent" 
-            NumberIdent (. Console.WriteLine("NumberIdent {0}", t.val); .)
-            ";"
+           "NumberIdent" '('
+            NumberIdent
+            ')' ';'
          } 
+         { Call }
+         { "check" ("t" ident:types | "v" ident:variables) ';' }
          { IdentOrNumber }.
-    
+
+    Call = "call" "(" ident:variables { "," ident:variables } ")" ";".
+
     Type = "type" ident>types ';'.
     
     // with iter node

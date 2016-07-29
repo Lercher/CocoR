@@ -34,11 +34,13 @@ using System.Collections.Generic;
 
 public class Alternative {
 	public readonly Token t;
-	public BitArray alt;
+	public readonly BitArray alt;
+	public readonly Symboltable[] st;
 
-	public Alternative(Token t, BitArray alt) {
+	public Alternative(Token t, BitArray alt, Symboltable[] st) {
 		this.t = t;
 		this.alt = alt;
+		this.st = st;
 	}
 }
 
@@ -81,7 +83,9 @@ public class Parser {
 	public Scanner scanner;
 	public Errors  errors;
 	public List<Alternative> tokens = new List<Alternative>();
-	public BitArray alt;
+	
+	BitArray alt;
+	Symboltable[] altst;
 
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
@@ -104,12 +108,13 @@ public class Parser {
 		errDist = 0;
 	}
 	
+
 	void Get () {
 		for (;;) {
 			t = la;
 			if (t.kind != _EOF) {
-				tokens.Add(new Alternative(t, alt));
-				alt = new BitArray(maxT);
+				tokens.Add(new Alternative(t, alt, altst));
+				_newAlt();
 			}
 			la = scanner.Scan();
 			if (la.kind <= maxT) { ++errDist; break; }
@@ -118,8 +123,18 @@ public class Parser {
 		}
 	}
 
+	void _newAlt() {
+		alt = new BitArray(maxT+1);
+		altst = new Symboltable[maxT+1];
+	}
+
 	void addAlt(int kind) {
 		alt[kind] = true;
+	}
+
+	// a terminal tokenclass of kind kind is restricted to this symbol table 
+	void addAlt(int kind, Symboltable st) {
+		altst[kind] = st;
 	}
 
 	void addAlt(int[] range) {
@@ -180,7 +195,7 @@ public class Parser {
 	public void Parse() {
 		la = new Token();
 		la.val = "";
-		alt = new BitArray(maxT);		
+		_newAlt();		
 		Get();
 -->parseRoot
 	}

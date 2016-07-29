@@ -34,8 +34,12 @@ public class Inheritance {
                 Console.Write("                    alt: ");
                 for (int k = 0; k < Parser.maxT; k++)
                 {
-                    if (a.alt[k])
-                        Console.Write("{1} ", k, Parser.tName[k]);
+                    if (a.alt[k]) {
+                        Console.Write("{1}", k, Parser.tName[k]);
+                        if (a.st[k] != null)
+                            Console.Write(":{0}", a.st[k].name);
+                        Console.Write(' ');
+                    }
                 }
                 Console.WriteLine();
             }
