@@ -378,11 +378,13 @@ Factor<out Graph g>             (. string name; int kind; Position pos; bool wea
   [ Attribs<p>                  (. if (kind != id) SemErr("a literal must not have attributes"); .)
   | ">" ident                   (. 
                                    if (typ != Node.t && typ != Node.wt) SemErr("only terminals or weak terminals can declare a name in a symbol table"); 
-                                   p.declares = t.val.ToLower(); 
+                                   p.declares = t.val.ToLower();
+                                   if (null == tab.FindSymtab(p.declares)) SemErr(string.Format("undeclared symbol table '{0}'", p.declares));
                                  .)
   | ":" ident                   (. 
                                    if (typ != Node.t && typ != Node.wt) SemErr("only terminals or weak terminals can lookup a name in a symbol table"); 
                                    p.declared = t.val.ToLower(); 
+                                   if (null == tab.FindSymtab(p.declared)) SemErr(string.Format("undeclared symbol table '{0}'", p.declared));
                                  .)
   ]                             (. if (undef)
                                      sym.attrPos = p.pos;  // dummy
