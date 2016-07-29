@@ -368,6 +368,7 @@ const int id = 0;
 			TokenExpr(out g);
 			Expect(19); // "."
 			if (kind == str) SemErr("a literal must not be declared with a structure");
+			if (g.str != null) sym.definedAs = g.str;
 			tab.Finish(g);
 			if (tokenString == null || tokenString.Equals(noString))
 			 dfa.ConvertToStates(g.l, sym);
@@ -385,7 +386,7 @@ const int id = 0;
 		} else SynErr(46);
 		if (isKind(la, 41)) {
 			SemText(out sym.semPos);
-			if (typ != Node.pr) SemErr("semantic action not allowed here"); 
+			if (typ != Node.pr) SemErr("semantic action not allowed in a pragma context"); 
 		}
 	}
 
@@ -828,7 +829,7 @@ const int id = 0;
 
 	// a token's name
 	public static readonly string[] tName = {
-		"EOF","ident","number","string", "badString","char","\"COMPILER\"","\"IGNORECASE\"", "\"CHARACTERS\"","\"TOKENS\"","\"PRAGMAS\"","\"COMMENTS\"", "\"FROM\"","\"TO\"","\"NESTED\"","\"IGNORE\"", "\"SYMBOLTABLES\"","\"PRODUCTIONS\"","\"=\"","\".\"",
+		"EOF","ident","number","\\\"\\\"\\\"", "\\\"\\\"\\\"","\\\"\\\\\\\'\\\"","\"COMPILER\"","\"IGNORECASE\"", "\"CHARACTERS\"","\"TOKENS\"","\"PRAGMAS\"","\"COMMENTS\"", "\"FROM\"","\"TO\"","\"NESTED\"","\"IGNORE\"", "\"SYMBOLTABLES\"","\"PRODUCTIONS\"","\"=\"","\".\"",
 		"\"END\"","\"+\"","\"-\"","\"..\"", "\"ANY\"","\":\"","\"<\"","\">\"", "\"<.\"","\".>\"","\"|\"","\"WEAK\"", "\"(\"","\")\"","\"[\"","\"]\"", "\"{\"","\"}\"","\"SYNC\"","\"IF\"",
 		"\"CONTEXT\"","\"(.\"","\".)\"","???"
 	};

@@ -483,7 +483,7 @@ public class Parser {
 
 	// a token's name
 	public static readonly string[] tName = {
-		"EOF","ident","keyword","var", "var1","var2","var3","var4", "var5","var6","as","colon", "\"NumberIdent\"","\";\"","\"type\"","\",\"", "\"|\"","\"0\"","\"1\"","\"2\"",
+		"EOF","ident","\"keyword\"","\"var\"", "\"var1\"","\"var2\"","\"var3\"","\"var4\"", "\"var5\"","\"var6\"","\"as\"","\":\"", "\"NumberIdent\"","\";\"","\"type\"","\",\"", "\"|\"","\"0\"","\"1\"","\"2\"",
 		"\"3\"","\"4\"","\"5\"","\"6\"", "\"7\"","\"8\"","\"9\"","???"
 	};
 

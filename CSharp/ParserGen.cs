@@ -439,7 +439,7 @@ public class ParserGen {
 
 	void GenTokenNames() {
 		ForAllTerminals(delegate(Symbol sym) {
-			gen.Write("\"{0}\"", tab.Escape(sym.name));
+			gen.Write("\"{0}\"", tab.Escape(sym.definedAs));
 		});
 	}
 	

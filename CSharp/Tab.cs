@@ -60,6 +60,7 @@ public class Symbol {
 	public int      n;           // symbol number
 	public int      typ;         // t, nt, pr, unknown, rslv /* ML 29_11_2002 slv added */ /* AW slv --> rslv */
 	public string   name;        // symbol name
+	public string   definedAs;	 // t:  the definition of this terminal or its name
 	public Node     graph;       // nt: to first node of syntax graph
 	public int      tokenKind;   // t:  token kind (fixedToken, classToken, ...)
 	public bool     deletable;   // nt: true if nonterminal is deletable
@@ -135,6 +136,7 @@ public class Node {
 public class Graph {	
 	public Node l;	// left end of graph = head
 	public Node r;	// right end of graph = list of nodes to be linked to successor graph
+	public string str = null; // only filled in the root for a Graph constructed with Tab.StrToGraph 
 	
 	public Graph() {
 		l = null; r = null;
@@ -269,6 +271,7 @@ public class Tab {
 			parser.SemErr("empty token not allowed"); name = "???";
 		}
 		Symbol sym = new Symbol(typ, name, line);
+		sym.definedAs = name;
 		switch (typ) {
 			case Node.t:  sym.n = terminals.Count; terminals.Add(sym); break;
 			case Node.pr: pragmas.Add(sym); break;
@@ -435,6 +438,7 @@ public class Tab {
 		string s = Unescape(str.Substring(1, str.Length-2));
 		if (s.Length == 0) parser.SemErr("empty token not allowed");
 		Graph g = new Graph();
+		g.str = str;
 		g.r = dummyNode;
 		for (int i = 0; i < s.Length; i++) {
 			Node p = NewNode(Node.chr, (int)s[i], 0);
