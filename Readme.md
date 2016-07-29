@@ -167,8 +167,8 @@ returns the symbol table with the specified name or null if not found.
 
 ## Languages
 
-* C# - OK, beta testing, autocomplete information
-* VB.Net - OK, beta testing
+* C# - token inheritance *beta*, autocomplete information *alpha*, symbol tables *beta*
+* VB.Net - token inheritance *beta*
 * Java - planned but not yet scheduled
 
 Note: The generated code for .Net languages targets
