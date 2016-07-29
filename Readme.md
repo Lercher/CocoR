@@ -89,25 +89,33 @@ tokens `public List<Alternative> tokens` in text ordering,
 i.e. no comments, no whitespace and no pragmas.
 
 For each such element the property `t` holds the actually
-parsed token. The property `alt` holds a BitArray of all
+parsed token. 
+
+The property `alt` holds a BitArray of all
 Terminal symbols that would be valid before the current 
 token `t` was parsed. With the help of the `Parser.tName`
 array and the index in the `alt` array, a client can resolve
 the name of the token from the TOKENS section of the atg grammar
 file or the literal of an inline declared keyword.
 
-Currently there is a flaw in the implementiation, because
+Furthermore, if an alternative token class is associated with 
+a symbol table in the current production like in `ident:variables` 
+it's symbol table `variables` is accessible by 
+the `st` array at its kind position. 
+
+
+Note: Currently there is a flaw in the implementiation, because
 the calculation of possible alternatives stops as soon as the 
 actual token gets validly parsed. So this list can be truncated.
 -> this has to be investigated.
 
 
-
 ### Sample Code
 
 This Sample Code lists all tokens and their respective
-variants. See CSharp/Test/main.cs for a more elaborate
-example.
+variants by name. If a variant has an associated symbol table,
+a colon and the symbol table's name is appended to the 
+token's symbol name. 
 
     foreach (Alternative a in parser.tokens)
     {
@@ -115,14 +123,21 @@ example.
         Console.Write("({0,3},{1,3}) {2,3} {3,-20} {4, -20}", 
           t.line, t.col, t.kind, Parser.tName[t.kind], t.val);
         Console.Write(" alt: ");
-        for (int k = 0; k < Parser.maxT; k++)
+        for (int k = 0; k <= Parser.maxT; k++)
         {
             if (a.alt[k])
                 Console.Write("{1} ", k, Parser.tName[k]);
+                if (a.st[k] != null)
+                    Console.Write(":{0}", a.st[k].name); 
+                    // symbol table associated with this k-th terminal
+                    // in the current parsing context
+                Console.Write(' ');
         }
         Console.WriteLine();
     }
 
+See CSharp/Test/main.cs for a more elaborate
+example.
 
 ## Symbol Tables
 
