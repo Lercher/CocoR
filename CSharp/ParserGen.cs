@@ -47,7 +47,7 @@ public class ParserGen {
 	
 	public Position usingPos; // "using" definitions from the attributed grammar
 	public bool GenerateAutocompleteInformation = false;  // generate addAlt() calls to fill the "alt" set with alternatives to the next to Get() token.
-	public readonly bool ignoreCase; 
+	private readonly DFA dfa; 
 
 	int errorNr;      // highest parser error number
 	Symbol curSy;     // symbol whose production is currently generated
@@ -515,7 +515,7 @@ public class ParserGen {
 		foreach (SymTab st in tab.symtabs)
 		{
 			if (declare)
-				gen.WriteLine("\tpublic readonly Symboltable {0} = new Symboltable(\"{0}\", {1});", st.name, ignoreCase ? "true" : "false");
+				gen.WriteLine("\tpublic readonly Symboltable {0} = new Symboltable(\"{0}\", {1});", st.name, dfa.ignoreCase ? "true" : "false");
 			else
 				foreach(string s in st.predefined)
 					gen.WriteLine("\t\t{0}.Add(\"{1}\");", st.name, tab.Escape(s));
@@ -531,6 +531,8 @@ public class ParserGen {
 	} 
 
 	public void WriteParser () {
+		System.Console.WriteLine("ignoreCase={0}", dfa.ignoreCase ? "true" : "false");
+		
 		Generator g = new Generator(tab);
 		int oldPos = buffer.Pos;  // Pos is modified by CopySourcePart
 		symSet.Add(tab.allSyncSets);
@@ -589,7 +591,7 @@ public class ParserGen {
 		errors = parser.errors;
 		trace = parser.trace;
 		buffer = parser.scanner.buffer;
-		ignoreCase = parser.dfa.ignoreCase;
+		dfa = parser.dfa;
 		errorNr = -1;
 		usingPos = null;		
 	}

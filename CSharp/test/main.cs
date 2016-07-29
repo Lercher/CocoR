@@ -3,6 +3,18 @@ using System.IO;
 
 public class Inheritance {
 
+    static void printST(Symboltable st) {
+        Console.WriteLine("--- symbol-table ------------------------------------------------------------------- {0}{1}", st.name, st.ignoreCase ? " IGONRECASE" : "");
+        int n = 0;
+        foreach (string s in st.items) {
+            n++;
+            Console.Write("{0,-20}  ", s);
+            if (n%4 == 0) Console.WriteLine(); 
+        }
+        if (n%4 != 0) Console.WriteLine();
+        Console.WriteLine();
+    }
+
 	public static int Main (string[] arg) {
 		Console.WriteLine("Inheritance parser");
         if (arg.Length == 1)
@@ -14,6 +26,13 @@ public class Inheritance {
             Console.WriteLine("{0} error(s) detected", parser.errors.count);
             int line = 0;
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
+
+            // list all symbol table values
+            printST(parser.types);
+            printST(parser.variables);
+
+
+            // list all alternatives
             foreach (Alternative a in parser.tokens)
             {
                 Token t = a.t;

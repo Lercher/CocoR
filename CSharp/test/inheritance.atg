@@ -2,6 +2,8 @@
 
 COMPILER Inheritance
 
+IGNORECASE
+
 CHARACTERS
 	letter    = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".
 	cr        = '\r'.

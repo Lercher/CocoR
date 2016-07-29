@@ -67,8 +67,8 @@ public class Symboltable {
 		return list.Contains(s);
 	}
 
-	public IEnumerable<string> Items() {
-		return list;
+	public IEnumerable<string> items {
+		get { return list; }
 	}
 }
 

@@ -8,6 +8,7 @@ var shouldBeOk;     // OK
 var var;            // OK now (var inherits ident) but 'ident expected' with the 2011 version
 //var keyword;      // 'ident expected' b/c keyword is not an ident
 var a, b, c;
+var A, B, C;
 var d as int, e as int, f as int;
 var g | h | i | as as as;
 var j:int, k:int, l:int;

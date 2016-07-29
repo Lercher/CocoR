@@ -40,8 +40,8 @@ public class Symboltable {
 		return list.Contains(s);
 	}
 
-	public IEnumerable<string> Items() {
-		return list;
+	public IEnumerable<string> items {
+		get { return list; }
 	}
 }
 
@@ -77,8 +77,8 @@ public class Parser {
 	public Token la;   // lookahead token
 	int errDist = minErrDist;
 
-	public readonly Symboltable variables = new Symboltable("variables", false);
-	public readonly Symboltable types = new Symboltable("types", false);
+	public readonly Symboltable variables = new Symboltable("variables", true);
+	public readonly Symboltable types = new Symboltable("types", true);
 	public Symboltable symbols(string name) {
 		if (name == "variables") return variables;
 		if (name == "types") return types;
@@ -556,7 +556,7 @@ public class Parser {
 
 	// a token's name
 	public static readonly string[] tName = {
-		"EOF","ident","\"keyword\"","\"var\"", "\"var1\"","\"var2\"","\"var3\"","\"var4\"", "\"var5\"","\"var6\"","\"as\"","\":\"", "\"NumberIdent\"","\"(\"","\")\"","\";\"", "\"check\"","\"t\"","\"v\"","\"call\"",
+		"EOF","ident","\"keyword\"","\"var\"", "\"var1\"","\"var2\"","\"var3\"","\"var4\"", "\"var5\"","\"var6\"","\"as\"","\":\"", "\"numberident\"","\"(\"","\")\"","\";\"", "\"check\"","\"t\"","\"v\"","\"call\"",
 		"\",\"","\"type\"","\"|\"","\"0\"", "\"1\"","\"2\"","\"3\"","\"4\"", "\"5\"","\"6\"","\"7\"","\"8\"", "\"9\"","???"
 	};
 
@@ -602,7 +602,7 @@ public class Errors {
 			case 9: s = "var6 expected"; break;
 			case 10: s = "as expected"; break;
 			case 11: s = "colon expected"; break;
-			case 12: s = "\"NumberIdent\" expected"; break;
+			case 12: s = "\"numberident\" expected"; break;
 			case 13: s = "\"(\" expected"; break;
 			case 14: s = "\")\" expected"; break;
 			case 15: s = "\";\" expected"; break;

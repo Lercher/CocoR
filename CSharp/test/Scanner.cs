@@ -205,7 +205,7 @@ public class Scanner {
 	const int eofSym = 0; /* pdt */
 	const int maxT = 33;
 	const int noSym = 33;
-
+	char valCh;       // current input character (for token.val)
 
 	public Buffer buffer; // scanner buffer
 	
@@ -226,7 +226,6 @@ public class Scanner {
 	
 	static Scanner() {
 		start = new Dictionary<int, int>(128);
-		for (int i = 65; i <= 90; ++i) start[i] = 1;
 		for (int i = 95; i <= 95; ++i) start[i] = 1;
 		for (int i = 97; i <= 117; ++i) start[i] = 1;
 		for (int i = 119; i <= 122; ++i) start[i] = 1;
@@ -293,6 +292,10 @@ public class Scanner {
 			if (ch == '\r' && buffer.Peek() != '\n') ch = EOL;
 			if (ch == EOL) { line++; col = 0; }
 		}
+		if (ch != Buffer.EOF) {
+			valCh = (char) ch;
+			ch = char.ToLower((char) ch);
+		}
 
 	}
 
@@ -303,7 +306,7 @@ public class Scanner {
 			tval = newBuf;
 		}
 		if (ch != Buffer.EOF) {
-			tval[tlen++] = (char) ch;
+			tval[tlen++] = valCh;
 			NextCh();
 		}
 	}
@@ -358,11 +361,11 @@ public class Scanner {
 
 
 	void CheckLiteral() {
-		switch (t.val) {
+		switch (t.val.ToLower()) {
 			case "keyword": t.kind = 2; break;
 			case "var": t.kind = 3; break;
 			case "as": t.kind = 10; break;
-			case "NumberIdent": t.kind = 12; break;
+			case "numberident": t.kind = 12; break;
 			case "check": t.kind = 16; break;
 			case "t": t.kind = 17; break;
 			case "v": t.kind = 18; break;
@@ -396,7 +399,7 @@ public class Scanner {
 			} // NextCh already done
 			case 1:
 				recEnd = pos; recKind = 1;
-				if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 1;}
+				if (ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 1;}
 				else {t.kind = 1; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
 			case 2:
 				{t.kind = 4; break;}
@@ -414,17 +417,17 @@ public class Scanner {
 				{t.kind = 11; break;}
 			case 9:
 				recEnd = pos; recKind = 1;
-				if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'b' && ch <= 'z') {AddCh(); goto case 1;}
+				if (ch == '_' || ch >= 'b' && ch <= 'z') {AddCh(); goto case 1;}
 				else if (ch == 'a') {AddCh(); goto case 10;}
 				else {t.kind = 1; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
 			case 10:
 				recEnd = pos; recKind = 1;
-				if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'q' || ch >= 's' && ch <= 'z') {AddCh(); goto case 1;}
+				if (ch == '_' || ch >= 'a' && ch <= 'q' || ch >= 's' && ch <= 'z') {AddCh(); goto case 1;}
 				else if (ch == 'r') {AddCh(); goto case 11;}
 				else {t.kind = 1; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
 			case 11:
 				recEnd = pos; recKind = 1;
-				if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 1;}
+				if (ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 1;}
 				else if (ch == '1') {AddCh(); goto case 2;}
 				else if (ch == '2') {AddCh(); goto case 3;}
 				else if (ch == '3') {AddCh(); goto case 4;}
