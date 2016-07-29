@@ -29,7 +29,7 @@ NumberIdent as;
 1
 2
 var3 // OK now (var3 inherits ident) but 'EOF expected' with the 2011 version
-shouldBeOk;     // OK
+shouldBeOk     // OK
 //keyword // 'EOF expected' b/c keyword is not an ident
 
 
