@@ -32,7 +32,7 @@ public class Inheritance {
                 sb.Append(t.val); sb.Append(' ');
                 Console.Write("({0,3},{1,3}) {2,3} {3,-20} {4, -20}", t.line, t.col, t.kind, Parser.tName[t.kind], t.val);
                 Console.Write("                    alt: ");
-                for (int k = 0; k < Parser.maxT; k++)
+                for (int k = 0; k <= Parser.maxT; k++)
                 {
                     if (a.alt[k]) {
                         Console.Write("{1}", k, Parser.tName[k]);
