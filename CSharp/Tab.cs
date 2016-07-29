@@ -29,6 +29,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace at.jku.ssw.Coco {
 
@@ -71,6 +72,8 @@ public class Symbol {
 	public Position semPos;      // pr: pos of semantic action in source text (or null)
 	                             // nt: pos of local declarations in source text (or null)
 	public Symbol 	inherits;    // optional, token from which this token derives
+	public string   declares;    // this symbol declares a new entry to the symboltable with this name
+	public string   declared;    // this symbol has to be declared in the symboltable with this name
 
 	public Symbol(int typ, string name, int line) {
 		this.typ = typ; this.name = name; this.line = line;
@@ -195,6 +198,20 @@ public class CharClass {
 	}
 }
 
+//=====================================================================
+// SymTab
+//=====================================================================
+
+public class SymTab {
+	public string name;
+	public List<string> predefined = new List<string>();
+	
+	public SymTab(string name) { this.name = name; }
+	
+	public void Add(string name) { 
+		if (!predefined.Contains(name)) predefined.Add(name); 
+	}	
+}
 
 //=====================================================================
 // Tab
@@ -209,6 +226,7 @@ public class Tab {
 	public Symbol noSym;              // used in case of an error
 	public BitArray allSyncSets;      // union of all synchronisation sets
 	public Hashtable literals;        // symbols that are used as literals
+	public List<SymTab> symtabs = new List<SymTab>();
 	
 	public string srcName;            // name of the atg file (including path)
 	public string srcDir;             // directory path of the atg file
@@ -264,6 +282,12 @@ public class Tab {
 			if (s.name == name) return s;
 		foreach (Symbol s in nonterminals)
 			if (s.name == name) return s;
+		return null;
+	}
+
+	public SymTab FindSymtab(string name) {
+		foreach (SymTab st in symtabs)
+			if (st.name == name) return st;
 		return null;
 	}
 	

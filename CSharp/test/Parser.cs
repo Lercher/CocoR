@@ -15,6 +15,34 @@ public class Alternative {
 	}
 }
 
+public class Symboltable {
+	private List<string> list = new List<string>();
+	public readonly string name;
+	public readonly bool ignoreCase;
+
+	public Symboltable(string name, bool ignoreCase) {
+		this.name = name;
+		this.ignoreCase = ignoreCase;
+	}
+
+	public bool Add(string s) {
+		if (ignoreCase) s = s.ToLower();
+		if (list.Contains(s))
+			return false;
+		list.Add(s);
+		return true;
+	}
+
+	public bool Contains(string s) {
+		if (ignoreCase) s = s.ToLower();
+		return list.Contains(s);
+	}
+
+	public IEnumerable<string> Items() {
+		return list;
+	}
+}
+
 public class Parser {
 	public const int _EOF = 0; // TOKEN EOF
 	public const int _ident = 1; // TOKEN ident
@@ -43,6 +71,9 @@ public class Parser {
 	public Token la;   // lookahead token
 	int errDist = minErrDist;
 
+	// declarations
+	public readonly Symboltable variables = new Symboltable("variables", false);
+	public readonly Symboltable types = new Symboltable("types", false);
 
 
 	public Parser(Scanner scanner) {
@@ -413,6 +444,9 @@ public class Parser {
 		la.val = "";
 		alt = new BitArray(maxT);		
 		Get();
+		types.Add("string");
+		types.Add("int");
+		types.Add("double");
 		Inheritance();
 		Expect(0);
 

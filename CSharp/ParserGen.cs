@@ -29,6 +29,7 @@ Coco/R itself) does not fall under the GNU General Public License.
 using System;
 using System.IO;
 using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 
 namespace at.jku.ssw.Coco {
@@ -45,7 +46,8 @@ public class ParserGen {
 	const int syncErr = 2;
 	
 	public Position usingPos; // "using" definitions from the attributed grammar
-	public bool GenerateAutocompleteInformation = false;  // generate addAlt() calls to fill the "alt" set with alternatives to the next to Get() token. 
+	public bool GenerateAutocompleteInformation = false;  // generate addAlt() calls to fill the "alt" set with alternatives to the next to Get() token.
+	public readonly bool ignoreCase; 
 
 	int errorNr;      // highest parser error number
 	Symbol curSy;     // symbol whose production is currently generated
@@ -484,6 +486,17 @@ public class ParserGen {
 		}
 	}
 
+	void GenSymbolTables(bool declare) {
+		foreach (SymTab st in tab.symtabs)
+		{
+			if (declare)
+				gen.WriteLine("\tpublic readonly Symboltable {0} = new Symboltable(\"{0}\", {1});", st.name, ignoreCase ? "true" : "false");
+			else
+				foreach(string s in st.predefined)
+					gen.WriteLine("\t\t{0}.Add(\"{1}\");", st.name, tab.Escape(s));
+		}
+	} 
+
 	public void WriteParser () {
 		Generator g = new Generator(tab);
 		int oldPos = buffer.Pos;  // Pos is modified by CopySourcePart
@@ -508,10 +521,15 @@ public class ParserGen {
 		GenTokens(); /* ML 2002/09/07 write the token kinds */		
 		gen.WriteLine("\tpublic const int maxT = {0};", tab.terminals.Count-1);
 		GenPragmas(); /* ML 2005/09/23 write the pragma kinds */
-		g.CopyFramePart("-->declarations"); CopySourcePart(tab.semDeclPos, 0);
+		g.CopyFramePart("-->declarations");
+		GenSymbolTables(true);
+		CopySourcePart(tab.semDeclPos, 0);
 		g.CopyFramePart("-->pragmas"); GenCodePragmas();
 		g.CopyFramePart("-->productions"); GenProductions();
-		g.CopyFramePart("-->parseRoot"); gen.WriteLine("\t\t{0}();", tab.gramSy.name); if (tab.checkEOF) gen.WriteLine("\t\tExpect(0);");
+		g.CopyFramePart("-->parseRoot"); 
+		GenSymbolTables(false);
+		gen.WriteLine("\t\t{0}();", tab.gramSy.name); 
+		if (tab.checkEOF) gen.WriteLine("\t\tExpect(0);");
 		g.CopyFramePart("-->tbase"); GenTokenBase(); // write all tokens base types
 		g.CopyFramePart("-->tname"); GenTokenNames(); // write all token names
 		g.CopyFramePart("-->initialization0"); InitSets0();
@@ -538,8 +556,9 @@ public class ParserGen {
 		errors = parser.errors;
 		trace = parser.trace;
 		buffer = parser.scanner.buffer;
+		ignoreCase = parser.dfa.ignoreCase;
 		errorNr = -1;
-		usingPos = null;
+		usingPos = null;		
 	}
 
 } // end ParserGen

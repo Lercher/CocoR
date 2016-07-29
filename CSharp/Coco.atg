@@ -112,6 +112,8 @@ Coco                            (. Symbol sym; Graph g, g1, g2; string gramName;
   { "IGNORE" Set<out s>         (. tab.ignored.Or(s); .)
   }
 
+  [ "SYMBOLTABLES" { STDecl } ]
+
   SYNC 
   "PRODUCTIONS"                 (. if (genScanner) dfa.MakeDeterministic();
                                    tab.DeleteNodes();
@@ -172,6 +174,25 @@ Coco                            (. Symbol sym; Graph g, g1, g2; string gramName;
                                    }
                                    if (tab.ddt[6]) tab.PrintSymbolTable();
                                  .)
+  '.'
+.
+
+/*------------------------------------------------------------------------------------*/
+
+STDecl                          (. SymTab st; .)
+=
+  ident                         (. string name = t.val.ToLower();                                    
+                                   if (tab.FindSymtab(name) != null) 
+                                     SemErr("symbol table name declared twice");
+                                   st = new SymTab(name);
+                                   tab.symtabs.Add(st);
+                                 .)
+  { string                      (. string predef = t.val;
+                                   predef = tab.Unescape(predef.Substring(1, predef.Length-2));
+                                   if (dfa.ignoreCase) predef = predef.ToLower();
+                                   st.Add(predef);
+                                 .)
+  }
   '.'
 .
 
@@ -354,6 +375,8 @@ Factor<out Graph g>             (. string name; int kind; Position pos; bool wea
                                    g = new Graph(p);
                                  .)
   [ Attribs<p>                  (. if (kind != id) SemErr("a literal must not have attributes"); .)
+  | ">" ident                   (. sym.declares = t.val.ToLower(); .)
+  | ":" ident                   (. sym.declared = t.val.ToLower(); .)
   ]                             (. if (undef)
                                      sym.attrPos = p.pos;  // dummy
                                    else if ((p.pos == null) != (sym.attrPos == null))

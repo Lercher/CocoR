@@ -1,4 +1,4 @@
-// cd .. & build.bat & cd test & cocbuild
+// cls & cd .. & build.bat & cd test & cocbuild
 
 COMPILER Inheritance
 
@@ -37,6 +37,10 @@ COMMENTS FROM "//" TO lf
 
 IGNORE cr + lf + tab
 
+SYMBOLTABLES
+   variables.  // an empty symbol table named variables
+   types "string" "int" "double". // a symbol table named types with three prefilled entries
+   // variables.  // symbol table name declared twice
 
 PRODUCTIONS
 
@@ -59,7 +63,7 @@ PRODUCTIONS
     Separator = (WEAK ',') | (WEAK '|').
     
     // has an opt node
-    Ident = ident [ (as | colon) ident ].
+    Ident = ident>variables [ (as | colon) ident:types ].
 
     // This IdentOrNumber declaration forces a StartOf(2) call at Inheritance()
     // with ident as StartOf(2) in the 'set' array but not var..var6 in it
@@ -71,7 +75,7 @@ PRODUCTIONS
     
     // void NumberVar() shoud be rendered as a switch statement, 
     // but the last switch should have many cases for ident, namely ident+var+..+var6 
-    NumberIdent = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | ident .
+    NumberIdent = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | ident:variables .
 
     // note: the 'set' array might be a good starting point to
     // derive language services for the grammar, i.e. autocomplete/intellisense
