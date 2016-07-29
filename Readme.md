@@ -64,6 +64,24 @@ would be invalid, just as the first text would
 with a parser generated with the 2011 version of Coco/R.
 
 
+### Extended syntax for token inheritance
+
+see http://www.ssw.uni-linz.ac.at/Coco/Doc/UserManual.pdf 
+with this modification of section "2.3.2 Tokens":
+
+    TokenDecl = Symbol [':' Symbol] ['=' TokenExpr '.']. 
+
+The Symbol behind the colon has to be a previously declared
+token and is called the base token type. The generated parser
+now accepts this declared token everywhere a token of its
+base token type is expected. 
+
+This compatibility is transitive.
+However, it would be bad design to have complicated
+inheritance trees in the grammar.
+
+
+
 ## Autocomplete Information
 
 After parsing, the parser has a list of all relevant
@@ -106,22 +124,40 @@ example.
     }
 
 
+## Symbol Tables
 
-## Extended Syntax
+There is a new section `SYMBOLTABLES` just before `PRODUCTIONS`
+where symbol tables for the generated parser can be declared and
+initialized.
 
-see http://www.ssw.uni-linz.ac.at/Coco/Doc/UserManual.pdf 
-with this modification of section "2.3.2 Tokens":
+    STDecl = ident { string } .
 
-    TokenDecl = Symbol [':' Symbol] ['=' TokenExpr '.']. 
+Example
 
-The Symbol behind the colon has to be a previously declared
-token and is called the base token type. The generated parser
-now accepts this declared token everywhere a token of its
-base token type is expected. 
+    SYMBOLTABLES
+      variables.  // an empty symbol table named variables
+      types "string" "int" "double". // a symbol table named types with three prefilled entries
 
-This compatibility is transitive.
-However, it would be bad design to have complicated
-inheritance trees in the grammar.
+In productions you can append to each terminal or weak terminal `t`
+an angle bracket plus a declared symboltable symbol to declare a new
+name in this symbol table or a colon plus a symboltable to use
+a declared name in this table. Semantic errors are generated if the name
+is declared twice or does not exist respectivly.
+
+Example
+
+    Decl = "var" ident>variables ':' ident:types.
+
+this production creates a new name in `variables` for the first ident
+and checks that the second ident is present in `types`.
+
+
+### Accessing symbol tables form outside
+
+The declared symbol tables are accessible via a declared public readonly field
+of type `Symboltable` and via the generic method `symbol(string name)` that
+returns the symbol table with the specified name or null if not found.
+
 
 
 ## Extended command line arguments
