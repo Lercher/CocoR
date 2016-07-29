@@ -239,10 +239,10 @@ public class ParserGen {
 	void GenSymboltableCheck(Node p, int indent) {
 		if (!string.IsNullOrEmpty(p.declares)) {
 			Indent(indent);
-			gen.WriteLine("if (!{0}.Add(la.val)) SemErr(string.Format(\"{2} '{{0}}' declared twice in '{1}'\", la.val));", p.declares, tab.Escape(p.declares), tab.Escape(p.sym.name));
+			gen.WriteLine("if (!{0}.Add(la.val)) SemErr(string.Format(_DuplicateSymbol, \"{2}\", la.val, \"{1}\"));", p.declares, tab.Escape(p.declares), tab.Escape(p.sym.name));
 		} else if (!string.IsNullOrEmpty(p.declared)) {
 			Indent(indent);
-			gen.WriteLine("if (!{0}.Contains(la.val)) SemErr(string.Format(\"{2} '{{0}}' not declared in '{1}'\", la.val));", p.declared, tab.Escape(p.declared), tab.Escape(p.sym.name));
+			gen.WriteLine("if (!{0}.Contains(la.val)) SemErr(string.Format(_MissingSymbol, \"{2}\", la.val, \"{1}\"));", p.declared, tab.Escape(p.declared), tab.Escape(p.sym.name));
 		} 
 	}
 	

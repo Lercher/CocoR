@@ -74,6 +74,8 @@ public class Parser {
 -->constants
 	const bool _T = true;
 	const bool _x = false;
+	const string _DuplicateSymbol = "{0} '{1}' declared twice in '{2}'";
+	const string _MissingSymbol ="{0} '{1}' not declared in '{2}'";
 	const int minErrDist = 2;
 	
 	public Scanner scanner;

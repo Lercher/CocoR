@@ -60,6 +60,8 @@ public class Parser {
 
 	const bool _T = true;
 	const bool _x = false;
+	const string _DuplicateSymbol = "{0} '{1}' declared twice in '{2}'";
+	const string _MissingSymbol ="{0} '{1}' not declared in '{2}'";
 	const int minErrDist = 2;
 	
 	public Scanner scanner;
@@ -197,7 +199,7 @@ public class Parser {
 	void Type() {
 		addAlt(14); // T
 		Expect(14); // "type"
-		if (!types.Add(la.val)) SemErr(string.Format("ident '{0}' declared twice in 'types'", la.val));
+		if (!types.Add(la.val)) SemErr(string.Format(_DuplicateSymbol, "ident", la.val, "types"));
 		addAlt(1); // T
 		Expect(1); // ident
 		addAlt(13); // T
@@ -291,7 +293,7 @@ public class Parser {
 		case 9: // var6
 		case 10: // as
 		{
-			if (!variables.Contains(la.val)) SemErr(string.Format("ident '{0}' not declared in 'variables'", la.val));
+			if (!variables.Contains(la.val)) SemErr(string.Format(_MissingSymbol, "ident", la.val, "variables"));
 			Get();
 			break;
 		}
@@ -358,7 +360,7 @@ public class Parser {
 	}
 
 	void Ident() {
-		if (!variables.Add(la.val)) SemErr(string.Format("ident '{0}' declared twice in 'variables'", la.val));
+		if (!variables.Add(la.val)) SemErr(string.Format(_DuplicateSymbol, "ident", la.val, "variables"));
 		addAlt(1); // T
 		Expect(1); // ident
 		addAlt(new int[] {10, 11}); // OPT
@@ -370,7 +372,7 @@ public class Parser {
 			} else {
 				Get();
 			}
-			if (!types.Contains(la.val)) SemErr(string.Format("ident '{0}' not declared in 'types'", la.val));
+			if (!types.Contains(la.val)) SemErr(string.Format(_MissingSymbol, "ident", la.val, "types"));
 			addAlt(1); // T
 			Expect(1); // ident
 		}
