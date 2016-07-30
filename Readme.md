@@ -6,18 +6,18 @@ that we call the "2011 version".
 
 This code includes these enhancements
 
-* token inheritance -
+* Token Inheritance -
 A typical usage scenario for the extension
 would be to allow keywords as identifiers 
 based on a parsing context that expects an identifier.
 
-* autocomplete information -
+* Autocomplete Information -
 If the switch -ac is set, the generator produces a
 parser that records to any parsed terminal symbol
 all alternative terminal symbols that would be valid
 instead of the actually parsed token.
 
-* symbol tables -
+* Symbol Tables -
 Having autocomplete information is quite useless
 for token classes, unless you can specify from where
 you will take all valid identifiers. In this version
@@ -30,7 +30,7 @@ a symbol use point, when looking at alternatives, you
 can ask the parser of which symbols it knows at this
 point to provide autocomplete for token classes.
 
-* lexical scopes -
+* Lexical Scopes for Symbol Tables -
 The existance and no-redefinition checks can be scoped
 lexically by marking a production as a scope for a symbol
 table. By creating a new scope for a production, you can
