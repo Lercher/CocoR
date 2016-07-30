@@ -230,7 +230,7 @@ returns the symbol table with the specified name or null if not found.
 
 ## Languages
 
-* C# - token inheritance *beta*, autocomplete information *alpha*, symbol tables *beta*
+* C# - token inheritance *beta*, autocomplete information *alpha*, symbol tables *alpha*
 * VB.Net - token inheritance *beta*
 * Java - planned but not yet scheduled
 
