@@ -5,46 +5,6 @@ using System.Collections.Generic;
 
 
 
-public class Alternative {
-	public readonly Token t;
-	public readonly BitArray alt;
-	public readonly Symboltable[] st;
-
-	public Alternative(Token t, BitArray alt, Symboltable[] st) {
-		this.t = t;
-		this.alt = alt;
-		this.st = st;
-	}
-}
-
-public class Symboltable {
-	private List<string> list = new List<string>();
-	public readonly string name;
-	public readonly bool ignoreCase;
-
-	public Symboltable(string name, bool ignoreCase) {
-		this.name = name;
-		this.ignoreCase = ignoreCase;
-	}
-
-	public bool Add(string s) {
-		if (ignoreCase) s = s.ToLower();
-		if (list.Contains(s))
-			return false;
-		list.Add(s);
-		return true;
-	}
-
-	public bool Contains(string s) {
-		if (ignoreCase) s = s.ToLower();
-		return list.Contains(s);
-	}
-
-	public IEnumerable<string> items {
-		get { return list; }
-	}
-}
-
 public class Parser {
 	public const int _EOF = 0; // TOKEN EOF
 	public const int _ident = 1; // TOKEN ident
@@ -77,8 +37,8 @@ public class Parser {
 	public Token la;   // lookahead token
 	int errDist = minErrDist;
 
-	public readonly Symboltable variables = new Symboltable("variables", true);
-	public readonly Symboltable types = new Symboltable("types", true);
+	public readonly Symboltable variables = new Symboltable("variables", false);
+	public readonly Symboltable types = new Symboltable("types", false);
 	public Symboltable symbols(string name) {
 		if (name == "variables") return variables;
 		if (name == "types") return types;
@@ -556,7 +516,7 @@ public class Parser {
 
 	// a token's name
 	public static readonly string[] tName = {
-		"EOF","ident","\"keyword\"","\"var\"", "\"var1\"","\"var2\"","\"var3\"","\"var4\"", "\"var5\"","\"var6\"","\"as\"","\":\"", "\"numberident\"","\"(\"","\")\"","\";\"", "\"check\"","\"t\"","\"v\"","\"call\"",
+		"EOF","ident","\"keyword\"","\"var\"", "\"var1\"","\"var2\"","\"var3\"","\"var4\"", "\"var5\"","\"var6\"","\"as\"","\":\"", "\"NumberIdent\"","\"(\"","\")\"","\";\"", "\"check\"","\"t\"","\"v\"","\"call\"",
 		"\",\"","\"type\"","\"|\"","\"0\"", "\"1\"","\"2\"","\"3\"","\"4\"", "\"5\"","\"6\"","\"7\"","\"8\"", "\"9\"","???"
 	};
 
@@ -602,7 +562,7 @@ public class Errors {
 			case 9: s = "var6 expected"; break;
 			case 10: s = "as expected"; break;
 			case 11: s = "colon expected"; break;
-			case 12: s = "\"numberident\" expected"; break;
+			case 12: s = "\"NumberIdent\" expected"; break;
 			case 13: s = "\"(\" expected"; break;
 			case 14: s = "\")\" expected"; break;
 			case 15: s = "\";\" expected"; break;
@@ -660,4 +620,83 @@ public class Errors {
 
 public class FatalError: Exception {
 	public FatalError(string m): base(m) {}
+}
+
+public class Alternative {
+	public readonly Token t;
+	public readonly BitArray alt;
+	public readonly Symboltable[] st;
+
+	public Alternative(Token t, BitArray alt, Symboltable[] st) {
+		this.t = t;
+		this.alt = alt;
+		this.st = st;
+	}
+}
+
+public class Symboltable {
+	private Stack<List<string>> scopes;
+	public readonly string name;
+	public readonly bool ignoreCase;
+
+	public Symboltable(string name, bool ignoreCase) {
+		this.name = name;
+		this.ignoreCase = ignoreCase;
+		this.scopes = new Stack<List<string>>();
+		pushNewScope();		
+	}
+
+	void pushNewScope() {
+		scopes.Push(new List<string>());
+	}
+
+	void popScope() {
+		scopes.Pop();
+	}
+
+	public IDisposable createScope() {
+		return new Popper(this);
+	} 
+
+	public List<string> currentScope {
+		get { return scopes.Peek(); } 
+	}
+
+	public bool Add(string s) {
+		if (ignoreCase) s = s.ToLower();
+		if (currentScope.Contains(s))
+			return false;
+		currentScope.Add(s);
+		return true;
+	}
+
+	public bool Contains(string s) {
+		if (ignoreCase) s = s.ToLower();
+		foreach(List<string> list in scopes)
+			if (list.Contains(s)) return true;
+		return false;
+	}
+
+	public IEnumerable<string> items {
+		get { 
+			Symboltable all = new Symboltable(name, ignoreCase);
+			foreach(List<string> list in scopes)
+				foreach(string s in list)
+					all.Add(s);
+
+			return all.currentScope; 
+		}
+	}
+
+	private class Popper : IDisposable {
+		private readonly Symboltable st;
+
+		public Popper(Symboltable st) {
+			this.st = st;
+		}
+
+		public void Dispose() {
+			st.popScope();
+		}
+	}
 }

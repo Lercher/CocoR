@@ -2,7 +2,7 @@
 
 COMPILER Inheritance
 
-IGNORECASE
+ // IGNORECASE
 
 CHARACTERS
 	letter    = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".
