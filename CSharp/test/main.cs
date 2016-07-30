@@ -4,9 +4,9 @@ using System.IO;
 public class Inheritance {
 
     static void printST(Symboltable st) {
-        Console.WriteLine("--- symbol-table ------------------------------------------------------------------- {0}{1}", st.name, st.ignoreCase ? " IGONRECASE" : "");
+        Console.WriteLine("--- symbol-table ------------------------------------------------------------------- {0}({1}){2}", st.name, st.CountScopes, st.ignoreCase ? " IGONRECASE" : "");
         int n = 0;
-        foreach (string s in st.items) {
+        foreach (string s in st.currentScope) {
             n++;
             Console.Write("{0,-20}  ", s);
             if (n%4 == 0) Console.WriteLine(); 
@@ -24,15 +24,14 @@ public class Inheritance {
 			Parser parser = new Parser(scanner);
             parser.Parse();
             Console.WriteLine("{0} error(s) detected", parser.errors.count);
-            int line = 0;
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
             // list all symbol table values
             printST(parser.types);
             printST(parser.variables);
 
-
             // list all alternatives
+            int line = 0;
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
             foreach (Alternative a in parser.tokens)
             {
                 Token t = a.t;
@@ -57,11 +56,17 @@ public class Inheritance {
                     if (a.alt[k]) {
                         Console.Write("{1}", k, Parser.tName[k]);
                         if (a.st[k] != null)
-                            Console.Write(":{0}", a.st[k].name);
+                            Console.Write(":{0}({1})", a.st[k].name, a.st[k].CountScopes);
                         Console.Write(' ');
                     }
                 }
                 Console.WriteLine();
+                for (int k = 0; k <= Parser.maxT; k++)
+                {
+                    if (a.st[k] != null && a.st[k].CountScopes > 1)
+                        printST(a.st[k]);
+                }
+
             }
             Console.WriteLine(sb.ToString());
             if (parser.errors.count > 0)

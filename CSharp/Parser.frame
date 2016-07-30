@@ -94,7 +94,9 @@ public class Parser {
 
 	// a terminal tokenclass of kind kind is restricted to this symbol table 
 	void addAlt(int kind, Symboltable st) {
-		altst[kind] = st;
+		// take the root scope, if it is the only scope,
+		// make a copy of the scope stack otherwise, but preserve the list references
+		altst[kind] = st.CapturingClone();
 	}
 
 	void addAlt(int[] range) {
@@ -245,6 +247,23 @@ public class Symboltable {
 		pushNewScope();		
 	}
 
+	private Symboltable(Symboltable st) {
+		this.name = st.name;
+		this.ignoreCase = st.ignoreCase;
+
+		// yes, twice to preserve order.
+		// and yes, we intentionally keep the list references, so that we capture all
+		// future additions to the existing lists
+		this.scopes = new Stack<List<string>>(new Stack<List<string>>(st.scopes));		 		
+	}
+
+	// make a clone of all scopes
+	// but recording all further additions to the currently present scopes
+	public Symboltable CapturingClone() {
+		if (scopes.Count == 1) return this;
+		return new Symboltable(this);
+	}
+
 	void pushNewScope() {
 		scopes.Push(new List<string>());
 	}
@@ -288,6 +307,10 @@ public class Symboltable {
 					all.Add(s);
 			return all.currentScope; 
 		}
+	}
+
+	public int CountScopes {
+		get { return scopes.Count; }
 	}
 
 	private class Popper : IDisposable {
