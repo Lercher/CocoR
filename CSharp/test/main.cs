@@ -37,7 +37,8 @@ public class Inheritance {
             {
                 Token t = a.t;
                 if (line == 0) {                    
-                    sb.Append(new string('-', t.col + 50));
+                    sb.Append(new string('-', 50));
+                    sb.Append(new string(' ', t.col));
                     sb.Append("  ");
                     line = t.line;
                 }

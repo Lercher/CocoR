@@ -10,11 +10,18 @@ var var;            // OK now (var inherits ident) but 'ident expected' with the
 var a, b, c;
 var A, B, C;
 { 
-    var a, aa, bb, cc;
+    var a, aa, bb, cc; // redefine a
+    call(a, aa, bb, cc);
     { 
         var aaa, bbb, ccc;
+        call(aaa, bbb, ccc);
     }
+    // call(aaa); // ident 'aaa' not declared in 'variables'
 }
+// call(aaa); // ident 'aaa' not declared in 'variables'
+// call(aa);  // ident 'aaa' not declared in 'variables'
+call(a);      // OK, a not removed from variables
+
 var d as int, e as int, f as int;
 var g | h | i | as as as;
 var j:int, k:int, l:int;
@@ -35,7 +42,7 @@ NumberIdent(as);
 // calls:
 call(a, b, c);
 call(var1, var3, var5);
-call(aa); // not declared
+// call(aa);  // ident 'aaa' not declared in 'variables'
 
 
 // check
@@ -43,6 +50,7 @@ check t int;
 check v var1;
 check t string;
 check v as;
+// check v aa; // ident 'aa' not declared in 'variables'
 
 
 // ident or number list:

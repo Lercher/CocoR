@@ -145,11 +145,7 @@ public class Parser {
 
 	
 	void Inheritance() {
-		addAlt(set0, 1); // ITER start
-		while (StartOf(1)) {
-			TDB();
-			addAlt(set0, 1); // ITER end
-		}
+		TDBs();
 		addAlt(12); // ITER start
 		while (isKind(la, 12)) {
 			Get();
@@ -189,24 +185,31 @@ public class Parser {
 			Expect(15); // ";"
 			addAlt(16); // ITER end
 		}
-		addAlt(set0, 2); // ITER start
-		while (StartOf(2)) {
+		addAlt(set0, 1); // ITER start
+		while (StartOf(1)) {
 			IdentOrNumber();
-			addAlt(set0, 2); // ITER end
+			addAlt(set0, 1); // ITER end
 		}
 	}
 
-	void TDB() {
-		addAlt(23); // ALT
-		addAlt(set0, 3); // ALT
-		addAlt(19); // ALT
-		if (isKind(la, 23)) {
-			Type();
-		} else if (StartOf(3)) {
-			Declaration();
-		} else if (isKind(la, 19)) {
-			Block();
-		} else SynErr(37);
+	void TDBs() {
+		addAlt(set0, 2); // ITER start
+		while (StartOf(2)) {
+			addAlt(23); // ALT
+			addAlt(set0, 3); // ALT
+			addAlt(19); // ALT
+			addAlt(21); // ALT
+			if (isKind(la, 23)) {
+				Type();
+			} else if (StartOf(3)) {
+				Declaration();
+			} else if (isKind(la, 19)) {
+				Block();
+			} else {
+				Call();
+			}
+			addAlt(set0, 2); // ITER end
+		}
 	}
 
 	void NumberIdent() {
@@ -287,7 +290,7 @@ public class Parser {
 			Get();
 			break;
 		}
-		default: SynErr(38); break;
+		default: SynErr(37); break;
 		}
 	}
 
@@ -322,7 +325,7 @@ public class Parser {
 			Get();
 		} else if (StartOf(4)) {
 			NumberVar();
-		} else SynErr(39);
+		} else SynErr(38);
 	}
 
 	void Type() {
@@ -344,7 +347,7 @@ public class Parser {
 			Ident();
 			addAlt(new int[] {22, 24}); // ITER end
 		}
-		while (!(isKind(la, 0) || isKind(la, 15))) {SynErr(40); Get();}
+		while (!(isKind(la, 0) || isKind(la, 15))) {SynErr(39); Get();}
 		addAlt(15); // T
 		Expect(15); // ";"
 	}
@@ -353,7 +356,7 @@ public class Parser {
 		using(variables.createScope()) using(types.createScope()) {
 		addAlt(19); // T
 		Expect(19); // "{"
-		TDB();
+		TDBs();
 		addAlt(20); // T
 		Expect(20); // "}"
 	}}
@@ -402,7 +405,7 @@ public class Parser {
 			Get();
 			break;
 		}
-		default: SynErr(41); break;
+		default: SynErr(40); break;
 		}
 	}
 
@@ -435,7 +438,7 @@ public class Parser {
 		} else if (isKind(la, 24)) {
 			addAlt(24); // WT
 			ExpectWeak(24, 5); // "|" followed by var2
-		} else SynErr(42);
+		} else SynErr(41);
 	}
 
 	void NumberVar() {
@@ -506,7 +509,7 @@ public class Parser {
 			Get();
 			break;
 		}
-		default: SynErr(43); break;
+		default: SynErr(42); break;
 		}
 	}
 
@@ -540,8 +543,8 @@ public class Parser {
 	// states that a particular production (1st index) can start with a particular token (2nd index)
 	static readonly bool[,] set0 = {
 		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
-		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
 		{_x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
+		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
 		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
 		{_x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
 		{_T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x}
@@ -551,8 +554,8 @@ public class Parser {
 	// as set0 but with token inheritance taken into account
 	static readonly bool[,] set = {
 		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
-		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
 		{_x,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
+		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
 		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
 		{_x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
 		{_T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x}
@@ -606,13 +609,12 @@ public class Errors {
 			case 34: s = "\"9\" expected"; break;
 			case 35: s = "??? expected"; break;
 			case 36: s = "invalid Inheritance"; break;
-			case 37: s = "invalid TDB"; break;
-			case 38: s = "invalid NumberIdent"; break;
-			case 39: s = "invalid IdentOrNumber"; break;
-			case 40: s = "this symbol not expected in Declaration"; break;
-			case 41: s = "invalid Var"; break;
-			case 42: s = "invalid Separator"; break;
-			case 43: s = "invalid NumberVar"; break;
+			case 37: s = "invalid NumberIdent"; break;
+			case 38: s = "invalid IdentOrNumber"; break;
+			case 39: s = "this symbol not expected in Declaration"; break;
+			case 40: s = "invalid Var"; break;
+			case 41: s = "invalid Separator"; break;
+			case 42: s = "invalid NumberVar"; break;
 
 			default: s = "error " + n; break;
 		}

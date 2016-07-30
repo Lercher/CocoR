@@ -541,8 +541,6 @@ public class ParserGen {
 	} 
 
 	public void WriteParser () {
-		System.Console.WriteLine("ignoreCase={0}", dfa.ignoreCase ? "true" : "false");
-		
 		Generator g = new Generator(tab);
 		int oldPos = buffer.Pos;  // Pos is modified by CopySourcePart
 		symSet.Add(tab.allSyncSets);
