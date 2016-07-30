@@ -40,7 +40,7 @@ as well as all newly created symbols is destroyed when
 you leave the generated production method. So if you 
 need to preserve the scoped symbols you might want to
 add a semantic action that stores the symbol 
-table's current scope `.currentScope` in your AST.   
+table's current scope `currentScope` in your AST.   
 
 
 
@@ -213,6 +213,14 @@ So the extended Coco/R syntax for productions is
 
 See http://www.ssw.uni-linz.ac.at/Coco/Doc/UserManual.pdf 
 section "2.4 Parser Specification".
+
+Note: Every symbol table has at least one scope, so you don't have
+to declare any `SCOPES(...)` block at all. This root scope is the only scope,
+that is available after the call to `Parse()`. So, if you need
+to preseve the content of a lexically scoped symbol table, store it's
+`currentScope`, which is a `List<string>` (C#) / `List(Of String)` (VB.Net)
+inside a semantic action. If you need all symbols in all currently active 
+scopes, take a look at `items` which is an `IEnumerable<string>`.
 
 
 ### Accessing symbol tables form outside

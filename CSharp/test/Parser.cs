@@ -704,12 +704,13 @@ public class Symboltable {
 	}
 
 	public IEnumerable<string> items {
-		get { 
+		get {
+		    if (scopes.Count == 1) return currentScope;
+
 			Symboltable all = new Symboltable(name, ignoreCase);
 			foreach(List<string> list in scopes)
 				foreach(string s in list)
 					all.Add(s);
-
 			return all.currentScope; 
 		}
 	}
