@@ -9,6 +9,12 @@ var var;            // OK now (var inherits ident) but 'ident expected' with the
 //var keyword;      // 'ident expected' b/c keyword is not an ident
 var a, b, c;
 var A, B, C;
+{ 
+    var a, aa, bb, cc;
+    { 
+        var aaa, bbb, ccc;
+    }
+}
 var d as int, e as int, f as int;
 var g | h | i | as as as;
 var j:int, k:int, l:int;
@@ -29,6 +35,8 @@ NumberIdent(as);
 // calls:
 call(a, b, c);
 call(var1, var3, var5);
+call(aa); // not declared
+
 
 // check
 check t int;

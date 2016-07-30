@@ -47,8 +47,7 @@ SYMBOLTABLES
 PRODUCTIONS
 
     Inheritance =
-         { Type }
-         { Declaration } 
+         { TDB } 
          {
            "NumberIdent" '('
             NumberIdent
@@ -57,6 +56,10 @@ PRODUCTIONS
          { Call }
          { "check" ("t" ident:types | "v" ident:variables) ';' }
          { IdentOrNumber }.
+
+    TDB =  Type | Declaration | Block .
+
+    Block SCOPES(variables, types) = "{" TDB "}". 
 
     Call = "call" "(" ident:variables { "," ident:variables } ")" ";".
 

@@ -250,10 +250,12 @@ public class Symboltable {
 	}
 
 	void popScope() {
-		scopes.Pop();
+		if (scopes.Count > 1)
+			scopes.Pop();
 	}
 
 	public IDisposable createScope() {
+		pushNewScope();
 		return new Popper(this);
 	} 
 

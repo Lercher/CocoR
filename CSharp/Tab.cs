@@ -73,6 +73,7 @@ public class Symbol {
 	public Position semPos;      // pr: pos of semantic action in source text (or null)
 	                             // nt: pos of local declarations in source text (or null)
 	public Symbol 	inherits;    // optional, token from which this token derives
+	public List<SymTab> scopes;  // nt: optional, list of SymTabs that this NT starts a new scope of
 
 	public Symbol(int typ, string name, int line) {
 		this.typ = typ; this.name = name; this.line = line;

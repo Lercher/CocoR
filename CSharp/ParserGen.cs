@@ -260,9 +260,10 @@ public class ParserGen {
 		while (p != null) {
 			switch (p.typ) {
 				case Node.nt: {
+					// generate a production method call ...
 					Indent(indent);
-					gen.Write(p.sym.name + "(");
-					CopySourcePart(p.pos, 0);
+					gen.Write("{0}(", p.sym.name);
+					CopySourcePart(p.pos, 0); // ... with actual arguments
 					gen.WriteLine(");");
 					break;
 				}
@@ -476,9 +477,18 @@ public class ParserGen {
 			gen.Write("\tvoid {0}(", sym.name);
 			CopySourcePart(sym.attrPos, 0);
 			gen.WriteLine(") {");
+			if (sym.scopes != null) {
+				gen.Write("\t\t");
+				foreach(SymTab st in sym.scopes)
+					gen.Write("using({0}.createScope()) ", st.name);
+				gen.WriteLine("{");
+			}
 			CopySourcePart(sym.semPos, 2);
 			GenCode(sym.graph, 2, new BitArray(tab.terminals.Count));
-			gen.WriteLine("\t}"); gen.WriteLine();
+			gen.Write("\t}");
+			if (sym.scopes != null) gen.Write("}");
+			gen.WriteLine();			  
+			gen.WriteLine();
 		}
 	}
 

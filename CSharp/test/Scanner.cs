@@ -203,8 +203,8 @@ public class UTF8Buffer: Buffer {
 public class Scanner {
 	const char EOL = '\n';
 	const int eofSym = 0; /* pdt */
-	const int maxT = 33;
-	const int noSym = 33;
+	const int maxT = 35;
+	const int noSym = 35;
 
 
 	public Buffer buffer; // scanner buffer
@@ -235,18 +235,20 @@ public class Scanner {
 		start[40] = 12; 
 		start[41] = 13; 
 		start[59] = 14; 
-		start[44] = 15; 
-		start[124] = 16; 
-		start[48] = 17; 
-		start[49] = 18; 
-		start[50] = 19; 
-		start[51] = 20; 
-		start[52] = 21; 
-		start[53] = 22; 
-		start[54] = 23; 
-		start[55] = 24; 
-		start[56] = 25; 
-		start[57] = 26; 
+		start[123] = 15; 
+		start[125] = 16; 
+		start[44] = 17; 
+		start[124] = 18; 
+		start[48] = 19; 
+		start[49] = 20; 
+		start[50] = 21; 
+		start[51] = 22; 
+		start[52] = 23; 
+		start[53] = 24; 
+		start[54] = 25; 
+		start[55] = 26; 
+		start[56] = 27; 
+		start[57] = 28; 
 		start[Buffer.EOF] = -1;
 
 	}
@@ -366,8 +368,8 @@ public class Scanner {
 			case "check": t.kind = 16; break;
 			case "t": t.kind = 17; break;
 			case "v": t.kind = 18; break;
-			case "call": t.kind = 19; break;
-			case "type": t.kind = 21; break;
+			case "call": t.kind = 21; break;
+			case "type": t.kind = 23; break;
 			default: break;
 		}
 	}
@@ -439,11 +441,11 @@ public class Scanner {
 			case 14:
 				{t.kind = 15; break;}
 			case 15:
-				{t.kind = 20; break;}
+				{t.kind = 19; break;}
 			case 16:
-				{t.kind = 22; break;}
+				{t.kind = 20; break;}
 			case 17:
-				{t.kind = 23; break;}
+				{t.kind = 22; break;}
 			case 18:
 				{t.kind = 24; break;}
 			case 19:
@@ -462,6 +464,10 @@ public class Scanner {
 				{t.kind = 31; break;}
 			case 26:
 				{t.kind = 32; break;}
+			case 27:
+				{t.kind = 33; break;}
+			case 28:
+				{t.kind = 34; break;}
 
 		}
 		t.val = new String(tval, 0, tlen);

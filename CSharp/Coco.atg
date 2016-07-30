@@ -134,6 +134,7 @@ Coco                            (. Symbol sym; Graph g, g1, g2; string gramName;
                                      if (noAttrs != (sym.attrPos == null))
                                        SemErr("attribute mismatch between declaration and use of this symbol");
                                  .)
+    [ ScopesDecl<sym> ]
     [ SemText<out sym.semPos> ] WEAK
     '='
     Expression<out g>           (. sym.graph = g.l;
@@ -176,6 +177,25 @@ Coco                            (. Symbol sym; Graph g, g1, g2; string gramName;
                                  .)
   '.'
 .
+
+/*------------------------------------------------------------------------------------*/
+
+ScopesDecl<Symbol sym>          (. sym.scopes = new List<SymTab>(); .)
+=
+  "SCOPES" '('
+    ScopeStart<sym> { ',' ScopeStart<sym> }
+  ')'
+.
+
+ScopeStart<Symbol sym>
+=
+  ident                         (. string stname = t.val.ToLower();
+                                   SymTab st = tab.FindSymtab(stname); 
+                                   if (st == null) SemErr("undeclared symbol table " + t.val);
+                                   else sym.scopes.Add(st);
+                                 .)
+.
+
 
 /*------------------------------------------------------------------------------------*/
 
