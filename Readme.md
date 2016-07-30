@@ -1,10 +1,10 @@
-# Coco/R Compiler Compiler with Token Inheritance
+# Enhanced Coco/R Compiler Compiler
 
 Based on the Coco/R Sources at
 http://www.ssw.uni-linz.ac.at/Coco
 that we call the "2011 version".
 
-This code includes these enhancements
+This code includes these enhancements:
 
 * Token Inheritance -
 A typical usage scenario for the extension
