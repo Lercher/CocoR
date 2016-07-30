@@ -32,46 +32,6 @@ using System.Collections.Generic;
 
 -->namespace
 
-public class Alternative {
-	public readonly Token t;
-	public readonly BitArray alt;
-	public readonly Symboltable[] st;
-
-	public Alternative(Token t, BitArray alt, Symboltable[] st) {
-		this.t = t;
-		this.alt = alt;
-		this.st = st;
-	}
-}
-
-public class Symboltable {
-	private List<string> list = new List<string>();
-	public readonly string name;
-	public readonly bool ignoreCase;
-
-	public Symboltable(string name, bool ignoreCase) {
-		this.name = name;
-		this.ignoreCase = ignoreCase;
-	}
-
-	public bool Add(string s) {
-		if (ignoreCase) s = s.ToLower();
-		if (list.Contains(s))
-			return false;
-		list.Add(s);
-		return true;
-	}
-
-	public bool Contains(string s) {
-		if (ignoreCase) s = s.ToLower();
-		return list.Contains(s);
-	}
-
-	public IEnumerable<string> items {
-		get { return list; }
-	}
-}
-
 public class Parser {
 -->constants
 	const bool _T = true;
@@ -259,4 +219,44 @@ public class Errors {
 
 public class FatalError: Exception {
 	public FatalError(string m): base(m) {}
+}
+
+public class Alternative {
+	public readonly Token t;
+	public readonly BitArray alt;
+	public readonly Symboltable[] st;
+
+	public Alternative(Token t, BitArray alt, Symboltable[] st) {
+		this.t = t;
+		this.alt = alt;
+		this.st = st;
+	}
+}
+
+public class Symboltable {
+	private List<string> list = new List<string>();
+	public readonly string name;
+	public readonly bool ignoreCase;
+
+	public Symboltable(string name, bool ignoreCase) {
+		this.name = name;
+		this.ignoreCase = ignoreCase;
+	}
+
+	public bool Add(string s) {
+		if (ignoreCase) s = s.ToLower();
+		if (list.Contains(s))
+			return false;
+		list.Add(s);
+		return true;
+	}
+
+	public bool Contains(string s) {
+		if (ignoreCase) s = s.ToLower();
+		return list.Contains(s);
+	}
+
+	public IEnumerable<string> items {
+		get { return list; }
+	}
 }
