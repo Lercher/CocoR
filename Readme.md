@@ -28,7 +28,20 @@ declared and mark a tokenclass to use such a symbol,
 i.e. error out if it was not declared before. At such 
 a symbol use point, when looking at alternatives, you
 can ask the parser of which symbols it knows at this
-point to provide autocomplete for token classes. 
+point to provide autocomplete for token classes.
+
+* lexical scopes -
+The existance and no-redefinition checks can be scoped
+lexically by marking a production as a scope for a symbol
+table. By creating a new scope for a production, you can
+create and redefine any symbol, as well as use any symbol
+in this scope and all of it's parent scopes. This scope
+as well as all newly created symbols is destroyed when 
+you leave the generated production method. So if you 
+need to preserve the scoped symbols you might want to
+add a semantic action that stores the symbol 
+table's current scope `.currentScope` in your AST.   
+
 
 
 ## Token Inheritance
@@ -139,6 +152,20 @@ token's symbol name.
 See CSharp/Test/main.cs for a more elaborate
 example.
 
+
+### Autocomplete Information plus Editor (hypothetical)
+
+While comparing the current position inside a hypothetical editor
+with the token sequence of the paresd full text, the editor could
+provide coloring based on the actual token `t`'s information 
+as well as autocompletion based on the `alt` (for keywords)
+and `st` array for (available symbols).
+
+Planned: Build a language-server for Visual Studio Code. See
+https://code.visualstudio.com/docs/extensions/example-language-server
+
+
+
 ## Symbol Tables
 
 There is a new section `SYMBOLTABLES` just before `PRODUCTIONS`
@@ -165,6 +192,27 @@ Example
 
 this production creates a new name in `variables` for the first ident
 and checks that the second ident is present in `types`.
+
+
+### Scoped Symbols
+
+To introduce a new lexical scope to a production like `Block`
+for a list of symbol tables,
+you have to list them in the production definition:
+
+    Block SCOPES(variables, types) = 
+      '{' 
+      { Decl } 
+      { Statement } 
+      '}' .
+
+So the extended Coco/R syntax for productions is
+
+    Production = ident [FormalAttributes] [ScopesDecl] [LocalDecl] '=' Expression '.'.
+    ScopesDecl = "SCOPES" '(' ident { ',' ident } ')'.
+
+See http://www.ssw.uni-linz.ac.at/Coco/Doc/UserManual.pdf 
+section "2.4 Parser Specification".
 
 
 ### Accessing symbol tables form outside
