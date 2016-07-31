@@ -36,7 +36,7 @@ namespace WinFormsEditor
             listAutocomplete.Items.Clear();
             System.Console.Write("pos {0,-5}", pos);
             if (parser == null) return;
-            Alternative a = find(pos);
+            Alternative a = findAlternative(pos);
             if (a == null) return;
             System.Console.WriteLine("token \"{0}\"", a.t.val);
             Token declAt = a.declaredAt;
@@ -69,11 +69,15 @@ namespace WinFormsEditor
             return i;
         }
 
-        Alternative find(int pos) {
+        Alternative findAlternative(int pos) {
+            int lastEnd = 0;
             foreach (Alternative a in parser.tokens)
             {
-                if (a.t.charPos <= pos && pos <= a.t.charPos + a.t.val.Length)
-                    return a;
+                if (lastEnd < pos) {
+                    lastEnd = a.t.charPos + a.t.val.Length;
+                    if (pos <= lastEnd)
+                        return a;
+                }
             }
             return null;
         }
