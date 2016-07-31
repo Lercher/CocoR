@@ -20,7 +20,9 @@ TOKENS
     var4 : ident = "var4".
     var5 : ident = "var5".
     var6 : ident = "var6".  
-    as   : ident = "as".    
+    as   : ident = "as".  
+    t    : ident = "t".
+    v    : ident = "v".  
     colon = ':'.
     /*
     error1 : unknown = "error1". // unknown symbol unknown

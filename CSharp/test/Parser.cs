@@ -17,7 +17,9 @@ public class Parser {
 	public const int _var5 = 8; // TOKEN var5 INHERITS ident
 	public const int _var6 = 9; // TOKEN var6 INHERITS ident
 	public const int _as = 10; // TOKEN as INHERITS ident
-	public const int _colon = 11; // TOKEN colon
+	public const int _t = 11; // TOKEN t INHERITS ident
+	public const int _v = 12; // TOKEN v INHERITS ident
+	public const int _colon = 13; // TOKEN colon
 	public const int maxT = 35;
 
 	const bool _T = true;
@@ -152,44 +154,44 @@ public class Parser {
 	
 	void Inheritance‿NT() {
 		TDBs‿NT();
-		addAlt(12); // ITER start
-		while (isKind(la, 12)) {
+		addAlt(14); // ITER start
+		while (isKind(la, 14)) {
 			Get();
-			addAlt(13); // T
-			Expect(13); // "("
-			NumberIdent‿NT();
-			addAlt(14); // T
-			Expect(14); // ")"
 			addAlt(15); // T
-			Expect(15); // ";"
-			addAlt(12); // ITER end
+			Expect(15); // "("
+			NumberIdent‿NT();
+			addAlt(16); // T
+			Expect(16); // ")"
+			addAlt(17); // T
+			Expect(17); // ";"
+			addAlt(14); // ITER end
 		}
 		addAlt(21); // ITER start
 		while (isKind(la, 21)) {
 			Call‿NT();
 			addAlt(21); // ITER end
 		}
-		addAlt(16); // ITER start
-		while (isKind(la, 16)) {
+		addAlt(18); // ITER start
+		while (isKind(la, 18)) {
 			Get();
-			addAlt(17); // ALT
-			addAlt(18); // ALT
-			if (isKind(la, 17)) {
+			addAlt(11); // ALT
+			addAlt(12); // ALT
+			if (isKind(la, 11)) {
 				Get();
 				if (!types.Contains(la)) SemErr(string.Format(_MissingSymbol, "ident", la.val, types.name));
 				addAlt(1); // T
 				addAlt(1, types); // T ident uses symbol table 'types'
 				Expect(1); // ident
-			} else if (isKind(la, 18)) {
+			} else if (isKind(la, 12)) {
 				Get();
 				if (!variables.Contains(la)) SemErr(string.Format(_MissingSymbol, "ident", la.val, variables.name));
 				addAlt(1); // T
 				addAlt(1, variables); // T ident uses symbol table 'variables'
 				Expect(1); // ident
 			} else SynErr(36);
-			addAlt(15); // T
-			Expect(15); // ";"
-			addAlt(16); // ITER end
+			addAlt(17); // T
+			Expect(17); // ";"
+			addAlt(18); // ITER end
 		}
 		addAlt(set0, 1); // ITER start
 		while (StartOf(1)) {
@@ -291,6 +293,8 @@ public class Parser {
 		case 8: // var5
 		case 9: // var6
 		case 10: // as
+		case 11: // t
+		case 12: // v
 		{
 			if (!variables.Contains(la)) SemErr(string.Format(_MissingSymbol, "ident", la.val, variables.name));
 			Get();
@@ -303,8 +307,8 @@ public class Parser {
 	void Call‿NT() {
 		addAlt(21); // T
 		Expect(21); // "call"
-		addAlt(13); // T
-		Expect(13); // "("
+		addAlt(15); // T
+		Expect(15); // "("
 		if (!variables.Contains(la)) SemErr(string.Format(_MissingSymbol, "ident", la.val, variables.name));
 		addAlt(1); // T
 		addAlt(1, variables); // T ident uses symbol table 'variables'
@@ -318,10 +322,10 @@ public class Parser {
 			Expect(1); // ident
 			addAlt(22); // ITER end
 		}
-		addAlt(14); // T
-		Expect(14); // ")"
-		addAlt(15); // T
-		Expect(15); // ";"
+		addAlt(16); // T
+		Expect(16); // ")"
+		addAlt(17); // T
+		Expect(17); // ";"
 	}
 
 	void IdentOrNumber‿NT() {
@@ -340,8 +344,8 @@ public class Parser {
 		if (!types.Add(la)) SemErr(string.Format(_DuplicateSymbol, "ident", la.val, types.name));
 		addAlt(1); // T
 		Expect(1); // ident
-		addAlt(15); // T
-		Expect(15); // ";"
+		addAlt(17); // T
+		Expect(17); // ";"
 	}
 
 	void Declaration‿NT() {
@@ -353,9 +357,9 @@ public class Parser {
 			Ident‿NT();
 			addAlt(new int[] {22, 24}); // ITER end
 		}
-		while (!(isKind(la, 0) || isKind(la, 15))) {SynErr(39); Get();}
-		addAlt(15); // T
-		Expect(15); // ";"
+		while (!(isKind(la, 0) || isKind(la, 17))) {SynErr(39); Get();}
+		addAlt(17); // T
+		Expect(17); // ";"
 	}
 
 	void Block‿NT() {
@@ -419,10 +423,10 @@ public class Parser {
 		if (!variables.Add(la)) SemErr(string.Format(_DuplicateSymbol, "ident", la.val, variables.name));
 		addAlt(1); // T
 		Expect(1); // ident
-		addAlt(new int[] {10, 11}); // OPT
-		if (isKind(la, 10) || isKind(la, 11)) {
+		addAlt(new int[] {10, 13}); // OPT
+		if (isKind(la, 10) || isKind(la, 13)) {
 			addAlt(10); // ALT
-			addAlt(11); // ALT
+			addAlt(13); // ALT
 			if (isKind(la, 10)) {
 				Get();
 			} else {
@@ -535,35 +539,35 @@ public class Parser {
 	
 	// a token's base type
 	static readonly int[] tBase = {
-		-1,-1,-1, 1,  1, 1, 1, 1,  1, 1, 1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
+		-1,-1,-1, 1,  1, 1, 1, 1,  1, 1, 1, 1,  1,-1,-1,-1, -1,-1,-1,-1,
 		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1
 	};
 
 	// a token's name
 	public static readonly string[] tName = {
-		"EOF","ident","\"keyword\"","\"var\"", "\"var1\"","\"var2\"","\"var3\"","\"var4\"", "\"var5\"","\"var6\"","\"as\"","\":\"", "\"NumberIdent\"","\"(\"","\")\"","\";\"", "\"check\"","\"t\"","\"v\"","\"{\"",
+		"EOF","ident","\"keyword\"","\"var\"", "\"var1\"","\"var2\"","\"var3\"","\"var4\"", "\"var5\"","\"var6\"","\"as\"","\"t\"", "\"v\"","\":\"","\"NumberIdent\"","\"(\"", "\")\"","\";\"","\"check\"","\"{\"",
 		"\"}\"","\"call\"","\",\"","\"type\"", "\"|\"","\"0\"","\"1\"","\"2\"", "\"3\"","\"4\"","\"5\"","\"6\"", "\"7\"","\"8\"","\"9\"","???"
 	};
 
 	// states that a particular production (1st index) can start with a particular token (2nd index)
 	static readonly bool[,] set0 = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
 		{_x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
 		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
 		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
 		{_x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
-		{_T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x}
+		{_T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x}
 
 	};
 
 	// as set0 but with token inheritance taken into account
 	static readonly bool[,] set = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
-		{_x,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_x,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
 		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
 		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
 		{_x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
-		{_T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x}
+		{_T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x}
 
 	};
 } // end Parser
@@ -588,14 +592,14 @@ public class Errors {
 			case 8: s = "var5 expected"; break;
 			case 9: s = "var6 expected"; break;
 			case 10: s = "as expected"; break;
-			case 11: s = "colon expected"; break;
-			case 12: s = "\"NumberIdent\" expected"; break;
-			case 13: s = "\"(\" expected"; break;
-			case 14: s = "\")\" expected"; break;
-			case 15: s = "\";\" expected"; break;
-			case 16: s = "\"check\" expected"; break;
-			case 17: s = "\"t\" expected"; break;
-			case 18: s = "\"v\" expected"; break;
+			case 11: s = "t expected"; break;
+			case 12: s = "v expected"; break;
+			case 13: s = "colon expected"; break;
+			case 14: s = "\"NumberIdent\" expected"; break;
+			case 15: s = "\"(\" expected"; break;
+			case 16: s = "\")\" expected"; break;
+			case 17: s = "\";\" expected"; break;
+			case 18: s = "\"check\" expected"; break;
 			case 19: s = "\"{\" expected"; break;
 			case 20: s = "\"}\" expected"; break;
 			case 21: s = "\"call\" expected"; break;

@@ -3,8 +3,9 @@
 type as;
 type var2;
 type var4;
+type Token;
 
-var shouldBeOk;     // OK
+var shouldBeOk as Token;     // OK
 var var;            // OK now (var inherits ident) but 'ident expected' with the 2011 version
 //var keyword;      // 'ident expected' b/c keyword is not an ident
 var a, b, c;

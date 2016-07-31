@@ -364,10 +364,10 @@ public class Scanner {
 			case "keyword": t.kind = 2; break;
 			case "var": t.kind = 3; break;
 			case "as": t.kind = 10; break;
-			case "NumberIdent": t.kind = 12; break;
-			case "check": t.kind = 16; break;
-			case "t": t.kind = 17; break;
-			case "v": t.kind = 18; break;
+			case "t": t.kind = 11; break;
+			case "v": t.kind = 12; break;
+			case "NumberIdent": t.kind = 14; break;
+			case "check": t.kind = 18; break;
 			case "call": t.kind = 21; break;
 			case "type": t.kind = 23; break;
 			default: break;
@@ -413,7 +413,7 @@ public class Scanner {
 			case 7:
 				{t.kind = 9; break;}
 			case 8:
-				{t.kind = 11; break;}
+				{t.kind = 13; break;}
 			case 9:
 				recEnd = pos; recKind = 1;
 				if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'b' && ch <= 'z') {AddCh(); goto case 1;}
@@ -435,11 +435,11 @@ public class Scanner {
 				else if (ch == '6') {AddCh(); goto case 7;}
 				else {t.kind = 1; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
 			case 12:
-				{t.kind = 13; break;}
-			case 13:
-				{t.kind = 14; break;}
-			case 14:
 				{t.kind = 15; break;}
+			case 13:
+				{t.kind = 16; break;}
+			case 14:
+				{t.kind = 17; break;}
 			case 15:
 				{t.kind = 19; break;}
 			case 16:
