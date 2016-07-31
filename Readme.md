@@ -241,6 +241,19 @@ provide coloring based on the actual token `t`'s information
 as well as autocompletion based on the `alt` (for keywords)
 and `st` array for (available symbols).
 
+For a sample implementatio as a *proof of concept* of such an editor, see our
+WinForms version in the CSharp/WinFormsEditor subfolder.
+Please note, that it is compiled and linked against the 
+sample grammar in CSharp/test and it always loads sample.txt
+from this folder. Nevertheless it doesn't depend on the particular
+grammar design. 
+
+Plus it parses the source from scratch on any
+change, so don't expect any proper usability, if the sources grow larger. 
+However, for the current sample grammar and sample text in this repository, the
+responsiveness can be called "instant" on my machine 
+(2011 Windows PC box, Core i5 CPU, 16GB RAM, SSD).  
+
 Planned: Build a language-server for Visual Studio Code. See
 https://code.visualstudio.com/docs/extensions/example-language-server
 
@@ -253,9 +266,9 @@ https://code.visualstudio.com/docs/extensions/example-language-server
 
 ## Languages
 
-* C# - token inheritance *beta*, autocomplete information *alpha*, symbol tables *beta*
+* C# - token inheritance *beta*, autocomplete information *alpha*, symbol tables *beta*, editor *alpha*
 * VB.Net - token inheritance *beta*
-* Java - planned but not yet scheduled
+* Java - maybe, but not yet scheduled
 
 Note: The generated code for .Net languages targets
 plain vanilla .Net Framework 2.0 compilers and libraries. 

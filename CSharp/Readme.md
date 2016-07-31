@@ -10,6 +10,7 @@ the readme.md in the root directory.
 * Compiling
 * no known bugs
 * beta testing
+* sample editor with autocompletion available
 
 ## Sub-Folders
 
