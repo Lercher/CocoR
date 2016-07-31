@@ -18,9 +18,15 @@ namespace WinFormsEditor
 
         private void InitializeComponent()
         {
+            this.HSplit = new System.Windows.Forms.SplitContainer();
             this.VSplit = new System.Windows.Forms.SplitContainer();
             this.listAutocomplete = new System.Windows.Forms.ListView();
             this.textSource = new System.Windows.Forms.TextBox();
+            this.textLog = new System.Windows.Forms.TextBox();
+            //
+            this.HSplit.Panel1.SuspendLayout();
+            this.HSplit.Panel2.SuspendLayout();
+            this.HSplit.SuspendLayout();
             this.VSplit.Panel1.SuspendLayout();
             this.VSplit.Panel2.SuspendLayout();
             this.VSplit.SuspendLayout();
@@ -28,11 +34,18 @@ namespace WinFormsEditor
             this.textSource.SuspendLayout();
             this.SuspendLayout();
             // 
+            // HSplit
+            // 
+            this.HSplit.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.HSplit.Name = "HSplit";
+            this.HSplit.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.HSplit.Orientation = System.Windows.Forms.Orientation.Horizontal; 
+            this.HSplit.SplitterWidth = 5;
+            // 
             // VSplit
             // 
             this.VSplit.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.VSplit.Name = "VSplit";
-            this.VSplit.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.VSplit.Dock = System.Windows.Forms.DockStyle.Fill;
             this.VSplit.Orientation = System.Windows.Forms.Orientation.Vertical; 
             this.VSplit.SplitterWidth = 5;           
@@ -44,17 +57,22 @@ namespace WinFormsEditor
             this.textSource.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.textSource.Font = new System.Drawing.Font("Consolas", 12);
             // 
-            // VSplit.Panel1
+            // textLog
             // 
+            this.textLog.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.textLog.Multiline = true;
+            this.textLog.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.textLog.Font = new System.Drawing.Font("Consolas", 12);
+            // 
+            // Panels
+            // 
+            this.HSplit.Panel1.Controls.Add(this.VSplit);
+            this.HSplit.Panel2.Controls.Add(this.textLog);
             this.VSplit.Panel1.Controls.Add(this.textSource);
-            // 
-            // VSplit.Panel2
-            // 
             this.VSplit.Panel2.Controls.Add(this.listAutocomplete);
-            this.VSplit.Size = new System.Drawing.Size(582, 270);
+            //
+            this.HSplit.SplitterDistance = 400;
             this.VSplit.SplitterDistance = 400;
-            this.VSplit.TabIndex = 0;
-            this.VSplit.Text = "VSplit";
             // 
             // listAutocomplete
             // 
@@ -71,13 +89,16 @@ namespace WinFormsEditor
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1024, 800);
-            this.Controls.Add(this.VSplit);
+            this.Controls.Add(this.HSplit);
             this.MaximizeBox = true;
             this.Name = "CocEdit";
             this.Text = "Coco/R Editor";
             this.VSplit.Panel1.ResumeLayout(false);
             this.VSplit.Panel2.ResumeLayout(false);
             this.VSplit.ResumeLayout(false);
+            this.HSplit.Panel1.ResumeLayout(false);
+            this.HSplit.Panel2.ResumeLayout(false);
+            this.HSplit.ResumeLayout(false);
             this.listAutocomplete.ResumeLayout(false);
             this.textSource.PerformLayout();
             this.ResumeLayout(false);
@@ -86,9 +107,11 @@ namespace WinFormsEditor
 
         #endregion
 
+        private System.Windows.Forms.SplitContainer HSplit;
         private System.Windows.Forms.SplitContainer VSplit;
         private System.Windows.Forms.ListView listAutocomplete;
         private System.Windows.Forms.TextBox textSource;
+        private System.Windows.Forms.TextBox textLog;
     }
 }
 
