@@ -70,7 +70,7 @@ public class Parser {
 		for (;;) {
 			t = la;
 -->beginalternatives
-			if (t.kind != _EOF) {
+			if (alt != null) {
 				tokens.Add(new Alternative(t, alt, altst));
 			}
 			_newAlt();
@@ -83,8 +83,8 @@ public class Parser {
 	}
 
 -->beginalternativescode
-	BitArray alt;
-	Symboltable[] altst;
+	BitArray alt = null;
+	Symboltable[] altst = null;
 
 	void _newAlt() {
 		alt = new BitArray(maxT+1);
