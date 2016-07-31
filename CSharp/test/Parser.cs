@@ -90,7 +90,7 @@ public class Parser {
 	void addAlt(int kind, Symboltable st) {
 		// take the root scope, if it is the only scope,
 		// make a copy of the scope stack otherwise, but preserve the list references
-		altst[kind] = st.CapturingClone();
+		altst[kind] = st.CloneScopes();
 	}
 
 	void addAlt(int[] range) {
@@ -664,38 +664,51 @@ public class Symboltable {
 	private Stack<List<string>> scopes;
 	public readonly string name;
 	public readonly bool ignoreCase;
+	private Symboltable clone = null;
 
 	public Symboltable(string name, bool ignoreCase) {
 		this.name = name;
 		this.ignoreCase = ignoreCase;
 		this.scopes = new Stack<List<string>>();
-		pushNewScope();		
+		pushNewScope();
 	}
 
 	private Symboltable(Symboltable st) {
 		this.name = st.name;
 		this.ignoreCase = st.ignoreCase;
 
-		// yes, twice to preserve order.
-		// and yes, we intentionally keep the list references, so that we capture all
-		// future additions to the existing lists
-		this.scopes = new Stack<List<string>>(new Stack<List<string>>(st.scopes));		 		
+		// now copy the scopes and its lists
+		this.scopes = new Stack<List<string>>();				 		
+		Stack<List<string>> reverse = new Stack<List<string>>(st.scopes);
+		foreach(List<string> list in reverse) {
+			this.scopes.Push(new List<string>(list));
+		}
 	}
 
-	// make a clone of all scopes
-	// but recording all further additions to the currently present scopes
-	public Symboltable CapturingClone() {
-		if (scopes.Count == 1) return this;
-		return new Symboltable(this);
+	// We can keep the clone until we push/pop of the stack, or add a new item. 
+	public Symboltable CloneScopes() {
+		if (clone != null) return clone;
+		clone = new Symboltable(this); // i.e. copy scopes
+		return clone;
+	}
+
+	public bool Add(string s) {
+		if (ignoreCase) s = s.ToLower();
+		if (currentScope.Contains(s))
+			return false;
+		clone = null;
+		currentScope.Add(s);
+		return true;
 	}
 
 	void pushNewScope() {
+		clone = null;
 		scopes.Push(new List<string>());
 	}
 
 	void popScope() {
-		if (scopes.Count > 1)
-			scopes.Pop();
+		clone = null;
+		scopes.Pop();
 	}
 
 	public IDisposable createScope() {
@@ -705,14 +718,6 @@ public class Symboltable {
 
 	public List<string> currentScope {
 		get { return scopes.Peek(); } 
-	}
-
-	public bool Add(string s) {
-		if (ignoreCase) s = s.ToLower();
-		if (currentScope.Contains(s))
-			return false;
-		currentScope.Add(s);
-		return true;
 	}
 
 	public bool Contains(string s) {

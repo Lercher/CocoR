@@ -10,13 +10,20 @@ var var;            // OK now (var inherits ident) but 'ident expected' with the
 var a, b, c;
 var A, B, C;
 { 
-    var a, aa, bb, cc; // redefine a
-    call(a, aa, bb, cc);
+    var a, aa; // redefine a
+    call(a, aa);
     { 
-        var aaa, bbb, ccc;
-        call(aaa, bbb, ccc);
+        var a, aaa;
+        call(a, aaa);
     }
     // call(aaa); // ident 'aaa' not declared in 'variables'
+    {
+        var ddd; 
+        call(ddd); // has a different autocomplete list than the previous block including eee and fff
+        var eee, fff;
+        call(fff);
+        call(a);
+    }
 }
 // call(aaa); // ident 'aaa' not declared in 'variables'
 // call(aa);  // ident 'aaa' not declared in 'variables'

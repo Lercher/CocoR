@@ -45,7 +45,8 @@ public class Inheritance {
                     line = t.line;
                     Console.WriteLine(sb.ToString());
                     sb.Length = 0;
-                    sb.Append(new string('-', t.col + 50));
+                    sb.Append(new string('-', 50));
+                    sb.Append(new string(' ', t.col));
                     sb.Append("  ");
                 }
                 sb.Append(t.val); sb.Append(' ');
@@ -55,18 +56,15 @@ public class Inheritance {
                 {
                     if (a.alt[k]) {
                         Console.Write("{1}", k, Parser.tName[k]);
-                        if (a.st[k] != null)
-                            Console.Write(":{0}({1})", a.st[k].name, a.st[k].CountScopes);
+                        if (a.st[k] != null) {
+                            Console.Write(":{0}({1})|", a.st[k].name, a.st[k].CountScopes);
+                            foreach (string sym in a.st[k].currentScope)
+                                Console.Write("{0}|", sym);    
+                        }
                         Console.Write(' ');
                     }
                 }
                 Console.WriteLine();
-                for (int k = 0; k <= Parser.maxT; k++)
-                {
-                    if (a.st[k] != null && a.st[k].CountScopes > 1)
-                        printST(a.st[k]);
-                }
-
             }
             Console.WriteLine(sb.ToString());
             if (parser.errors.count > 0)
