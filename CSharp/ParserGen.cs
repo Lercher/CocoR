@@ -567,7 +567,11 @@ public class ParserGen {
 		g.CopyFramePart("-->declarations");
 		GenSymbolTables(true);
 		CopySourcePart(tab.semDeclPos, 0);
+		g.CopyFramePart("-->beginalternatives");
+		g.CopyFramePart("-->endalternatives", GenerateAutocompleteInformation);
 		g.CopyFramePart("-->pragmas"); GenCodePragmas();
+		g.CopyFramePart("-->beginalternativescode");
+		g.CopyFramePart("-->endalternativescode", GenerateAutocompleteInformation);
 		g.CopyFramePart("-->productions"); GenProductions();
 		g.CopyFramePart("-->parseRoot"); 
 		GenSymbolTables(false);

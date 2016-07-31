@@ -349,7 +349,7 @@ class Generator {
 	}
 
 	// if stop == null, copies until end of file
-	private void CopyFramePart(string stop, bool generateOutput) {
+	public void CopyFramePart(string stop, bool generateOutput) {
 		char startCh = (char) 0;
 		int endOfStopString = 0;
 

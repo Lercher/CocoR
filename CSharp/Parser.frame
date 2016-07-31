@@ -44,9 +44,6 @@ public class Parser {
 	public Errors  errors;
 	public List<Alternative> tokens = new List<Alternative>();
 	
-	BitArray alt;
-	Symboltable[] altst;
-
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
 	int errDist = minErrDist;
@@ -72,16 +69,22 @@ public class Parser {
 	void Get () {
 		for (;;) {
 			t = la;
+-->beginalternatives
 			if (t.kind != _EOF) {
 				tokens.Add(new Alternative(t, alt, altst));
-				_newAlt();
 			}
+			_newAlt();
+-->endalternatives
 			la = scanner.Scan();
 			if (la.kind <= maxT) { ++errDist; break; }
 -->pragmas
 			la = t;
 		}
 	}
+
+-->beginalternativescode
+	BitArray alt;
+	Symboltable[] altst;
 
 	void _newAlt() {
 		alt = new BitArray(maxT+1);
@@ -109,6 +112,7 @@ public class Parser {
 			if (pred[line, kind])
 				addAlt(kind);
 	}
+-->endalternativescode
 
 	bool isKind(Token t, int n) {
 		int k = t.kind;
@@ -157,7 +161,6 @@ public class Parser {
 	public void Parse() {
 		la = new Token();
 		la.val = "";
-		_newAlt();		
 		Get();
 -->parseRoot
 	}
