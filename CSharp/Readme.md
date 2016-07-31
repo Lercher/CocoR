@@ -11,6 +11,11 @@ the readme.md in the root directory.
 * no known bugs
 * beta testing
 
+## Sub-Folders
+
+* test - test grammar Inheritance
+* WinFormsEditor - a simple TextBoxStyle editor to evaluate autocompletion features
+
 
 ## How to Build
 
