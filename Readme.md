@@ -42,6 +42,10 @@ parser that records to any parsed terminal symbol
 all alternative terminal symbols that would be valid
 instead of the actually parsed token.
 
+* Sample Winforms Editor -
+Proof of concept to show autocomplete information
+interactively.
+
 
 ## Token Inheritance
 
@@ -305,8 +309,9 @@ see readme.md in the respective language folder
 
 ## Git Branches
 
-* master - main development
+* master - stable development
 
 * autocomplete - experimental branch to record possible
   alternatives for an editor with autocomplete/intellisense.
-  Plus integrated symbol tables for use with autocomplete.  
+  Plus integrated symbol tables for use with autocomplete.
+  Plus interactive TextBox style editor.  
