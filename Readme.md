@@ -245,14 +245,14 @@ provide coloring based on the actual token `t`'s information
 as well as autocompletion based on the `alt` (for keywords)
 and `st` array for (available symbols).
 
-For a sample implementatio as a *proof of concept* of such an editor, see our
+For a sample implementation as a *proof of concept* of such an editor, see our
 WinForms version in the CSharp/WinFormsEditor subfolder.
 Please note, that it is compiled and linked against the 
 sample grammar in CSharp/test and it always loads sample.txt
-from this folder. Nevertheless it doesn't depend on the particular
-grammar design. 
+from this folder and doesn't save at all. 
+Nevertheless it doesn't depend on the particular grammar design. 
 
-Plus it parses the source from scratch on any
+It parses the source from scratch on any
 change, so don't expect any proper usability, if the sources grow larger. 
 However, for the current sample grammar and sample text in this repository, the
 responsiveness can be called "instant" on my machine 
