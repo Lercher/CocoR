@@ -51,5 +51,5 @@ the readme.md in the root directory.
   identifier part, plus "NT" (i.e. `"‿NT"`)
   to the production method name. As an UNDERTIE is no valid
   letter for a Coco/R production, there can be no more
-  naming conflicts.
+  naming conflicts. See http://www.fileformat.info/info/unicode/category/Pc/list.htm
   -> Fixed.
