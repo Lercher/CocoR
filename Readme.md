@@ -4,7 +4,8 @@ Based on the Coco/R Sources at
 http://www.ssw.uni-linz.ac.at/Coco
 that we call the "2011 version".
 
-This code includes these enhancements:
+This repository includes these enhancements. More detailed
+information can be found in the following sections.
 
 * Token Inheritance -
 A typical usage scenario for the extension
@@ -41,6 +42,10 @@ If the switch -ac is set, the generator produces a
 parser that records to any parsed terminal symbol
 all alternative terminal symbols that would be valid
 instead of the actually parsed token.
+
+* Find Symbol Declaration -
+The autocomplete information includes data to locate
+the token that declares the currently parsed symbol.
 
 * Sample Winforms Editor -
 Proof of concept to show autocomplete information
@@ -85,6 +90,7 @@ with a parser generated with the 2011 version of Coco/R.
 see http://www.ssw.uni-linz.ac.at/Coco/Doc/UserManual.pdf 
 with this modification of section "2.3.2 Tokens":
 
+    // Coco/R grammar
     TokenDecl = Symbol [':' Symbol] ['=' TokenExpr '.']. 
 
 The Symbol behind the colon has to be a previously declared
@@ -103,6 +109,7 @@ There is a new section `SYMBOLTABLES` just before `PRODUCTIONS`
 where symbol tables for the generated parser can be declared and
 initialized.
 
+    // Coco/R grammar
     STDecl = ident { string } .
 
 Example
@@ -139,6 +146,7 @@ you have to list them in the production definition:
 
 So the extended Coco/R syntax for productions is
 
+    // Coco/R grammar
     Production = ident [FormalAttributes] [ScopesDecl] [LocalDecl] '=' Expression '.'.
     ScopesDecl = "SCOPES" '(' ident { ',' ident } ')'.
 
@@ -266,6 +274,12 @@ https://code.visualstudio.com/docs/extensions/example-language-server
 ## Extended command line arguments
 
 * -ac - Turn on generation of autocomplete / intellisense information
+
+* -is - *planned*, ignore semantic actions. With this switch turned on,
+you can generate and build a .Net parser library with autocomplete information 
+from an attributed grammar file, that is written for a different language 
+such as Java. Maybe only to use an autocomplete aware editor for the grammar,
+that probably is only available as a .Net program.
 
 
 ## Languages
