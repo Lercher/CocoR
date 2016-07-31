@@ -35,7 +35,7 @@ using System.Text;
 namespace at.jku.ssw.Coco {
 
 public class ParserGen {
-
+	const string PROD_SUFFIX = "‿NT"; // U+203F UNDERTIE, see http://www.fileformat.info/info/unicode/category/Pc/list.htm 
 	const int maxTerm = 3;		// sets of size < maxTerm are enumerated
 	const char CR  = '\r';
 	const char LF  = '\n';
@@ -262,7 +262,7 @@ public class ParserGen {
 				case Node.nt: {
 					// generate a production method call ...
 					Indent(indent);
-					gen.Write("{0}(", p.sym.name);
+					gen.Write("{0}{1}(", p.sym.name, PROD_SUFFIX);
 					CopySourcePart(p.pos, 0); // ... with actual arguments
 					gen.WriteLine(");");
 					break;
@@ -474,7 +474,7 @@ public class ParserGen {
 	void GenProductions() {
 		foreach (Symbol sym in tab.nonterminals) {
 			curSy = sym;
-			gen.Write("\tvoid {0}(", sym.name);
+			gen.Write("\tvoid {0}{1}(", sym.name, PROD_SUFFIX);
 			CopySourcePart(sym.attrPos, 0);
 			gen.WriteLine(") {");
 			if (sym.scopes != null) {
@@ -575,7 +575,7 @@ public class ParserGen {
 		g.CopyFramePart("-->productions"); GenProductions();
 		g.CopyFramePart("-->parseRoot"); 
 		GenSymbolTables(false);
-		gen.WriteLine("\t\t{0}();", tab.gramSy.name); 
+		gen.WriteLine("\t\t{0}{1}();", tab.gramSy.name, PROD_SUFFIX); 
 		if (tab.checkEOF) gen.WriteLine("\t\tExpect(0);");
 		g.CopyFramePart("-->tbase"); GenTokenBase(); // write all tokens base types
 		g.CopyFramePart("-->tname"); GenTokenNames(); // write all token names

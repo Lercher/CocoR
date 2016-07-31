@@ -150,14 +150,14 @@ public class Parser {
 	}
 
 	
-	void Inheritance() {
-		TDBs();
+	void Inheritance‿NT() {
+		TDBs‿NT();
 		addAlt(12); // ITER start
 		while (isKind(la, 12)) {
 			Get();
 			addAlt(13); // T
 			Expect(13); // "("
-			NumberIdent();
+			NumberIdent‿NT();
 			addAlt(14); // T
 			Expect(14); // ")"
 			addAlt(15); // T
@@ -166,7 +166,7 @@ public class Parser {
 		}
 		addAlt(21); // ITER start
 		while (isKind(la, 21)) {
-			Call();
+			Call‿NT();
 			addAlt(21); // ITER end
 		}
 		addAlt(16); // ITER start
@@ -193,12 +193,12 @@ public class Parser {
 		}
 		addAlt(set0, 1); // ITER start
 		while (StartOf(1)) {
-			IdentOrNumber();
+			IdentOrNumber‿NT();
 			addAlt(set0, 1); // ITER end
 		}
 	}
 
-	void TDBs() {
+	void TDBs‿NT() {
 		addAlt(set0, 2); // ITER start
 		while (StartOf(2)) {
 			addAlt(23); // ALT
@@ -206,19 +206,19 @@ public class Parser {
 			addAlt(19); // ALT
 			addAlt(21); // ALT
 			if (isKind(la, 23)) {
-				Type();
+				Type‿NT();
 			} else if (StartOf(3)) {
-				Declaration();
+				Declaration‿NT();
 			} else if (isKind(la, 19)) {
-				Block();
+				Block‿NT();
 			} else {
-				Call();
+				Call‿NT();
 			}
 			addAlt(set0, 2); // ITER end
 		}
 	}
 
-	void NumberIdent() {
+	void NumberIdent‿NT() {
 		addAlt(25); // ALT
 		addAlt(26); // ALT
 		addAlt(27); // ALT
@@ -300,7 +300,7 @@ public class Parser {
 		}
 	}
 
-	void Call() {
+	void Call‿NT() {
 		addAlt(21); // T
 		Expect(21); // "call"
 		addAlt(13); // T
@@ -324,17 +324,17 @@ public class Parser {
 		Expect(15); // ";"
 	}
 
-	void IdentOrNumber() {
+	void IdentOrNumber‿NT() {
 		addAlt(1); // ALT
 		addAlt(set0, 4); // ALT
 		if (isKind(la, 1)) {
 			Get();
 		} else if (StartOf(4)) {
-			NumberVar();
+			NumberVar‿NT();
 		} else SynErr(38);
 	}
 
-	void Type() {
+	void Type‿NT() {
 		addAlt(23); // T
 		Expect(23); // "type"
 		if (!types.Add(la.val)) SemErr(string.Format(_DuplicateSymbol, "ident", la.val, types.name));
@@ -344,13 +344,13 @@ public class Parser {
 		Expect(15); // ";"
 	}
 
-	void Declaration() {
-		Var();
-		Ident();
+	void Declaration‿NT() {
+		Var‿NT();
+		Ident‿NT();
 		addAlt(new int[] {22, 24}); // ITER start
 		while (isKind(la, 22) || isKind(la, 24)) {
-			Separator();
-			Ident();
+			Separator‿NT();
+			Ident‿NT();
 			addAlt(new int[] {22, 24}); // ITER end
 		}
 		while (!(isKind(la, 0) || isKind(la, 15))) {SynErr(39); Get();}
@@ -358,16 +358,16 @@ public class Parser {
 		Expect(15); // ";"
 	}
 
-	void Block() {
+	void Block‿NT() {
 		using(variables.createScope()) using(types.createScope()) {
 		addAlt(19); // T
 		Expect(19); // "{"
-		TDBs();
+		TDBs‿NT();
 		addAlt(20); // T
 		Expect(20); // "}"
 	}}
 
-	void Var() {
+	void Var‿NT() {
 		addAlt(3); // ALT
 		addAlt(4); // ALT
 		addAlt(5); // ALT
@@ -415,7 +415,7 @@ public class Parser {
 		}
 	}
 
-	void Ident() {
+	void Ident‿NT() {
 		if (!variables.Add(la.val)) SemErr(string.Format(_DuplicateSymbol, "ident", la.val, variables.name));
 		addAlt(1); // T
 		Expect(1); // ident
@@ -435,7 +435,7 @@ public class Parser {
 		}
 	}
 
-	void Separator() {
+	void Separator‿NT() {
 		addAlt(22); // ALT
 		addAlt(24); // ALT
 		if (isKind(la, 22)) {
@@ -447,7 +447,7 @@ public class Parser {
 		} else SynErr(41);
 	}
 
-	void NumberVar() {
+	void NumberVar‿NT() {
 		addAlt(25); // ALT
 		addAlt(26); // ALT
 		addAlt(27); // ALT
@@ -528,7 +528,7 @@ public class Parser {
 		types.Add("string");
 		types.Add("int");
 		types.Add("double");
-		Inheritance();
+		Inheritance‿NT();
 		Expect(0);
 
 	}

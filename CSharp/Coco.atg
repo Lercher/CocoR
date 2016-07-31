@@ -51,7 +51,7 @@ COMPILER Coco
 /*-------------------------------------------------------------------------*/
 
 CHARACTERS
-	letter    = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".
+	letter    = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".  // do not add a unicode U+203F UNDERTIE
 	digit     = "0123456789".
 	cr        = '\r'.
 	lf        = '\n'.
