@@ -20,6 +20,16 @@ namespace WinFormsEditor
             parse();
             textSource.TextChanged += sourceChanged;
             textSource.SelectionChanged += sourceSelectionChanged;
+            listAutocomplete.DoubleClick += acDoubleClick; 
+        }
+
+        private void acDoubleClick(object sender, EventArgs e)
+        {
+            ListViewItem sel = listAutocomplete.SelectedItems[0];
+            if (sel == null) return;
+            string txt = sel.Text;
+            string typ = sel.SubItems[1].Text;
+            handle(txt, typ);
         }
 
         private void sourceChanged(object sender, EventArgs e) {
@@ -29,6 +39,24 @@ namespace WinFormsEditor
 
         private void sourceSelectionChanged(object sender, EventArgs e) {            
             listAlternativesAtSelection();
+        }
+
+        void handle(string txt, string typ)
+        {
+            switch(typ) {
+                case "*decl":
+                    string t = txt.Substring(1, txt.Length - 2);
+                    textSource.Select(int.Parse(t), 0);
+                    break;
+                case "*tclass":
+                    break;
+                case "*parsed":
+                    break;
+                default:
+                    textSource.SelectedText = txt;
+                    break;
+            }
+            textSource.Focus();
         }
 
         void listAlternativesAtSelection() {
