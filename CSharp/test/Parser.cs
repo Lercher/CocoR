@@ -176,13 +176,13 @@ public class Parser {
 			addAlt(18); // ALT
 			if (isKind(la, 17)) {
 				Get();
-				if (!types.Contains(la.val)) SemErr(string.Format(_MissingSymbol, "ident", la.val, types.name));
+				if (!types.Contains(la)) SemErr(string.Format(_MissingSymbol, "ident", la.val, types.name));
 				addAlt(1); // T
 				addAlt(1, types); // T ident uses symbol table 'types'
 				Expect(1); // ident
 			} else if (isKind(la, 18)) {
 				Get();
-				if (!variables.Contains(la.val)) SemErr(string.Format(_MissingSymbol, "ident", la.val, variables.name));
+				if (!variables.Contains(la)) SemErr(string.Format(_MissingSymbol, "ident", la.val, variables.name));
 				addAlt(1); // T
 				addAlt(1, variables); // T ident uses symbol table 'variables'
 				Expect(1); // ident
@@ -292,7 +292,7 @@ public class Parser {
 		case 9: // var6
 		case 10: // as
 		{
-			if (!variables.Contains(la.val)) SemErr(string.Format(_MissingSymbol, "ident", la.val, variables.name));
+			if (!variables.Contains(la)) SemErr(string.Format(_MissingSymbol, "ident", la.val, variables.name));
 			Get();
 			break;
 		}
@@ -305,14 +305,14 @@ public class Parser {
 		Expect(21); // "call"
 		addAlt(13); // T
 		Expect(13); // "("
-		if (!variables.Contains(la.val)) SemErr(string.Format(_MissingSymbol, "ident", la.val, variables.name));
+		if (!variables.Contains(la)) SemErr(string.Format(_MissingSymbol, "ident", la.val, variables.name));
 		addAlt(1); // T
 		addAlt(1, variables); // T ident uses symbol table 'variables'
 		Expect(1); // ident
 		addAlt(22); // ITER start
 		while (isKind(la, 22)) {
 			Get();
-			if (!variables.Contains(la.val)) SemErr(string.Format(_MissingSymbol, "ident", la.val, variables.name));
+			if (!variables.Contains(la)) SemErr(string.Format(_MissingSymbol, "ident", la.val, variables.name));
 			addAlt(1); // T
 			addAlt(1, variables); // T ident uses symbol table 'variables'
 			Expect(1); // ident
@@ -337,7 +337,7 @@ public class Parser {
 	void Type‿NT() {
 		addAlt(23); // T
 		Expect(23); // "type"
-		if (!types.Add(la.val)) SemErr(string.Format(_DuplicateSymbol, "ident", la.val, types.name));
+		if (!types.Add(la)) SemErr(string.Format(_DuplicateSymbol, "ident", la.val, types.name));
 		addAlt(1); // T
 		Expect(1); // ident
 		addAlt(15); // T
@@ -416,7 +416,7 @@ public class Parser {
 	}
 
 	void Ident‿NT() {
-		if (!variables.Add(la.val)) SemErr(string.Format(_DuplicateSymbol, "ident", la.val, variables.name));
+		if (!variables.Add(la)) SemErr(string.Format(_DuplicateSymbol, "ident", la.val, variables.name));
 		addAlt(1); // T
 		Expect(1); // ident
 		addAlt(new int[] {10, 11}); // OPT
@@ -428,7 +428,7 @@ public class Parser {
 			} else {
 				Get();
 			}
-			if (!types.Contains(la.val)) SemErr(string.Format(_MissingSymbol, "ident", la.val, types.name));
+			if (!types.Contains(la)) SemErr(string.Format(_MissingSymbol, "ident", la.val, types.name));
 			addAlt(1); // T
 			addAlt(1, types); // T ident uses symbol table 'types'
 			Expect(1); // ident
@@ -659,12 +659,20 @@ public class Alternative {
 	public Alternative(Token t, BitArray alt, Symboltable[] st) {
 		this.t = t;
 		this.alt = alt;
-		this.st = st;
+		this.st = st;		
+	}
+
+	public Token declaredAt {
+		get {		
+			Symboltable table = st[t.kind];
+			if (table == null) return null;
+			return table.Find(t);
+		}
 	}
 }
 
 public class Symboltable {
-	private Stack<List<string>> scopes;
+	private Stack<List<Token>> scopes;
 	public readonly string name;
 	public readonly bool ignoreCase;
 	private Symboltable clone = null;
@@ -672,7 +680,7 @@ public class Symboltable {
 	public Symboltable(string name, bool ignoreCase) {
 		this.name = name;
 		this.ignoreCase = ignoreCase;
-		this.scopes = new Stack<List<string>>();
+		this.scopes = new Stack<List<Token>>();
 		pushNewScope();
 	}
 
@@ -681,10 +689,10 @@ public class Symboltable {
 		this.ignoreCase = st.ignoreCase;
 
 		// now copy the scopes and its lists
-		this.scopes = new Stack<List<string>>();				 		
-		Stack<List<string>> reverse = new Stack<List<string>>(st.scopes);
-		foreach(List<string> list in reverse) {
-			this.scopes.Push(new List<string>(list));
+		this.scopes = new Stack<List<Token>>();				 		
+		Stack<List<Token>> reverse = new Stack<List<Token>>(st.scopes);
+		foreach(List<Token> list in reverse) {
+			this.scopes.Push(new List<Token>(list));
 		}
 	}
 
@@ -695,18 +703,43 @@ public class Symboltable {
 		return clone;
 	}
 
-	public bool Add(string s) {
-		if (ignoreCase) s = s.ToLower();
-		if (currentScope.Contains(s))
+	private Token Find(IEnumerable<Token> list, Token tok) {
+		StringComparer cmp = ignoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;  
+		foreach(Token t in list)
+			if (0 == cmp.Compare(t.val, tok.val))
+				return t;
+		return null;
+	} 
+
+	public Token Find(Token t) {
+		foreach(List<Token> list in scopes) {
+			Token tok = Find(list, t);
+			if (tok != null) return tok;
+		}
+		return null;
+	}
+
+	public void Add(string s) {
+		Token t = new Token();
+		t.kind = -1;
+		t.pos = -1;
+		t.charPos = -1;
+		t.val = s;
+		t.line = -1;
+		Add(t);
+	}
+
+	public bool Add(Token t) {
+		if (Find(currentScope, t) != null)
 			return false;
 		clone = null;
-		currentScope.Add(s);
+		currentScope.Add(t);
 		return true;
 	}
 
 	void pushNewScope() {
 		clone = null;
-		scopes.Push(new List<string>());
+		scopes.Push(new List<Token>());
 	}
 
 	void popScope() {
@@ -719,25 +752,22 @@ public class Symboltable {
 		return new Popper(this);
 	} 
 
-	public List<string> currentScope {
+	public List<Token> currentScope {
 		get { return scopes.Peek(); } 
 	}
-
-	public bool Contains(string s) {
-		if (ignoreCase) s = s.ToLower();
-		foreach(List<string> list in scopes)
-			if (list.Contains(s)) return true;
-		return false;
+	
+	public bool Contains(Token t) {
+		return (Find(t) != null);
 	}
 
-	public IEnumerable<string> items {
+	public IEnumerable<Token> items {
 		get {
 		    if (scopes.Count == 1) return currentScope;
 
 			Symboltable all = new Symboltable(name, ignoreCase);
-			foreach(List<string> list in scopes)
-				foreach(string s in list)
-					all.Add(s);
+			foreach(List<Token> list in scopes)
+				foreach(Token t in list)
+					all.Add(t);
 			return all.currentScope; 
 		}
 	}

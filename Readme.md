@@ -11,12 +11,6 @@ A typical usage scenario for the extension
 would be to allow keywords as identifiers 
 based on a parsing context that expects an identifier.
 
-* Autocomplete Information -
-If the switch -ac is set, the generator produces a
-parser that records to any parsed terminal symbol
-all alternative terminal symbols that would be valid
-instead of the actually parsed token.
-
 * Symbol Tables -
 Having autocomplete information is quite useless
 for token classes, unless you can specify from where
@@ -42,6 +36,11 @@ need to preserve the scoped symbols you might want to
 add a semantic action that stores the symbol 
 table's current scope `currentScope` in your AST.   
 
+* Autocomplete Information -
+If the switch -ac is set, the generator produces a
+parser that records to any parsed terminal symbol
+all alternative terminal symbols that would be valid
+instead of the actually parsed token.
 
 
 ## Token Inheritance
@@ -92,78 +91,6 @@ base token type is expected.
 This compatibility is transitive.
 However, it would be bad design to have complicated
 inheritance trees in the grammar.
-
-
-
-## Autocomplete Information
-
-After parsing, the parser has a list of all relevant
-tokens `public List<Alternative> tokens` in text ordering,
-i.e. no comments, no whitespace and no pragmas.
-
-For each such element the property `t` holds the actually
-parsed token. 
-
-The property `alt` holds a BitArray of all
-Terminal symbols that would be valid before the current 
-token `t` was parsed. With the help of the `Parser.tName`
-array and the index in the `alt` array, a client can resolve
-the name of the token from the TOKENS section of the atg grammar
-file or the literal of an inline declared keyword.
-
-Furthermore, if an alternative token class is associated with 
-a symbol table in the current production like in `ident:variables` 
-it's symbol table `variables` is accessible by 
-the `st` array at its kind position. 
-
-
-Note: Currently there is a flaw in the implementiation, because
-the calculation of possible alternatives stops as soon as the 
-actual token gets validly parsed. So this list can be truncated.
--> this has to be investigated.
-
-
-### Sample Code
-
-This Sample Code lists all tokens and their respective
-variants by name. If a variant has an associated symbol table,
-a colon and the symbol table's name is appended to the 
-token's symbol name. 
-
-    foreach (Alternative a in parser.tokens)
-    {
-        Token t = a.t;
-        Console.Write("({0,3},{1,3}) {2,3} {3,-20} {4, -20}", 
-          t.line, t.col, t.kind, Parser.tName[t.kind], t.val);
-        Console.Write(" alt: ");
-        for (int k = 0; k <= Parser.maxT; k++)
-        {
-            if (a.alt[k])
-                Console.Write("{1} ", k, Parser.tName[k]);
-                if (a.st[k] != null)
-                    Console.Write(":{0}", a.st[k].name); 
-                    // symbol table associated with this k-th terminal
-                    // in the current parsing context
-                Console.Write(' ');
-        }
-        Console.WriteLine();
-    }
-
-See CSharp/Test/main.cs for a more elaborate
-example.
-
-
-### Autocomplete Information plus Editor (hypothetical)
-
-While comparing the current position inside a hypothetical editor
-with the token sequence of the paresd full text, the editor could
-provide coloring based on the actual token `t`'s information 
-as well as autocompletion based on the `alt` (for keywords)
-and `st` array for (available symbols).
-
-Planned: Build a language-server for Visual Studio Code. See
-https://code.visualstudio.com/docs/extensions/example-language-server
-
 
 
 ## Symbol Tables
@@ -218,9 +145,9 @@ Note: Every symbol table has at least one scope, so you don't have
 to declare any `SCOPES(...)` block at all. This root scope is the only scope,
 that is available after the call to `Parse()`. So, if you need
 to preseve the content of a lexically scoped symbol table, store it's
-`currentScope`, which is a `List<string>` (C#) / `List(Of String)` (VB.Net)
+`currentScope`, which is a `List<Token>` (C#) / `List(Of Token)` (VB.Net)
 inside a semantic action. If you need all symbols in all currently active 
-scopes, take a look at `items` which is an `IEnumerable<string>`.
+scopes, take a look at `items` which is an `IEnumerable<Token>`.
 
 
 ### Accessing symbol tables form outside
@@ -228,6 +155,94 @@ scopes, take a look at `items` which is an `IEnumerable<string>`.
 The declared symbol tables are accessible via a declared public readonly field
 of type `Symboltable` and via the generic method `symbol(string name)` that
 returns the symbol table with the specified name or null if not found.
+
+
+## Autocomplete Information (class Alternative)
+
+After parsing, the parser has a list of all relevant
+tokens `public List<Alternative> tokens` in text ordering,
+i.e. no comments, no whitespace and no pragmas.
+
+For each such element the property `t` holds the actually
+parsed token. 
+
+The property `alt` holds a BitArray of all
+Terminal symbols that would be valid before the current 
+token `t` was parsed. With the help of the `Parser.tName`
+array and the index in the `alt` array, a client can resolve
+the name of the token from the TOKENS section of the atg grammar
+file or the literal of an inline declared keyword.
+
+Note: Currently there is a flaw in the implementiation, because
+the calculation of possible alternatives stops as soon as the 
+actual token gets validly parsed. So this list can be truncated.
+-> this has to be investigated.
+
+Furthermore, if an alternative token class is associated with 
+a symbol table in the current production like in `ident:variables`, 
+its symbol table `variables` is accessible by 
+the `st` array at its kind position. 
+
+The property `declaredAt` calculates a `Token`, where `t` was declared at,
+as long as `t` is  associated with a symbol table as a usage point.
+Otherwise this property returns null.
+
+
+### Sample Code listing Alternatives
+
+This Sample Code lists all tokens and their respective
+variants by name. If a variant has an associated symbol table,
+a colon and the symbol table's name is appended to the 
+token's symbol name. 
+
+    // parser.Parse() ommited here
+
+    foreach (Alternative a in parser.tokens)
+    {
+        // the parsed token, simply called "the token"
+        Token t = a.t; 
+
+        // either null or the token where the token is declared at:
+        Token declAt = a.declaredAt; // not used in sample
+
+        // print information about the token
+        Console.Write("({0,3},{1,3}) {2,3} {3,-20} {4, -20}", 
+          t.line, t.col, t.kind, Parser.tName[t.kind], t.val);
+
+        // print information about variants of the token:
+        Console.Write(" alt: ");
+        for (int k = 0; k <= Parser.maxT; k++)
+        {
+            if (a.alt[k]) {
+                // token kind k is a variant of the token
+                Console.Write("{1} ", k, Parser.tName[k]);
+                if (a.st[k] != null) {                    
+                    // symbol table associated with this k-th terminal
+                    // in the current parsing context
+                    Console.Write(":{0}", a.st[k].name);
+                    // list only locally declared symbols:  
+                    foreach (Token tok in a.st[k].currentScope)
+                        Console.Write("{0}({1},{2})|", tok.val, tok.line, tok.col); 
+                }
+                Console.Write(' ');
+            }
+        }
+        Console.WriteLine();
+    }
+
+See CSharp/Test/main.cs for a more elaborate example.
+
+
+### Autocomplete Information plus Editor (hypothetical)
+
+While comparing the current position inside a hypothetical editor
+with the token sequence of the paresd full text, the editor could
+provide coloring based on the actual token `t`'s information 
+as well as autocompletion based on the `alt` (for keywords)
+and `st` array for (available symbols).
+
+Planned: Build a language-server for Visual Studio Code. See
+https://code.visualstudio.com/docs/extensions/example-language-server
 
 
 

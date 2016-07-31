@@ -6,8 +6,9 @@ public class Inheritance {
     static void printST(Symboltable st) {
         Console.WriteLine("--- symbol-table ------------------------------------------------------------------- {0}({1}){2}", st.name, st.CountScopes, st.ignoreCase ? " IGONRECASE" : "");
         int n = 0;
-        foreach (string s in st.currentScope) {
+        foreach (Token t in st.currentScope) {
             n++;
+            string s = string.Format("{0}({1},{2})", t.val, t.line, t.col);
             Console.Write("{0,-20}  ", s);
             if (n%4 == 0) Console.WriteLine(); 
         }
@@ -50,16 +51,18 @@ public class Inheritance {
                     sb.Append("  ");
                 }
                 sb.Append(t.val); sb.Append(' ');
-                Console.Write("({0,3},{1,3}) {2,3} {3,-20} {4, -20}", t.line, t.col, t.kind, Parser.tName[t.kind], t.val);
-                Console.Write("                    alt: ");
+                Token declAt = a.declaredAt;
+                string decl = declAt == null ? "" : string.Format(" declared({0},{1})", declAt.line, declAt.col);
+                Console.Write("({0,3},{1,3}) {2,3} {3,-30} {4, -20}", t.line, t.col, t.kind, Parser.tName[t.kind] + decl, t.val);
+                Console.Write("      alt: ");
                 for (int k = 0; k <= Parser.maxT; k++)
                 {
                     if (a.alt[k]) {
                         Console.Write("{1}", k, Parser.tName[k]);
                         if (a.st[k] != null) {
                             Console.Write(":{0}({1})|", a.st[k].name, a.st[k].CountScopes);
-                            foreach (string sym in a.st[k].currentScope)
-                                Console.Write("{0}|", sym);    
+                            foreach (Token tok in a.st[k].currentScope)
+                                Console.Write("{0}({1},{2})|", tok.val, tok.line, tok.col);    
                         }
                         Console.Write(' ');
                     }
