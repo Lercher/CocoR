@@ -166,7 +166,7 @@ public class Parser {
 	}
 	
 	// a token's base type
-	static readonly int[] tBase = {
+	public static readonly int[] tBase = {
 -->tbase
 	};
 
@@ -238,10 +238,22 @@ public class Alternative {
 	}
 
 	public Token declaredAt {
-		get {		
-			Symboltable table = st[t.kind];
-			if (table == null) return null;
-			return table.Find(t);
+		get {
+			// foreach(Symboltable tab in st) if (tab != null) Console.Write("{0}-", tab.name);			
+			int k = t.kind;
+			while(k >= 0) {		
+				// Console.WriteLine("{0} test kind {1}", t.val, k);
+				Symboltable table = st[k];
+				if (table != null) {
+					// Console.WriteLine("  has ST {0}", table.name);
+					Token tt = table.Find(t);
+					if (tt != null)
+						return tt;
+					// Console.WriteLine("  but no defining token");
+				}
+				k = Parser.tBase[k];
+			}
+			return null;
 		}
 	}
 }
