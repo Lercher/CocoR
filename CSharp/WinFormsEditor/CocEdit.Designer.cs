@@ -21,7 +21,7 @@ namespace WinFormsEditor
             this.HSplit = new System.Windows.Forms.SplitContainer();
             this.VSplit = new System.Windows.Forms.SplitContainer();
             this.listAutocomplete = new System.Windows.Forms.ListView();
-            this.textSource = new System.Windows.Forms.TextBox();
+            this.textSource = new System.Windows.Forms.RichTextBox();
             this.textLog = new System.Windows.Forms.TextBox();
             //
             this.HSplit.Panel1.SuspendLayout();
@@ -88,7 +88,7 @@ namespace WinFormsEditor
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1024, 800);
+            this.ClientSize = new System.Drawing.Size(1200, 1000);
             this.Controls.Add(this.HSplit);
             this.MaximizeBox = true;
             this.Name = "CocEdit";
@@ -110,7 +110,7 @@ namespace WinFormsEditor
         private System.Windows.Forms.SplitContainer HSplit;
         private System.Windows.Forms.SplitContainer VSplit;
         private System.Windows.Forms.ListView listAutocomplete;
-        private System.Windows.Forms.TextBox textSource;
+        private System.Windows.Forms.RichTextBox textSource;
         private System.Windows.Forms.TextBox textLog;
     }
 }
