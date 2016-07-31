@@ -32,9 +32,9 @@ namespace WinFormsEditor
             // 
             this.VSplit.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.VSplit.Name = "VSplit";
-            //this.VSplit.BorderStyle = BorderStyle.None;
+            this.VSplit.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.VSplit.Dock = System.Windows.Forms.DockStyle.Fill;
-            //this.VSplit.Orientation = Orientation.Vertical; 
+            this.VSplit.Orientation = System.Windows.Forms.Orientation.Vertical; 
             this.VSplit.SplitterWidth = 5;           
             // 
             // textSource

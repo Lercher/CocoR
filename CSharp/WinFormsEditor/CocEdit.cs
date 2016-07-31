@@ -12,7 +12,15 @@ namespace WinFormsEditor
         public CocEdit()
         {
             InitializeComponent();
+            loadSampleTxt();            
         }
 
+        void loadSampleTxt() {
+            string fn = @"..\test\sample.txt";
+            string s = System.IO.File.ReadAllText(fn);
+            textSource.Text = s;
+            this.Text += " - " + fn;
+            textSource.Select(0, 0);
+        }
     }
 }
