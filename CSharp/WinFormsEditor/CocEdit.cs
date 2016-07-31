@@ -24,20 +24,49 @@ namespace WinFormsEditor
 
         private void sourceChanged(object sender, EventArgs e) {
             parse();
+            listAlternativesAtSelection();
         }
 
-        private void sourceSelectionChanged(object sender, EventArgs e) {
+        private void sourceSelectionChanged(object sender, EventArgs e) {            
+            listAlternativesAtSelection();
+        }
+
+        void listAlternativesAtSelection() {
             int pos = textSource.SelectionStart;
-            listAlternativesAt(pos);
-        }
-
-        void listAlternativesAt(int pos) {
             listAutocomplete.Items.Clear();
             System.Console.Write("pos {0,-5}", pos);
             if (parser == null) return;
             Alternative a = find(pos);
             if (a == null) return;
             System.Console.WriteLine("token \"{0}\"", a.t.val);
+            Token declAt = a.declaredAt;
+            if (declAt != null)
+                addAC(string.Format("({0})", declAt.charPos), "*decl");
+            addAC(a.t.val, "*parsed");
+            for (int k = 0; k <= Parser.maxT; k++)
+            {
+                if (a.alt[k]) {
+                    string name = Parser.tName[k];
+                    if (a.st[k] == null) {
+                        string t = name[0] == '"' ? "*keyword" : "*tclass";
+                        addAC(name.Replace("\"", string.Empty), t);    
+                    } else {
+                        foreach(Token tok in a.st[k].items)
+                            addAC(tok.val, a.st[k].name);
+                    }
+                }
+            }
+            foreach(ColumnHeader column in listAutocomplete.Columns)
+            {
+                column.Width = -2;
+                column.Text = "";
+            }
+        }
+
+        ListViewItem addAC(string s, string t) {
+            ListViewItem i = new ListViewItem(new string[] {s, t});
+            listAutocomplete.Items.Add(i);
+            return i;
         }
 
         Alternative find(int pos) {
