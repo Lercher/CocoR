@@ -18,6 +18,7 @@ CHARACTERS
 
 TOKENS
   ident = germanletter { germanletter | digit | underscore }.
+  dottedident = germanletter { germanletter | digit | underscore } CONTEXT(".") .
   number = ['-'] digit { digit } '.' digit { digit } ['#' | 'R'].
   int = ['-'] digit { digit }.
   string = '"' { stringCh } '"'.
@@ -85,7 +86,7 @@ EndNamespace =
 	.
 
 DottedIdent = 
-	ident { dot ident } 
+	dottedident { dot ident } 
 	.
 
 ReaderWriterPrefix = 
@@ -105,7 +106,7 @@ RootClass =
 Class =
 	SYNC
 	"Class" 
-	ClassType
+	ident>types
 	[ Title ]
 	[ Inherits ]
 	[ Via ]
@@ -220,8 +221,8 @@ As =
 	"As"
 	(
 	BaseType
-	| DottedIdent
 	| ident:types
+	| DottedIdent
 	)
 	.
 
@@ -240,18 +241,6 @@ BaseType =
 	| "String()"
 	.
 
-ClassType = // store this
-	ident>types
-	.
-
-EnumType = // store this
-	ident>enumtypes
-	.
-
-FlagsType = // store this
-	ident>types
-	.
-
 Mimics =
 	"Mimics"
 	MimicsSpec
@@ -259,11 +248,11 @@ Mimics =
 
 MimicsSpec =
 	(
-	ident:enumtypes
-	| Query
+	Query
 	| Txt
 	| XL
 	| Ref
+	| ident:enumtypes
 	).
 
 Query =
@@ -309,7 +298,7 @@ StringOrIdent =
 SubSystem = 
 	SYNC
 	"SubSystem" 
-	ClassType
+	ident>types
 	"SSName" ident
 	"SSConfig" ident
 	"SSTyp" ident
@@ -346,7 +335,7 @@ Flags =
 Enum =
 	SYNC
 	"Enum" 
-	EnumType
+	ident>enumtypes
 	EnumValues
 	end "Enum"
 	.
