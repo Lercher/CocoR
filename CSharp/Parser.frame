@@ -70,8 +70,8 @@ public class Parser {
 		for (;;) {
 			t = la;
 -->beginalternatives
-			if (alt != null) {
-				tokens.Add(new Alternative(t, alt, altst));
+			if (alternatives != null) {
+				tokens.Add(new Alternative(t, alternatives));
 			}
 			_newAlt();
 -->endalternatives
@@ -83,23 +83,21 @@ public class Parser {
 	}
 
 -->beginalternativescode
-	BitArray alt = null;
-	Symboltable[] altst = null;
+	Alt alternatives = null;
 
 	void _newAlt() {
-		alt = new BitArray(maxT+1);
-		altst = new Symboltable[maxT+1];
+		alternatives = new Alt(maxT + 1);
 	}
 
 	void addAlt(int kind) {
-		alt[kind] = true;
+		alternatives.alt[kind] = true;
 	}
 
 	// a terminal tokenclass of kind kind is restricted to this symbol table 
 	void addAlt(int kind, Symboltable st) {
 		// take the root scope, if it is the only scope,
 		// make a copy of the scope stack otherwise, but preserve the list references
-		altst[kind] = st.CloneScopes();
+		alternatives.altst[kind] = st.CloneScopes();
 	}
 
 	void addAlt(int[] range) {
@@ -226,32 +224,40 @@ public class FatalError: Exception {
 	public FatalError(string m): base(m) {}
 }
 
+// mutatable alternatives
+public class Alt {
+	public BitArray alt = null;
+	public Symboltable[] altst = null;
+	public Symboltable tdeclares = null;
+	public Symboltable tdeclared = null;
+
+	public Alt(int size) {
+		alt = new BitArray(size);
+		altst = new Symboltable[size];
+	}
+}
+
+// non mutatable
 public class Alternative {
 	public readonly Token t;
+	public readonly Symboltable tdeclares;
+	public readonly Symboltable tdeclared;
 	public readonly BitArray alt;
 	public readonly Symboltable[] st;
 
-	public Alternative(Token t, BitArray alt, Symboltable[] st) {
+	public Alternative(Token t, Alt alternatives) {
 		this.t = t;
-		this.alt = alt;
-		this.st = st;		
+		this.tdeclares = alternatives.tdeclares;
+		this.tdeclared = alternatives.tdeclared;
+		this.alt = alternatives.alt;
+		this.st = alternatives.altst;		
 	}
 
 	public Token declaredAt {
 		get {
-			// foreach(Symboltable tab in st) if (tab != null) Console.Write("{0}-", tab.name);			
-			int k = t.kind;
-			while(k >= 0) {		
-				// Console.WriteLine("{0} test kind {1}", t.val, k);
-				Symboltable table = st[k];
-				if (table != null) {
-					// Console.WriteLine("  has ST {0}", table.name);
-					Token tt = table.Find(t);
-					if (tt != null)
-						return tt;
-					// Console.WriteLine("  but no defining token");
-				}
-				k = Parser.tBase[k];
+			if (tdeclared != null) {
+				Token tt = tdeclared.Find(t);
+				if (tt != null) return tt;
 			}
 			return null;
 		}

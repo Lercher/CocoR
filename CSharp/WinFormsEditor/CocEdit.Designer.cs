@@ -88,7 +88,6 @@ namespace WinFormsEditor
             this.listAutocomplete.Font = ft;
             this.listAutocomplete.Columns.Add(new System.Windows.Forms.ColumnHeader());
             this.listAutocomplete.Columns.Add(new System.Windows.Forms.ColumnHeader());
-            this.listAutocomplete.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
 
             // 
             // MySplitContainer

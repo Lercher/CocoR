@@ -66,8 +66,8 @@ public class Parser {
 		for (;;) {
 			t = la;
 
-			if (alt != null) {
-				tokens.Add(new Alternative(t, alt, altst));
+			if (alternatives != null) {
+				tokens.Add(new Alternative(t, alternatives));
 			}
 			_newAlt();
 
@@ -79,23 +79,21 @@ public class Parser {
 	}
 
 
-	BitArray alt = null;
-	Symboltable[] altst = null;
+	Alt alternatives = null;
 
 	void _newAlt() {
-		alt = new BitArray(maxT+1);
-		altst = new Symboltable[maxT+1];
+		alternatives = new Alt(maxT + 1);
 	}
 
 	void addAlt(int kind) {
-		alt[kind] = true;
+		alternatives.alt[kind] = true;
 	}
 
 	// a terminal tokenclass of kind kind is restricted to this symbol table 
 	void addAlt(int kind, Symboltable st) {
 		// take the root scope, if it is the only scope,
 		// make a copy of the scope stack otherwise, but preserve the list references
-		altst[kind] = st.CloneScopes();
+		alternatives.altst[kind] = st.CloneScopes();
 	}
 
 	void addAlt(int[] range) {
@@ -179,12 +177,14 @@ public class Parser {
 			if (isKind(la, 11)) {
 				Get();
 				if (!types.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, types.name));
+				alternatives.tdeclared = types;
 				addAlt(1); // T
 				addAlt(1, types); // T ident uses symbol table 'types'
 				Expect(1); // ident
 			} else if (isKind(la, 12)) {
 				Get();
 				if (!variables.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
+				alternatives.tdeclared = variables;
 				addAlt(1); // T
 				addAlt(1, variables); // T ident uses symbol table 'variables'
 				Expect(1); // ident
@@ -208,7 +208,7 @@ public class Parser {
 			addAlt(19); // ALT
 			addAlt(21); // ALT
 			if (isKind(la, 23)) {
-				Type‿NT("new type declared: ");
+				Type‿NT();
 			} else if (StartOf(3)) {
 				Declaration‿NT();
 			} else if (isKind(la, 19)) {
@@ -297,6 +297,7 @@ public class Parser {
 		case 12: // v
 		{
 			if (!variables.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
+			alternatives.tdeclared = variables;
 			Get();
 			break;
 		}
@@ -310,6 +311,7 @@ public class Parser {
 		addAlt(15); // T
 		Expect(15); // "("
 		if (!variables.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
+		alternatives.tdeclared = variables;
 		addAlt(1); // T
 		addAlt(1, variables); // T ident uses symbol table 'variables'
 		Expect(1); // ident
@@ -317,6 +319,7 @@ public class Parser {
 		while (isKind(la, 22)) {
 			Get();
 			if (!variables.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
+			alternatives.tdeclared = variables;
 			addAlt(1); // T
 			addAlt(1, variables); // T ident uses symbol table 'variables'
 			Expect(1); // ident
@@ -338,13 +341,13 @@ public class Parser {
 		} else SynErr(38);
 	}
 
-	void Type‿NT(string fmt) {
+	void Type‿NT() {
 		addAlt(23); // T
 		Expect(23); // "type"
 		if (!types.Add(la)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, types.name));
+		alternatives.tdeclares = types;
 		addAlt(1); // T
 		Expect(1); // ident
-		Console.WriteLine("{0}{1}", fmt, t.val); 
 		addAlt(17); // T
 		Expect(17); // ";"
 	}
@@ -422,6 +425,7 @@ public class Parser {
 
 	void Ident‿NT() {
 		if (!variables.Add(la)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, variables.name));
+		alternatives.tdeclares = variables;
 		addAlt(1); // T
 		Expect(1); // ident
 		addAlt(new int[] {10, 13}); // OPT
@@ -434,6 +438,7 @@ public class Parser {
 				Get();
 			}
 			if (!types.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, types.name));
+			alternatives.tdeclared = types;
 			addAlt(1); // T
 			addAlt(1, types); // T ident uses symbol table 'types'
 			Expect(1); // ident
@@ -658,32 +663,40 @@ public class FatalError: Exception {
 	public FatalError(string m): base(m) {}
 }
 
+// mutatable alternatives
+public class Alt {
+	public BitArray alt = null;
+	public Symboltable[] altst = null;
+	public Symboltable tdeclares = null;
+	public Symboltable tdeclared = null;
+
+	public Alt(int size) {
+		alt = new BitArray(size);
+		altst = new Symboltable[size];
+	}
+}
+
+// non mutatable
 public class Alternative {
 	public readonly Token t;
+	public readonly Symboltable tdeclares;
+	public readonly Symboltable tdeclared;
 	public readonly BitArray alt;
 	public readonly Symboltable[] st;
 
-	public Alternative(Token t, BitArray alt, Symboltable[] st) {
+	public Alternative(Token t, Alt alternatives) {
 		this.t = t;
-		this.alt = alt;
-		this.st = st;		
+		this.tdeclares = alternatives.tdeclares;
+		this.tdeclared = alternatives.tdeclared;
+		this.alt = alternatives.alt;
+		this.st = alternatives.altst;		
 	}
 
 	public Token declaredAt {
 		get {
-			// foreach(Symboltable tab in st) if (tab != null) Console.Write("{0}-", tab.name);			
-			int k = t.kind;
-			while(k >= 0) {		
-				// Console.WriteLine("{0} test kind {1}", t.val, k);
-				Symboltable table = st[k];
-				if (table != null) {
-					// Console.WriteLine("  has ST {0}", table.name);
-					Token tt = table.Find(t);
-					if (tt != null)
-						return tt;
-					// Console.WriteLine("  but no defining token");
-				}
-				k = Parser.tBase[k];
+			if (tdeclared != null) {
+				Token tt = tdeclared.Find(t);
+				if (tt != null) return tt;
 			}
 			return null;
 		}
