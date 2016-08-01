@@ -50,8 +50,6 @@ namespace WinFormsEditor
                     break;
                 case "*tclass":
                     break;
-                case "*parsed":
-                    break;
                 default:
                     textSource.SelectedText = txt;
                     break;
@@ -71,8 +69,6 @@ namespace WinFormsEditor
             if (s.Length > 60) s = s.Substring(0, 60) + " ...";
             System.Console.WriteLine("token \"{0}\"", s);
 
-            addAC(a.t.val, "*parsed");
-
             Token declAt = a.declaredAt;
             if (declAt != null)
                 addAC(string.Format("({0})", declAt.charPos), "*decl");
@@ -90,11 +86,20 @@ namespace WinFormsEditor
                     }
                 }
             }
+
+            listAutocomplete.Columns[0].Text = a.t.val;
+            listAutocomplete.Columns[1].Text = describeParsed(a);
             foreach(ColumnHeader column in listAutocomplete.Columns)
             {
                 column.Width = -2;
-                column.Text = "";
             }
+        }
+
+        string describeParsed(Alternative a) {
+            string tname = Parser.tName[a.t.kind];
+            if (a.tdeclared != null) return string.Format("{0}:{1}", tname, a.tdeclared.name);
+            if (a.tdeclares != null) return string.Format("{0}>{1}", tname, a.tdeclares.name);
+            return tname;
         }
 
         ListViewItem addAC(string s, string t) {

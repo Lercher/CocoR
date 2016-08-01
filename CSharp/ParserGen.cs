@@ -247,9 +247,13 @@ public class ParserGen {
 		if (!string.IsNullOrEmpty(p.declares)) {
 			Indent(indent);
 			gen.WriteLine("if (!{0}.Add(la)) SemErr(string.Format(DuplicateSymbol, \"{1}\", la.val, {0}.name));", p.declares, tab.Escape(p.sym.name));
+			Indent(indent);
+			gen.WriteLine("alternatives.tdeclares = {0};", p.declares);
 		} else if (!string.IsNullOrEmpty(p.declared)) {
 			Indent(indent);
 			gen.WriteLine("if (!{0}.Use(la)) SemErr(string.Format(MissingSymbol, \"{1}\", la.val, {0}.name));", p.declared, tab.Escape(p.sym.name));
+			Indent(indent);
+			gen.WriteLine("alternatives.tdeclared = {0};", p.declared);
 		} 
 	}
 
