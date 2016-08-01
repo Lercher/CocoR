@@ -1,0 +1,10 @@
+languages (DE,EN,FR)
+domain orfi ACCOUNTING length 15
+DE: "Buchhaltung"
+EN: "Accounting"
+FR: "Compatiblité"
+values
+BILLER_GROUP = DE: "Rechnungsstellungsgruppe" , "Alle Angestellten der Rechnungsstellung"
+			   EN: "Biller Group" , "All Employees of Billing"
+			   FR: "Groupe Facturier", "Tous les employés de la facturation"
+end domain
