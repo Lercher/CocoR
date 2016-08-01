@@ -310,7 +310,7 @@ that probably is only available as a .Net program.
 token inheritance *beta*, 
 autocomplete information *alpha*, 
 symbol tables *beta*,
-non strict symbol tables *scheduled*, 
+non strict symbol tables *alpha*, 
 -is switch *beta*,
 editor *alpha*
 
