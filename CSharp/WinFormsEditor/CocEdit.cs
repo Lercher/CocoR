@@ -112,7 +112,7 @@ namespace WinFormsEditor
 
 
         void loadSampleTxt() {
-            string fn = @"..\test\sample.txt";
+            string fn = @"C:\daten\LeasySOFT.pos\Websites\Repository\Test\ScaEngagement\ScaEngagement.wfmodel";
             string s = System.IO.File.ReadAllText(fn);
             textSource.Text = s;
             this.Text += " - " + fn;

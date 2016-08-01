@@ -4,6 +4,7 @@ using System.IO;
 public class Inheritance {
 
     static void printST(Symboltable st) {
+        if (st == null) return;
         Console.WriteLine("--- symbol-table ------------------------------------------------------------------- {0}({1}){2}", st.name, st.CountScopes, st.ignoreCase ? " IGONRECASE" : "");
         int n = 0;
         foreach (Token t in st.currentScope) {
@@ -27,8 +28,8 @@ public class Inheritance {
             Console.WriteLine("{0} error(s) detected", parser.errors.count);
 
             // list all symbol table values
-            printST(parser.types);
-            printST(parser.variables);
+            printST(parser.symbols("types"));
+            printST(parser.symbols("variables"));
 
             // list all alternatives
             int line = 0;
