@@ -297,7 +297,7 @@ https://code.visualstudio.com/docs/extensions/example-language-server
 
 * -ac - Turn on generation of autocomplete / intellisense information
 
-* -is - *planned*, ignore semantic actions. With this switch turned on,
+* -is - ignore semantic actions. With this switch turned on,
 you can generate and build a .Net parser library with autocomplete information 
 from an attributed grammar file, that is written for a different language 
 such as Java. Maybe only to use an autocomplete aware editor for the grammar,
