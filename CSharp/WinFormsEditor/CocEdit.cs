@@ -68,9 +68,9 @@ namespace WinFormsEditor
             if (a == null) return;
             System.Console.WriteLine("token \"{0}\"", a.t.val);
             Token declAt = a.declaredAt;
+            addAC(a.t.val, "*parsed");
             if (declAt != null)
                 addAC(string.Format("({0})", declAt.charPos), "*decl");
-            addAC(a.t.val, "*parsed");
             for (int k = 0; k <= Parser.maxT; k++)
             {
                 if (a.alt[k]) {
