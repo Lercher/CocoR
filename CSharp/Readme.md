@@ -27,7 +27,12 @@ the readme.md in the root directory.
 
 ## Known Bugs
 
-* none
+In the winforms editor:
+
+* tokens with a `"` inside their text don't display well in the right navigator 
+* german umlauts terminate parsing although declared as character classes
+* missing error messages locator in the lower pane / doubleclick
+* all lowercased keywords for autocomplete in a `IGNORECASE` grammar 
 
 
 ## Resolved Bugs
