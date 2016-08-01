@@ -207,6 +207,7 @@ public class CharClass {
 
 public class SymTab {
 	public string name;
+	public bool strict = false;
 	public List<string> predefined = new List<string>();
 	
 	public SymTab(string name) { this.name = name; }

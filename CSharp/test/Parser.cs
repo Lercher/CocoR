@@ -24,8 +24,8 @@ public class Parser {
 
 	const bool _T = true;
 	const bool _x = false;
-	const string _DuplicateSymbol = "{0} '{1}' declared twice in '{2}'";
-	const string _MissingSymbol ="{0} '{1}' not declared in '{2}'";
+	public const string DuplicateSymbol = "{0} '{1}' declared twice in '{2}'";
+	public const string MissingSymbol ="{0} '{1}' not declared in '{2}'";
 	const int minErrDist = 2;
 	
 	public Scanner scanner;
@@ -36,8 +36,8 @@ public class Parser {
 	public Token la;   // lookahead token
 	int errDist = minErrDist;
 
-	public readonly Symboltable variables = new Symboltable("variables", false);
-	public readonly Symboltable types = new Symboltable("types", false);
+	public readonly Symboltable variables = new Symboltable("variables", false, false);
+	public readonly Symboltable types = new Symboltable("types", false, true);
 	public Symboltable symbols(string name) {
 		if (name == "variables") return variables;
 		if (name == "types") return types;
@@ -178,13 +178,13 @@ public class Parser {
 			addAlt(12); // ALT
 			if (isKind(la, 11)) {
 				Get();
-				if (!types.Contains(la)) SemErr(string.Format(_MissingSymbol, "ident", la.val, types.name));
+				if (!types.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, types.name));
 				addAlt(1); // T
 				addAlt(1, types); // T ident uses symbol table 'types'
 				Expect(1); // ident
 			} else if (isKind(la, 12)) {
 				Get();
-				if (!variables.Contains(la)) SemErr(string.Format(_MissingSymbol, "ident", la.val, variables.name));
+				if (!variables.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
 				addAlt(1); // T
 				addAlt(1, variables); // T ident uses symbol table 'variables'
 				Expect(1); // ident
@@ -296,7 +296,7 @@ public class Parser {
 		case 11: // t
 		case 12: // v
 		{
-			if (!variables.Contains(la)) SemErr(string.Format(_MissingSymbol, "ident", la.val, variables.name));
+			if (!variables.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
 			Get();
 			break;
 		}
@@ -309,14 +309,14 @@ public class Parser {
 		Expect(21); // "call"
 		addAlt(15); // T
 		Expect(15); // "("
-		if (!variables.Contains(la)) SemErr(string.Format(_MissingSymbol, "ident", la.val, variables.name));
+		if (!variables.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
 		addAlt(1); // T
 		addAlt(1, variables); // T ident uses symbol table 'variables'
 		Expect(1); // ident
 		addAlt(22); // ITER start
 		while (isKind(la, 22)) {
 			Get();
-			if (!variables.Contains(la)) SemErr(string.Format(_MissingSymbol, "ident", la.val, variables.name));
+			if (!variables.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
 			addAlt(1); // T
 			addAlt(1, variables); // T ident uses symbol table 'variables'
 			Expect(1); // ident
@@ -341,7 +341,7 @@ public class Parser {
 	void Type‿NT() {
 		addAlt(23); // T
 		Expect(23); // "type"
-		if (!types.Add(la)) SemErr(string.Format(_DuplicateSymbol, "ident", la.val, types.name));
+		if (!types.Add(la)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, types.name));
 		addAlt(1); // T
 		Expect(1); // ident
 		addAlt(17); // T
@@ -420,7 +420,7 @@ public class Parser {
 	}
 
 	void Ident‿NT() {
-		if (!variables.Add(la)) SemErr(string.Format(_DuplicateSymbol, "ident", la.val, variables.name));
+		if (!variables.Add(la)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, variables.name));
 		addAlt(1); // T
 		Expect(1); // ident
 		addAlt(new int[] {10, 13}); // OPT
@@ -432,7 +432,7 @@ public class Parser {
 			} else {
 				Get();
 			}
-			if (!types.Contains(la)) SemErr(string.Format(_MissingSymbol, "ident", la.val, types.name));
+			if (!types.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, types.name));
 			addAlt(1); // T
 			addAlt(1, types); // T ident uses symbol table 'types'
 			Expect(1); // ident
@@ -534,6 +534,8 @@ public class Parser {
 		types.Add("double");
 		Inheritance‿NT();
 		Expect(0);
+		variables.CheckDeclared(errors);
+		types.CheckDeclared(errors);
 
 	}
 	
@@ -689,13 +691,16 @@ public class Alternative {
 
 public class Symboltable {
 	private Stack<List<Token>> scopes;
+	private Stack<List<Token>> undeclaredTokens = new Stack<List<Token>>();
 	public readonly string name;
 	public readonly bool ignoreCase;
+	public readonly bool strict;
 	private Symboltable clone = null;
 
-	public Symboltable(string name, bool ignoreCase) {
+	public Symboltable(string name, bool ignoreCase, bool strict) {
 		this.name = name;
 		this.ignoreCase = ignoreCase;
+		this.strict = strict;
 		this.scopes = new Stack<List<Token>>();
 		pushNewScope();
 	}
@@ -703,12 +708,16 @@ public class Symboltable {
 	private Symboltable(Symboltable st) {
 		this.name = st.name;
 		this.ignoreCase = st.ignoreCase;
+		this.strict = st.strict;
 
 		// now copy the scopes and its lists
 		this.scopes = new Stack<List<Token>>();				 		
 		Stack<List<Token>> reverse = new Stack<List<Token>>(st.scopes);
 		foreach(List<Token> list in reverse) {
-			this.scopes.Push(new List<Token>(list));
+			if (strict)
+				this.scopes.Push(new List<Token>(list)); // strict: copy the list values
+			else
+				this.scopes.Push(list); // non strict: copy the list reference
 		}
 	}
 
@@ -719,8 +728,14 @@ public class Symboltable {
 		return clone;
 	}
 
+	private StringComparer comparer {
+		get {
+			return ignoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+		}
+	}
+
 	private Token Find(IEnumerable<Token> list, Token tok) {
-		StringComparer cmp = ignoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;  
+		StringComparer cmp = comparer;   
 		foreach(Token t in list)
 			if (0 == cmp.Compare(t.val, tok.val))
 				return t;
@@ -735,6 +750,24 @@ public class Symboltable {
 		return null;
 	}
 
+	// ----------------------------------- for Parser use start -------------------- 
+	
+	public bool Use(Token t) {
+		if (Contains(t)) return true; // it's ok, if we know the symbol
+		if (strict) return false; // in strict mode we report an illegal symbol
+		undeclaredTokens.Peek().Add(t); // in non strict mode we store the token for future checking
+		return true; // we can't report an invalid symbol yet, so report "all ok".
+	}
+
+	public bool Add(Token t) {
+		if (Find(currentScope, t) != null)
+			return false;
+		if (strict) clone = null; // if non strict, we have to keep the clone
+		currentScope.Add(t);
+		RemoveUndeclared(t);
+		return true;
+	}
+
 	public void Add(string s) {
 		Token t = new Token();
 		t.kind = -1;
@@ -745,23 +778,47 @@ public class Symboltable {
 		Add(t);
 	}
 
-	public bool Add(Token t) {
-		if (Find(currentScope, t) != null)
-			return false;
-		clone = null;
-		currentScope.Add(t);
-		return true;
+	// ----------------------------------- for Parser use end --------------------	
+
+	public bool Contains(Token t) {
+		return (Find(t) != null);
+	}
+
+	void RemoveUndeclared(Token tok) {
+		StringComparer cmp = comparer;
+		List<Token> found = new List<Token>();
+		List<Token> undeclared = undeclaredTokens.Peek(); 
+		foreach(Token t in undeclared)
+			if (0 == cmp.Compare(t.val, tok.val))
+				found.Add(t);
+		foreach(Token t in found)
+			undeclared.Remove(t);
 	}
 
 	void pushNewScope() {
 		clone = null;
 		scopes.Push(new List<Token>());
+		undeclaredTokens.Push(new List<Token>());
 	}
 
 	void popScope() {
 		clone = null;
 		scopes.Pop();
+		PromoteUndeclaredToParent();
 	}
+
+	public void CheckDeclared(Errors errors) {
+		List<Token> list = undeclaredTokens.Peek();
+		foreach(Token t in list) {
+			string msg = string.Format(Parser.MissingSymbol, Parser.tName[t.kind], t.val, this.name);
+			errors.SemErr(t.line, t.col, msg);
+		}
+	}
+
+	void PromoteUndeclaredToParent() {
+		List<Token> list = undeclaredTokens.Pop();
+		undeclaredTokens.Peek().AddRange(list);
+	} 
 
 	public IDisposable createScope() {
 		pushNewScope();
@@ -771,16 +828,12 @@ public class Symboltable {
 	public List<Token> currentScope {
 		get { return scopes.Peek(); } 
 	}
-	
-	public bool Contains(Token t) {
-		return (Find(t) != null);
-	}
 
 	public IEnumerable<Token> items {
 		get {
 		    if (scopes.Count == 1) return currentScope;
 
-			Symboltable all = new Symboltable(name, ignoreCase);
+			Symboltable all = new Symboltable(name, ignoreCase, strict);
 			foreach(List<Token> list in scopes)
 				foreach(Token t in list)
 					all.Add(t);

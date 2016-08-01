@@ -42,8 +42,12 @@ COMMENTS FROM "//" TO lf
 IGNORE cr + lf + tab
 
 SYMBOLTABLES
-   variables.  // an empty symbol table named variables
-   types "string" "int" "double". // a symbol table named types with three prefilled entries
+    // an empty symbol table named 'variables', declarations anywheres
+   variables. 
+
+   // a symbol table named types with three prefilled entries, new declaration upfront
+   types STRICT "string" "int" "double". 
+   
    // variables.  // symbol table name declared twice
 
 PRODUCTIONS

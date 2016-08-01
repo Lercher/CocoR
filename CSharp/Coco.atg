@@ -112,7 +112,7 @@ Coco                            (. Symbol sym; Graph g, g1, g2; string gramName;
   { "IGNORE" Set<out s>         (. tab.ignored.Or(s); .)
   }
 
-  [ "SYMBOLTABLES" { STDecl } ]
+  [ "SYMBOLTABLES" { SymboltableDecl } ]
 
   SYNC 
   "PRODUCTIONS"                 (. if (genScanner) dfa.MakeDeterministic();
@@ -178,6 +178,28 @@ Coco                            (. Symbol sym; Graph g, g1, g2; string gramName;
   '.'
 .
 
+
+/*------------------------------------------------------------------------------------*/
+
+SymboltableDecl                 (. SymTab st; .)
+=
+  ident                         (. string name = t.val.ToLower();                                    
+                                   if (tab.FindSymtab(name) != null) 
+                                     SemErr("symbol table name declared twice");
+                                   st = new SymTab(name);
+                                   tab.symtabs.Add(st);
+                                 .)
+  [ "STRICT"                    (. st.strict = true; .)
+  ]
+  { string                      (. string predef = t.val;
+                                   predef = tab.Unescape(predef.Substring(1, predef.Length-2));
+                                   if (dfa.ignoreCase) predef = predef.ToLower();
+                                   st.Add(predef);
+                                 .)
+  }
+  '.'
+.
+
 /*------------------------------------------------------------------------------------*/
 
 ScopesDecl<Symbol sym>          (. sym.scopes = new List<SymTab>(); .)
@@ -194,26 +216,6 @@ ScopeStart<Symbol sym>
                                    if (st == null) SemErr("undeclared symbol table " + t.val);
                                    else sym.scopes.Add(st);
                                  .)
-.
-
-
-/*------------------------------------------------------------------------------------*/
-
-STDecl                          (. SymTab st; .)
-=
-  ident                         (. string name = t.val.ToLower();                                    
-                                   if (tab.FindSymtab(name) != null) 
-                                     SemErr("symbol table name declared twice");
-                                   st = new SymTab(name);
-                                   tab.symtabs.Add(st);
-                                 .)
-  { string                      (. string predef = t.val;
-                                   predef = tab.Unescape(predef.Substring(1, predef.Length-2));
-                                   if (dfa.ignoreCase) predef = predef.ToLower();
-                                   st.Add(predef);
-                                 .)
-  }
-  '.'
 .
 
 /*------------------------------------------------------------------------------------*/

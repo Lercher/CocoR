@@ -239,10 +239,10 @@ public class ParserGen {
 	void GenSymboltableCheck(Node p, int indent) {
 		if (!string.IsNullOrEmpty(p.declares)) {
 			Indent(indent);
-			gen.WriteLine("if (!{0}.Add(la)) SemErr(string.Format(_DuplicateSymbol, \"{1}\", la.val, {0}.name));", p.declares, tab.Escape(p.sym.name));
+			gen.WriteLine("if (!{0}.Add(la)) SemErr(string.Format(DuplicateSymbol, \"{1}\", la.val, {0}.name));", p.declares, tab.Escape(p.sym.name));
 		} else if (!string.IsNullOrEmpty(p.declared)) {
 			Indent(indent);
-			gen.WriteLine("if (!{0}.Contains(la)) SemErr(string.Format(_MissingSymbol, \"{1}\", la.val, {0}.name));", p.declared, tab.Escape(p.sym.name));
+			gen.WriteLine("if (!{0}.Use(la)) SemErr(string.Format(MissingSymbol, \"{1}\", la.val, {0}.name));", p.declared, tab.Escape(p.sym.name));
 		} 
 	}
 
@@ -521,11 +521,15 @@ public class ParserGen {
 		}
 	}
 
+	static string toTF(bool b) {
+		return b ? "true" : "false";
+	}
+
 	void GenSymbolTables(bool declare) {
 		foreach (SymTab st in tab.symtabs)
 		{
 			if (declare)
-				gen.WriteLine("\tpublic readonly Symboltable {0} = new Symboltable(\"{0}\", {1});", st.name, dfa.ignoreCase ? "true" : "false");
+				gen.WriteLine("\tpublic readonly Symboltable {0} = new Symboltable(\"{0}\", {1}, {2});", st.name, toTF(dfa.ignoreCase), toTF(st.strict));
 			else
 				foreach(string s in st.predefined)
 					gen.WriteLine("\t\t{0}.Add(\"{1}\");", st.name, tab.Escape(s));
@@ -537,8 +541,12 @@ public class ParserGen {
 			gen.WriteLine("\t\treturn null;");
 			gen.WriteLine("\t}\n");
 		}
+	}
 
-	} 
+	void GenSymbolTablesChecks() { 
+		foreach (SymTab st in tab.symtabs)
+			gen.WriteLine("\t\t{0}.CheckDeclared(errors);", st.name);
+	}
 
 	public void WriteParser () {
 		Generator g = new Generator(tab);
@@ -575,8 +583,9 @@ public class ParserGen {
 		g.CopyFramePart("-->productions"); GenProductions();
 		g.CopyFramePart("-->parseRoot"); 
 		GenSymbolTables(false);
-		gen.WriteLine("\t\t{0}{1}();", tab.gramSy.name, PROD_SUFFIX); 
+		gen.WriteLine("\t\t{0}{1}();", tab.gramSy.name, PROD_SUFFIX);
 		if (tab.checkEOF) gen.WriteLine("\t\tExpect(0);");
+		GenSymbolTablesChecks(); 
 		g.CopyFramePart("-->tbase"); GenTokenBase(); // write all tokens base types
 		g.CopyFramePart("-->tname"); GenTokenNames(); // write all token names
 		g.CopyFramePart("-->initialization0"); InitSets0();
