@@ -46,6 +46,11 @@ COMMENTS FROM "'" TO lf
 
 IGNORE cr + lf + tab
 
+
+SYMBOLTABLES
+	types.
+
+
 PRODUCTIONS
 
 WFModel =
@@ -215,9 +220,7 @@ As =
 	(
 	BaseType
 	| DottedIdent
-	| ClassType
-	| EnumType
-	| FlagsType
+	| ident:types
 	)
 	.
 
@@ -237,15 +240,15 @@ BaseType =
 	.
 
 ClassType = // store this
-	ident
+	ident>types
 	.
 
 EnumType = // store this
-	ident
+	ident>types
 	.
 
 FlagsType = // store this
-	ident
+	ident>types
 	.
 
 Mimics =
