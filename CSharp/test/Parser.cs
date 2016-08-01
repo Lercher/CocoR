@@ -7,17 +7,20 @@ using System.Collections.Generic;
 
 public class Parser {
 	public const int _EOF = 0; // TOKEN EOF
-	public const int _databasecode = 1; // TOKEN databasecode
-	public const int _languagecode = 2; // TOKEN languagecode
-	public const int _twodigitnumber = 3; // TOKEN twodigitnumber
-	public const int _string = 4; // TOKEN string
-	public const int _orfi = 5; // TOKEN orfi
-	public const int _language = 6; // TOKEN language
-	public const int _domain = 7; // TOKEN domain
-	public const int _values = 8; // TOKEN values
-	public const int _length = 9; // TOKEN length
-	public const int _end = 10; // TOKEN end
-	public const int maxT = 16;
+	public const int _ident = 1; // TOKEN ident
+	public const int _keyword = 2; // TOKEN keyword
+	public const int _var = 3; // TOKEN var INHERITS ident
+	public const int _var1 = 4; // TOKEN var1 INHERITS ident
+	public const int _var2 = 5; // TOKEN var2 INHERITS ident
+	public const int _var3 = 6; // TOKEN var3 INHERITS ident
+	public const int _var4 = 7; // TOKEN var4 INHERITS ident
+	public const int _var5 = 8; // TOKEN var5 INHERITS ident
+	public const int _var6 = 9; // TOKEN var6 INHERITS ident
+	public const int _as = 10; // TOKEN as INHERITS ident
+	public const int _t = 11; // TOKEN t INHERITS ident
+	public const int _v = 12; // TOKEN v INHERITS ident
+	public const int _colon = 13; // TOKEN colon
+	public const int maxT = 35;
 
 	const bool _T = true;
 	const bool _x = false;
@@ -33,7 +36,11 @@ public class Parser {
 	public Token la;   // lookahead token
 	int errDist = minErrDist;
 
+	public readonly Symboltable variables = new Symboltable("variables", false, false);
+	public readonly Symboltable types = new Symboltable("types", false, true);
 	public Symboltable symbols(string name) {
+		if (name == "variables") return variables;
+		if (name == "types") return types;
 		return null;
 	}
 
@@ -59,8 +66,8 @@ public class Parser {
 		for (;;) {
 			t = la;
 
-			if (alt != null) {
-				tokens.Add(new Alternative(t, alt, altst));
+			if (alternatives != null) {
+				tokens.Add(new Alternative(t, alternatives));
 			}
 			_newAlt();
 
@@ -72,23 +79,21 @@ public class Parser {
 	}
 
 
-	BitArray alt = null;
-	Symboltable[] altst = null;
+	Alt alternatives = null;
 
 	void _newAlt() {
-		alt = new BitArray(maxT+1);
-		altst = new Symboltable[maxT+1];
+		alternatives = new Alt(maxT + 1);
 	}
 
 	void addAlt(int kind) {
-		alt[kind] = true;
+		alternatives.alt[kind] = true;
 	}
 
 	// a terminal tokenclass of kind kind is restricted to this symbol table 
 	void addAlt(int kind, Symboltable st) {
 		// take the root scope, if it is the only scope,
 		// make a copy of the scope stack otherwise, but preserve the list references
-		altst[kind] = st.CloneScopes();
+		alternatives.altst[kind] = st.CloneScopes();
 	}
 
 	void addAlt(int[] range) {
@@ -145,135 +150,383 @@ public class Parser {
 	}
 
 	
-	void CassiopaeDB‿NT() {
-		Languages‿NT();
-		addAlt(7); // ITER start
-		while (isKind(la, 7)) {
-			Domain‿NT();
-			addAlt(7); // ITER end
-		}
-	}
-
-	void Languages‿NT() {
-		addAlt(6); // T
-		Expect(6); // language
-		addAlt(11); // T
-		Expect(11); // "("
-		addAlt(2); // T
-		Expect(2); // languagecode
-		addAlt(12); // T
-		Expect(12); // ","
-		addAlt(2); // T
-		Expect(2); // languagecode
-		addAlt(12); // T
-		Expect(12); // ","
-		addAlt(2); // T
-		Expect(2); // languagecode
-		addAlt(13); // T
-		Expect(13); // ")"
-	}
-
-	void Domain‿NT() {
-		addAlt(7); // T
-		Expect(7); // domain
-		addAlt(5); // OPT
-		if (isKind(la, 5)) {
+	void Inheritance‿NT() {
+		TDBs‿NT();
+		addAlt(14); // ITER start
+		while (isKind(la, 14)) {
 			Get();
+			addAlt(15); // T
+			Expect(15); // "("
+			NumberIdent‿NT();
+			addAlt(16); // T
+			Expect(16); // ")"
+			addAlt(17); // T
+			Expect(17); // ";"
+			addAlt(14); // ITER end
 		}
-		Databasecode‿NT();
-		addAlt(9); // T
-		Expect(9); // length
-		addAlt(3); // T
-		Expect(3); // twodigitnumber
-		Translations‿NT();
-		Domainvalues‿NT();
-		addAlt(10); // T
-		Expect(10); // end
-		addAlt(7); // T
-		Expect(7); // domain
+		addAlt(21); // ITER start
+		while (isKind(la, 21)) {
+			Call‿NT();
+			addAlt(21); // ITER end
+		}
+		addAlt(18); // ITER start
+		while (isKind(la, 18)) {
+			Get();
+			addAlt(11); // ALT
+			addAlt(12); // ALT
+			if (isKind(la, 11)) {
+				Get();
+				if (!types.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, types.name));
+				alternatives.tdeclared = types;
+				addAlt(1); // T
+				addAlt(1, types); // T ident uses symbol table 'types'
+				Expect(1); // ident
+			} else if (isKind(la, 12)) {
+				Get();
+				if (!variables.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
+				alternatives.tdeclared = variables;
+				addAlt(1); // T
+				addAlt(1, variables); // T ident uses symbol table 'variables'
+				Expect(1); // ident
+			} else SynErr(36);
+			addAlt(17); // T
+			Expect(17); // ";"
+			addAlt(18); // ITER end
+		}
+		addAlt(set0, 1); // ITER start
+		while (StartOf(1)) {
+			IdentOrNumber‿NT();
+			addAlt(set0, 1); // ITER end
+		}
 	}
 
-	void Databasecode‿NT() {
+	void TDBs‿NT() {
+		addAlt(set0, 2); // ITER start
+		while (StartOf(2)) {
+			addAlt(23); // ALT
+			addAlt(set0, 3); // ALT
+			addAlt(19); // ALT
+			addAlt(21); // ALT
+			if (isKind(la, 23)) {
+				Type‿NT();
+			} else if (StartOf(3)) {
+				Declaration‿NT();
+			} else if (isKind(la, 19)) {
+				Block‿NT();
+			} else {
+				Call‿NT();
+			}
+			addAlt(set0, 2); // ITER end
+		}
+	}
+
+	void NumberIdent‿NT() {
+		addAlt(25); // ALT
+		addAlt(26); // ALT
+		addAlt(27); // ALT
+		addAlt(28); // ALT
+		addAlt(29); // ALT
+		addAlt(30); // ALT
+		addAlt(31); // ALT
+		addAlt(32); // ALT
+		addAlt(33); // ALT
+		addAlt(34); // ALT
 		addAlt(1); // ALT
-		addAlt(4); // ALT
+		addAlt(1, variables); // ALT ident uses symbol table 'variables'
+		switch (la.kind) {
+		case 25: // "0"
+		{
+			Get();
+			break;
+		}
+		case 26: // "1"
+		{
+			Get();
+			break;
+		}
+		case 27: // "2"
+		{
+			Get();
+			break;
+		}
+		case 28: // "3"
+		{
+			Get();
+			break;
+		}
+		case 29: // "4"
+		{
+			Get();
+			break;
+		}
+		case 30: // "5"
+		{
+			Get();
+			break;
+		}
+		case 31: // "6"
+		{
+			Get();
+			break;
+		}
+		case 32: // "7"
+		{
+			Get();
+			break;
+		}
+		case 33: // "8"
+		{
+			Get();
+			break;
+		}
+		case 34: // "9"
+		{
+			Get();
+			break;
+		}
+		case 1: // ident
+		case 3: // var
+		case 4: // var1
+		case 5: // var2
+		case 6: // var3
+		case 7: // var4
+		case 8: // var5
+		case 9: // var6
+		case 10: // as
+		case 11: // t
+		case 12: // v
+		{
+			if (!variables.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
+			alternatives.tdeclared = variables;
+			Get();
+			break;
+		}
+		default: SynErr(37); break;
+		}
+	}
+
+	void Call‿NT() {
+		addAlt(21); // T
+		Expect(21); // "call"
+		addAlt(15); // T
+		Expect(15); // "("
+		if (!variables.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
+		alternatives.tdeclared = variables;
+		addAlt(1); // T
+		addAlt(1, variables); // T ident uses symbol table 'variables'
+		Expect(1); // ident
+		addAlt(22); // ITER start
+		while (isKind(la, 22)) {
+			Get();
+			if (!variables.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
+			alternatives.tdeclared = variables;
+			addAlt(1); // T
+			addAlt(1, variables); // T ident uses symbol table 'variables'
+			Expect(1); // ident
+			addAlt(22); // ITER end
+		}
+		addAlt(16); // T
+		Expect(16); // ")"
+		addAlt(17); // T
+		Expect(17); // ";"
+	}
+
+	void IdentOrNumber‿NT() {
+		addAlt(1); // ALT
+		addAlt(set0, 4); // ALT
 		if (isKind(la, 1)) {
 			Get();
-		} else if (isKind(la, 4)) {
+		} else if (StartOf(4)) {
+			NumberVar‿NT();
+		} else SynErr(38);
+	}
+
+	void Type‿NT() {
+		addAlt(23); // T
+		Expect(23); // "type"
+		if (!types.Add(la)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, types.name));
+		alternatives.tdeclares = types;
+		addAlt(1); // T
+		Expect(1); // ident
+		addAlt(17); // T
+		Expect(17); // ";"
+	}
+
+	void Declaration‿NT() {
+		Var‿NT();
+		Ident‿NT();
+		addAlt(new int[] {22, 24}); // ITER start
+		while (isKind(la, 22) || isKind(la, 24)) {
+			Separator‿NT();
+			Ident‿NT();
+			addAlt(new int[] {22, 24}); // ITER end
+		}
+		while (!(isKind(la, 0) || isKind(la, 17))) {SynErr(39); Get();}
+		addAlt(17); // T
+		Expect(17); // ";"
+	}
+
+	void Block‿NT() {
+		using(variables.createScope()) using(types.createScope()) {
+		addAlt(19); // T
+		Expect(19); // "{"
+		TDBs‿NT();
+		addAlt(20); // T
+		Expect(20); // "}"
+	}}
+
+	void Var‿NT() {
+		addAlt(3); // ALT
+		addAlt(4); // ALT
+		addAlt(5); // ALT
+		addAlt(6); // ALT
+		addAlt(7); // ALT
+		addAlt(8); // ALT
+		addAlt(9); // ALT
+		switch (la.kind) {
+		case 3: // var
+		{
 			Get();
-		} else SynErr(17);
-	}
-
-	void Translations‿NT() {
-		addAlt(2); // T
-		Expect(2); // languagecode
-		addAlt(14); // T
-		Expect(14); // ":"
-		addAlt(4); // T
-		Expect(4); // string
-		addAlt(2); // T
-		Expect(2); // languagecode
-		addAlt(14); // T
-		Expect(14); // ":"
-		addAlt(4); // T
-		Expect(4); // string
-		addAlt(2); // T
-		Expect(2); // languagecode
-		addAlt(14); // T
-		Expect(14); // ":"
-		addAlt(4); // T
-		Expect(4); // string
-	}
-
-	void Domainvalues‿NT() {
-		addAlt(8); // T
-		Expect(8); // values
-		Domainvalue‿NT();
-		addAlt(1); // ITER start
-		while (isKind(la, 1)) {
-			Domainvalue‿NT();
-			addAlt(1); // ITER end
+			break;
+		}
+		case 4: // var1
+		{
+			Get();
+			break;
+		}
+		case 5: // var2
+		{
+			Get();
+			break;
+		}
+		case 6: // var3
+		{
+			Get();
+			break;
+		}
+		case 7: // var4
+		{
+			Get();
+			break;
+		}
+		case 8: // var5
+		{
+			Get();
+			break;
+		}
+		case 9: // var6
+		{
+			Get();
+			break;
+		}
+		default: SynErr(40); break;
 		}
 	}
 
-	void Domainvalue‿NT() {
+	void Ident‿NT() {
+		if (!variables.Add(la)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, variables.name));
+		alternatives.tdeclares = variables;
 		addAlt(1); // T
-		Expect(1); // databasecode
-		addAlt(15); // T
-		Expect(15); // "="
-		Domaintranslations‿NT();
+		Expect(1); // ident
+		addAlt(new int[] {10, 13}); // OPT
+		if (isKind(la, 10) || isKind(la, 13)) {
+			addAlt(10); // ALT
+			addAlt(13); // ALT
+			if (isKind(la, 10)) {
+				Get();
+			} else {
+				Get();
+			}
+			if (!types.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, types.name));
+			alternatives.tdeclared = types;
+			addAlt(1); // T
+			addAlt(1, types); // T ident uses symbol table 'types'
+			Expect(1); // ident
+		}
 	}
 
-	void Domaintranslations‿NT() {
-		addAlt(2); // T
-		Expect(2); // languagecode
-		addAlt(14); // T
-		Expect(14); // ":"
-		addAlt(4); // T
-		Expect(4); // string
-		addAlt(12); // T
-		Expect(12); // ","
-		addAlt(4); // T
-		Expect(4); // string
-		addAlt(2); // T
-		Expect(2); // languagecode
-		addAlt(14); // T
-		Expect(14); // ":"
-		addAlt(4); // T
-		Expect(4); // string
-		addAlt(12); // T
-		Expect(12); // ","
-		addAlt(4); // T
-		Expect(4); // string
-		addAlt(2); // T
-		Expect(2); // languagecode
-		addAlt(14); // T
-		Expect(14); // ":"
-		addAlt(4); // T
-		Expect(4); // string
-		addAlt(12); // T
-		Expect(12); // ","
-		addAlt(4); // T
-		Expect(4); // string
+	void Separator‿NT() {
+		addAlt(22); // ALT
+		addAlt(24); // ALT
+		if (isKind(la, 22)) {
+			addAlt(22); // WT
+			ExpectWeak(22, 5); // "," followed by var2
+		} else if (isKind(la, 24)) {
+			addAlt(24); // WT
+			ExpectWeak(24, 5); // "|" followed by var2
+		} else SynErr(41);
+	}
+
+	void NumberVar‿NT() {
+		addAlt(25); // ALT
+		addAlt(26); // ALT
+		addAlt(27); // ALT
+		addAlt(28); // ALT
+		addAlt(29); // ALT
+		addAlt(30); // ALT
+		addAlt(31); // ALT
+		addAlt(32); // ALT
+		addAlt(33); // ALT
+		addAlt(34); // ALT
+		addAlt(3); // ALT
+		switch (la.kind) {
+		case 25: // "0"
+		{
+			Get();
+			break;
+		}
+		case 26: // "1"
+		{
+			Get();
+			break;
+		}
+		case 27: // "2"
+		{
+			Get();
+			break;
+		}
+		case 28: // "3"
+		{
+			Get();
+			break;
+		}
+		case 29: // "4"
+		{
+			Get();
+			break;
+		}
+		case 30: // "5"
+		{
+			Get();
+			break;
+		}
+		case 31: // "6"
+		{
+			Get();
+			break;
+		}
+		case 32: // "7"
+		{
+			Get();
+			break;
+		}
+		case 33: // "8"
+		{
+			Get();
+			break;
+		}
+		case 34: // "9"
+		{
+			Get();
+			break;
+		}
+		case 3: // var
+		{
+			Get();
+			break;
+		}
+		default: SynErr(42); break;
+		}
 	}
 
 
@@ -282,30 +535,47 @@ public class Parser {
 		la = new Token();
 		la.val = "";
 		Get();
-		CassiopaeDB‿NT();
+		types.Add("string");
+		types.Add("int");
+		types.Add("double");
+		Inheritance‿NT();
 		Expect(0);
+		variables.CheckDeclared(errors);
+		types.CheckDeclared(errors);
 
 	}
 	
 	// a token's base type
 	public static readonly int[] tBase = {
-		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1
+		-1,-1,-1, 1,  1, 1, 1, 1,  1, 1, 1, 1,  1,-1,-1,-1, -1,-1,-1,-1,
+		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1
 	};
 
 	// a token's name
 	public static readonly string[] tName = {
-		"EOF","databasecode","languagecode","twodigitnumber", "\"\"\"","\"orfi\"","\"languages\"","\"domain\"", "\"values\"","\"length\"","\"end\"","\"(\"", "\",\"","\")\"","\":\"","\"=\"", "???"
+		"EOF","ident","\"keyword\"","\"var\"", "\"var1\"","\"var2\"","\"var3\"","\"var4\"", "\"var5\"","\"var6\"","\"as\"","\"t\"", "\"v\"","\":\"","\"NumberIdent\"","\"(\"", "\")\"","\";\"","\"check\"","\"{\"",
+		"\"}\"","\"call\"","\",\"","\"type\"", "\"|\"","\"0\"","\"1\"","\"2\"", "\"3\"","\"4\"","\"5\"","\"6\"", "\"7\"","\"8\"","\"9\"","???"
 	};
 
 	// states that a particular production (1st index) can start with a particular token (2nd index)
 	static readonly bool[,] set0 = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x}
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
+		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
+		{_T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x}
 
 	};
 
 	// as set0 but with token inheritance taken into account
 	static readonly bool[,] set = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x}
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_x,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
+		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_x,_x,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _x},
+		{_T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x}
 
 	};
 } // end Parser
@@ -320,23 +590,48 @@ public class Errors {
 		string s;
 		switch (n) {
 			case 0: s = "EOF expected"; break;
-			case 1: s = "databasecode expected"; break;
-			case 2: s = "languagecode expected"; break;
-			case 3: s = "twodigitnumber expected"; break;
-			case 4: s = "string expected"; break;
-			case 5: s = "orfi expected"; break;
-			case 6: s = "language expected"; break;
-			case 7: s = "domain expected"; break;
-			case 8: s = "values expected"; break;
-			case 9: s = "length expected"; break;
-			case 10: s = "end expected"; break;
-			case 11: s = "\"(\" expected"; break;
-			case 12: s = "\",\" expected"; break;
-			case 13: s = "\")\" expected"; break;
-			case 14: s = "\":\" expected"; break;
-			case 15: s = "\"=\" expected"; break;
-			case 16: s = "??? expected"; break;
-			case 17: s = "invalid Databasecode"; break;
+			case 1: s = "ident expected"; break;
+			case 2: s = "keyword expected"; break;
+			case 3: s = "var expected"; break;
+			case 4: s = "var1 expected"; break;
+			case 5: s = "var2 expected"; break;
+			case 6: s = "var3 expected"; break;
+			case 7: s = "var4 expected"; break;
+			case 8: s = "var5 expected"; break;
+			case 9: s = "var6 expected"; break;
+			case 10: s = "as expected"; break;
+			case 11: s = "t expected"; break;
+			case 12: s = "v expected"; break;
+			case 13: s = "colon expected"; break;
+			case 14: s = "\"NumberIdent\" expected"; break;
+			case 15: s = "\"(\" expected"; break;
+			case 16: s = "\")\" expected"; break;
+			case 17: s = "\";\" expected"; break;
+			case 18: s = "\"check\" expected"; break;
+			case 19: s = "\"{\" expected"; break;
+			case 20: s = "\"}\" expected"; break;
+			case 21: s = "\"call\" expected"; break;
+			case 22: s = "\",\" expected"; break;
+			case 23: s = "\"type\" expected"; break;
+			case 24: s = "\"|\" expected"; break;
+			case 25: s = "\"0\" expected"; break;
+			case 26: s = "\"1\" expected"; break;
+			case 27: s = "\"2\" expected"; break;
+			case 28: s = "\"3\" expected"; break;
+			case 29: s = "\"4\" expected"; break;
+			case 30: s = "\"5\" expected"; break;
+			case 31: s = "\"6\" expected"; break;
+			case 32: s = "\"7\" expected"; break;
+			case 33: s = "\"8\" expected"; break;
+			case 34: s = "\"9\" expected"; break;
+			case 35: s = "??? expected"; break;
+			case 36: s = "invalid Inheritance"; break;
+			case 37: s = "invalid NumberIdent"; break;
+			case 38: s = "invalid IdentOrNumber"; break;
+			case 39: s = "this symbol not expected in Declaration"; break;
+			case 40: s = "invalid Var"; break;
+			case 41: s = "invalid Separator"; break;
+			case 42: s = "invalid NumberVar"; break;
 
 			default: s = "error " + n; break;
 		}
@@ -368,32 +663,40 @@ public class FatalError: Exception {
 	public FatalError(string m): base(m) {}
 }
 
+// mutatable alternatives
+public class Alt {
+	public BitArray alt = null;
+	public Symboltable[] altst = null;
+	public Symboltable tdeclares = null;
+	public Symboltable tdeclared = null;
+
+	public Alt(int size) {
+		alt = new BitArray(size);
+		altst = new Symboltable[size];
+	}
+}
+
+// non mutatable
 public class Alternative {
 	public readonly Token t;
+	public readonly Symboltable tdeclares;
+	public readonly Symboltable tdeclared;
 	public readonly BitArray alt;
 	public readonly Symboltable[] st;
 
-	public Alternative(Token t, BitArray alt, Symboltable[] st) {
+	public Alternative(Token t, Alt alternatives) {
 		this.t = t;
-		this.alt = alt;
-		this.st = st;		
+		this.tdeclares = alternatives.tdeclares;
+		this.tdeclared = alternatives.tdeclared;
+		this.alt = alternatives.alt;
+		this.st = alternatives.altst;		
 	}
 
 	public Token declaredAt {
 		get {
-			// foreach(Symboltable tab in st) if (tab != null) Console.Write("{0}-", tab.name);			
-			int k = t.kind;
-			while(k >= 0) {		
-				// Console.WriteLine("{0} test kind {1}", t.val, k);
-				Symboltable table = st[k];
-				if (table != null) {
-					// Console.WriteLine("  has ST {0}", table.name);
-					Token tt = table.Find(t);
-					if (tt != null)
-						return tt;
-					// Console.WriteLine("  but no defining token");
-				}
-				k = Parser.tBase[k];
+			if (tdeclared != null) {
+				Token tt = tdeclared.Find(t);
+				if (tt != null) return tt;
 			}
 			return null;
 		}
