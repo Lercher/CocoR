@@ -73,7 +73,7 @@ namespace WinFormsEditor
             this.VSplit.Panel1.Controls.Add(this.textSource);
             this.VSplit.Panel2.Controls.Add(this.listAutocomplete);
             //
-            this.HSplit.SplitterDistance = 350;
+            this.HSplit.SplitterDistance = 300;
             this.VSplit.SplitterDistance = 400;
             // 
             // listAutocomplete

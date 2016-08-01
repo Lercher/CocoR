@@ -62,15 +62,21 @@ namespace WinFormsEditor
         void listAlternativesAtSelection() {
             int pos = textSource.SelectionStart;
             listAutocomplete.Items.Clear();
-            System.Console.Write("pos {0,-5}", pos);
+            System.Console.Write("pos {0,-6}", pos);
             if (parser == null) return;
             Alternative a = findAlternative(pos);
             if (a == null) return;
-            System.Console.WriteLine("token \"{0}\"", a.t.val);
+
+            string s = a.t.val;
+            if (s.Length > 60) s = s.Substring(0, 60) + " ...";
+            System.Console.WriteLine("token \"{0}\"", s);
+
+            addAC(a.t.val, "*parsed");
+
             Token declAt = a.declaredAt;
             if (declAt != null)
                 addAC(string.Format("({0})", declAt.charPos), "*decl");
-            addAC(a.t.val, "*parsed");
+
             for (int k = 0; k <= Parser.maxT; k++)
             {
                 if (a.alt[k]) {
