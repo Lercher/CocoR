@@ -16,6 +16,7 @@ namespace WinFormsEditor
             InitializeComponent();
             textSource.WordWrap = false;
             textSource.ScrollBars = RichTextBoxScrollBars.Both;
+            textLog.ScrollBars = ScrollBars.Vertical;
             loadSampleTxt();
             parse();
             textSource.TextChanged += sourceChanged;
