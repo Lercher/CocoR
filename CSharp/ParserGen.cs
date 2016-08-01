@@ -47,6 +47,7 @@ public class ParserGen {
 	
 	public Position usingPos; // "using" definitions from the attributed grammar
 	public bool GenerateAutocompleteInformation = false;  // generate addAlt() calls to fill the "alt" set with alternatives to the next to Get() token.
+	public bool IgnoreSemanticActions = false;
 	private readonly DFA dfa; 
 
 	int errorNr;      // highest parser error number
@@ -99,31 +100,37 @@ public class ParserGen {
 	}
 
 	void CopySourcePart (Position pos, int indent) {
-		// Copy text described by pos from atg to gen
-		int ch, i;
-		if (pos != null) {
-			buffer.Pos = pos.beg; ch = buffer.Read();
-			if (tab.emitLines) {
-				gen.WriteLine();
-				gen.WriteLine("#line {0} \"{1}\"", pos.line, tab.srcName);
-			}
-			Indent(indent);
-			while (buffer.Pos <= pos.end) {
-				while (ch == CR || ch == LF) {  // eol is either CR or CRLF or LF
-					gen.WriteLine(); Indent(indent);
-					if (ch == CR) ch = buffer.Read(); // skip CR
-					if (ch == LF) ch = buffer.Read(); // skip LF
-					for (i = 1; i <= pos.col && (ch == ' ' || ch == '\t'); i++) { 
-						// skip blanks at beginning of line
-						ch = buffer.Read();
-					}
-					if (buffer.Pos > pos.end) goto done;
+		StreamWriter orig = gen;
+		if (IgnoreSemanticActions) gen = StreamWriter.Null;
+		try {
+			// Copy text described by pos from atg to gen
+			int ch, i;
+			if (pos != null) {
+				buffer.Pos = pos.beg; ch = buffer.Read();
+				if (tab.emitLines) {
+					gen.WriteLine();
+					gen.WriteLine("#line {0} \"{1}\"", pos.line, tab.srcName);
 				}
-				gen.Write((char)ch);
-				ch = buffer.Read();
+				Indent(indent);
+				while (buffer.Pos <= pos.end) {
+					while (ch == CR || ch == LF) {  // eol is either CR or CRLF or LF
+						gen.WriteLine(); Indent(indent);
+						if (ch == CR) ch = buffer.Read(); // skip CR
+						if (ch == LF) ch = buffer.Read(); // skip LF
+						for (i = 1; i <= pos.col && (ch == ' ' || ch == '\t'); i++) { 
+							// skip blanks at beginning of line
+							ch = buffer.Read();
+						}
+						if (buffer.Pos > pos.end) goto done;
+					}
+					gen.Write((char)ch);
+					ch = buffer.Read();
+				}
+				done:
+				if (indent > 0) gen.WriteLine();
 			}
-			done:
-			if (indent > 0) gen.WriteLine();
+		} finally {
+			gen = orig;
 		}
 	}
 

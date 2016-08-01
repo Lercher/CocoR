@@ -51,7 +51,7 @@ public class Coco {
 		Console.Write("Coco/R (Jul 28, 2016)");
 		string srcName = null, nsName = null, frameDir = null, ddtString = null,
 		traceFileName = null, outDir = null;
-		bool emitLines = false, generateAutocompleteInformation = false;
+		bool emitLines = false, generateAutocompleteInformation = false, ignoreSemanticActions = false;
 		int retVal = 1;
 		for (int i = 0; i < arg.Length; i++) {
 			if (arg[i] == "-namespace" && i < arg.Length - 1) nsName = arg[++i].Trim();
@@ -60,10 +60,12 @@ public class Coco {
 			else if (arg[i] == "-o" && i < arg.Length - 1) outDir = arg[++i].Trim();
 			else if (arg[i] == "-lines") emitLines = true;
 			else if (arg[i] == "-ac") generateAutocompleteInformation = true;
+			else if (arg[i] == "-is") ignoreSemanticActions = true;
 			else srcName = arg[i];
 		}
 		if (emitLines) Console.Write(" [emit lines]");
 		if (generateAutocompleteInformation) Console.Write(" [generate autocomplete information]");
+		if (ignoreSemanticActions) Console.Write(" [ignore semantic actions]");
 		Console.WriteLine();
 		if (arg.Length > 0 && srcName != null) {
 			try {
@@ -78,6 +80,7 @@ public class Coco {
 				parser.dfa = new DFA(parser);
 				parser.pgen = new ParserGen(parser);
 				parser.pgen.GenerateAutocompleteInformation = generateAutocompleteInformation;
+				parser.pgen.IgnoreSemanticActions = ignoreSemanticActions;
 
 				parser.tab.srcName = srcName;
 				parser.tab.srcDir = srcDir;
@@ -109,6 +112,7 @@ public class Coco {
 			                  + "  -o         <outputDirectory>{0}"
 			                  + "  -lines     [emit lines]{0}"
 							  + "  -ac        [generate autocomplete/intellisense information]{0}"
+							  + "  -is        [ignore semantic actions]{0}"
 			                  + "Valid characters in the trace string:{0}"
 			                  + "  A  trace automaton{0}"
 			                  + "  F  list first/follow sets{0}"

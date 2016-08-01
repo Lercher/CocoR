@@ -311,7 +311,7 @@ token inheritance *beta*,
 autocomplete information *alpha*, 
 symbol tables *beta*,
 non strict symbol tables *scheduled*, 
--is switch *scheduled*,
+-is switch *beta*,
 editor *alpha*
 
 * VB.Net - 

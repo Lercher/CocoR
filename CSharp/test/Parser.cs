@@ -208,7 +208,7 @@ public class Parser {
 			addAlt(19); // ALT
 			addAlt(21); // ALT
 			if (isKind(la, 23)) {
-				Type‿NT();
+				Type‿NT("new type declared: ");
 			} else if (StartOf(3)) {
 				Declaration‿NT();
 			} else if (isKind(la, 19)) {
@@ -338,12 +338,13 @@ public class Parser {
 		} else SynErr(38);
 	}
 
-	void Type‿NT() {
+	void Type‿NT(string fmt) {
 		addAlt(23); // T
 		Expect(23); // "type"
 		if (!types.Add(la)) SemErr(string.Format(_DuplicateSymbol, "ident", la.val, types.name));
 		addAlt(1); // T
 		Expect(1); // ident
+		Console.WriteLine("{0}{1}", fmt, t.val); 
 		addAlt(17); // T
 		Expect(17); // ";"
 	}

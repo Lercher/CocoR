@@ -59,13 +59,13 @@ PRODUCTIONS
          { "check" ("t" ident:types | "v" ident:variables) ';' }
          { IdentOrNumber }.
 
-    TDBs =  { Type | Declaration | Block | Call }.
+    TDBs =  { Type<"new type declared: "> | Declaration | Block | Call }.
 
     Block SCOPES(variables, types) = "{" TDBs "}". 
 
     Call = "call" "(" ident:variables { "," ident:variables } ")" ";".
 
-    Type = "type" ident>types ';'.
+    Type<string fmt> = "type" ident>types (. Console.WriteLine("{0}{1}", fmt, t.val); .) ';'.
     
     // with iter node
     Declaration = Var Ident { Separator Ident } SYNC ';'.
