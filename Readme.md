@@ -35,7 +35,15 @@ as well as all newly created symbols is destroyed when
 you leave the generated production method. So if you 
 need to preserve the scoped symbols you might want to
 add a semantic action that stores the symbol 
-table's current scope `currentScope` in your AST.   
+table's current scope `currentScope` in your AST. 
+
+* Strict and Non Strict Symbol Tables -
+Symbol tables can be strict, i.e. every symbol has to be
+declared before its use (aka *one-pass*), or non strict,
+meaning that a symbol can be used and declared anywhere 
+acording to common scoping rules (aka *two-pass*). However,
+there are actually no multiple passes, the generated 
+parser always makes only one pass.
 
 * Autocomplete Information -
 If the switch -ac is set, the generator produces a
@@ -110,13 +118,13 @@ where symbol tables for the generated parser can be declared and
 initialized.
 
     // Coco/R grammar
-    STDecl = ident { string } .
+    STDecl = ident [ "STRICT" ] { string } .
 
 Example
 
     SYMBOLTABLES
       variables.  // an empty symbol table named variables
-      types "string" "int" "double". // a symbol table named types with three prefilled entries
+      types STRICT "string" "int" "double". // a symbol table named types with three prefilled entries
 
 In productions you can append to each terminal or weak terminal `t`
 an angle bracket plus a declared symboltable symbol to declare a new
@@ -130,6 +138,20 @@ Example
 
 this production creates a new name in `variables` for the first ident
 and checks that the second ident is present in `types`.
+
+
+### Strict and Non Strict Symbol Tables
+
+We call a symbol table *strict*, if a declaration of a particular symbol
+(via `ident>table`) has to be strictly before its use (via `ident:table`).
+So the declaration of a symbol is checked when its use-token is parsed.
+
+We call a symbol table *non strict*, if declaration and use of a symbol
+can be anywhere acording to lexical scoping rules.
+
+In other words, you have to declare a symbol to use it. If a symbol table 
+is declared as `STRICT` the declaration has to be before the use, otherwise the 
+declaration can be anywhere inside the current lexical scope or its parent scopes.
 
 
 ### Scoped Symbols
@@ -284,9 +306,19 @@ that probably is only available as a .Net program.
 
 ## Languages
 
-* C# - token inheritance *beta*, autocomplete information *alpha*, symbol tables *beta*, editor *alpha*
-* VB.Net - token inheritance *beta*
-* Java - maybe, but not yet scheduled
+* C# - 
+token inheritance *beta*, 
+autocomplete information *alpha*, 
+symbol tables *beta*,
+non strict symbol tables *scheduled*, 
+-is switch *scheduled*,
+editor *alpha*
+
+* VB.Net - 
+token inheritance *beta*
+
+* Java - 
+maybe, but not yet scheduled
 
 Note: The generated code for .Net languages targets
 plain vanilla .Net Framework 2.0 compilers and libraries. 
@@ -316,9 +348,15 @@ scanners and parsers in any software that you build,
 even in closed source projects.
 
 
+## Collaboration
+
+Contributrions are very welcome. Please feel free to fork/clone
+this repository.
+
+
 ## Known Bugs
 
-see readme.md in the respective language folder
+see readme.md in the respective language folder.
 
 
 ## Git Branches
