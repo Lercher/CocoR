@@ -86,7 +86,7 @@ EndNamespace =
 	.
 
 DottedIdent = 
-	dottedident { dot ident } 
+	[ dottedident dot { dottedident dot } ] ident 
 	.
 
 ReaderWriterPrefix = 
@@ -238,6 +238,8 @@ BaseType =
 	| "n2"
 	| "n0"
 	| "String"
+	| "boolean"
+	| "Guid"
 	| "String()"
 	.
 
@@ -257,8 +259,7 @@ MimicsSpec =
 
 Query =
 	"query" colon
-	ident
-	dot
+	dottedident	dot
 	ident
 	colon
 	StringOrIdent
@@ -266,8 +267,7 @@ Query =
 
 Txt =
 	"txt" colon
-	ident
-	dot
+	dottedident	dot
 	ident
 	colon
 	StringOrIdent
@@ -275,8 +275,7 @@ Txt =
 
 XL =
 	"xl" colon
-	ident
-	dot
+	dottedident	dot
 	ident
 	colon
 	StringOrIdent
