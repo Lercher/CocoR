@@ -1,0 +1,628 @@
+' Beispiel ohne Umlaute fuer Coco/R
+
+Version 1.0.0.0
+Namespace Sca.Engagement
+ReaderWriterPrefix Sca
+
+RootClass Data
+	Property Engagement as Engagement
+	Property Kunde as Kunde
+	Property Objekt as Objekt
+	InfoProperty Mandant
+	Property Profil as Profil
+	Property ProfilChanger as Profil
+	List DealIts as DealIt
+	Property DealIt as DealIt
+	Property Command as Command
+	SelectList Kalkulationen as Kalkulation
+	Property Mandantenadresse as Mandantenadresse
+	Property Ansprechpartner as ADPerson
+	Property Zinssaetze as Zinssaetze
+	Property Kalkulationsart as Kalkulationsart
+	Property CurrentUserPerson as ADPerson
+	List Spreadeskalation as Spreadeskalation
+	InfoProperty SpreadeskalationHinweis
+	Property Dokumente as Dokumente
+	List Dokumentanforderungen as Dokumentanforderung
+	List DokumentanforderungenKunde as Dokumentanforderung
+	List Kundendokumente as Dokumentanforderung
+	List Haendlerdokumente as Dokumentanforderung
+	List Lieferantendokumente as Dokumentanforderung
+	List EventLog as Log
+	List InterneBemerkungen as Log
+	Property AufgabeParameter as AufgabeParameter
+	List AufgabeProtokoll as Aufgabenprotokoll
+	Property LSposBetreuer as LSposBetreuer
+	Property Kundenreportgruppe as Reportgruppe
+	Property TextToArchive
+	Property KreditentscheidungParameter as KreditentscheidungParameter
+	InfoProperty Features
+	Property AutoEmailMessage as AutoEmailMessage
+	Property ProfilOwner as Profil
+	Property Eindeckung as Eindeckung
+	Property ExportMQName
+	List GeplanteFahrzeuglieferungen as GeplanteFahrzeuglieferung
+	Property GeplanteFahrzeuglieferung as GeplanteFahrzeuglieferung
+	Property GeplanteFahrzeuglieferungNummer as Integer
+	List Adressfunktionen as Adressfunktion
+	Property LetzteSpreadeskalationAm as Date
+End Class
+
+
+Class Adressfunktion
+    Property Funktion
+    Property Typ
+    Property Rolle
+    Property ADPersonEMail
+	Property PersonDisplayname
+End Class
+
+Class GeplanteFahrzeuglieferung
+	Property GeplantesLieferdatum as Date
+	Property Bemerkung
+End Class
+
+Class Eindeckung
+	Property Eindeckungsnummer
+	InfoProperty Senden Mimics JaNein
+	List Fahrzeugbestellungen as Fahrzeugbestellung
+End Class
+
+Class Fahrzeugbestellung
+	InfoProperty AngebotsMasterID
+	InfoProperty HaendlerNr
+	InfoProperty VerkaeuferID
+	InfoProperty PurchaseOrderNo
+	InfoProperty ProdDatum as Date
+	InfoProperty LieferdatumCDD as Date
+	InfoProperty FZIdentnummer
+	InfoProperty Seriennummer
+	InfoProperty LieferdatumPDD as Date
+	InfoProperty LieferdatumPOS as Date
+End Class
+
+Class AutoEmailMessage
+	Property Marker as boolean
+	List Empfaenger as String
+	Property Ausloesegrund
+	Property Wann
+	Property Wer
+	Property Was
+	Property Von
+	Property Zu
+End Class
+
+Class Reportgruppe
+    InfoProperty ReportGroupKey
+    InfoProperty ReportGroupName
+    InfoProperty archiviert as Boolean
+    Property Versandart Mimics txt:ScaEngagement.Kennzeichen:"Versandart" = "Drucker"
+    Property Sprache Mimics txt:ScaScaEngagement.Kennzeichen:"Sprache"   
+End Class
+
+Class Aufgabenprotokoll
+    Property PKey as Guid
+    Property Adressnummer
+    Property ErstelltAm as Datetime
+    Property Aufgabe 
+    Property Aktion
+    Property Empfaenger
+    Property Termin as Date
+    Property WFState
+    Property StatuswechselAm as Datetime
+    Property Kundenbetreuer
+    Property Bemerkung
+    Property InstanceID as Guid
+    Property Referenznummer
+    Property ErledigtAm as DateTime
+    Property Status
+    Property Engagement
+    Property Dokumentanforderung
+    Property KENummer
+End Class
+
+
+Class AufgabeParameter
+    Property Aufgabenart 
+    Property idADAdresse
+    Property Empfaenger 
+    Property LSMandant
+    Property Engagement
+    Property Dokumentanforderung
+    Property KENummer
+End Class
+
+Class KreditentscheidungParameter
+    Property idADAdresse
+    Property LSMandant
+    Property Engagement
+	Property uidinstanceid as Guid
+End Class
+
+Class Dokumente
+    InfoProperty Dokumentanforderungsart 
+    InfoProperty AdresseSuchwert
+End Class
+
+Class ADPerson
+	InfoProperty Name
+	InfoProperty Email
+	InfoProperty Telefonnummer
+	InfoProperty Abteilung
+	InfoProperty KeyUnterschrift
+	InfoProperty LoginName
+	InfoProperty Telefax
+	InfoProperty VKTelefon
+	InfoProperty VKFax
+	InfoProperty VKMobil
+	InfoProperty VKEmail
+End Class
+
+
+Class Mandantenadresse
+	Property Name
+	Property Strasse
+	Property PLZStrasse
+	Property OrtStrasse
+	Property BasisRufnummer
+	Property Telefax
+	Property Laendername
+End Class
+
+Class Zinssaetze
+	InfoProperty Zinsindexname
+	InfoProperty RefisatzVom as Date
+	InfoProperty Refisatz as Percent
+	InfoProperty Euribor3MVom as Date
+	InfoProperty Euribor3M as Percent
+	InfoProperty Zinskompetenz as Percent
+	InfoProperty ZinskompetenzLevel as Integer
+	InfoProperty ZinskompetenzMargeProMonat as N2
+	InfoProperty ZinskompetenzEskalation
+	InfoProperty ZinskompetenzEskalationBus
+	InfoProperty ZinskompetenzEskalationTyp
+	InfoProperty ZinskompetenzEskalationEmailOderRolle
+	InfoProperty ZinskompetenzEskalationLogin
+	InfoProperty CreatorZinskompetenz as Percent
+	InfoProperty CreatorZinskompetenzMargeProMonat as N2
+	InfoProperty HaendlerPenetrationaktuell as Percent
+	InfoProperty HaendlerProvisionsfaktor as Percent
+End Class
+
+Class Kalkulationsart
+	InfoProperty Kalkulationsart
+	InfoProperty Steuersatz as Percent
+	InfoProperty idTPKalkulation
+	InfoProperty TPKName
+End Class
+
+Class Kalkulation
+	InfoProperty Variantenname
+	InfoProperty Valuta as Date
+	Property Kalkulationsart Mimics query:ScaEngagement.Kalkulationsarten:D.Engagement.LSMandant = ""
+	InfoProperty IstMietkauf Mimics NeinJa
+	InfoProperty idTPKalkulation
+    InfoProperty Vertragsart
+	InfoProperty Nettoverkaufspreis as N2
+    Property HaendlerProvision as N2 
+	InfoProperty HaendlerProvisionVoraussichtlich as N2 
+    Property VermittlerProvision as N2 
+    Property HaendlerSubvention as N2
+    Property ImporteurSubvention as N2
+    InfoProperty Finanzierungsbetrag as N2
+	InfoProperty FinanzierungsbetragIntern as N2
+    Property Sonderzahlung as N2
+	InfoProperty SonderzahlungBrutto as N2
+	InfoProperty SonderzahlungMWST as N2
+	InfoProperty SonderzahlungProzent as Percent
+    Property LaufzeitMonate as Integer = 48
+    InfoProperty Ratenanzahl as Integer
+    InfoProperty Barwert as N2
+	InfoProperty BarwertExtern as N2
+	InfoProperty BarwertKalkulatorisch as N2
+	InfoProperty Refibarwert as N2
+	InfoProperty MargeAusFinanzierung as N2
+	InfoProperty MargeAusFinanzierungVoraussichtlich as N2
+    Property RWBetrag as N2
+	InfoProperty RWProzent as Percent
+	InfoProperty RefisatzVorgabeVom as Date
+    Property Zinsgeschaeftsart Mimics txt:ScaEngagement.Kennzeichen:"Zinsgeschaeftsarten" = "Standard 6M"
+	Property Forderungsverkauf Mimics query:SCAEngagement.Refibanken:"" = "(Nein)"
+    Property Refizins As PercentWithDefault
+	InfoProperty Spread as Percent
+	Property Risikozinsaufschlag as Percent
+	InfoProperty Mindestspread as Percent
+	InfoProperty FreigabeFuerKalkulationsart
+	Property MindestspreadFreigabe as Percent
+	InfoProperty MindestspreadFreigabeDurch
+	InfoProperty MindestspreadFreigabeAm as DateTime
+	InfoProperty MindestspreadFreigabeKompetenz
+	InfoProperty MindestspreadFreigabeZinskompetenz as Percent
+	InfoProperty MindestspreadFreigabeHinweis
+	InfoProperty MindestmargeProMonat as N2
+	Property MindestmargeProMonatFreigabe as DoubleWithDefault
+    Property Zinssatz as Percent
+	InfoProperty ZinssatzExtern as Percent
+	InfoProperty ZinssatzKalkulatorisch as Percent
+	InfoProperty ZinssatzEffektiv as Percent
+	InfoProperty EffektivzinsBarwert as Double
+    Property Jahresfahrleistung as Integer 
+    Property MehrKM as N2
+    Property MinderKM as N2
+    Property AbschlussGebuehr as N2
+	InfoProperty AbschlussGebuehrProzent as Percent
+    Property BearbeitungsGebuehr as N2
+	InfoProperty BearbeitungsGebuehrProzent as Percent
+    Property Kaution as N2
+	InfoProperty KautionProzent as Percent
+    Property KautionsZins as Percent {0.02}
+    List Staffelzeilen as Staffelzeile
+    InfoProperty Hinweis
+	InfoProperty MargeAusService as N2
+	List Servicebausteine as Servicebaustein
+	List Servicewerte as ServicebausteinWert
+	InfoProperty ZusatzbetraegeInclusive as N2
+	InfoProperty ZusatzbetraegeExclusive as N2
+	InfoProperty MargeGesamt as N2
+	InfoProperty Steuersatz as Percent
+	InfoProperty Zinsbindefrist as Date
+	InfoProperty MietkaufSteuer as Double
+	Property VariantenBemerkung
+	InfoProperty Rechtsgeschaeftsgebuehr as N2
+	InfoProperty RechtsgeschaeftsgebuehrRatensummeBrutto36 as N2
+	InfoProperty RechtsgeschaeftsgebuehrFaktor as Percent
+	Property Zinsanpassungsart Mimics txt:ScaEngagement.Kennzeichen:"Zinsanpassungsart" = "fix"
+	InfoProperty Euribor3MVom as Date
+	InfoProperty Euribor3M as Percent
+	InfoProperty Einzelobligo as N2
+	InfoProperty Volumen as N2
+	Property Verkaufsaktion Mimics txt:ScaEngagement.Kennzeichen:"Verkaufsaktion" = "Keine"
+	InfoProperty ErhErsteRateSFS as N2
+	InfoProperty RateAusAccount as N2
+End Class
+
+' Kalkulation.Servicebausteine - Alle in der KL-Voreinstellung aktuell enthaltenen Servicebausteine
+Class Servicebaustein
+	InfoProperty TPKAFaelligkeitsArt
+    InfoProperty UDPOSKennzeichenK
+	InfoProperty UDPOSoptionalK
+	InfoProperty UDPOSBezugsgroesseKalkK
+	InfoProperty UDPOSBerechnungsfaktor as Double
+	InfoProperty UDPOSMehrkmfaktor as Double
+	InfoProperty TPKABetragMin_E
+	InfoProperty TPKAFaelligkeitsArtK
+	InfoProperty TPKAFaelligkeitsArtL
+	InfoProperty TPKAKalkulationsTyp
+	InfoProperty TPKAKalkulationsTypK
+	InfoProperty TPKAKalkulationsTypL
+	InfoProperty LRBuchungsArt
+	InfoProperty LRBuchungsArtK
+	InfoProperty LRBuchungsArtL
+	InfoProperty TPKAOrdnungsnummer
+	InfoProperty TPKAProzentAW
+	InfoProperty TPKAZeilensperre
+	InfoProperty TPKAZeilensperreK
+	InfoProperty TPKAZeilensperreL
+	InfoProperty TPKAZeileAusblenden
+	InfoProperty TPKAZeileAusblendenK
+	InfoProperty EKProzent as Percent
+	InfoProperty EKPlusBetrag as N2
+	InfoProperty InitAktiv Mimics JaNein
+End Class
+
+' Kalkulation.Servicewerte - Alle jemals in POS eingegebenen Werte. Mischtyp, d.h. er sammelt alle Felder von allen Typen für UDPOSKennzeichenK.
+' Wird mit Servicebaustein verknüpft über FA eqTPKAFaelligkeitsArt
+' Das muss wie ein Inner Join behandelt werden, da die Werte nur in Kombination(!) gültig sind. Ferner muss Aktiv eq Ja sein.
+Class ServicebausteinWert
+	InfoProperty ID
+	InfoProperty FA
+	InfoProperty Aktiv Mimics JaNein
+	InfoProperty Konfiguriert Mimics JaNein
+	Property Auspraegung Mimics txt:ScaEngagement.Kennzeichen:"RuWAuspraegung"
+	Property Betrag as DoubleWithDefault
+	Property BetragMehrkm as N2
+	Property BetragEinkauf as N2
+	Property BetragInklSteuer as N2
+	Property Abwahlgrund Mimics txt:ScaEngagement.Kennzeichen:"Abwahlgruende"
+	Property Deckungsgrad Mimics txt:ScaEngagement.Kennzeichen:"ProtectDeckungsgrade" = "100%"
+	Property idADAdresse
+	Property PersonSuchname
+	InfoProperty PersonCounter 
+End Class
+
+Class Staffelzeile
+    Property Ratenanzahl as Integer
+    Property Ratenbetrag as N2 = -1.0#
+	Property LetzterWille as N2 = -1.0#
+    Property RatenbetragZusatzbetraegeInclusive as N2 
+	Property Beginn as Date
+	Property Eingangsbarwert as N2
+	Property Zielbarwert as N2  = -1.0#
+	Property ZielbarwertSequence as Integer
+	Property Monatvon as Integer
+	Property Monatbis as Integer
+End Class
+
+Class Engagement
+	InfoProperty EngagementNr
+	InfoProperty DealItId
+	InfoProperty LSMandant
+	InfoProperty Angebotsdatum as Date
+	InfoProperty BindefristEnde as DateTime
+	InfoProperty Waehrung
+	InfoProperty Steuersatz as Percent
+	Property BemerkungAngebot
+	Property BemerkungIntern
+	Property AbweichenderHaendler Mimics query:SCAEngagement.Stammhaendler:Kunde.idADAdresse
+	InfoProperty AbweichendeidADHaendler
+	Property AbweichenderVerkaeufer Mimics query:SCAEngagement.Verkaeufer:D.Haendler
+	InfoProperty Fixiert Mimics NeinJa
+	InfoProperty FixiertAm as DateTime
+	InfoProperty FixiertVon	
+End Class
+
+Class Kunde
+	Property SucheAdressnummer
+	Property SucheSuchname
+	'system
+	InfoProperty lfdNr
+	InfoProperty Quelle
+	InfoProperty idADAdresse
+	InfoProperty idADAdresseFetched
+	InfoProperty LsproCreatedID
+	InfoProperty LsproCreatedDatum as DateTime
+	InfoProperty Suchname
+	InfoProperty Haendlernummer
+	'rot
+	Property Name
+	Property Strasse
+	Property PLZ
+	Property Ort
+	Property Land Mimics txt:ScaAdresse.Kennzeichen:"Laender"
+	Property Anrede Mimics Anreden
+	Property Titel
+	Property Vorname
+	Property Nachname
+	Property Basisrufnummer
+	Property TelefonZentrale
+	Property Mobil
+	Property EMail
+	Property Sprache
+	Property InternetDomaene
+	InfoProperty CrefoRechtsform
+	Property Juristik Mimics txt:ScaAdresse.Kennzeichen:"Juristik"
+	Property Rechtsform Mimics txt:ScaAdresse.Kennzeichen:"Rechtsform"
+	Property Konzernname
+	Property AdressnummerKonzern
+	Property Haendler
+	Property HaendlerIdadadresse
+	Property SDEKundennummer
+	Property Verkaeufer Mimics query:SCAVersicherung.Verkaeufer:"@key"
+	Property Accountmanager
+	Property Accountmanager_Display
+	InfoProperty SeniorACM
+	InfoProperty SeniorACM_Display
+	InfoProperty SeniorACM_Mail  
+	Property Kundenbetreuer
+	Property Kundenbetreuer_Display
+	'gelb
+	Property Fax
+	Property Fuhrparkgroesse as Integer = -1
+	Property Fuhrparkalter as Integer
+	Property DatumFuhrparkErhebung as Date
+	'grün
+	InfoProperty Adressnummer
+	InfoProperty VerbindungSeit as Date
+	Property GruendungsDatum as Date
+	InfoProperty Branche Mimics txt:ScaAdresse.Kennzeichen:"Branche"
+	InfoProperty HRNummer
+	InfoProperty HRDatum as Date
+	InfoProperty Amtsgericht
+	InfoProperty Steuernummer
+	InfoProperty UstIDNr
+	InfoProperty Organschaft
+	InfoProperty CrefoID
+	Property KSVID
+	Property CrefoIndex as Integer
+	Property CrefoDatum as Date
+	InfoProperty Bonitaet
+	InfoProperty BonitaetsDatum as Date
+	InfoProperty Rating
+	InfoProperty RatingDatum as Date
+	InfoProperty Ratingart
+	InfoProperty GCRMBorrowerRating
+	InfoProperty GWGLetztePruefungAm as Date
+	InfoProperty GWGWirtschBerechtigter
+	InfoProperty GwgPolitischExponiertePerson
+	InfoProperty GwgSchwellenwertUnterschritten
+	InfoProperty GwgGeschaeftszweck
+	InfoProperty GwgRisikoklasse
+	InfoProperty BaFinKredEinheitID
+	InfoProperty KredEinheitRueckmBetrag as Double
+	InfoProperty BetreuerFM
+	InfoProperty BetreuerCS3
+	InfoProperty BetreuerCS2
+	InfoProperty Accountmanager_Mail
+	InfoProperty Kundenbetreuer_Mail
+	Infoproperty LSMandant
+End Class
+
+Class Lieferant
+	Via Objekt.Objektbestandteil.Lieferant
+	InfoProperty idADAdresse
+	InfoProperty idADAdresseFetched
+	InfoProperty Suchname
+	InfoProperty Name
+	InfoProperty Strasse
+	InfoProperty PLZ
+	InfoProperty Ort
+	InfoProperty Land Mimics txt:ScaAdresse.Kennzeichen:"Laender"
+	InfoProperty Anrede Mimics Anreden
+	InfoProperty Titel
+	InfoProperty Vorname
+	InfoProperty Nachname
+	InfoProperty Basisrufnummer
+	InfoProperty TelefonZentrale
+	InfoProperty Mobil
+	InfoProperty Fax
+	InfoProperty EMail
+	InfoProperty InternetDomaene
+	InfoProperty SDEKundennummer
+	InfoProperty Adressnummer
+	InfoProperty VerbindungSeit as Date
+	InfoProperty HRNummer
+	InfoProperty HRDatum as Date
+	InfoProperty Steuernummer
+	InfoProperty UstIDNr
+	InfoProperty CrefoID
+End Class
+
+Class Objekt
+    Property Objektbezeichnung
+    Property Anzahl as Integer = 1
+	InfoProperty SummeBestandteile as N2
+    Property Einzelpreis as N2
+	InfoProperty Gesamtpreis as N2
+    Property Einsatzart Mimics txt:ScaEngagement.Kennzeichen:"Einsatzarten" = "Fernverkehr"
+    Property Marke Mimics txt:ScaEngagement.Kennzeichen:"Marken" = "Scania"
+    Property Fahrzeugart Mimics query:ScaEngagement.Objektgruppen:"" = "LKW (Fern)"
+    Property Zustand Mimics txt:ScaEngagement.Kennzeichen:"Fahrzeugzustand" = "Neu"
+    Property Erstzulassung as Date
+	Property VoraussichtlichesLieferdatum as Date
+    SelectList Objektbestandteile As Objektbestandteil
+End Class
+
+Class Objektbestandteil
+    Via Objekt.Objektbestandteil
+    Property Bezeichnung
+	Property Lieferant as Lieferant
+    Property Teilbetrag as N2
+    Property VoraussichtlichesLieferdatumEinzelteil as Date
+    Property Zahlart Mimics txt:ScaEngagement.Kennzeichen:"Zahlarten" = "Vertragsaktivierung"
+End Class
+
+Class Profil
+    Inherits Singhammer.Pos.Interfaces.GenericProfile
+    'Ist mit C:\daten\LeasySOFT.pos\Websites\Sca\web.config abzustimmen!
+    'Hier nur den Datentyp String (d.h. as X weglassen) verwenden, sonst muss die Methode ImportProfile() überschrieben werden!
+    Property Adressnummer
+    Property Personsuchname
+    Property Code
+	Property LSMandant
+	Property Zinskompetenz
+End Class
+
+Class DealIt
+      InfoProperty idUDDealitImport
+      InfoProperty AngebotsMasterID
+      InfoProperty Land
+      InfoProperty Kunde
+      InfoProperty KuStrasse
+      InfoProperty KuPlz
+      InfoProperty KuOrt
+      InfoProperty KuAnsprechpartner
+      InfoProperty KuTelefon
+      InfoProperty KuMobil
+      InfoProperty KuCrefoNr
+      InfoProperty KuUStId
+      InfoProperty Betriebname
+      InfoProperty idADadresseKDE
+      InfoProperty idADadresseHDL
+	  InfoProperty Haendler
+	  InfoProperty idADPersonVK
+	  InfoProperty Verkaufer
+      InfoProperty HaendlerNr
+      InfoProperty VKNachname
+      InfoProperty VKVorname
+      InfoProperty VerkaeuferID
+      InfoProperty Typenbezeichnung
+      InfoProperty Projektdatum as Date
+      InfoProperty ProdDatum as Date
+      InfoProperty GW_Restwert as N2
+      InfoProperty BruttoFzgPreis as N2
+      InfoProperty BruttoFzgPreis_E as N2
+      InfoProperty BruttoFzgPreis_k
+      InfoProperty Nettoverkaufspreis as N2
+      InfoProperty Nettoverkaufspreis_E as N2
+      InfoProperty Nettoverkaufspreis_K
+      InfoProperty NachlassFLProz as Percent
+      InfoProperty AngebotsStatus
+      InfoProperty AngebotsStatusBedeutung
+      InfoProperty Angebotsart
+      InfoProperty AngebotsartBedeutung
+      InfoProperty FzgAnzahl as Integer
+      InfoProperty RuW as Integer
+      InfoProperty C200 as Integer
+      InfoProperty Retarder as Integer
+      InfoProperty Fahrertraining as Integer
+      InfoProperty Abstandswarner as Integer
+      InfoProperty Spurhalteassi as Integer
+      InfoProperty Reifendruckkontr as Integer
+      InfoProperty VersicherungsAngeb as Integer
+      InfoProperty Fahrerkabine
+      InfoProperty Prmie as N2
+      InfoProperty Prmie_E as N2
+      InfoProperty Prmie_K
+      InfoProperty DatumVersAngeb as Date
+      InfoProperty SelbstbeteiligungTK as N2
+      InfoProperty SelbstbeteiligungTK_E as N2
+      InfoProperty SelbstbeteiligungTK_K
+      InfoProperty SelbstbeteiligungVK as N2
+      InfoProperty SelbstbeteiligungVK_E as N2
+      InfoProperty SelbstbeteiligungVK_K
+      InfoProperty idSeniorACM
+      InfoProperty idUserACM
+      InfoProperty idUserCS1
+      InfoProperty idUserCS2
+      InfoProperty idUDFEBasis
+      InfoProperty KENummer
+	  InfoProperty LSMandant
+	  InfoProperty Aenderungsdatum
+	  InfoProperty Aktiv
+End Class
+
+Class Command
+	InfoProperty Name
+	InfoProperty IntArgument as Integer
+	InfoProperty TextArgument
+End Class
+
+'Das ist ein Stack
+Class Spreadeskalation
+	InfoProperty EskaliertAm as DateTime
+	InfoProperty EskaliertVon
+	InfoProperty EskaliertAn
+End Class
+
+Class Dokumentanforderung
+    InfoProperty ID
+    InfoProperty Name
+    InfoProperty Rckmeldedatum as DateTime
+    InfoProperty Rckmeldestaus
+    InfoProperty Anforderungsart
+End Class
+
+Class LSposBetreuer
+	InfoProperty CSLoginname
+	InfoProperty ACMLoginname
+End Class
+
+Class Log
+	InfoProperty Wann as DateTime
+	InfoProperty Wer
+	InfoProperty Was
+	InfoProperty CommandName
+	InfoProperty CommandArgument
+End Class
+
+Enum NeinJa
+	DEFAULT Nein
+	Ja
+End Enum
+
+Enum JaNein
+	DEFAULT Ja
+	Nein
+End Enum
+
+End Namespace

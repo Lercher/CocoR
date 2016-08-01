@@ -3,7 +3,7 @@
 IGNORECASE
 
 CHARACTERS
-  letter    = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".
+  letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".
   umlaut = "ÄÖÜäöüß".
   germanletter = letter + umlaut.
   underscore = '_'.
@@ -49,6 +49,7 @@ IGNORE cr + lf + tab
 
 SYMBOLTABLES
 	types.
+	enumtypes.
 
 
 PRODUCTIONS
@@ -244,7 +245,7 @@ ClassType = // store this
 	.
 
 EnumType = // store this
-	ident>types
+	ident>enumtypes
 	.
 
 FlagsType = // store this
@@ -258,7 +259,7 @@ Mimics =
 
 MimicsSpec =
 	(
-	EnumType
+	ident:enumtypes
 	| Query
 	| Txt
 	| XL
