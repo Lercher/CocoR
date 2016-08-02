@@ -1,4 +1,4 @@
-' Beispiel ohne Umlaute fuer Coco/R 
+' sample WFModel file with umlauts äöüß. 
 
 Version 1.0.0.0
 Namespace Sca.Engagement
