@@ -315,22 +315,29 @@ that probably is only available as a .Net program.
 byte order mark. This is the default e.g. if you use Visual Studio Code.
 
 
-## Languages
+## Languages - Subfolders
 
-* C# - 
-token inheritance *beta*, 
-autocomplete information *beta*, 
-symbol tables *beta*,
-non strict symbol tables *beta*, 
--is switch *beta*,
-editor *beta*
-BOM free scanner *beta*
+* C# - CSharp -
+  token inheritance *beta*, 
+  autocomplete information *beta*, 
+  symbol tables *beta*,
+  non strict symbol tables *beta*, 
+  -is switch *beta*,
+  -utf8 switch *beta*,
+  editor *beta*,
+  BOM free scanner *beta*
 
-* VB.Net - 
-token inheritance *beta*
+* VB.Net - VisualBasic - 
+  token inheritance *beta*
 
-* Java - 
-maybe, but not yet scheduled
+* Java - (TBD)
+  maybe, but not yet scheduled
+
+
+* Utilities/Hexdump -
+  a utility to inspect files, in particular to see, if byte 
+  order marks are present.
+
 
 Note: The generated code for .Net languages targets
 plain vanilla .Net Framework 2.0 compilers and libraries. 

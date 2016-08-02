@@ -1,0 +1,1 @@
+%windir%\Microsoft.Net\Framework\v2.0.50727\csc.exe /out:Hexdump.exe /t:exe *.cs
