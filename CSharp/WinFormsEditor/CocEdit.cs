@@ -79,7 +79,9 @@ namespace WinFormsEditor
                     string name = Parser.tName[k];
                     if (a.st[k] == null) {
                         string t = name[0] == '"' ? "*keyword" : "*tclass";
-                        addAC(name.Replace("\"", string.Empty), t);    
+                        if (name.StartsWith("\""))
+                            name = name.Substring(1, name.Length - 2);
+                        addAC(name, t);    
                     } else {
                         foreach(Token tok in a.st[k].items)
                             addAC(tok.val, a.st[k].name);
