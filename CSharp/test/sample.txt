@@ -14,7 +14,7 @@ var A, B, C;
 var äöü; call(äöü);  // test UTF-8 symbols, german umlauts
 { 
     var a, aa; // redefine a
-    call(a, aa);
+    call(a, aa, 10, 1234);
     { 
         var a, aaa;
         call(a, aaa);

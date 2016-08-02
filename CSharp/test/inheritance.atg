@@ -11,12 +11,14 @@ CHARACTERS
     ucletter  = 'A'..'Z'.
     lcletter  = 'a'..'z'.
     umlaut    = "ÄÖÜäöü".  // intentionally no ß (szlig)
-	letter    = ucletter + lcletter + umlaut + '_'. 
+	letter    = ucletter + lcletter + umlaut + '_'.
+    digit     = '0'..'9'. 
 	cr        = '\r'.
 	lf        = '\n'.
 	tab       = '\t'.
 
 TOKENS
+    number = ['-'] digit { digit }.
 	ident = letter { letter }.
     keyword = "keyword".
     var  : ident = "var".
@@ -73,9 +75,11 @@ PRODUCTIONS
 
     Block SCOPES(variables, types) = "{" TDBs "}". 
 
-    Call = "call" "(" ident:variables { "," ident:variables } ")" ";".
+    Call = "call" "(" Param { "," Param } ")" ";".
 
     Type<string fmt> = "type" ident>types (. Console.WriteLine("{0}{1}", fmt, t.val); .) ';'.
+
+    Param = ident:variables | number .
     
     // with iter node
     Declaration = Var Ident { Separator Ident } SYNC ';'.

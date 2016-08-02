@@ -297,7 +297,6 @@ TokenDecl<int typ>              (. string name; int kind; Symbol sym; Graph g;
   ]
   SYNC
   ( '=' TokenExpr<out g> '.'    (. if (kind == str) SemErr("a literal must not be declared with a structure");
-                                   if (g.str != null) sym.definedAs = g.str;
                                    tab.Finish(g);
                                    if (tokenString == null || tokenString.Equals(noString))
                                      dfa.ConvertToStates(g.l, sym);
@@ -306,6 +305,7 @@ TokenDecl<int typ>              (. string name; int kind; Symbol sym; Graph g;
                                        SemErr("token string declared twice");
                                      tab.literals[tokenString] = sym;
                                      dfa.MatchLiteral(tokenString, sym);
+                                     sym.definedAs = tokenString;
                                    }
                                  .)
   |                             (. if (kind == id) genScanner = false;
