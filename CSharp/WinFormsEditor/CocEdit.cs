@@ -9,7 +9,7 @@ namespace WinFormsEditor
 {
     public partial class CocEdit : Form
     {
-        Parser parser;
+        Parser parser;        
 
         public CocEdit()
         {
@@ -17,7 +17,7 @@ namespace WinFormsEditor
             textSource.WordWrap = false;
             textSource.ScrollBars = RichTextBoxScrollBars.Both;
             textSource.AcceptsTab = true;
-            textLog.ScrollBars = ScrollBars.Vertical;
+            textLog.ScrollBars = RichTextBoxScrollBars.Vertical;
             loadSampleTxt();
             parse();
             textSource.TextChanged += sourceChanged;
@@ -36,11 +36,41 @@ namespace WinFormsEditor
 
         private void sourceChanged(object sender, EventArgs e) {
             parse();
-            listAlternativesAtSelection();
         }
 
         private void sourceSelectionChanged(object sender, EventArgs e) {            
             listAlternativesAtSelection();
+        }
+
+        private void logSelectionChanged(object sender, EventArgs e) {
+            try {
+                int pos = textLog.SelectionStart;
+                string text = textLog.Text;
+                string t1 = text.Substring(0, pos);
+                string t2 = text.Substring(pos);
+                string[] a1 = t1.Split(new Char[] {'\n'});
+                string[] a2 = t2.Split(new Char[] {'\n'}, 2);
+                string s = a1[a1.Length - 1] + a2[0];
+                System.Console.Write(s);  // -- line 29 col 5: EOF expected
+                int lp = s.IndexOf("line ");
+                int cp = s.IndexOf("col ");
+                int cc = s.IndexOf(":");
+                if (lp > 0 && cp > 0 && cc > 0) {
+                    int line = int.Parse(s.Substring(lp + 5, cp - lp - 5)); line--;
+                    int col = int.Parse(s.Substring(cp + 4, cc - cp - 4)); col--;
+                    Console.WriteLine("({0},{1})", line, col);
+                    textSource.SuspendLayout();
+                    textSource.SelectAll();
+                    textSource.SelectionColor = textSource.ForeColor;
+                    int start = textSource.GetFirstCharIndexFromLine(line);
+                    textSource.Select(start, textSource.Lines[line].Length);
+                    textSource.SelectionColor = Color.DarkRed;
+                    textSource.Select(start + col, 0);
+                    textSource.ScrollToCaret();
+                    textSource.ResumeLayout(true);
+                }
+                System.Console.WriteLine();
+            } finally {}
         }
 
         void handle(string txt, string typ)
@@ -133,11 +163,15 @@ namespace WinFormsEditor
             textSource.Select(0, 0);
         }
 
+        private string orig = null;
         void parse() {
             string txt = textSource.Text;
+            if (txt == orig) return;
+            orig = txt;
             byte[] b = System.Text.Encoding.UTF8.GetBytes(txt);
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
 
+            textLog.SelectionChanged -= logSelectionChanged;
             using (System.IO.StringWriter w = new System.IO.StringWriter(sb))
             using (System.IO.MemoryStream s = new System.IO.MemoryStream(b)) {
                 Scanner scanner = new Scanner(s, true); // it's BOM free but UTF8
@@ -147,7 +181,9 @@ namespace WinFormsEditor
                 w.WriteLine("\n{0:n0} error(s) detected", parser.errors.count);
             }
             textLog.Text = sb.ToString();
-            textLog.Select(0, 0);            
-        }
+            textLog.Select(0, 0);
+            textLog.SelectionChanged += logSelectionChanged;            
+            listAlternativesAtSelection();
+       }
     }
 }
