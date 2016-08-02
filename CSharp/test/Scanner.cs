@@ -203,8 +203,8 @@ public class UTF8Buffer: Buffer {
 public class Scanner {
 	const char EOL = '\n';
 	const int eofSym = 0; /* pdt */
-	const int maxT = 71;
-	const int noSym = 71;
+	const int maxT = 72;
+	const int noSym = 72;
 	char valCh;       // current input character (for token.val)
 
 	public Buffer buffer; // scanner buffer
@@ -382,21 +382,22 @@ public class Scanner {
 			case "string": t.kind = 52; break;
 			case "boolean": t.kind = 53; break;
 			case "guid": t.kind = 54; break;
-			case "mimics": t.kind = 56; break;
-			case "query": t.kind = 57; break;
-			case "txt": t.kind = 58; break;
-			case "xl": t.kind = 59; break;
-			case "ref": t.kind = 60; break;
-			case "subsystem": t.kind = 61; break;
-			case "ssname": t.kind = 62; break;
-			case "ssconfig": t.kind = 63; break;
-			case "sstyp": t.kind = 64; break;
-			case "sscommands": t.kind = 65; break;
-			case "sskey": t.kind = 66; break;
-			case "ssclear": t.kind = 67; break;
-			case "flags": t.kind = 68; break;
-			case "enum": t.kind = 69; break;
-			case "default": t.kind = 70; break;
+			case "xml": t.kind = 56; break;
+			case "mimics": t.kind = 57; break;
+			case "query": t.kind = 58; break;
+			case "txt": t.kind = 59; break;
+			case "xl": t.kind = 60; break;
+			case "ref": t.kind = 61; break;
+			case "subsystem": t.kind = 62; break;
+			case "ssname": t.kind = 63; break;
+			case "ssconfig": t.kind = 64; break;
+			case "sstyp": t.kind = 65; break;
+			case "sscommands": t.kind = 66; break;
+			case "sskey": t.kind = 67; break;
+			case "ssclear": t.kind = 68; break;
+			case "flags": t.kind = 69; break;
+			case "enum": t.kind = 70; break;
+			case "default": t.kind = 71; break;
 			default: break;
 		}
 	}

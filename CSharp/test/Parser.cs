@@ -29,7 +29,7 @@ public class Parser {
 	public const int _keys = 19; // TOKEN keys INHERITS ident
 	public const int _displayname = 20; // TOKEN displayname INHERITS ident
 	public const int _vbident = 21; // TOKEN vbident INHERITS ident
-	public const int maxT = 71;
+	public const int maxT = 72;
 
 	const bool _T = true;
 	const bool _x = false;
@@ -170,14 +170,14 @@ public class Parser {
 		addAlt(set0, 1); // ITER start
 		while (StartOf(1)) {
 			addAlt(26); // ALT
-			addAlt(61); // ALT
+			addAlt(62); // ALT
+			addAlt(70); // ALT
 			addAlt(69); // ALT
-			addAlt(68); // ALT
 			if (isKind(la, 26)) {
 				Class‿NT();
-			} else if (isKind(la, 61)) {
+			} else if (isKind(la, 62)) {
 				SubSystem‿NT();
-			} else if (isKind(la, 69)) {
+			} else if (isKind(la, 70)) {
 				Enum‿NT();
 			} else {
 				Flags‿NT();
@@ -195,14 +195,14 @@ public class Parser {
 	}
 
 	void Namespace‿NT() {
-		while (!(isKind(la, 0) || isKind(la, 22))) {SynErr(72); Get();}
+		while (!(isKind(la, 0) || isKind(la, 22))) {SynErr(73); Get();}
 		addAlt(22); // T
 		Expect(22); // "namespace"
 		DottedIdent‿NT();
 	}
 
 	void ReaderWriterPrefix‿NT() {
-		while (!(isKind(la, 0) || isKind(la, 23))) {SynErr(73); Get();}
+		while (!(isKind(la, 0) || isKind(la, 23))) {SynErr(74); Get();}
 		addAlt(23); // T
 		Expect(23); // "readerwriterprefix"
 		addAlt(1); // T
@@ -210,7 +210,7 @@ public class Parser {
 	}
 
 	void RootClass‿NT() {
-		while (!(isKind(la, 0) || isKind(la, 24))) {SynErr(74); Get();}
+		while (!(isKind(la, 0) || isKind(la, 24))) {SynErr(75); Get();}
 		addAlt(24); // T
 		Expect(24); // "rootclass"
 		addAlt(25); // T
@@ -223,7 +223,7 @@ public class Parser {
 	}
 
 	void Class‿NT() {
-		while (!(isKind(la, 0) || isKind(la, 26))) {SynErr(75); Get();}
+		while (!(isKind(la, 0) || isKind(la, 26))) {SynErr(76); Get();}
 		addAlt(26); // T
 		Expect(26); // "class"
 		if (!types.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, types.name));
@@ -250,36 +250,36 @@ public class Parser {
 	}
 
 	void SubSystem‿NT() {
-		while (!(isKind(la, 0) || isKind(la, 61))) {SynErr(76); Get();}
-		addAlt(61); // T
-		Expect(61); // "subsystem"
+		while (!(isKind(la, 0) || isKind(la, 62))) {SynErr(77); Get();}
+		addAlt(62); // T
+		Expect(62); // "subsystem"
 		if (!types.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, types.name));
 		alternatives.tdeclares = types;
 		addAlt(1); // T
 		Expect(1); // ident
-		addAlt(62); // T
-		Expect(62); // "ssname"
-		addAlt(1); // T
-		Expect(1); // ident
 		addAlt(63); // T
-		Expect(63); // "ssconfig"
+		Expect(63); // "ssname"
 		addAlt(1); // T
 		Expect(1); // ident
 		addAlt(64); // T
-		Expect(64); // "sstyp"
+		Expect(64); // "ssconfig"
 		addAlt(1); // T
 		Expect(1); // ident
 		addAlt(65); // T
-		Expect(65); // "sscommands"
+		Expect(65); // "sstyp"
+		addAlt(1); // T
+		Expect(1); // ident
+		addAlt(66); // T
+		Expect(66); // "sscommands"
 		SSCommands‿NT();
-		addAlt(66); // OPT
-		if (isKind(la, 66)) {
+		addAlt(67); // OPT
+		if (isKind(la, 67)) {
 			Get();
 			addAlt(5); // T
 			Expect(5); // string
 		}
-		addAlt(67); // OPT
-		if (isKind(la, 67)) {
+		addAlt(68); // OPT
+		if (isKind(la, 68)) {
 			Get();
 			addAlt(5); // T
 			Expect(5); // string
@@ -291,14 +291,14 @@ public class Parser {
 		}
 		addAlt(8); // T
 		Expect(8); // end
-		addAlt(61); // T
-		Expect(61); // "subsystem"
+		addAlt(62); // T
+		Expect(62); // "subsystem"
 	}
 
 	void Enum‿NT() {
-		while (!(isKind(la, 0) || isKind(la, 69))) {SynErr(77); Get();}
-		addAlt(69); // T
-		Expect(69); // "enum"
+		while (!(isKind(la, 0) || isKind(la, 70))) {SynErr(78); Get();}
+		addAlt(70); // T
+		Expect(70); // "enum"
 		if (!enumtypes.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, enumtypes.name));
 		alternatives.tdeclares = enumtypes;
 		addAlt(1); // T
@@ -306,14 +306,14 @@ public class Parser {
 		EnumValues‿NT();
 		addAlt(8); // T
 		Expect(8); // end
-		addAlt(69); // T
-		Expect(69); // "enum"
+		addAlt(70); // T
+		Expect(70); // "enum"
 	}
 
 	void Flags‿NT() {
-		while (!(isKind(la, 0) || isKind(la, 68))) {SynErr(78); Get();}
-		addAlt(68); // T
-		Expect(68); // "flags"
+		while (!(isKind(la, 0) || isKind(la, 69))) {SynErr(79); Get();}
+		addAlt(69); // T
+		Expect(69); // "flags"
 		if (!types.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, types.name));
 		alternatives.tdeclares = types;
 		addAlt(1); // T
@@ -325,8 +325,8 @@ public class Parser {
 		}
 		addAlt(8); // T
 		Expect(8); // end
-		addAlt(68); // T
-		Expect(68); // "flags"
+		addAlt(69); // T
+		Expect(69); // "flags"
 	}
 
 	void EndNamespace‿NT() {
@@ -380,7 +380,7 @@ public class Parser {
 	}
 
 	void Prop‿NT() {
-		while (!(StartOf(3))) {SynErr(79); Get();}
+		while (!(StartOf(3))) {SynErr(80); Get();}
 		addAlt(29); // ALT
 		addAlt(30); // ALT
 		addAlt(31); // ALT
@@ -430,7 +430,7 @@ public class Parser {
 			InfoLongProperty‿NT();
 			break;
 		}
-		default: SynErr(80); break;
+		default: SynErr(81); break;
 		}
 	}
 
@@ -502,14 +502,14 @@ public class Parser {
 	void Type‿NT() {
 		addAlt(set0, 4); // ALT
 		addAlt(41); // ALT
-		addAlt(56); // ALT
+		addAlt(57); // ALT
 		if (StartOf(4)) {
 			EmptyType‿NT();
 		} else if (isKind(la, 41)) {
 			As‿NT();
-		} else if (isKind(la, 56)) {
+		} else if (isKind(la, 57)) {
 			Mimics‿NT();
-		} else SynErr(81);
+		} else SynErr(82);
 		addAlt(37); // OPT
 		if (isKind(la, 37)) {
 			Get();
@@ -535,12 +535,12 @@ public class Parser {
 			Get();
 		} else if (isKind(la, 1) || isKind(la, 2)) {
 			DottedIdent‿NT();
-		} else SynErr(82);
+		} else SynErr(83);
 	}
 
 	void Mimics‿NT() {
-		addAlt(56); // T
-		Expect(56); // "mimics"
+		addAlt(57); // T
+		Expect(57); // "mimics"
 		MimicsSpec‿NT();
 	}
 
@@ -608,7 +608,7 @@ public class Parser {
 			FunctionCall‿NT();
 			break;
 		}
-		default: SynErr(83); break;
+		default: SynErr(84); break;
 		}
 	}
 
@@ -638,6 +638,7 @@ public class Parser {
 		addAlt(53); // ALT
 		addAlt(54); // ALT
 		addAlt(55); // ALT
+		addAlt(56); // ALT
 		switch (la.kind) {
 		case 42: // "double"
 		{
@@ -709,34 +710,39 @@ public class Parser {
 			Get();
 			break;
 		}
-		default: SynErr(84); break;
+		case 56: // "xml"
+		{
+			Get();
+			break;
+		}
+		default: SynErr(85); break;
 		}
 	}
 
 	void MimicsSpec‿NT() {
-		addAlt(57); // ALT
 		addAlt(58); // ALT
 		addAlt(59); // ALT
 		addAlt(60); // ALT
+		addAlt(61); // ALT
 		addAlt(1); // ALT
 		addAlt(1, enumtypes); // ALT ident uses symbol table 'enumtypes'
-		if (isKind(la, 57)) {
+		if (isKind(la, 58)) {
 			Query‿NT();
-		} else if (isKind(la, 58)) {
-			Txt‿NT();
 		} else if (isKind(la, 59)) {
-			XL‿NT();
+			Txt‿NT();
 		} else if (isKind(la, 60)) {
+			XL‿NT();
+		} else if (isKind(la, 61)) {
 			Ref‿NT();
 		} else if (isKind(la, 1)) {
 			if (!enumtypes.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "ident", la.val, enumtypes.name));
 			Get();
-		} else SynErr(85);
+		} else SynErr(86);
 	}
 
 	void Query‿NT() {
-		addAlt(57); // T
-		Expect(57); // "query"
+		addAlt(58); // T
+		Expect(58); // "query"
 		addAlt(11); // T
 		Expect(11); // colon
 		addAlt(2); // T
@@ -751,8 +757,8 @@ public class Parser {
 	}
 
 	void Txt‿NT() {
-		addAlt(58); // T
-		Expect(58); // "txt"
+		addAlt(59); // T
+		Expect(59); // "txt"
 		addAlt(11); // T
 		Expect(11); // colon
 		addAlt(2); // T
@@ -767,8 +773,8 @@ public class Parser {
 	}
 
 	void XL‿NT() {
-		addAlt(59); // T
-		Expect(59); // "xl"
+		addAlt(60); // T
+		Expect(60); // "xl"
 		addAlt(11); // T
 		Expect(11); // colon
 		addAlt(2); // T
@@ -783,8 +789,8 @@ public class Parser {
 	}
 
 	void Ref‿NT() {
-		addAlt(60); // T
-		Expect(60); // "ref"
+		addAlt(61); // T
+		Expect(61); // "ref"
 		addAlt(11); // T
 		Expect(11); // colon
 		addAlt(19); // ALT
@@ -793,7 +799,7 @@ public class Parser {
 			Get();
 		} else if (isKind(la, 20)) {
 			Get();
-		} else SynErr(86);
+		} else SynErr(87);
 		addAlt(11); // T
 		Expect(11); // colon
 		StringOrIdent‿NT();
@@ -806,7 +812,7 @@ public class Parser {
 			Get();
 		} else if (isKind(la, 1) || isKind(la, 2)) {
 			DottedIdent‿NT();
-		} else SynErr(87);
+		} else SynErr(88);
 	}
 
 	void SSCommands‿NT() {
@@ -835,7 +841,7 @@ public class Parser {
 			Get();
 		} else if (isKind(la, 18)) {
 			Get();
-		} else SynErr(88);
+		} else SynErr(89);
 	}
 
 	void EnumValue‿NT() {
@@ -853,8 +859,8 @@ public class Parser {
 			EnumValue‿NT();
 			addAlt(1); // ITER end
 		}
-		addAlt(70); // T
-		Expect(70); // "default"
+		addAlt(71); // T
+		Expect(71); // "default"
 		EnumValue‿NT();
 		addAlt(1); // ITER start
 		while (isKind(la, 1)) {
@@ -888,38 +894,38 @@ public class Parser {
 		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1, 1, 1, 1,  1, 1, 1, 1,
 		 1, 1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
 		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
-		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1
+		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1
 	};
 
 	// a token's name
 	public static readonly string[] tName = {
 		"EOF","ident","dottedident","number", "int","string","braced","bracketed", "\"end\"","\".\"","\"|\"","\":\"", "versionnumber","\"version\"","\"search\"","\"select\"", "\"details\"","\"edit\"","\"clear\"","\"keys\"",
 		"\"displayname\"","vbident","\"namespace\"","\"readerwriterprefix\"", "\"rootclass\"","\"data\"","\"class\"","\"via\"", "\"inherits\"","\"property\"","\"infoproperty\"","\"approperty\"", "\"list\"","\"selectlist\"","\"flagslist\"","\"longproperty\"", "\"infolongproperty\"","\"=\"","\"true\"","\"false\"",
-		"\"#\"","\"as\"","\"double\"","\"date\"", "\"datetime\"","\"integer\"","\"percent\"","\"percentwithdefault\"", "\"doublewithdefault\"","\"integerwithdefault\"","\"n2\"","\"n0\"", "\"string\"","\"boolean\"","\"guid\"","\"string()\"", "\"mimics\"","\"query\"","\"txt\"","\"xl\"",
-		"\"ref\"","\"subsystem\"","\"ssname\"","\"ssconfig\"", "\"sstyp\"","\"sscommands\"","\"sskey\"","\"ssclear\"", "\"flags\"","\"enum\"","\"default\"","???"
+		"\"#\"","\"as\"","\"double\"","\"date\"", "\"datetime\"","\"integer\"","\"percent\"","\"percentwithdefault\"", "\"doublewithdefault\"","\"integerwithdefault\"","\"n2\"","\"n0\"", "\"string\"","\"boolean\"","\"guid\"","\"string()\"", "\"xml\"","\"mimics\"","\"query\"","\"txt\"",
+		"\"xl\"","\"ref\"","\"subsystem\"","\"ssname\"", "\"ssconfig\"","\"sstyp\"","\"sscommands\"","\"sskey\"", "\"ssclear\"","\"flags\"","\"enum\"","\"default\"", "???"
 	};
 
 	// states that a particular production (1st index) can start with a particular token (2nd index)
 	static readonly bool[,] set0 = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_x,_T,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
-		{_x,_x,_x,_x, _x,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
-		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_x,_T,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_T,_T,_x, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_T,_T,_x, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x}
 
 	};
 
 	// as set0 but with token inheritance taken into account
 	static readonly bool[,] set = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_x,_T,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_x, _T,_T,_x,_x, _x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
-		{_x,_x,_x,_x, _x,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
-		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_x,_T,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_T,_T,_x, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_T,_T,_x, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x}
 
 	};
 } // end Parser
@@ -989,39 +995,40 @@ public class Errors {
 			case 53: s = "\"boolean\" expected"; break;
 			case 54: s = "\"guid\" expected"; break;
 			case 55: s = "\"string()\" expected"; break;
-			case 56: s = "\"mimics\" expected"; break;
-			case 57: s = "\"query\" expected"; break;
-			case 58: s = "\"txt\" expected"; break;
-			case 59: s = "\"xl\" expected"; break;
-			case 60: s = "\"ref\" expected"; break;
-			case 61: s = "\"subsystem\" expected"; break;
-			case 62: s = "\"ssname\" expected"; break;
-			case 63: s = "\"ssconfig\" expected"; break;
-			case 64: s = "\"sstyp\" expected"; break;
-			case 65: s = "\"sscommands\" expected"; break;
-			case 66: s = "\"sskey\" expected"; break;
-			case 67: s = "\"ssclear\" expected"; break;
-			case 68: s = "\"flags\" expected"; break;
-			case 69: s = "\"enum\" expected"; break;
-			case 70: s = "\"default\" expected"; break;
-			case 71: s = "??? expected"; break;
-			case 72: s = "this symbol not expected in Namespace"; break;
-			case 73: s = "this symbol not expected in ReaderWriterPrefix"; break;
-			case 74: s = "this symbol not expected in RootClass"; break;
-			case 75: s = "this symbol not expected in Class"; break;
-			case 76: s = "this symbol not expected in SubSystem"; break;
-			case 77: s = "this symbol not expected in Enum"; break;
-			case 78: s = "this symbol not expected in Flags"; break;
-			case 79: s = "this symbol not expected in Prop"; break;
-			case 80: s = "invalid Prop"; break;
-			case 81: s = "invalid Type"; break;
-			case 82: s = "invalid As"; break;
-			case 83: s = "invalid InitValue"; break;
-			case 84: s = "invalid BaseType"; break;
-			case 85: s = "invalid MimicsSpec"; break;
-			case 86: s = "invalid Ref"; break;
-			case 87: s = "invalid StringOrIdent"; break;
-			case 88: s = "invalid SSCommand"; break;
+			case 56: s = "\"xml\" expected"; break;
+			case 57: s = "\"mimics\" expected"; break;
+			case 58: s = "\"query\" expected"; break;
+			case 59: s = "\"txt\" expected"; break;
+			case 60: s = "\"xl\" expected"; break;
+			case 61: s = "\"ref\" expected"; break;
+			case 62: s = "\"subsystem\" expected"; break;
+			case 63: s = "\"ssname\" expected"; break;
+			case 64: s = "\"ssconfig\" expected"; break;
+			case 65: s = "\"sstyp\" expected"; break;
+			case 66: s = "\"sscommands\" expected"; break;
+			case 67: s = "\"sskey\" expected"; break;
+			case 68: s = "\"ssclear\" expected"; break;
+			case 69: s = "\"flags\" expected"; break;
+			case 70: s = "\"enum\" expected"; break;
+			case 71: s = "\"default\" expected"; break;
+			case 72: s = "??? expected"; break;
+			case 73: s = "this symbol not expected in Namespace"; break;
+			case 74: s = "this symbol not expected in ReaderWriterPrefix"; break;
+			case 75: s = "this symbol not expected in RootClass"; break;
+			case 76: s = "this symbol not expected in Class"; break;
+			case 77: s = "this symbol not expected in SubSystem"; break;
+			case 78: s = "this symbol not expected in Enum"; break;
+			case 79: s = "this symbol not expected in Flags"; break;
+			case 80: s = "this symbol not expected in Prop"; break;
+			case 81: s = "invalid Prop"; break;
+			case 82: s = "invalid Type"; break;
+			case 83: s = "invalid As"; break;
+			case 84: s = "invalid InitValue"; break;
+			case 85: s = "invalid BaseType"; break;
+			case 86: s = "invalid MimicsSpec"; break;
+			case 87: s = "invalid Ref"; break;
+			case 88: s = "invalid StringOrIdent"; break;
+			case 89: s = "invalid SSCommand"; break;
 
 			default: s = "error " + n; break;
 		}
