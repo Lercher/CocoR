@@ -297,7 +297,6 @@ public class Scanner {
 			NextCh();
 		}
 		pt = tokens = new Token();  // first token is a dummy
-		// Console.WriteLine("[using {0}]", buffer.GetType().Name);
 	}
 	
 	void NextCh() {
