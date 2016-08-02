@@ -156,7 +156,7 @@ namespace WinFormsEditor
 
 
         void loadSampleTxt() {
-            string fn = @"C:\daten\LeasySOFT.pos\Websites\Repository\Test\OBEAngebot\OBEAngebot.wfmodel";
+            string fn = @"..\test\scaengagement.txt";
             string s = System.IO.File.ReadAllText(fn);
             textSource.Text = s;
             this.Text += " - " + fn;
