@@ -138,7 +138,7 @@ namespace WinFormsEditor
 
             using (System.IO.StringWriter w = new System.IO.StringWriter(sb))
             using (System.IO.MemoryStream s = new System.IO.MemoryStream(b)) {
-                Scanner scanner = new Scanner(s);
+                Scanner scanner = new Scanner(s, true); // it's BOM free but UTF8
                 parser = new Parser(scanner);
                 parser.errors.errorStream = w;
                 parser.Parse();

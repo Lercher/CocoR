@@ -59,6 +59,12 @@ the token that declares the currently parsed symbol.
 Proof of concept to show autocomplete information
 interactively.
 
+* BOM Free UTF-8 Scanner -
+The standard scanner has now a new constructor that tells it
+to use a UTF8Buffer even if the leading BOM (byte order mark)
+is missing. This is handy if you scan from a string wraped 
+in a stream.
+
 
 ## Token Inheritance
 
@@ -313,6 +319,7 @@ symbol tables *beta*,
 non strict symbol tables *alpha*, 
 -is switch *beta*,
 editor *alpha*
+BOM free scanner *alhpa*
 
 * VB.Net - 
 token inheritance *beta*

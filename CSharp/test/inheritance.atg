@@ -5,7 +5,7 @@ COMPILER Inheritance
  // IGNORECASE
 
 CHARACTERS
-	letter    = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_".
+	letter    = "ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜabcdefghijklmnopqrstuvwxyzäöü_". // intentionally no ß 
 	cr        = '\r'.
 	lf        = '\n'.
 	tab       = '\t'.
