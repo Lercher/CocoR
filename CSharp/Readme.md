@@ -71,4 +71,5 @@ In the winforms editor:
 
 * tokens with a `"` inside their text don't display well in the right navigator.
   -> should be fixed now.
- 
+
+* token expressions were listed as literals in the `tName` array. -> Fixed. 
