@@ -29,7 +29,6 @@ the readme.md in the root directory.
 
 In the winforms editor:
 
-* missing error messages locator in the lower pane / doubleclick
 * all lowercased keywords for autocomplete in a `IGNORECASE` grammar
 
 
@@ -73,3 +72,5 @@ In the winforms editor:
   -> should be fixed now.
 
 * token expressions were listed as literals in the `tName` array. -> Fixed. 
+
+* missing error messages locator in the lower pane / doubleclick -> Implemented

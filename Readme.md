@@ -319,12 +319,12 @@ byte order mark. This is the default e.g. if you use Visual Studio Code.
 
 * C# - 
 token inheritance *beta*, 
-autocomplete information *alpha*, 
+autocomplete information *beta*, 
 symbol tables *beta*,
-non strict symbol tables *alpha*, 
+non strict symbol tables *beta*, 
 -is switch *beta*,
-editor *alpha*
-BOM free scanner *alhpa*
+editor *beta*
+BOM free scanner *beta*
 
 * VB.Net - 
 token inheritance *beta*

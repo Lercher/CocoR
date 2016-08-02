@@ -102,7 +102,7 @@ namespace WinFormsEditor
             System.Console.WriteLine("token \"{0}\"", s);
 
             if (a.declaration != null)
-                addAC(string.Format("({0})", a.declaration.charPos + 1), "*decl");
+                addAC(string.Format("({0})", a.declaration.charPos), "*decl");
 
             for (int k = 0; k <= Parser.maxT; k++)
             {
