@@ -29,11 +29,8 @@ the readme.md in the root directory.
 
 In the winforms editor:
 
-* tokens with a `"` inside their text don't display well in the right navigator 
-* german umlauts terminate parsing although declared as character classes
 * missing error messages locator in the lower pane / doubleclick
 * all lowercased keywords for autocomplete in a `IGNORECASE` grammar
-* positioning in the source editor panel is out of sync (b/c Tabs, and Umlauts)  
 
 
 ## Resolved Bugs
@@ -65,3 +62,13 @@ In the winforms editor:
   letter for a Coco/R production, there can be no more
   naming conflicts. See http://www.fileformat.info/info/unicode/category/Pc/list.htm
   -> Fixed.
+
+* german umlauts terminate parsing although declared as character classes
+  -> *.atg files were UTF-8 but had no BOM, using forced UTF-8 Scanner -> Fixed.
+
+* positioning in the source editor panel is out of sync (b/c Tabs, and Umlauts)
+  -> Fixed. Seems to work now, probably since the *.atg files are scanned as UTF-8.
+
+* tokens with a `"` inside their text don't display well in the right navigator.
+  -> should be fixed now.
+ 
