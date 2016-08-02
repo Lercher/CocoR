@@ -59,6 +59,14 @@ the token that declares the currently parsed symbol.
 Proof of concept to show autocomplete information
 interactively.
 
+* BOM Free UTF-8 Scanner -
+The standard scanner has now a new constructor that tells it
+to use a UTF8Buffer even if the leading BOM (byte order mark)
+is missing. This is handy if you scan from a string wraped 
+in a stream or from a file that is written by a tool that
+writes UTF-8 but no byte order marks. The Coco executable
+has a new command line option that forces UTF-8 processing.
+
 
 ## Token Inheritance
 
@@ -236,8 +244,8 @@ token's symbol name.
         // the parsed token, simply called "the token"
         Token t = a.t; 
 
-        // either null or the token where the token is declared at:
-        Token declAt = a.declaredAt; // not used in sample
+        // either null or the token where the token t is declared at:
+        Token declAt = a.declaration; // not used in sample
 
         // print information about the token
         Console.Write("({0,3},{1,3}) {2,3} {3,-20} {4, -20}", 
@@ -303,6 +311,9 @@ from an attributed grammar file, that is written for a different language
 such as Java. Maybe only to use an autocomplete aware editor for the grammar,
 that probably is only available as a .Net program.
 
+* -utf8 - force UTF-8 processing, even if the input file doesn't have a 
+byte order mark. This is the default e.g. if you use Visual Studio Code.
+
 
 ## Languages
 
@@ -313,6 +324,7 @@ symbol tables *beta*,
 non strict symbol tables *alpha*, 
 -is switch *beta*,
 editor *alpha*
+BOM free scanner *alhpa*
 
 * VB.Net - 
 token inheritance *beta*

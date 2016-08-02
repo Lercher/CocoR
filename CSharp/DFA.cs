@@ -177,9 +177,29 @@ public class CharSet {
 		public int from, to;
 		public Range next;
 		public Range(int from, int to) { this.from = from; this.to = to; }
+
+		public override string ToString() {
+			if (from == to)
+				return from.ToString("X");
+			if (from <= 256 && to <= 256)
+				return string.Format("{0:X2}-{1:X2}", from, to);
+			return string.Format("{0:X4}-{1:X4}", from, to);
+		}
 	}
 
 	public Range head;
+
+	public override string ToString() {
+		if (head == null) return "[]";
+		StringBuilder sb = new StringBuilder();
+		sb.Append('[');
+		for (Range cur = head; cur != null; cur = cur.next) {
+			if (cur != head) sb.Append('|');
+			sb.Append(cur.ToString());
+		}
+		sb.Append(']');
+		return sb.ToString();
+	}
 
 	public bool this[int i] {
 		get {

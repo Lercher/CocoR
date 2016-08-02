@@ -230,6 +230,12 @@ public class Scanner {
 		for (int i = 95; i <= 95; ++i) start[i] = 1;
 		for (int i = 97; i <= 117; ++i) start[i] = 1;
 		for (int i = 119; i <= 122; ++i) start[i] = 1;
+		for (int i = 196; i <= 196; ++i) start[i] = 1;
+		for (int i = 214; i <= 214; ++i) start[i] = 1;
+		for (int i = 220; i <= 220; ++i) start[i] = 1;
+		for (int i = 228; i <= 228; ++i) start[i] = 1;
+		for (int i = 246; i <= 246; ++i) start[i] = 1;
+		for (int i = 252; i <= 252; ++i) start[i] = 1;
 		start[118] = 9; 
 		start[58] = 8; 
 		start[40] = 12; 
@@ -253,26 +259,35 @@ public class Scanner {
 
 	}
 	
-	public Scanner (string fileName) {
+	public Scanner (string fileName) : this(fileName, false) {
+	}
+
+	public Scanner (string fileName, bool isBOMFreeUTF8) {
 		try {
 			Stream stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
 			buffer = new Buffer(stream, false);
-			Init();
+			Init(isBOMFreeUTF8);
 		} catch (IOException) {
 			throw new FatalError("Cannot open file " + fileName);
 		}
 	}
-	
-	public Scanner (Stream s) {
+
+	public Scanner (Stream s) : this(s, false) {
+	}
+
+	public Scanner (Stream s, bool isBOMFreeUTF8) {
 		buffer = new Buffer(s, true);
-		Init();
+		Init(isBOMFreeUTF8);
 	}
 	
-	void Init() {
+	void Init(bool isBOMFreeUTF8) {
+		// Console.Write("First bytes: ");
 		pos = -1; line = 1; col = 0; charPos = -1;
 		oldEols = 0;
 		NextCh();
-		if (ch == 0xEF) { // check optional byte order mark for UTF-8
+		if (isBOMFreeUTF8) { // we know that it is a UTF-8 stream and that it has no BOM
+			buffer = new UTF8Buffer(buffer); col = 0; charPos = -1;
+		} else if (ch == 0xEF) { // check optional byte order mark for UTF-8
 			NextCh(); int ch1 = ch;
 			NextCh(); int ch2 = ch;
 			if (ch1 != 0xBB || ch2 != 0xBF) {
@@ -295,6 +310,7 @@ public class Scanner {
 			if (ch == '\r' && buffer.Peek() != '\n') ch = EOL;
 			if (ch == EOL) { line++; col = 0; }
 		}
+		//if (pos <= 10) Console.Write("{0:X} ", ch);
 
 	}
 
@@ -398,7 +414,7 @@ public class Scanner {
 			} // NextCh already done
 			case 1:
 				recEnd = pos; recKind = 1;
-				if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 1;}
+				if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z' || ch == 196 || ch == 214 || ch == 220 || ch == 228 || ch == 246 || ch == 252) {AddCh(); goto case 1;}
 				else {t.kind = 1; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
 			case 2:
 				{t.kind = 4; break;}
@@ -416,17 +432,17 @@ public class Scanner {
 				{t.kind = 13; break;}
 			case 9:
 				recEnd = pos; recKind = 1;
-				if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'b' && ch <= 'z') {AddCh(); goto case 1;}
+				if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'b' && ch <= 'z' || ch == 196 || ch == 214 || ch == 220 || ch == 228 || ch == 246 || ch == 252) {AddCh(); goto case 1;}
 				else if (ch == 'a') {AddCh(); goto case 10;}
 				else {t.kind = 1; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
 			case 10:
 				recEnd = pos; recKind = 1;
-				if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'q' || ch >= 's' && ch <= 'z') {AddCh(); goto case 1;}
+				if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'q' || ch >= 's' && ch <= 'z' || ch == 196 || ch == 214 || ch == 220 || ch == 228 || ch == 246 || ch == 252) {AddCh(); goto case 1;}
 				else if (ch == 'r') {AddCh(); goto case 11;}
 				else {t.kind = 1; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
 			case 11:
 				recEnd = pos; recKind = 1;
-				if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 1;}
+				if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z' || ch == 196 || ch == 214 || ch == 220 || ch == 228 || ch == 246 || ch == 252) {AddCh(); goto case 1;}
 				else if (ch == '1') {AddCh(); goto case 2;}
 				else if (ch == '2') {AddCh(); goto case 3;}
 				else if (ch == '3') {AddCh(); goto case 4;}

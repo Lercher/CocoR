@@ -11,6 +11,7 @@ var var;            // OK now (var inherits ident) but 'ident expected' with the
 //var keyword;      // 'ident expected' b/c keyword is not an ident
 var a, b, c;
 var A, B, C;
+var äöü; call(äöü);  // test UTF-8 symbols, german umlauts
 { 
     var a, aa; // redefine a
     call(a, aa);

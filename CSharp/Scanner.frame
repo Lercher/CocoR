@@ -253,26 +253,35 @@ public class Scanner {
 -->initialization
 	}
 	
-	public Scanner (string fileName) {
+	public Scanner (string fileName) : this(fileName, false) {
+	}
+
+	public Scanner (string fileName, bool isBOMFreeUTF8) {
 		try {
 			Stream stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
 			buffer = new Buffer(stream, false);
-			Init();
+			Init(isBOMFreeUTF8);
 		} catch (IOException) {
 			throw new FatalError("Cannot open file " + fileName);
 		}
 	}
-	
-	public Scanner (Stream s) {
+
+	public Scanner (Stream s) : this(s, false) {
+	}
+
+	public Scanner (Stream s, bool isBOMFreeUTF8) {
 		buffer = new Buffer(s, true);
-		Init();
+		Init(isBOMFreeUTF8);
 	}
 	
-	void Init() {
+	void Init(bool isBOMFreeUTF8) {
+		// Console.Write("First bytes: ");
 		pos = -1; line = 1; col = 0; charPos = -1;
 		oldEols = 0;
 		NextCh();
-		if (ch == 0xEF) { // check optional byte order mark for UTF-8
+		if (isBOMFreeUTF8) { // we know that it is a UTF-8 stream and that it has no BOM
+			buffer = new UTF8Buffer(buffer); col = 0; charPos = -1;
+		} else if (ch == 0xEF) { // check optional byte order mark for UTF-8
 			NextCh(); int ch1 = ch;
 			NextCh(); int ch2 = ch;
 			if (ch1 != 0xBB || ch2 != 0xBF) {
@@ -295,6 +304,7 @@ public class Scanner {
 			if (ch == '\r' && buffer.Peek() != '\n') ch = EOL;
 			if (ch == EOL) { line++; col = 0; }
 		}
+		//if (pos <= 10) Console.Write("{0:X} ", ch);
 -->casing1
 	}
 
