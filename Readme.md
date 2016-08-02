@@ -244,8 +244,8 @@ token's symbol name.
         // the parsed token, simply called "the token"
         Token t = a.t; 
 
-        // either null or the token where the token is declared at:
-        Token declAt = a.declaredAt; // not used in sample
+        // either null or the token where the token t is declared at:
+        Token declAt = a.declaration; // not used in sample
 
         // print information about the token
         Console.Write("({0,3},{1,3}) {2,3} {3,-20} {4, -20}", 

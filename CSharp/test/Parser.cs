@@ -176,15 +176,13 @@ public class Parser {
 			addAlt(12); // ALT
 			if (isKind(la, 11)) {
 				Get();
-				if (!types.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, types.name));
-				alternatives.tdeclared = types;
+				if (!types.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "ident", la.val, types.name));
 				addAlt(1); // T
 				addAlt(1, types); // T ident uses symbol table 'types'
 				Expect(1); // ident
 			} else if (isKind(la, 12)) {
 				Get();
-				if (!variables.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
-				alternatives.tdeclared = variables;
+				if (!variables.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
 				addAlt(1); // T
 				addAlt(1, variables); // T ident uses symbol table 'variables'
 				Expect(1); // ident
@@ -296,8 +294,7 @@ public class Parser {
 		case 11: // t
 		case 12: // v
 		{
-			if (!variables.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
-			alternatives.tdeclared = variables;
+			if (!variables.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
 			Get();
 			break;
 		}
@@ -310,16 +307,14 @@ public class Parser {
 		Expect(21); // "call"
 		addAlt(15); // T
 		Expect(15); // "("
-		if (!variables.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
-		alternatives.tdeclared = variables;
+		if (!variables.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
 		addAlt(1); // T
 		addAlt(1, variables); // T ident uses symbol table 'variables'
 		Expect(1); // ident
 		addAlt(22); // ITER start
 		while (isKind(la, 22)) {
 			Get();
-			if (!variables.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
-			alternatives.tdeclared = variables;
+			if (!variables.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
 			addAlt(1); // T
 			addAlt(1, variables); // T ident uses symbol table 'variables'
 			Expect(1); // ident
@@ -344,7 +339,7 @@ public class Parser {
 	void Type‿NT() {
 		addAlt(23); // T
 		Expect(23); // "type"
-		if (!types.Add(la)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, types.name));
+		if (!types.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, types.name));
 		alternatives.tdeclares = types;
 		addAlt(1); // T
 		Expect(1); // ident
@@ -424,7 +419,7 @@ public class Parser {
 	}
 
 	void Ident‿NT() {
-		if (!variables.Add(la)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, variables.name));
+		if (!variables.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, variables.name));
 		alternatives.tdeclares = variables;
 		addAlt(1); // T
 		Expect(1); // ident
@@ -437,8 +432,7 @@ public class Parser {
 			} else {
 				Get();
 			}
-			if (!types.Use(la)) SemErr(string.Format(MissingSymbol, "ident", la.val, types.name));
-			alternatives.tdeclared = types;
+			if (!types.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "ident", la.val, types.name));
 			addAlt(1); // T
 			addAlt(1, types); // T ident uses symbol table 'types'
 			Expect(1); // ident
@@ -669,6 +663,7 @@ public class Alt {
 	public Symboltable[] altst = null;
 	public Symboltable tdeclares = null;
 	public Symboltable tdeclared = null;
+	public Token declaration = null;
 
 	public Alt(int size) {
 		alt = new BitArray(size);
@@ -679,27 +674,21 @@ public class Alt {
 // non mutatable
 public class Alternative {
 	public readonly Token t;
-	public readonly Symboltable tdeclares;
-	public readonly Symboltable tdeclared;
+	public readonly string declares = null;
+	public readonly string declared = null;
 	public readonly BitArray alt;
 	public readonly Symboltable[] st;
+	public Token declaration = null;
 
 	public Alternative(Token t, Alt alternatives) {
 		this.t = t;
-		this.tdeclares = alternatives.tdeclares;
-		this.tdeclared = alternatives.tdeclared;
+		if (alternatives.tdeclares != null)
+			this.declares = alternatives.tdeclares.name;
+		if (alternatives.tdeclared != null)
+			this.declared = alternatives.tdeclared.name;
 		this.alt = alternatives.alt;
-		this.st = alternatives.altst;		
-	}
-
-	public Token declaredAt {
-		get {
-			if (tdeclared != null) {
-				Token tt = tdeclared.Find(t);
-				if (tt != null) return tt;
-			}
-			return null;
-		}
+		this.st = alternatives.altst;
+		this.declaration = alternatives.declaration;		
 	}
 }
 
@@ -766,19 +755,26 @@ public class Symboltable {
 
 	// ----------------------------------- for Parser use start -------------------- 
 	
-	public bool Use(Token t) {
-		if (Contains(t)) return true; // it's ok, if we know the symbol
+	public bool Use(Token t, Alt a) {
+		a.tdeclared = this;
+		a.declaration = Find(t);
+		if (a.declaration != null) return true; // it's ok, if we know the symbol
 		if (strict) return false; // in strict mode we report an illegal symbol
 		undeclaredTokens.Peek().Add(t); // in non strict mode we store the token for future checking
 		return true; // we can't report an invalid symbol yet, so report "all ok".
 	}
 
-	public bool Add(Token t) {
+	public bool Add(Token t, IEnumerable<Alternative> fixuplist) {
 		if (Find(currentScope, t) != null)
 			return false;
 		if (strict) clone = null; // if non strict, we have to keep the clone
 		currentScope.Add(t);
-		RemoveUndeclared(t);
+		IEnumerable<Token> nowdeclareds = RemoveFromUndeclared(t);
+		if (fixuplist != null)
+			foreach(Token tok in nowdeclareds)
+				foreach(Alternative a in fixuplist)
+					if (a.t == tok)
+						a.declaration = t;
 		return true;
 	}
 
@@ -789,7 +785,7 @@ public class Symboltable {
 		t.charPos = -1;
 		t.val = s;
 		t.line = -1;
-		Add(t);
+		currentScope.Add(t);
 	}
 
 	// ----------------------------------- for Parser use end --------------------	
@@ -798,15 +794,16 @@ public class Symboltable {
 		return (Find(t) != null);
 	}
 
-	void RemoveUndeclared(Token tok) {
+	IEnumerable<Token> RemoveFromUndeclared(Token declaration) {
 		StringComparer cmp = comparer;
 		List<Token> found = new List<Token>();
 		List<Token> undeclared = undeclaredTokens.Peek(); 
 		foreach(Token t in undeclared)
-			if (0 == cmp.Compare(t.val, tok.val))
+			if (0 == cmp.Compare(t.val, declaration.val))
 				found.Add(t);
 		foreach(Token t in found)
 			undeclared.Remove(t);
+		return found;
 	}
 
 	void pushNewScope() {
@@ -850,7 +847,7 @@ public class Symboltable {
 			Symboltable all = new Symboltable(name, ignoreCase, strict);
 			foreach(List<Token> list in scopes)
 				foreach(Token t in list)
-					all.Add(t);
+					all.Add(t, null);
 			return all.currentScope; 
 		}
 	}

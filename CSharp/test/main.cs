@@ -21,7 +21,7 @@ public class Inheritance {
         if (arg.Length == 1)
         {
             Console.WriteLine("scanning {0} ...", arg[0]);
-            Scanner scanner = new Scanner(arg[0]);
+            Scanner scanner = new Scanner(arg[0], true); // is UTF8 source
 			Parser parser = new Parser(scanner);
             parser.Parse();
             Console.WriteLine("{0} error(s) detected", parser.errors.count);
@@ -51,8 +51,7 @@ public class Inheritance {
                     sb.Append("  ");
                 }
                 sb.Append(t.val); sb.Append(' ');
-                Token declAt = a.declaredAt;
-                string decl = declAt == null ? "" : string.Format(" declared({0},{1})", declAt.line, declAt.col);
+                string decl = a.declaration == null ? "" : string.Format(" declared({0},{1})", a.declaration.line, a.declaration.col);
                 Console.Write("({0,3},{1,3}) {2,3} {3,-30} {4, -20}", t.line, t.col, t.kind, Parser.tName[t.kind] + decl, t.val);
                 Console.Write("      alt: ");
                 for (int k = 0; k <= Parser.maxT; k++)

@@ -70,9 +70,8 @@ namespace WinFormsEditor
             if (s.Length > 60) s = s.Substring(0, 60) + " ...";
             System.Console.WriteLine("token \"{0}\"", s);
 
-            Token declAt = a.declaredAt;
-            if (declAt != null)
-                addAC(string.Format("({0})", declAt.charPos), "*decl");
+            if (a.declaration != null)
+                addAC(string.Format("({0})", a.declaration.charPos + 1), "*decl");
 
             for (int k = 0; k <= Parser.maxT; k++)
             {
@@ -98,8 +97,8 @@ namespace WinFormsEditor
 
         string describeParsed(Alternative a) {
             string tname = Parser.tName[a.t.kind];
-            if (a.tdeclared != null) return string.Format("{0}:{1}", tname, a.tdeclared.name);
-            if (a.tdeclares != null) return string.Format("{0}>{1}", tname, a.tdeclares.name);
+            if (a.declared != null) return string.Format("{0}:{1}", tname, a.declared);
+            if (a.declares != null) return string.Format("{0}>{1}", tname, a.declares);
             return tname;
         }
 
