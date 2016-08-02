@@ -1,0 +1,84 @@
+COMPILER CASDomains
+
+CHARACTERS
+	uppercaseletter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".
+	digit    		= "0123456789".
+	underscore		= "_".
+	cr				= "\r".
+	lf 				= "\n".
+	tab				= "\t".
+	stringCh  		= ANY - '"' - cr - lf.
+	
+TOKENS
+	dbcode			= uppercaseletter {uppercaseletter | digit | underscore}.
+	twodigitnumber	= digit[digit].
+	string 			= '"' { stringCh } '"'.
+	domain			= "domain".
+	end				= "end".
+	
+COMMENTS FROM "//" TO lf
+COMMENTS FROM "/*" TO "*/" NESTED
+
+IGNORE cr + lf + tab
+
+SYMBOLTABLES
+	lang STRICT.
+	domains STRICT.
+	values STRICT.
+
+PRODUCTIONS
+
+	// names defining symbols
+	LanguageName = dbcode>lang | string>lang .
+	DomainName = dbcode>domains | string>domains .
+	ValueName = dbcode>values | string>values .
+
+	// using names
+	UseLanguageName = dbcode:lang | string:lang .
+
+
+	CASDomains =
+		"casdomains" 
+		Languages
+		{ Domain }
+	.
+				
+	Languages = 
+		"languages"
+		LanguageName 
+		{ LanguageName }
+	.
+
+				
+	Domain SCOPES(values) = 
+		SYNC domain 
+		DomainName 								
+		[ "orfi" ]		 							
+		[ "length" twodigitnumber ]
+		Translations
+		Domainvalue { Domainvalue }
+		end domain
+	.
+	
+	Domainvalue = 
+		SYNC "value"
+		ValueName
+		TranslationsWithHelptext	
+	.
+
+	Translations = 
+		{
+		  UseLanguageName
+		  string
+		} 
+		.
+
+	TranslationsWithHelptext = 
+		{
+		  UseLanguageName
+		  string
+		  string
+		} 
+		.
+	
+END CASDomains .

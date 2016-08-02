@@ -1,0 +1,35 @@
+casdomains languages DE EN FR
+
+domain ACCOUNTING orfi length 15
+	DE "Buchhaltung"
+	EN "Accounting"
+	FR "Compatiblité"
+
+	value BILLER_GROUP
+		DE "Rechnungsstellungsgruppe" 
+			"Alle Angestellten der Rechnungsstellung"
+		EN "Biller Group" 
+			"All Employees of Billing"
+		FR "Groupe Facturier"
+			"Tous les employés de la facturation"
+
+	value BILLER_GROUP // declared twice
+		DE "Rechnungsstellungsgruppe" 
+			"Alle Angestellten der Rechnungsstellung"
+
+	value SAMPLE_GROUP
+		DE "Beispielgruppe" "Das ist eine Beispielgruppe"	
+
+end domain
+
+
+domain SOMETHING length 8
+	DE "Na sowas"
+
+	value EINS
+		DE "Eins" "Das Erste"
+		
+	value ZWEI
+		DE "Zwei" "Das weite Programm"
+
+end domain
