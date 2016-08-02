@@ -5,7 +5,10 @@ COMPILER Inheritance
  // IGNORECASE
 
 CHARACTERS
-	letter    = "ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜabcdefghijklmnopqrstuvwxyzäöü_". // intentionally no ß 
+    ucletter  = 'A'..'Z'.
+    lcletter  = 'a'..'z'.
+    umlaut    = "ÄÖÜäöü".  // intentionally no ß (szlig)
+	letter    = ucletter + lcletter + umlaut + '_'. 
 	cr        = '\r'.
 	lf        = '\n'.
 	tab       = '\t'.
