@@ -291,6 +291,9 @@ public class Scanner {
 			}
 			buffer = new UTF8Buffer(buffer); col = 0; charPos = -1;
 			NextCh();
+		} else if (ch == 0xFEFF) { // optional byte order mark for UTF-8 using UTF8Buffer
+			col = 0; charPos = -1; // reset the locgical position to zero and ...
+			NextCh(); // ... ignore the BOM, updating col and charPos
 		}
 		pt = tokens = new Token();  // first token is a dummy
 	}
