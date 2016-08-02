@@ -241,6 +241,7 @@ BaseType =
 	| "boolean"
 	| "Guid"
 	| "String()"
+	| "XML"
 	.
 
 Mimics =

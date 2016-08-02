@@ -5,7 +5,7 @@ public class Inheritance {
 
     static void printST(Symboltable st) {
         if (st == null) return;
-        Console.WriteLine("--- symbol-table ------------------------------------------------------------------- {0}({1}){2}", st.name, st.CountScopes, st.ignoreCase ? " IGONRECASE" : "");
+        Console.WriteLine("--- symbol-table{2} ------------------------------------------------------------------- {0}({1})", st.name, st.CountScopes, st.ignoreCase ? " IGNORECASE" : "");
         int n = 0;
         foreach (Token t in st.currentScope) {
             n++;
@@ -32,7 +32,7 @@ public class Inheritance {
             printST(parser.symbols("enumtypes"));
             printST(parser.symbols("variables"));
 
-            if (false) {
+            if (arg.Length > 1) {
                 // list all alternatives
                 int line = 0;
                 System.Text.StringBuilder sb = new System.Text.StringBuilder();
@@ -73,11 +73,10 @@ public class Inheritance {
                 }
                 Console.WriteLine(sb.ToString());
             }
-
             if (parser.errors.count > 0)
                 return 1;
         } else {
-            Console.WriteLine("usage: WFModel.exe file");
+            Console.WriteLine("usage: WFModel.exe file [-ac]");
             return 99;
         }
         return 0;
