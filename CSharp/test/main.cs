@@ -4,7 +4,7 @@ using System.IO;
 public class Inheritance {
 
     static void printST(Symboltable st) {
-        Console.WriteLine("--- symbol-table ------------------------------------------------------------------- {0}({1}){2}", st.name, st.CountScopes, st.ignoreCase ? " IGONRECASE" : "");
+        Console.WriteLine("--- symbol-table{2} ------------------------------------------------------------------- {0}({1})", st.name, st.CountScopes, st.ignoreCase ? " IGNORECASE" : "");
         int n = 0;
         foreach (Token t in st.currentScope) {
             n++;
