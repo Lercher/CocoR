@@ -1,4 +1,4 @@
-' Beispiel ohne Umlaute fuer Coco/R
+' Beispiel ohne Umlaute fuer Coco/R 
 
 Version 1.0.0.0
 Namespace Sca.Engagement
@@ -70,8 +70,8 @@ End Class
 
 Class Fahrzeugbestellung
 	InfoProperty AngebotsMasterID
-	InfoProperty HaendlerNr
-	InfoProperty VerkaeuferID
+	InfoProperty HändlerNr
+	InfoProperty VerkäuferID
 	InfoProperty PurchaseOrderNo
 	InfoProperty ProdDatum as Date
 	InfoProperty LieferdatumCDD as Date
@@ -83,8 +83,8 @@ End Class
 
 Class AutoEmailMessage
 	Property Marker as boolean
-	List Empfaenger as String
-	Property Ausloesegrund
+	List Empfänger as String
+	Property Auslösegrund
 	Property Wann
 	Property Wer
 	Property Was
@@ -185,8 +185,8 @@ Class Zinssaetze
 	InfoProperty ZinskompetenzEskalationLogin
 	InfoProperty CreatorZinskompetenz as Percent
 	InfoProperty CreatorZinskompetenzMargeProMonat as N2
-	InfoProperty HaendlerPenetrationaktuell as Percent
-	InfoProperty HaendlerProvisionsfaktor as Percent
+	InfoProperty HändlerPenetrationaktuell as Percent
+	InfoProperty HändlerProvisionsfaktor as Percent
 End Class
 
 Class Kalkulationsart
@@ -353,9 +353,9 @@ Class Engagement
 	InfoProperty Steuersatz as Percent
 	Property BemerkungAngebot
 	Property BemerkungIntern
-	Property AbweichenderHaendler Mimics query:SCAEngagement.Stammhaendler:Kunde.idADAdresse
-	InfoProperty AbweichendeidADHaendler
-	Property AbweichenderVerkaeufer Mimics query:SCAEngagement.Verkaeufer:D.Haendler
+	Property AbweichenderHändler Mimics query:SCAEngagement.Stammhaendler:Kunde.idADAdresse
+	InfoProperty AbweichendeidADHändler
+	Property AbweichenderVerkäufer Mimics query:SCAEngagement.Verkaeufer:D.Händler
 	InfoProperty Fixiert Mimics NeinJa
 	InfoProperty FixiertAm as DateTime
 	InfoProperty FixiertVon	
@@ -372,13 +372,13 @@ Class Kunde
 	InfoProperty LsproCreatedID
 	InfoProperty LsproCreatedDatum as DateTime
 	InfoProperty Suchname
-	InfoProperty Haendlernummer
+	InfoProperty Händlernummer
 	'rot
 	Property Name
-	Property Strasse
+	Property Straße
 	Property PLZ
 	Property Ort
-	Property Land Mimics txt:ScaAdresse.Kennzeichen:"Laender"
+	Property Land Mimics txt:ScaAdresse.Kennzeichen:"Länder"
 	Property Anrede Mimics Anreden
 	Property Titel
 	Property Vorname
@@ -394,10 +394,10 @@ Class Kunde
 	Property Rechtsform Mimics txt:ScaAdresse.Kennzeichen:"Rechtsform"
 	Property Konzernname
 	Property AdressnummerKonzern
-	Property Haendler
-	Property HaendlerIdadadresse
+	Property Händler
+	Property HändlerIdadadresse
 	Property SDEKundennummer
-	Property Verkaeufer Mimics query:SCAVersicherung.Verkaeufer:"@key"
+	Property Verkäufer Mimics query:SCAVersicherung.Verkaeufer:"@key"
 	Property Accountmanager
 	Property Accountmanager_Display
 	InfoProperty SeniorACM
@@ -407,13 +407,13 @@ Class Kunde
 	Property Kundenbetreuer_Display
 	'gelb
 	Property Fax
-	Property Fuhrparkgroesse as Integer = -1
+	Property Fuhrparkgröße as Integer = -1
 	Property Fuhrparkalter as Integer
 	Property DatumFuhrparkErhebung as Date
 	'grün
 	InfoProperty Adressnummer
 	InfoProperty VerbindungSeit as Date
-	Property GruendungsDatum as Date
+	Property GründungsDatum as Date
 	InfoProperty Branche Mimics txt:ScaAdresse.Kennzeichen:"Branche"
 	InfoProperty HRNummer
 	InfoProperty HRDatum as Date
@@ -425,8 +425,8 @@ Class Kunde
 	Property KSVID
 	Property CrefoIndex as Integer
 	Property CrefoDatum as Date
-	InfoProperty Bonitaet
-	InfoProperty BonitaetsDatum as Date
+	InfoProperty Bonität
+	InfoProperty BonitätsDatum as Date
 	InfoProperty Rating
 	InfoProperty RatingDatum as Date
 	InfoProperty Ratingart
@@ -435,10 +435,10 @@ Class Kunde
 	InfoProperty GWGWirtschBerechtigter
 	InfoProperty GwgPolitischExponiertePerson
 	InfoProperty GwgSchwellenwertUnterschritten
-	InfoProperty GwgGeschaeftszweck
+	InfoProperty GwgGeschäftszweck
 	InfoProperty GwgRisikoklasse
 	InfoProperty BaFinKredEinheitID
-	InfoProperty KredEinheitRueckmBetrag as Double
+	InfoProperty KredEinheitRückmBetrag as Double
 	InfoProperty BetreuerFM
 	InfoProperty BetreuerCS3
 	InfoProperty BetreuerCS2
@@ -453,10 +453,10 @@ Class Lieferant
 	InfoProperty idADAdresseFetched
 	InfoProperty Suchname
 	InfoProperty Name
-	InfoProperty Strasse
+	InfoProperty Straße
 	InfoProperty PLZ
 	InfoProperty Ort
-	InfoProperty Land Mimics txt:ScaAdresse.Kennzeichen:"Laender"
+	InfoProperty Land Mimics txt:ScaAdresse.Kennzeichen:"Länder"
 	InfoProperty Anrede Mimics Anreden
 	InfoProperty Titel
 	InfoProperty Vorname
@@ -528,13 +528,13 @@ Class DealIt
       InfoProperty Betriebname
       InfoProperty idADadresseKDE
       InfoProperty idADadresseHDL
-	  InfoProperty Haendler
+	  InfoProperty Händler
 	  InfoProperty idADPersonVK
-	  InfoProperty Verkaufer
-      InfoProperty HaendlerNr
+	  InfoProperty Verkäufer
+      InfoProperty HändlerNr
       InfoProperty VKNachname
       InfoProperty VKVorname
-      InfoProperty VerkaeuferID
+      InfoProperty VerkäuferID
       InfoProperty Typenbezeichnung
       InfoProperty Projektdatum as Date
       InfoProperty ProdDatum as Date
@@ -560,9 +560,9 @@ Class DealIt
       InfoProperty Reifendruckkontr as Integer
       InfoProperty VersicherungsAngeb as Integer
       InfoProperty Fahrerkabine
-      InfoProperty Prmie as N2
-      InfoProperty Prmie_E as N2
-      InfoProperty Prmie_K
+      InfoProperty Prämie as N2
+      InfoProperty Prämie_E as N2
+      InfoProperty Prämie_K
       InfoProperty DatumVersAngeb as Date
       InfoProperty SelbstbeteiligungTK as N2
       InfoProperty SelbstbeteiligungTK_E as N2
@@ -597,8 +597,8 @@ End Class
 Class Dokumentanforderung
     InfoProperty ID
     InfoProperty Name
-    InfoProperty Rckmeldedatum as DateTime
-    InfoProperty Rckmeldestaus
+    InfoProperty Rückmeldedatum as DateTime
+    InfoProperty Rückmeldestaus
     InfoProperty Anforderungsart
 End Class
 
