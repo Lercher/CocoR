@@ -806,7 +806,7 @@ const int id = 0;
 
 	// a token's name
 	public static readonly string[] tName = {
-		"EOF","ident","number","\"\"\"", "\"\"\"","\"\\\'\"","\"COMPILER\"","\"IGNORECASE\"", "\"CHARACTERS\"","\"TOKENS\"","\"PRAGMAS\"","\"COMMENTS\"", "\"FROM\"","\"TO\"","\"NESTED\"","\"IGNORE\"", "\"SYMBOLTABLES\"","\"PRODUCTIONS\"","\"=\"","\".\"",
+		"EOF","ident","number","string", "badString","char","\"COMPILER\"","\"IGNORECASE\"", "\"CHARACTERS\"","\"TOKENS\"","\"PRAGMAS\"","\"COMMENTS\"", "\"FROM\"","\"TO\"","\"NESTED\"","\"IGNORE\"", "\"SYMBOLTABLES\"","\"PRODUCTIONS\"","\"=\"","\".\"",
 		"\"END\"","\"STRICT\"","\"SCOPES\"","\"(\"", "\",\"","\")\"","\"+\"","\"-\"", "\"..\"","\"ANY\"","\":\"","\"<\"", "\">\"","\"<.\"","\".>\"","\"|\"", "\"WEAK\"","\"[\"","\"]\"","\"{\"",
 		"\"}\"","\"SYNC\"","\"IF\"","\"CONTEXT\"", "\"(.\"","\".)\"","???"
 	};

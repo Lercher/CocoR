@@ -137,7 +137,6 @@ public class Node {
 public class Graph {	
 	public Node l;	// left end of graph = head
 	public Node r;	// right end of graph = list of nodes to be linked to successor graph
-	public string str = null; // only filled in the root for a Graph constructed with Tab.StrToGraph 
 	
 	public Graph() {
 		l = null; r = null;
@@ -440,7 +439,6 @@ public class Tab {
 		string s = Unescape(str.Substring(1, str.Length-2));
 		if (s.Length == 0) parser.SemErr("empty token not allowed");
 		Graph g = new Graph();
-		g.str = str;
 		g.r = dummyNode;
 		for (int i = 0; i < s.Length; i++) {
 			Node p = NewNode(Node.chr, (int)s[i], 0);

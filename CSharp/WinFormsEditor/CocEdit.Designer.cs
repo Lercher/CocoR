@@ -24,7 +24,7 @@ namespace WinFormsEditor
             this.VSplit = new System.Windows.Forms.SplitContainer();
             this.listAutocomplete = new System.Windows.Forms.ListView();
             this.textSource = new System.Windows.Forms.RichTextBox();
-            this.textLog = new System.Windows.Forms.TextBox();
+            this.textLog = new System.Windows.Forms.RichTextBox();
             //
             this.HSplit.Panel1.SuspendLayout();
             this.HSplit.Panel2.SuspendLayout();
@@ -117,7 +117,7 @@ namespace WinFormsEditor
         private System.Windows.Forms.SplitContainer VSplit;
         private System.Windows.Forms.ListView listAutocomplete;
         private System.Windows.Forms.RichTextBox textSource;
-        private System.Windows.Forms.TextBox textLog;
+        private System.Windows.Forms.RichTextBox textLog;
     }
 }
 
