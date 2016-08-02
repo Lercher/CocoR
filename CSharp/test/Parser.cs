@@ -893,8 +893,8 @@ public class Parser {
 
 	// a token's name
 	public static readonly string[] tName = {
-		"EOF","ident","dottedident","\"-\"", "\"-\"","\"\"\"","\"{\"","\"(\"", "\"end\"","\".\"","\"|\"","\":\"", "versionnumber","\"version\"","\"search\"","\"select\"", "\"details\"","\"edit\"","\"clear\"","\"keys\"",
-		"\"displayname\"","\"[\"","\"namespace\"","\"readerwriterprefix\"", "\"rootclass\"","\"data\"","\"class\"","\"via\"", "\"inherits\"","\"property\"","\"infoproperty\"","\"approperty\"", "\"list\"","\"selectlist\"","\"flagslist\"","\"longproperty\"", "\"infolongproperty\"","\"=\"","\"true\"","\"false\"",
+		"EOF","ident","dottedident","number", "int","string","braced","bracketed", "\"end\"","\".\"","\"|\"","\":\"", "versionnumber","\"version\"","\"search\"","\"select\"", "\"details\"","\"edit\"","\"clear\"","\"keys\"",
+		"\"displayname\"","vbident","\"namespace\"","\"readerwriterprefix\"", "\"rootclass\"","\"data\"","\"class\"","\"via\"", "\"inherits\"","\"property\"","\"infoproperty\"","\"approperty\"", "\"list\"","\"selectlist\"","\"flagslist\"","\"longproperty\"", "\"infolongproperty\"","\"=\"","\"true\"","\"false\"",
 		"\"#\"","\"as\"","\"double\"","\"date\"", "\"datetime\"","\"integer\"","\"percent\"","\"percentwithdefault\"", "\"doublewithdefault\"","\"integerwithdefault\"","\"n2\"","\"n0\"", "\"string\"","\"boolean\"","\"guid\"","\"string()\"", "\"mimics\"","\"query\"","\"txt\"","\"xl\"",
 		"\"ref\"","\"subsystem\"","\"ssname\"","\"ssconfig\"", "\"sstyp\"","\"sscommands\"","\"sskey\"","\"ssclear\"", "\"flags\"","\"enum\"","\"default\"","???"
 	};
