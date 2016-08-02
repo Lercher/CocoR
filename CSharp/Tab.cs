@@ -545,7 +545,7 @@ public class Tab {
 		CharClass c = new CharClass(name, s);
 		c.n = classes.Count;
 		classes.Add(c);
-		System.Console.WriteLine("CharClass {0} = {1}", name, s);  // TODO - Trace Flag
+		// System.Console.WriteLine("CharClass {0} = {1}", name, s);  // TODO - Trace Flag
 		return c;
 	}
 

@@ -51,7 +51,8 @@ public class Coco {
 		Console.Write("Coco/R (Jul 28, 2016)");
 		string srcName = null, nsName = null, frameDir = null, ddtString = null,
 		traceFileName = null, outDir = null;
-		bool emitLines = false, generateAutocompleteInformation = false, ignoreSemanticActions = false;
+		bool emitLines = false, generateAutocompleteInformation = false, ignoreSemanticActions = false, 
+		isUTF8 = false;
 		int retVal = 1;
 		for (int i = 0; i < arg.Length; i++) {
 			if (arg[i] == "-namespace" && i < arg.Length - 1) nsName = arg[++i].Trim();
@@ -61,17 +62,19 @@ public class Coco {
 			else if (arg[i] == "-lines") emitLines = true;
 			else if (arg[i] == "-ac") generateAutocompleteInformation = true;
 			else if (arg[i] == "-is") ignoreSemanticActions = true;
+			else if (arg[i] == "-utf8") isUTF8 = true;
 			else srcName = arg[i];
 		}
 		if (emitLines) Console.Write(" [emit lines]");
 		if (generateAutocompleteInformation) Console.Write(" [generate autocomplete information]");
 		if (ignoreSemanticActions) Console.Write(" [ignore semantic actions]");
+		if (isUTF8) Console.Write(" [forced UTF8 processing]");
 		Console.WriteLine();
 		if (arg.Length > 0 && srcName != null) {
 			try {
 				string srcDir = Path.GetDirectoryName(srcName);
 				
-				Scanner scanner = new Scanner(srcName);
+				Scanner scanner = new Scanner(srcName, isUTF8);
 				Parser parser = new Parser(scanner);
 
 				traceFileName = Path.Combine(srcDir, "trace.txt");
@@ -113,6 +116,7 @@ public class Coco {
 			                  + "  -lines     [emit lines]{0}"
 							  + "  -ac        [generate autocomplete/intellisense information]{0}"
 							  + "  -is        [ignore semantic actions]{0}"
+							  + "  -utf8      [force UTF-8 processing, even without BOM]{0}"
 			                  + "Valid characters in the trace string:{0}"
 			                  + "  A  trace automaton{0}"
 			                  + "  F  list first/follow sets{0}"

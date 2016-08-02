@@ -63,7 +63,9 @@ interactively.
 The standard scanner has now a new constructor that tells it
 to use a UTF8Buffer even if the leading BOM (byte order mark)
 is missing. This is handy if you scan from a string wraped 
-in a stream.
+in a stream or from a file that is written by a tool that
+writes UTF-8 but no byte order marks. The Coco executable
+has a new command line option that forces UTF-8 processing.
 
 
 ## Token Inheritance
@@ -308,6 +310,9 @@ you can generate and build a .Net parser library with autocomplete information
 from an attributed grammar file, that is written for a different language 
 such as Java. Maybe only to use an autocomplete aware editor for the grammar,
 that probably is only available as a .Net program.
+
+* -utf8 - force UTF-8 processing, even if the input file doesn't have a 
+byte order mark. This is the default e.g. if you use Visual Studio Code.
 
 
 ## Languages

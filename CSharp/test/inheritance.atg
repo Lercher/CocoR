@@ -1,3 +1,6 @@
+// note that we don't have a byte order mark here (visual studio code), 
+// so we need to use Coco's command line switch -utf8:
+// ..\coco inheritance.ATG -frames .. -ac -is -utf8
 // cls & cd .. & build.bat & cd test & cocbuild
 
 COMPILER Inheritance

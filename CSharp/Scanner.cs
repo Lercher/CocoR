@@ -252,16 +252,19 @@ public class Scanner {
 
 	}
 	
-	public Scanner (string fileName) {
+	public Scanner (string fileName) : this(fileName, false) {
+	}
+
+	public Scanner (string fileName, bool isBOMFreeUTF8) {
 		try {
 			Stream stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
 			buffer = new Buffer(stream, false);
-			Init(false);
+			Init(isBOMFreeUTF8);
 		} catch (IOException) {
 			throw new FatalError("Cannot open file " + fileName);
 		}
 	}
-	
+
 	public Scanner (Stream s) : this(s, false) {
 	}
 
@@ -271,6 +274,7 @@ public class Scanner {
 	}
 	
 	void Init(bool isBOMFreeUTF8) {
+		// Console.Write("First bytes: ");
 		pos = -1; line = 1; col = 0; charPos = -1;
 		oldEols = 0;
 		NextCh();
@@ -286,6 +290,7 @@ public class Scanner {
 			NextCh();
 		}
 		pt = tokens = new Token();  // first token is a dummy
+		// Console.WriteLine("[using {0}]", buffer.GetType().Name);
 	}
 	
 	void NextCh() {
@@ -299,6 +304,7 @@ public class Scanner {
 			if (ch == '\r' && buffer.Peek() != '\n') ch = EOL;
 			if (ch == EOL) { line++; col = 0; }
 		}
+		//if (pos <= 10) Console.Write("{0:X} ", ch);
 
 	}
 
