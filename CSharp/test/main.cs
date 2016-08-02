@@ -18,7 +18,7 @@ public class Inheritance {
     }
 
 	public static int Main (string[] arg) {
-		Console.WriteLine("Inheritance parser");
+		Console.WriteLine("WFModel parser");
         if (arg.Length == 1)
         {
             Console.WriteLine("scanning {0} ...", arg[0]);
@@ -73,7 +73,7 @@ public class Inheritance {
             if (parser.errors.count > 0)
                 return 1;
         } else {
-            Console.WriteLine("usage: Inheritance.exe file");
+            Console.WriteLine("usage: WFModel.exe file");
             return 99;
         }
         return 0;
