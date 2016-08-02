@@ -273,10 +273,14 @@ public class Scanner {
 		// Console.Write("First bytes: ");
 		pos = -1; line = 1; col = 0; charPos = -1;
 		oldEols = 0;
-		NextCh();
 		if (isBOMFreeUTF8) { // we know that it is a UTF-8 stream and that it has no BOM
-			buffer = new UTF8Buffer(buffer); col = 0; charPos = -1;
-		} else if (ch == 0xEF) { // check optional byte order mark for UTF-8
+			buffer = new UTF8Buffer(buffer); 
+		} 
+		NextCh();
+		if (isBOMFreeUTF8) {
+			Console.Write("[{0:X}]", ch);
+		}
+		if (ch == 0xEF) { // check optional byte order mark for UTF-8
 			NextCh(); int ch1 = ch;
 			NextCh(); int ch2 = ch;
 			if (ch1 != 0xBB || ch2 != 0xBF) {
