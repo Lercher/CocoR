@@ -7,11 +7,11 @@ using System.Windows.Forms;
 
 namespace WinFormsEditor
 {
-    public partial class CocEdit : Form
+    public class Editor : Form
     {
         Parser parser;        
 
-        public CocEdit()
+        public Editor()
         {
             InitializeComponent();
             textSource.WordWrap = false;
@@ -199,5 +199,122 @@ namespace WinFormsEditor
             textLog.SelectionChanged += logSelectionChanged;            
             listAlternativesAtSelection();
        }
+
+/* ------------------------------------- designer code ---------------------------- */
+
+        private SplitContainer HSplit;
+        private SplitContainer VSplit;
+        private ListView listAutocomplete;
+        private RichTextBox textSource;
+        private RichTextBox textLog;
+
+        private void InitializeComponent()
+        {
+            System.Drawing.Font ft = new System.Drawing.Font("Consolas", 12);
+
+            this.HSplit = new SplitContainer();
+            this.VSplit = new SplitContainer();
+            this.listAutocomplete = new ListView();
+            this.textSource = new RichTextBox();
+            this.textLog = new RichTextBox();
+            //
+            this.HSplit.Panel1.SuspendLayout();
+            this.HSplit.Panel2.SuspendLayout();
+            this.HSplit.SuspendLayout();
+            this.VSplit.Panel1.SuspendLayout();
+            this.VSplit.Panel2.SuspendLayout();
+            this.VSplit.SuspendLayout();
+            this.listAutocomplete.SuspendLayout();
+            this.textSource.SuspendLayout();
+            this.SuspendLayout();
+            // 
+            // HSplit
+            // 
+            this.HSplit.BorderStyle = BorderStyle.None;
+            this.HSplit.Name = "HSplit";
+            this.HSplit.Dock = DockStyle.Fill;
+            this.HSplit.Orientation = Orientation.Horizontal; 
+            this.HSplit.SplitterWidth = 5;
+            // 
+            // VSplit
+            // 
+            this.VSplit.BorderStyle = BorderStyle.None;
+            this.VSplit.Name = "VSplit";
+            this.VSplit.Dock = DockStyle.Fill;
+            this.VSplit.Orientation = Orientation.Vertical; 
+            this.VSplit.SplitterWidth = 5;           
+            // 
+            // textSource
+            // 
+            this.textSource.Dock = DockStyle.Fill;
+            this.textSource.Multiline = true;
+            this.textSource.BorderStyle = BorderStyle.None;
+            this.textSource.Font = ft;
+            // 
+            // textLog
+            // 
+            this.textLog.Dock = DockStyle.Fill;
+            this.textLog.Multiline = true;
+            this.textLog.BorderStyle = BorderStyle.None;
+            this.textLog.Font = ft;
+            // 
+            // Panels
+            // 
+            this.HSplit.Panel1.Controls.Add(this.VSplit);
+            this.HSplit.Panel2.Controls.Add(this.textLog);
+            this.VSplit.Panel1.Controls.Add(this.textSource);
+            this.VSplit.Panel2.Controls.Add(this.listAutocomplete);
+            //
+            this.HSplit.SplitterDistance = 300;
+            this.VSplit.SplitterDistance = 400;
+            // 
+            // listAutocomplete
+            // 
+            this.listAutocomplete.Dock = DockStyle.Fill;
+            this.listAutocomplete.Location = new System.Drawing.Point(0, 0);
+            this.listAutocomplete.BorderStyle = BorderStyle.None;
+            this.listAutocomplete.Name = "listAutocomplete";
+            this.listAutocomplete.Size = new System.Drawing.Size(382, 268);
+            this.listAutocomplete.TabIndex = 0;
+            this.listAutocomplete.View = View.Details;
+            this.listAutocomplete.Font = ft;
+            this.listAutocomplete.Columns.Add(new ColumnHeader());
+            this.listAutocomplete.Columns.Add(new ColumnHeader());
+
+            // 
+            // MySplitContainer
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleMode = AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(1400, 1000);
+            this.Controls.Add(this.HSplit);
+            this.MaximizeBox = true;
+            this.Name = "Editor";
+            this.Text = "Coco/R Editor";
+            this.VSplit.Panel1.ResumeLayout(false);
+            this.VSplit.Panel2.ResumeLayout(false);
+            this.VSplit.ResumeLayout(false);
+            this.HSplit.Panel1.ResumeLayout(false);
+            this.HSplit.Panel2.ResumeLayout(false);
+            this.HSplit.ResumeLayout(false);
+            this.listAutocomplete.ResumeLayout(false);
+            this.textSource.PerformLayout();
+            this.ResumeLayout(false);
+
+        } // InitializeComponent
     }
-}
+
+
+    static class Program
+    {
+        /// <summary>
+        /// The main entry point for the application.
+        /// </summary>
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.Run(new Editor());
+        }
+    } // class Program
+} // namespace
