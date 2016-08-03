@@ -31,6 +31,14 @@ In the winforms editor:
 
 * all lowercased keywords for autocomplete in a `IGNORECASE` grammar
 
+General:
+
+* errormessage "dbcode 'EN' not declared in 'lang'" points to token before the error
+
+* errormessage "dbcode 'SOMETHING' declared twice in 'domains'" points to token before the error
+
+* ALT defines (or lists) a symbol twice, see "languages DE" -> DE DE 
+
 
 ## Resolved Bugs
 
