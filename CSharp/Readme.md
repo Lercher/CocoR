@@ -37,8 +37,6 @@ General:
 
 * errormessage "dbcode 'SOMETHING' declared twice in 'domains'" points to token before the error
 
-* ALT defines (or lists) a symbol twice, see "languages DE" -> DE DE 
-
 
 ## Resolved Bugs
 
@@ -82,3 +80,8 @@ General:
 * token expressions were listed as literals in the `tName` array. -> Fixed. 
 
 * missing error messages locator in the lower pane / doubleclick -> Implemented
+
+* ALT defines (or lists) a symbol twice, see "languages DE" 
+  -> works as designed, was a bug in the grammar. One DE was listed for
+  dbcode>lang, a second one for string>lang -> Fixed
+
