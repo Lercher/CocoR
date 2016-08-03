@@ -22,16 +22,16 @@ public class Parser {
 	
 	public Scanner scanner;
 	public Errors  errors;
-	public List<Alternative> tokens = new List<Alternative>();
+	public readonly List<Alternative> tokens = new List<Alternative>();
 	
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
 	int errDist = minErrDist;
 
-	public readonly Symboltable lang = new Symboltable("lang", false, true);
-	public readonly Symboltable langstring = new Symboltable("langstring", false, true);
-	public readonly Symboltable domains = new Symboltable("domains", false, true);
-	public readonly Symboltable values = new Symboltable("values", false, true);
+	public readonly Symboltable lang;
+	public readonly Symboltable langstring;
+	public readonly Symboltable domains;
+	public readonly Symboltable values;
 	public Symboltable symbols(string name) {
 		if (name == "lang") return lang;
 		if (name == "langstring") return langstring;
@@ -45,6 +45,11 @@ public class Parser {
 	public Parser(Scanner scanner) {
 		this.scanner = scanner;
 		errors = new Errors();
+		lang = new Symboltable("lang", false, true, tokens);
+		langstring = new Symboltable("langstring", false, true, tokens);
+		domains = new Symboltable("domains", false, true, tokens);
+		values = new Symboltable("values", false, true, tokens);
+
 	}
 
 	void SynErr (int n) {
@@ -150,48 +155,52 @@ public class Parser {
 
 	
 	void LanguageName‿NT() {
+		{
 		addAlt(1); // ALT
 		addAlt(3); // ALT
 		if (isKind(la, 1)) {
-			if (!lang.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, "dbcode", la.val, lang.name));
+			if (!lang.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "dbcode", la.val, lang.name));
 			alternatives.tdeclares = lang;
 			Get();
 		} else if (isKind(la, 3)) {
-			if (!langstring.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, "string", la.val, langstring.name));
+			if (!langstring.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "string", la.val, langstring.name));
 			alternatives.tdeclares = langstring;
 			Get();
 		} else SynErr(12);
-	}
+	}}
 
 	void DomainName‿NT() {
+		{
 		addAlt(1); // ALT
 		addAlt(3); // ALT
 		if (isKind(la, 1)) {
-			if (!domains.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, "dbcode", la.val, domains.name));
+			if (!domains.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "dbcode", la.val, domains.name));
 			alternatives.tdeclares = domains;
 			Get();
 		} else if (isKind(la, 3)) {
-			if (!domains.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, "string", la.val, domains.name));
+			if (!domains.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "string", la.val, domains.name));
 			alternatives.tdeclares = domains;
 			Get();
 		} else SynErr(13);
-	}
+	}}
 
 	void ValueName‿NT() {
+		{
 		addAlt(1); // ALT
 		addAlt(3); // ALT
 		if (isKind(la, 1)) {
-			if (!values.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, "dbcode", la.val, values.name));
+			if (!values.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "dbcode", la.val, values.name));
 			alternatives.tdeclares = values;
 			Get();
 		} else if (isKind(la, 3)) {
-			if (!values.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, "string", la.val, values.name));
+			if (!values.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "string", la.val, values.name));
 			alternatives.tdeclares = values;
 			Get();
 		} else SynErr(14);
-	}
+	}}
 
 	void UseLanguageName‿NT() {
+		{
 		addAlt(1); // ALT
 		addAlt(1, lang); // ALT dbcode uses symbol table 'lang'
 		addAlt(3); // ALT
@@ -203,9 +212,10 @@ public class Parser {
 			if (!langstring.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "string", la.val, langstring.name));
 			Get();
 		} else SynErr(15);
-	}
+	}}
 
 	void CASDomains‿NT() {
+		{
 		addAlt(6); // T
 		Expect(6); // "casdomains"
 		Languages‿NT();
@@ -214,9 +224,10 @@ public class Parser {
 			Domain‿NT();
 			addAlt(4); // ITER end
 		}
-	}
+	}}
 
 	void Languages‿NT() {
+		{
 		addAlt(7); // T
 		Expect(7); // "languages"
 		LanguageName‿NT();
@@ -225,10 +236,11 @@ public class Parser {
 			LanguageName‿NT();
 			addAlt(new int[] {1, 3}); // ITER end
 		}
-	}
+	}}
 
 	void Domain‿NT() {
-		using(values.createScope()) {
+		using(values.createScope()) 
+		{
 		while (!(isKind(la, 0) || isKind(la, 4))) {SynErr(16); Get();}
 		addAlt(4); // T
 		Expect(4); // domain
@@ -257,6 +269,11 @@ public class Parser {
 	}}
 
 	void Translations‿NT() {
+		using(lang.createUsageCheck(false, errors, la)) // 0..1
+		using(langstring.createUsageCheck(false, errors, la)) // 0..1
+		using(lang.createUsageCheck(true, errors, la)) // 1..N
+		using(langstring.createUsageCheck(true, errors, la)) // 1..N
+		{
 		addAlt(new int[] {1, 3}); // ITER start
 		while (isKind(la, 1) || isKind(la, 3)) {
 			UseLanguageName‿NT();
@@ -264,17 +281,23 @@ public class Parser {
 			Expect(3); // string
 			addAlt(new int[] {1, 3}); // ITER end
 		}
-	}
+	}}
 
 	void Domainvalue‿NT() {
+		{
 		while (!(isKind(la, 0) || isKind(la, 10))) {SynErr(17); Get();}
 		addAlt(10); // T
 		Expect(10); // "value"
 		ValueName‿NT();
 		TranslationsWithHelptext‿NT();
-	}
+	}}
 
 	void TranslationsWithHelptext‿NT() {
+		using(lang.createUsageCheck(false, errors, la)) // 0..1
+		using(langstring.createUsageCheck(false, errors, la)) // 0..1
+		using(lang.createUsageCheck(true, errors, la)) // 1..N
+		using(langstring.createUsageCheck(true, errors, la)) // 1..N
+		{
 		addAlt(new int[] {1, 3}); // ITER start
 		while (isKind(la, 1) || isKind(la, 3)) {
 			UseLanguageName‿NT();
@@ -284,7 +307,7 @@ public class Parser {
 			Expect(3); // string
 			addAlt(new int[] {1, 3}); // ITER end
 		}
-	}
+	}}
 
 
 
@@ -417,19 +440,23 @@ public class Alternative {
 	}
 }
 
+public delegate void TokenEventHandler(Token t);
 public class Symboltable {
 	private Stack<List<Token>> scopes;
 	private Stack<List<Token>> undeclaredTokens = new Stack<List<Token>>();
 	public readonly string name;
 	public readonly bool ignoreCase;
 	public readonly bool strict;
+	public readonly List<Alternative> fixuplist;
 	private Symboltable clone = null;
+	public event TokenEventHandler TokenUsed;
 
-	public Symboltable(string name, bool ignoreCase, bool strict) {
+	public Symboltable(string name, bool ignoreCase, bool strict, List<Alternative> alternatives) {
 		this.name = name;
 		this.ignoreCase = ignoreCase;
 		this.strict = strict;
 		this.scopes = new Stack<List<Token>>();
+		this.fixuplist = alternatives;
 		pushNewScope();
 	}
 
@@ -437,6 +464,7 @@ public class Symboltable {
 		this.name = st.name;
 		this.ignoreCase = st.ignoreCase;
 		this.strict = st.strict;
+		this.fixuplist = st.fixuplist;
 
 		// now copy the scopes and its lists
 		this.scopes = new Stack<List<Token>>();				 		
@@ -481,25 +509,30 @@ public class Symboltable {
 	// ----------------------------------- for Parser use start -------------------- 
 	
 	public bool Use(Token t, Alt a) {
+		if (TokenUsed != null) TokenUsed(t);
 		a.tdeclared = this;
-		a.declaration = Find(t);
-		if (a.declaration != null) return true; // it's ok, if we know the symbol
-		if (strict) return false; // in strict mode we report an illegal symbol
-		undeclaredTokens.Peek().Add(t); // in non strict mode we store the token for future checking
+		if (strict) {
+			a.declaration = Find(t);
+			if (a.declaration != null) return true; // it's ok, if we know the symbol
+			return false; // in strict mode we report an illegal symbol
+		} else {
+			// in non-strict mode we can only use declarations
+			// known in the top scope, so that we dont't find a declaration 
+			// in a parent scope and redefine a symbol in this topmost scope 
+			a.declaration = Find(currentScope, t);
+			if (a.declaration != null) return true; // it's ok, if we know the symbol in this scope
+		}
+		// in non strict mode we need to store the token for future checking
+		undeclaredTokens.Peek().Add(t); 
 		return true; // we can't report an invalid symbol yet, so report "all ok".
 	}
 
-	public bool Add(Token t, IEnumerable<Alternative> fixuplist) {
+	public bool Add(Token t) {
 		if (Find(currentScope, t) != null)
 			return false;
 		if (strict) clone = null; // if non strict, we have to keep the clone
 		currentScope.Add(t);
-		IEnumerable<Token> nowdeclareds = RemoveFromUndeclared(t);
-		if (fixuplist != null)
-			foreach(Token tok in nowdeclareds)
-				foreach(Alternative a in fixuplist)
-					if (a.t == tok)
-						a.declaration = t;
+		RemoveFromAndFixupList(undeclaredTokens.Peek(), t);
 		return true;
 	}
 
@@ -519,16 +552,18 @@ public class Symboltable {
 		return (Find(t) != null);
 	}
 
-	IEnumerable<Token> RemoveFromUndeclared(Token declaration) {
+	void RemoveFromAndFixupList(List<Token> undeclared, Token declaration) {
 		StringComparer cmp = comparer;
 		List<Token> found = new List<Token>();
-		List<Token> undeclared = undeclaredTokens.Peek(); 
 		foreach(Token t in undeclared)
 			if (0 == cmp.Compare(t.val, declaration.val))
 				found.Add(t);
-		foreach(Token t in found)
+		foreach(Token t in found) {
 			undeclared.Remove(t);
-		return found;
+			foreach(Alternative a in fixuplist)
+				if (a.t == t)
+					a.declaration = declaration;
+		}
 	}
 
 	void pushNewScope() {
@@ -553,6 +588,12 @@ public class Symboltable {
 
 	void PromoteUndeclaredToParent() {
 		List<Token> list = undeclaredTokens.Pop();
+		// now that the lexical scope is about to terminate, we know that there cannot be more declarations in this scope
+		// so we can take the existing declarations of the parent scope to resolve these unresolved tokens in 'list'.
+		foreach(Token decl in currentScope)
+			RemoveFromAndFixupList(list, decl);
+		// now list contains all tokens that were not delared in the popped scope
+		// and not yet declared in the now current scope
 		undeclaredTokens.Peek().AddRange(list);
 	} 
 
@@ -560,6 +601,10 @@ public class Symboltable {
 		pushNewScope();
 		return new Popper(this);
 	} 
+
+	public IDisposable createUsageCheck(bool oneOrMore, Errors errors, Token scopeToken) {
+		return new UseCounter(this, oneOrMore, errors, scopeToken);
+	}
 
 	public List<Token> currentScope {
 		get { return scopes.Peek(); } 
@@ -569,10 +614,10 @@ public class Symboltable {
 		get {
 		    if (scopes.Count == 1) return currentScope;
 
-			Symboltable all = new Symboltable(name, ignoreCase, strict);
+			Symboltable all = new Symboltable(name, ignoreCase, true, fixuplist);
 			foreach(List<Token> list in scopes)
 				foreach(Token t in list)
-					all.Add(t, null);
+					all.Add(t);
 			return all.currentScope; 
 		}
 	}
@@ -590,6 +635,53 @@ public class Symboltable {
 
 		public void Dispose() {
 			st.popScope();
+		}
+	}
+
+	private class UseCounter : IDisposable {
+		private readonly Symboltable st;
+		public readonly bool oneOrMore; // t - 1..N, f - 0..1
+		public readonly List<Token> uses;
+		public readonly Errors errors;
+		public readonly Token scopeToken;
+
+		public UseCounter(Symboltable st, bool oneOrMore, Errors errors, Token scopeToken) {
+			this.st = st;
+			this.oneOrMore = oneOrMore;
+			this.errors = errors;
+			this.scopeToken = scopeToken;
+			this.uses = new List<Token>();
+			st.TokenUsed += uses.Add;
+		}
+
+		private bool isValid(List<Token> list) {
+			int cnt = list.Count;
+			if (oneOrMore) return (cnt >= 1);
+			return (cnt <= 1);
+		}
+
+		public void Dispose() {
+			st.TokenUsed -= uses.Add;
+			Dictionary<string, List<Token>> counter = new Dictionary<string, List<Token>>(st.comparer);
+			foreach(Token t in st.items)
+				counter[t.val] = new List<Token>();
+			foreach(Token t in uses)
+				counter[t.val].Add(t);
+			// now check
+			foreach(string s in counter.Keys) {
+				List<Token> list = counter[s];
+				if (!isValid(list)) {
+					if (oneOrMore) {
+						string msg = string.Format("token '{0}' has to be used in this scope.", s); 
+						errors.SemErr(scopeToken.line, scopeToken.col, msg);
+					} else {
+						string msg = string.Format("token '{0}' is used {1:n0} time(s) instead of at most once in this scope, see following errors for locations.", s, list.Count); 
+						errors.SemErr(scopeToken.line, scopeToken.col, msg);
+						foreach(Token t in list)
+							errors.SemErr(t.line, t.col, "... here");
+					}
+				}
+			} 
 		}
 	}
 }

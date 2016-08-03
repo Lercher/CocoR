@@ -67,14 +67,20 @@ PRODUCTIONS
 		TranslationsWithHelptext	
 	.
 
-	Translations = 
+	Translations 
+		USEONCE(lang, langstring) 
+		USEALL(lang, langstring)
+	= 
 		{
 		  UseLanguageName
 		  string
 		} 
 		.
 
-	TranslationsWithHelptext = 
+	TranslationsWithHelptext 
+		USEONCE(lang, langstring) 
+		USEALL(lang, langstring)
+	= 
 		{
 		  UseLanguageName
 		  string

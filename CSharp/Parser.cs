@@ -137,6 +137,7 @@ const int id = 0;
 
 	
 	void Coco‿NT() {
+		{
 		Symbol sym; Graph g, g1, g2; string gramName; CharSet s; int beg, line; 
 		if (StartOf(1)) {
 			Get();
@@ -283,9 +284,10 @@ const int id = 0;
 		if (tab.ddt[6]) tab.PrintSymbolTable();
 		
 		Expect(19); // "."
-	}
+	}}
 
 	void SetDecl‿NT() {
+		{
 		CharSet s; 
 		Expect(1); // ident
 		string name = t.val;
@@ -298,9 +300,10 @@ const int id = 0;
 		tab.NewCharClass(name, s);
 		
 		Expect(19); // "."
-	}
+	}}
 
 	void TokenDecl‿NT(int typ) {
+		{
 		string name; int kind; Symbol sym; Graph g; 
 		string inheritsName; int inheritsKind; Symbol inheritsSym; 
 		
@@ -349,9 +352,10 @@ const int id = 0;
 			SemText‿NT(out sym.semPos);
 			if (typ != Node.pr) SemErr("semantic action not allowed in a pragma context"); 
 		}
-	}
+	}}
 
 	void TokenExpr‿NT(out Graph g) {
+		{
 		Graph g2; 
 		TokenTerm‿NT(out g);
 		bool first = true; 
@@ -361,9 +365,10 @@ const int id = 0;
 			tab.MakeAlternative(g, g2);
 			
 					}
-	}
+	}}
 
 	void Set‿NT(out CharSet s) {
+		{
 		CharSet s2; 
 		SimSet‿NT(out s);
 		while (isKind(la, 28) || isKind(la, 29)) {
@@ -377,9 +382,10 @@ const int id = 0;
 				s.Subtract(s2); 
 			}
 					}
-	}
+	}}
 
 	void SymboltableDecl‿NT() {
+		{
 		SymTab st; 
 		Expect(1); // ident
 		string name = t.val.ToLower();                                    
@@ -401,9 +407,10 @@ const int id = 0;
 			
 					}
 		Expect(19); // "."
-	}
+	}}
 
 	void AttrDecl‿NT(Symbol sym) {
+		{
 		if (isKind(la, 33)) {
 			Get();
 			int beg = la.pos; int col = la.col; int line = la.line; 
@@ -433,9 +440,10 @@ const int id = 0;
 			if (t.pos > beg)
 			 sym.attrPos = new Position(beg, t.pos, col, line); 
 		} else SynErr(52);
-	}
+	}}
 
 	void ScopesDecl‿NT(Symbol sym) {
+		{
 		sym.scopes = new List<SymTab>(); 
 		Expect(22); // "SCOPES"
 		Expect(23); // "("
@@ -445,9 +453,10 @@ const int id = 0;
 			Symboltable‿NT(sym.scopes);
 					}
 		Expect(25); // ")"
-	}
+	}}
 
 	void UseOnceDecl‿NT(Symbol sym) {
+		{
 		sym.useonces = new List<SymTab>(); 
 		Expect(26); // "USEONCE"
 		Expect(23); // "("
@@ -457,9 +466,10 @@ const int id = 0;
 			Symboltable‿NT(sym.useonces);
 					}
 		Expect(25); // ")"
-	}
+	}}
 
 	void UseAllDecl‿NT(Symbol sym) {
+		{
 		sym.usealls = new List<SymTab>(); 
 		Expect(27); // "USEALL"
 		Expect(23); // "("
@@ -469,9 +479,10 @@ const int id = 0;
 			Symboltable‿NT(sym.usealls);
 					}
 		Expect(25); // ")"
-	}
+	}}
 
 	void SemText‿NT(out Position pos) {
+		{
 		Expect(46); // "(."
 		int beg = la.pos; int col = la.col; int line = la.line; 
 		while (StartOf(13)) {
@@ -487,9 +498,10 @@ const int id = 0;
 					}
 		Expect(47); // ".)"
 		pos = new Position(beg, t.pos, col, line); 
-	}
+	}}
 
 	void Expression‿NT(out Graph g) {
+		{
 		Graph g2; 
 		Term‿NT(out g);
 		bool first = true; 
@@ -499,18 +511,20 @@ const int id = 0;
 			tab.MakeAlternative(g, g2);
 			
 					}
-	}
+	}}
 
 	void Symboltable‿NT(List<SymTab> sts ) {
+		{
 		Expect(1); // ident
 		string stname = t.val.ToLower();
 		SymTab st = tab.FindSymtab(stname); 
 		if (st == null) SemErr("undeclared symbol table " + t.val);
 		else sts.Add(st);
 		
-	}
+	}}
 
 	void SimSet‿NT(out CharSet s) {
+		{
 		int n1, n2; 
 		s = new CharSet(); 
 		if (isKind(la, 1)) {
@@ -537,9 +551,10 @@ const int id = 0;
 			Get();
 			s = new CharSet(); s.Fill(); 
 		} else SynErr(53);
-	}
+	}}
 
 	void Char‿NT(out int n) {
+		{
 		Expect(5); // char
 		string name = t.val; n = 0;
 		name = tab.Unescape(name.Substring(1, name.Length-2));
@@ -547,9 +562,10 @@ const int id = 0;
 		else SemErr("unacceptable character value");
 		if (dfa.ignoreCase && (char)n >= 'A' && (char)n <= 'Z') n += 32;
 		
-	}
+	}}
 
 	void Sym‿NT(out string name, out int kind) {
+		{
 		name = "???"; kind = id; 
 		if (isKind(la, 1)) {
 			Get();
@@ -567,9 +583,10 @@ const int id = 0;
 			if (name.IndexOf(' ') >= 0)
 			 SemErr("literal tokens must not contain blanks"); 
 		} else SynErr(54);
-	}
+	}}
 
 	void Term‿NT(out Graph g) {
+		{
 		Graph g2; Node rslv = null; g = null; 
 		if (StartOf(17)) {
 			if (isKind(la, 44)) {
@@ -591,17 +608,19 @@ const int id = 0;
 		if (g == null) // invalid start of Term
 		 g = new Graph(tab.NewNode(Node.eps, null, 0));
 		
-	}
+	}}
 
 	void Resolver‿NT(out Position pos) {
+		{
 		Expect(44); // "IF"
 		Expect(23); // "("
 		int beg = la.pos; int col = la.col; int line = la.line; 
 		Condition‿NT();
 		pos = new Position(beg, t.pos, col, line); 
-	}
+	}}
 
 	void Factor‿NT(out Graph g) {
+		{
 		string name; int kind; Position pos; bool weak = false; 
 		g = null;
 		
@@ -720,9 +739,10 @@ const int id = 0;
 		if (g == null) // invalid start of Factor
 		 g = new Graph(tab.NewNode(Node.eps, null, 0));
 		
-	}
+	}}
 
 	void Attribs‿NT(Node p) {
+		{
 		if (isKind(la, 33)) {
 			Get();
 			int beg = la.pos; int col = la.col; int line = la.line; 
@@ -750,9 +770,10 @@ const int id = 0;
 			Expect(36); // ".>"
 			if (t.pos > beg) p.pos = new Position(beg, t.pos, col, line); 
 		} else SynErr(57);
-	}
+	}}
 
 	void Condition‿NT() {
+		{
 		while (StartOf(21)) {
 			if (isKind(la, 23)) {
 				Get();
@@ -762,9 +783,10 @@ const int id = 0;
 			}
 					}
 		Expect(25); // ")"
-	}
+	}}
 
 	void TokenTerm‿NT(out Graph g) {
+		{
 		Graph g2; 
 		TokenFactor‿NT(out g);
 		while (StartOf(7)) {
@@ -779,9 +801,10 @@ const int id = 0;
 			tab.MakeSequence(g, g2); 
 			Expect(25); // ")"
 		}
-	}
+	}}
 
 	void TokenFactor‿NT(out Graph g) {
+		{
 		string name; int kind; 
 		g = null; 
 		if (isKind(la, 1) || isKind(la, 3) || isKind(la, 5)) {
@@ -818,7 +841,7 @@ const int id = 0;
 		} else SynErr(58);
 		if (g == null) // invalid start of TokenFactor
 		 g = new Graph(tab.NewNode(Node.eps, null, 0)); 
-	}
+	}}
 
 
 
@@ -1034,16 +1057,18 @@ public class Alternative {
 	}
 }
 
+public delegate void TokenEventHandler(Token t);
 public class Symboltable {
 	private Stack<List<Token>> scopes;
 	private Stack<List<Token>> undeclaredTokens = new Stack<List<Token>>();
 	public readonly string name;
 	public readonly bool ignoreCase;
 	public readonly bool strict;
-	public readonly IEnumerable<Alternative> fixuplist;
+	public readonly List<Alternative> fixuplist;
 	private Symboltable clone = null;
+	public event TokenEventHandler TokenUsed;
 
-	public Symboltable(string name, bool ignoreCase, bool strict, IEnumerable<Alternative> alternatives) {
+	public Symboltable(string name, bool ignoreCase, bool strict, List<Alternative> alternatives) {
 		this.name = name;
 		this.ignoreCase = ignoreCase;
 		this.strict = strict;
@@ -1101,6 +1126,7 @@ public class Symboltable {
 	// ----------------------------------- for Parser use start -------------------- 
 	
 	public bool Use(Token t, Alt a) {
+		if (TokenUsed != null) TokenUsed(t);
 		a.tdeclared = this;
 		if (strict) {
 			a.declaration = Find(t);
@@ -1193,6 +1219,10 @@ public class Symboltable {
 		return new Popper(this);
 	} 
 
+	public IDisposable createUsageCheck(bool oneOrMore, Errors errors, Token scopeToken) {
+		return new UseCounter(this, oneOrMore, errors, scopeToken);
+	}
+
 	public List<Token> currentScope {
 		get { return scopes.Peek(); } 
 	}
@@ -1222,6 +1252,53 @@ public class Symboltable {
 
 		public void Dispose() {
 			st.popScope();
+		}
+	}
+
+	private class UseCounter : IDisposable {
+		private readonly Symboltable st;
+		public readonly bool oneOrMore; // t - 1..N, f - 0..1
+		public readonly List<Token> uses;
+		public readonly Errors errors;
+		public readonly Token scopeToken;
+
+		public UseCounter(Symboltable st, bool oneOrMore, Errors errors, Token scopeToken) {
+			this.st = st;
+			this.oneOrMore = oneOrMore;
+			this.errors = errors;
+			this.scopeToken = scopeToken;
+			this.uses = new List<Token>();
+			st.TokenUsed += uses.Add;
+		}
+
+		private bool isValid(List<Token> list) {
+			int cnt = list.Count;
+			if (oneOrMore) return (cnt >= 1);
+			return (cnt <= 1);
+		}
+
+		public void Dispose() {
+			st.TokenUsed -= uses.Add;
+			Dictionary<string, List<Token>> counter = new Dictionary<string, List<Token>>(st.comparer);
+			foreach(Token t in st.items)
+				counter[t.val] = new List<Token>();
+			foreach(Token t in uses)
+				counter[t.val].Add(t);
+			// now check
+			foreach(string s in counter.Keys) {
+				List<Token> list = counter[s];
+				if (!isValid(list)) {
+					if (oneOrMore) {
+						string msg = string.Format("token '{0}' has to be used in this scope.", s); 
+						errors.SemErr(scopeToken.line, scopeToken.col, msg);
+					} else {
+						string msg = string.Format("token '{0}' is used {1:n0} time(s) instead of at most once in this scope, see following errors for locations.", s, list.Count); 
+						errors.SemErr(scopeToken.line, scopeToken.col, msg);
+						foreach(Token t in list)
+							errors.SemErr(t.line, t.col, "... here");
+					}
+				}
+			} 
 		}
 	}
 }
