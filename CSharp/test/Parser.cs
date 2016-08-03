@@ -161,6 +161,9 @@ public class Parser {
 
 	
 	void Inheritance‿NT() {
+		using(types.createUsageCheck(false, errors, la)) // 0..1
+		using(types.createUsageCheck(true, errors, la)) // 1..N
+		{
 		TDBs‿NT();
 		addAlt(15); // ITER start
 		while (isKind(la, 15)) {
@@ -206,9 +209,10 @@ public class Parser {
 			IdentOrNumber‿NT();
 			addAlt(set0, 1); // ITER end
 		}
-	}
+	}}
 
 	void TDBs‿NT() {
+		{
 		addAlt(set0, 2); // ITER start
 		while (StartOf(2)) {
 			addAlt(24); // ALT
@@ -226,9 +230,10 @@ public class Parser {
 			}
 			addAlt(set0, 2); // ITER end
 		}
-	}
+	}}
 
 	void NumberIdent‿NT() {
+		{
 		addAlt(26); // ALT
 		addAlt(27); // ALT
 		addAlt(28); // ALT
@@ -310,9 +315,10 @@ public class Parser {
 		}
 		default: SynErr(38); break;
 		}
-	}
+	}}
 
 	void Call‿NT() {
+		{
 		addAlt(22); // T
 		Expect(22); // "call"
 		addAlt(16); // T
@@ -328,9 +334,10 @@ public class Parser {
 		Expect(17); // ")"
 		addAlt(18); // T
 		Expect(18); // ";"
-	}
+	}}
 
 	void IdentOrNumber‿NT() {
+		{
 		addAlt(2); // ALT
 		addAlt(set0, 4); // ALT
 		if (isKind(la, 2)) {
@@ -338,9 +345,10 @@ public class Parser {
 		} else if (StartOf(4)) {
 			NumberVar‿NT();
 		} else SynErr(39);
-	}
+	}}
 
 	void Type‿NT() {
+		{
 		addAlt(24); // T
 		Expect(24); // "type"
 		if (!types.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
@@ -349,9 +357,10 @@ public class Parser {
 		Expect(2); // ident
 		addAlt(18); // T
 		Expect(18); // ";"
-	}
+	}}
 
 	void Declaration‿NT() {
+		{
 		Var‿NT();
 		Ident‿NT();
 		addAlt(new int[] {23, 25}); // ITER start
@@ -363,10 +372,12 @@ public class Parser {
 		while (!(isKind(la, 0) || isKind(la, 18))) {SynErr(40); Get();}
 		addAlt(18); // T
 		Expect(18); // ";"
-	}
+	}}
 
 	void Block‿NT() {
-		using(variables.createScope()) using(types.createScope()) {
+		using(variables.createScope()) 
+		using(types.createScope()) 
+		{
 		addAlt(20); // T
 		Expect(20); // "{"
 		TDBs‿NT();
@@ -375,6 +386,7 @@ public class Parser {
 	}}
 
 	void Param‿NT() {
+		{
 		addAlt(2); // ALT
 		addAlt(2, variables); // ALT ident uses symbol table 'variables'
 		addAlt(1); // ALT
@@ -384,9 +396,10 @@ public class Parser {
 		} else if (isKind(la, 1)) {
 			Get();
 		} else SynErr(41);
-	}
+	}}
 
 	void Var‿NT() {
+		{
 		addAlt(4); // ALT
 		addAlt(5); // ALT
 		addAlt(6); // ALT
@@ -432,9 +445,10 @@ public class Parser {
 		}
 		default: SynErr(42); break;
 		}
-	}
+	}}
 
 	void Ident‿NT() {
+		{
 		if (!variables.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, variables.name));
 		alternatives.tdeclares = variables;
 		addAlt(2); // T
@@ -453,9 +467,10 @@ public class Parser {
 			addAlt(2, types); // T ident uses symbol table 'types'
 			Expect(2); // ident
 		}
-	}
+	}}
 
 	void Separator‿NT() {
+		{
 		addAlt(23); // ALT
 		addAlt(25); // ALT
 		if (isKind(la, 23)) {
@@ -465,9 +480,10 @@ public class Parser {
 			addAlt(25); // WT
 			ExpectWeak(25, 5); // "|" followed by var1
 		} else SynErr(43);
-	}
+	}}
 
 	void NumberVar‿NT() {
+		{
 		addAlt(26); // ALT
 		addAlt(27); // ALT
 		addAlt(28); // ALT
@@ -537,7 +553,7 @@ public class Parser {
 		}
 		default: SynErr(44); break;
 		}
-	}
+	}}
 
 
 
@@ -707,16 +723,18 @@ public class Alternative {
 	}
 }
 
+public delegate void TokenEventHandler(Token t);
 public class Symboltable {
 	private Stack<List<Token>> scopes;
 	private Stack<List<Token>> undeclaredTokens = new Stack<List<Token>>();
 	public readonly string name;
 	public readonly bool ignoreCase;
 	public readonly bool strict;
-	public readonly IEnumerable<Alternative> fixuplist;
+	public readonly List<Alternative> fixuplist;
 	private Symboltable clone = null;
+	public event TokenEventHandler TokenUsed;
 
-	public Symboltable(string name, bool ignoreCase, bool strict, IEnumerable<Alternative> alternatives) {
+	public Symboltable(string name, bool ignoreCase, bool strict, List<Alternative> alternatives) {
 		this.name = name;
 		this.ignoreCase = ignoreCase;
 		this.strict = strict;
@@ -774,6 +792,7 @@ public class Symboltable {
 	// ----------------------------------- for Parser use start -------------------- 
 	
 	public bool Use(Token t, Alt a) {
+		if (TokenUsed != null) TokenUsed(t);
 		a.tdeclared = this;
 		if (strict) {
 			a.declaration = Find(t);
@@ -866,6 +885,10 @@ public class Symboltable {
 		return new Popper(this);
 	} 
 
+	public IDisposable createUsageCheck(bool oneOrMore, Errors errors, Token scopeToken) {
+		return new UseCounter(this, oneOrMore, errors, scopeToken);
+	}
+
 	public List<Token> currentScope {
 		get { return scopes.Peek(); } 
 	}
@@ -895,6 +918,53 @@ public class Symboltable {
 
 		public void Dispose() {
 			st.popScope();
+		}
+	}
+
+	private class UseCounter : IDisposable {
+		private readonly Symboltable st;
+		public readonly bool oneOrMore; // t - 1..N, f - 0..1
+		public readonly List<Token> uses;
+		public readonly Errors errors;
+		public readonly Token scopeToken;
+
+		public UseCounter(Symboltable st, bool oneOrMore, Errors errors, Token scopeToken) {
+			this.st = st;
+			this.oneOrMore = oneOrMore;
+			this.errors = errors;
+			this.scopeToken = scopeToken;
+			this.uses = new List<Token>();
+			st.TokenUsed += uses.Add;
+		}
+
+		private bool isValid(List<Token> list) {
+			int cnt = list.Count;
+			if (oneOrMore) return (cnt >= 1);
+			return (cnt <= 1);
+		}
+
+		public void Dispose() {
+			st.TokenUsed -= uses.Add;
+			Dictionary<string, List<Token>> counter = new Dictionary<string, List<Token>>(st.comparer);
+			foreach(Token t in st.items)
+				counter[t.val] = new List<Token>();
+			foreach(Token t in uses)
+				counter[t.val].Add(t);
+			// now check
+			foreach(string s in counter.Keys) {
+				List<Token> list = counter[s];
+				if (!isValid(list)) {
+					if (oneOrMore) {
+						string msg = string.Format("token '{0}' has to be used in this scope.", s); 
+						errors.SemErr(scopeToken.line, scopeToken.col, msg);
+					} else {
+						string msg = string.Format("token '{0}' is used {1:n0} time(s) instead of at most once in this scope, see following errors for locations.", s, list.Count); 
+						errors.SemErr(scopeToken.line, scopeToken.col, msg);
+						foreach(Token t in list)
+							errors.SemErr(t.line, t.col, "... here");
+					}
+				}
+			} 
 		}
 	}
 }

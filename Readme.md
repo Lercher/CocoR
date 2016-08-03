@@ -331,7 +331,7 @@ byte order mark. This is the default e.g. if you use Visual Studio Code.
   autocomplete information *beta*, 
   symbol tables *beta*,
   non strict symbol tables *beta*,
-  useonce and useall scopes *planned*, 
+  useonce and useall scopes *beta*, 
   -is switch *beta*,
   -utf8 switch *beta*,
   editor *beta*,

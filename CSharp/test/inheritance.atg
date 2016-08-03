@@ -60,7 +60,8 @@ SYMBOLTABLES
 
 PRODUCTIONS
 
-    Inheritance =
+    // any symbol in types has to be used exactly once, produces currently 16 errors
+    Inheritance USEONCE(types) USEALL(types) =
          TDBs 
          {
            "NumberIdent" '('

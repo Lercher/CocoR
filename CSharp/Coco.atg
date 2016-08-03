@@ -135,6 +135,8 @@ Coco                            (. Symbol sym; Graph g, g1, g2; string gramName;
                                        SemErr("attribute mismatch between declaration and use of this symbol");
                                  .)
     [ ScopesDecl<sym> ]
+    [ UseOnceDecl<sym> ]
+    [ UseAllDecl<sym> ]
     [ SemText<out sym.semPos> ] WEAK
     '='
     Expression<out g>           (. sym.graph = g.l;
@@ -205,16 +207,30 @@ SymboltableDecl                 (. SymTab st; .)
 ScopesDecl<Symbol sym>          (. sym.scopes = new List<SymTab>(); .)
 =
   "SCOPES" '('
-    ScopeStart<sym> { ',' ScopeStart<sym> }
+    Symboltable<sym.scopes> { ',' Symboltable<sym.scopes> }
   ')'
 .
 
-ScopeStart<Symbol sym>
+UseOnceDecl<Symbol sym>          (. sym.useonces = new List<SymTab>(); .)
+=
+  "USEONCE" '('
+    Symboltable<sym.useonces> { ',' Symboltable<sym.useonces> }
+  ')'
+.
+
+UseAllDecl<Symbol sym>          (. sym.usealls = new List<SymTab>(); .)
+=
+  "USEALL" '('
+    Symboltable<sym.usealls> { ',' Symboltable<sym.usealls> }
+  ')'
+.
+
+Symboltable<. List<SymTab> sts .>
 =
   ident                         (. string stname = t.val.ToLower();
                                    SymTab st = tab.FindSymtab(stname); 
                                    if (st == null) SemErr("undeclared symbol table " + t.val);
-                                   else sym.scopes.Add(st);
+                                   else sts.Add(st);
                                  .)
 .
 
