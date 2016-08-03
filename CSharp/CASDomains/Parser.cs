@@ -665,12 +665,10 @@ public class Symboltable {
 			Dictionary<string, List<Token>> counter = new Dictionary<string, List<Token>>(st.comparer);
 			foreach(Token t in st.items)
 				counter[t.val] = new List<Token>();
-			foreach(Token t in uses) {
-				// we ignore undeclared Tokens:
-				List<Token> ctr = counter[t.val];
-				if (ctr != null) ctr.Add(t);
-			}
-			// now check
+			foreach(Token t in uses)
+				if (counter.ContainsKey(t.val)) // we ignore undeclared Tokens:
+					counter[t.val].Add(t);
+			// now check for validity
 			foreach(string s in counter.Keys) {
 				List<Token> list = counter[s];
 				if (!isValid(list)) {
