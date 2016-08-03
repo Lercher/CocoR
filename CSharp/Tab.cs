@@ -74,6 +74,8 @@ public class Symbol {
 	                             // nt: pos of local declarations in source text (or null)
 	public Symbol 	inherits;    // optional, token from which this token derives
 	public List<SymTab> scopes;  // nt: optional, list of SymTabs that this NT starts a new scope of
+	public List<SymTab> usealls;  // nt: optional, list of SymTabs that all symbols must be used within
+	public List<SymTab> useonces;  // nt: optional, list of SymTabs that all symbols must be used at most once within
 
 	public Symbol(int typ, string name, int line) {
 		this.typ = typ; this.name = name; this.line = line;

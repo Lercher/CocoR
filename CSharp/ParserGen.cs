@@ -480,22 +480,25 @@ public class ParserGen {
 		}
 	}
 
+	void GenUsingSymtabSomething(List<SymTab> list, string method, string param, string comment) {
+		if (list == null) return;
+		foreach(SymTab st in list)
+			gen.WriteLine("\t\tusing({0}.{1}({2})) {3}", st.name, method, param, comment);
+	}
+
 	void GenProductions() {
 		foreach (Symbol sym in tab.nonterminals) {
 			curSy = sym;
 			gen.Write("\tvoid {0}{1}(", sym.name, PROD_SUFFIX);
-			CopySourcePart(sym.attrPos, 0);
+			CopySourcePart(sym.attrPos, 0);			
 			gen.WriteLine(") {");
-			if (sym.scopes != null) {
-				gen.Write("\t\t");
-				foreach(SymTab st in sym.scopes)
-					gen.Write("using({0}.createScope()) ", st.name);
-				gen.WriteLine("{");
-			}
+			GenUsingSymtabSomething(sym.scopes,   "createScope", "", "");  // needs to be first
+			GenUsingSymtabSomething(sym.useonces, "createUsageCheck", "false, errors, la", "// 0..1"); // needs to be after createScope 
+			GenUsingSymtabSomething(sym.usealls,  "createUsageCheck", "true, errors, la" , "// 1..N");  // needs to be after createScope
+			gen.WriteLine("\t\t{");
 			CopySourcePart(sym.semPos, 2);
 			GenCode(sym.graph, 2, new BitArray(tab.terminals.Count));
-			gen.Write("\t}");
-			if (sym.scopes != null) gen.Write("}");
+			gen.Write("\t}}");
 			gen.WriteLine();			  
 			gen.WriteLine();
 		}

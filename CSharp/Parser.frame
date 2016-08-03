@@ -263,16 +263,18 @@ public class Alternative {
 	}
 }
 
+public delegate void TokenEventHandler(Token t);
 public class Symboltable {
 	private Stack<List<Token>> scopes;
 	private Stack<List<Token>> undeclaredTokens = new Stack<List<Token>>();
 	public readonly string name;
 	public readonly bool ignoreCase;
 	public readonly bool strict;
-	public readonly IEnumerable<Alternative> fixuplist;
+	public readonly List<Alternative> fixuplist;
 	private Symboltable clone = null;
+	public event TokenEventHandler TokenUsed;
 
-	public Symboltable(string name, bool ignoreCase, bool strict, IEnumerable<Alternative> alternatives) {
+	public Symboltable(string name, bool ignoreCase, bool strict, List<Alternative> alternatives) {
 		this.name = name;
 		this.ignoreCase = ignoreCase;
 		this.strict = strict;
@@ -330,6 +332,7 @@ public class Symboltable {
 	// ----------------------------------- for Parser use start -------------------- 
 	
 	public bool Use(Token t, Alt a) {
+		if (TokenUsed != null) TokenUsed(t);
 		a.tdeclared = this;
 		if (strict) {
 			a.declaration = Find(t);
@@ -422,6 +425,10 @@ public class Symboltable {
 		return new Popper(this);
 	} 
 
+	public IDisposable createUsageCheck(bool oneOrMore, Errors errors, Token scopeToken) {
+		return new UseCounter(this, oneOrMore, errors, scopeToken);
+	}
+
 	public List<Token> currentScope {
 		get { return scopes.Peek(); } 
 	}
@@ -451,6 +458,53 @@ public class Symboltable {
 
 		public void Dispose() {
 			st.popScope();
+		}
+	}
+
+	private class UseCounter : IDisposable {
+		private readonly Symboltable st;
+		public readonly bool oneOrMore; // t - 1..N, f - 0..1
+		public readonly List<Token> uses;
+		public readonly Errors errors;
+		public readonly Token scopeToken;
+
+		public UseCounter(Symboltable st, bool oneOrMore, Errors errors, Token scopeToken) {
+			this.st = st;
+			this.oneOrMore = oneOrMore;
+			this.errors = errors;
+			this.scopeToken = scopeToken;
+			this.uses = new List<Token>();
+			st.TokenUsed += uses.Add;
+		}
+
+		private bool isValid(List<Token> list) {
+			int cnt = list.Count;
+			if (oneOrMore) return (cnt >= 1);
+			return (cnt <= 1);
+		}
+
+		public void Dispose() {
+			st.TokenUsed -= uses.Add;
+			Dictionary<string, List<Token>> counter = new Dictionary<string, List<Token>>(st.comparer);
+			foreach(Token t in st.items)
+				counter[t.val] = new List<Token>();
+			foreach(Token t in uses)
+				counter[t.val].Add(t);
+			// now check
+			foreach(string s in counter.Keys) {
+				List<Token> list = counter[s];
+				if (!isValid(list)) {
+					if (oneOrMore) {
+						string msg = string.Format("token '{0}' has to be used in this scope.", s); 
+						errors.SemErr(scopeToken.line, scopeToken.col, msg);
+					} else {
+						string msg = string.Format("token '{0}' is used {1:n0} time(s) instead of at most once in this scope, see following errors for locations.", s, list.Count); 
+						errors.SemErr(scopeToken.line, scopeToken.col, msg);
+						foreach(Token t in list)
+							errors.SemErr(t.line, t.col, "... here");
+					}
+				}
+			} 
 		}
 	}
 }
