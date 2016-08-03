@@ -33,7 +33,9 @@ In the winforms editor:
 
 General:
 
-* none
+* non strict symbol tables yield the wrong declaration for a scoped
+  token that is used before the symbol is declared localy.
+
 
 
 ## Resolved Bugs
