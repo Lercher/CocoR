@@ -58,10 +58,13 @@ public class Parser {
 	}
 
 	public void SemErr (string msg) {
+		SemErr(t, msg);
+	}
+	
+	public void SemErr (Token t, string msg) {
 		if (errDist >= minErrDist) errors.SemErr(t.line, t.col, msg);
 		errDist = 0;
 	}
-	
 
 	void Get () {
 		for (;;) {
@@ -177,13 +180,13 @@ public class Parser {
 			addAlt(13); // ALT
 			if (isKind(la, 12)) {
 				Get();
-				if (!types.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "ident", la.val, types.name));
+				if (!types.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "ident", la.val, types.name));
 				addAlt(2); // T
 				addAlt(2, types); // T ident uses symbol table 'types'
 				Expect(2); // ident
 			} else if (isKind(la, 13)) {
 				Get();
-				if (!variables.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
+				if (!variables.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "ident", la.val, variables.name));
 				addAlt(2); // T
 				addAlt(2, variables); // T ident uses symbol table 'variables'
 				Expect(2); // ident
@@ -295,7 +298,7 @@ public class Parser {
 		case 12: // t
 		case 13: // v
 		{
-			if (!variables.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
+			if (!variables.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "ident", la.val, variables.name));
 			Get();
 			break;
 		}
@@ -334,7 +337,7 @@ public class Parser {
 	void Type‿NT() {
 		addAlt(24); // T
 		Expect(24); // "type"
-		if (!types.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, types.name));
+		if (!types.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
 		alternatives.tdeclares = types;
 		addAlt(2); // T
 		Expect(2); // ident
@@ -370,7 +373,7 @@ public class Parser {
 		addAlt(2, variables); // ALT ident uses symbol table 'variables'
 		addAlt(1); // ALT
 		if (isKind(la, 2)) {
-			if (!variables.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "ident", la.val, variables.name));
+			if (!variables.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "ident", la.val, variables.name));
 			Get();
 		} else if (isKind(la, 1)) {
 			Get();
@@ -426,7 +429,7 @@ public class Parser {
 	}
 
 	void Ident‿NT() {
-		if (!variables.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, variables.name));
+		if (!variables.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, variables.name));
 		alternatives.tdeclares = variables;
 		addAlt(2); // T
 		Expect(2); // ident
@@ -439,7 +442,7 @@ public class Parser {
 			} else {
 				Get();
 			}
-			if (!types.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "ident", la.val, types.name));
+			if (!types.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "ident", la.val, types.name));
 			addAlt(2); // T
 			addAlt(2, types); // T ident uses symbol table 'types'
 			Expect(2); // ident

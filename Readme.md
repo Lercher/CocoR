@@ -57,7 +57,8 @@ the token that declares the currently parsed symbol.
 
 * Sample Winforms Editor -
 Proof of concept to show autocomplete information
-interactively.
+interactively. Supports "Goto declaration" and "Find all
+references" as well as alternatives for keywords and symbols.
 
 * BOM Free UTF-8 Scanner -
 The standard scanner has now a new constructor that tells it
