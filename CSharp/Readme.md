@@ -33,9 +33,7 @@ In the winforms editor:
 
 General:
 
-* errormessage "dbcode 'EN' not declared in 'lang'" points to token before the error
-
-* errormessage "dbcode 'SOMETHING' declared twice in 'domains'" points to token before the error
+* none
 
 
 ## Resolved Bugs
@@ -85,3 +83,9 @@ General:
   -> works as designed, was a bug in the grammar. One DE was listed for
   dbcode>lang, a second one for string>lang -> Fixed
 
+
+* errormessage "dbcode 'EN' not declared in 'lang'" points to token 
+  before the error -> Fixed
+
+* errormessage "dbcode 'SOMETHING' declared twice in 'domains'" points 
+  to token before the error -> Fixed
