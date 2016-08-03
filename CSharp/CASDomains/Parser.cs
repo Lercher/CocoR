@@ -53,10 +53,13 @@ public class Parser {
 	}
 
 	public void SemErr (string msg) {
+		SemErr(t, msg);
+	}
+	
+	public void SemErr (Token t, string msg) {
 		if (errDist >= minErrDist) errors.SemErr(t.line, t.col, msg);
 		errDist = 0;
 	}
-	
 
 	void Get () {
 		for (;;) {
@@ -150,11 +153,11 @@ public class Parser {
 		addAlt(1); // ALT
 		addAlt(3); // ALT
 		if (isKind(la, 1)) {
-			if (!lang.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "dbcode", la.val, lang.name));
+			if (!lang.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, "dbcode", la.val, lang.name));
 			alternatives.tdeclares = lang;
 			Get();
 		} else if (isKind(la, 3)) {
-			if (!langstring.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "string", la.val, langstring.name));
+			if (!langstring.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, "string", la.val, langstring.name));
 			alternatives.tdeclares = langstring;
 			Get();
 		} else SynErr(12);
@@ -164,11 +167,11 @@ public class Parser {
 		addAlt(1); // ALT
 		addAlt(3); // ALT
 		if (isKind(la, 1)) {
-			if (!domains.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "dbcode", la.val, domains.name));
+			if (!domains.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, "dbcode", la.val, domains.name));
 			alternatives.tdeclares = domains;
 			Get();
 		} else if (isKind(la, 3)) {
-			if (!domains.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "string", la.val, domains.name));
+			if (!domains.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, "string", la.val, domains.name));
 			alternatives.tdeclares = domains;
 			Get();
 		} else SynErr(13);
@@ -178,11 +181,11 @@ public class Parser {
 		addAlt(1); // ALT
 		addAlt(3); // ALT
 		if (isKind(la, 1)) {
-			if (!values.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "dbcode", la.val, values.name));
+			if (!values.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, "dbcode", la.val, values.name));
 			alternatives.tdeclares = values;
 			Get();
 		} else if (isKind(la, 3)) {
-			if (!values.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "string", la.val, values.name));
+			if (!values.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, "string", la.val, values.name));
 			alternatives.tdeclares = values;
 			Get();
 		} else SynErr(14);
@@ -194,10 +197,10 @@ public class Parser {
 		addAlt(3); // ALT
 		addAlt(3, langstring); // ALT string uses symbol table 'langstring'
 		if (isKind(la, 1)) {
-			if (!lang.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "dbcode", la.val, lang.name));
+			if (!lang.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "dbcode", la.val, lang.name));
 			Get();
 		} else if (isKind(la, 3)) {
-			if (!langstring.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "string", la.val, langstring.name));
+			if (!langstring.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "string", la.val, langstring.name));
 			Get();
 		} else SynErr(15);
 	}
