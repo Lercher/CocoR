@@ -37,6 +37,13 @@ need to preserve the scoped symbols you might want to
 add a semantic action that stores the symbol 
 table's current scope `currentScope` in your AST. 
 
+* useonce and useall Scopes for Symbols -
+You can declare at the production level, that any symbol
+has to be used at most (useonce) or at least (useall) once
+inside this lexical scope. This is usefull for metaprogramming
+where you declare idents as keyword-like and state that each such
+keyword-like ident has to be used or can appear only one time.
+
 * Strict and Non Strict Symbol Tables -
 Symbol tables can be strict, i.e. every symbol has to be
 declared before its use (aka *one-pass*), or non strict,
@@ -44,6 +51,7 @@ meaning that a symbol can be used and declared anywhere
 acording to common scoping rules (aka *two-pass*). However,
 there are actually no multiple passes, the generated 
 parser always makes only one pass.
+
 
 * Autocomplete Information -
 If the switch -ac is set, the generator produces a
@@ -322,7 +330,8 @@ byte order mark. This is the default e.g. if you use Visual Studio Code.
   token inheritance *beta*, 
   autocomplete information *beta*, 
   symbol tables *beta*,
-  non strict symbol tables *beta*, 
+  non strict symbol tables *beta*,
+  useonce and useall scopes *planned*, 
   -is switch *beta*,
   -utf8 switch *beta*,
   editor *beta*,
