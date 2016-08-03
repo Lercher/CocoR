@@ -77,6 +77,7 @@ namespace WinFormsEditor
         {
             switch(typ) {
                 case "*decl":
+                case "*ref":
                     string t = txt.Substring(1, txt.Length - 2);
                     textSource.Select(int.Parse(t), 0);
                     break;
@@ -120,6 +121,11 @@ namespace WinFormsEditor
                 }
             }
 
+            if (a.declares != null) { // we declare something so we have references
+                foreach(Token reft in findReferences(a.t))
+                    addAC(string.Format("({0})", reft.charPos), "*ref");
+            }
+
             listAutocomplete.Columns[0].Text = a.t.val;
             listAutocomplete.Columns[1].Text = describeParsed(a);
             foreach(ColumnHeader column in listAutocomplete.Columns)
@@ -139,6 +145,14 @@ namespace WinFormsEditor
             ListViewItem i = new ListViewItem(new string[] {s, t});
             listAutocomplete.Items.Add(i);
             return i;
+        }
+
+        IEnumerable<Token> findReferences(Token t) {
+            List<Token> found = new List<Token>();
+            foreach (Alternative a in parser.tokens)
+                if (a.declaration == t)
+                    found.Add(a.t);
+            return found;
         }
 
         Alternative findAlternative(int pos) {
