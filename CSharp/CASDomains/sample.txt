@@ -27,20 +27,36 @@ end domain
 
 domain SOMETHING length 8
 	DE "Na sowas"
+	EN "Thing is some"
+	FR "aloha"
+	"pl" "plushski"
 
 	value EINS
 		DE "Eins" "Das Erste"
+		FR "Eins" "Das Erste"
+		EN "Eins" "Das Erste"
+		"pl" "Eins" "Das Erste"
 
 	value ZWEI
+		"pl" "Zwei" "Das weite Programm"
+		FR "Zwei" "Das weite Programm"
+		EN "Zwei" "Das weite Programm"
 		DE "Zwei" "Das weite Programm"
 
 	value SAMPLE_GROUP
 		DE "Beispielgruppe" "Das ist eine Beispielgruppe"	
+		FR "Beispielgruppe" "Das ist eine Beispielgruppe"
+		EN "Beispielgruppe" "Das ist eine Beispielgruppe"
+		"pl" "Beispielgruppe" "Das ist eine Beispielgruppe"
 
 end domain
 
 domain SOMETHING length 8
 	DE "Na sowas"
+	DE "Na sowas 2x"
+	EN "Some thing"
+	"pl" "kruschkas"
+	D "falsche Sprache"
 	value EINS DE "Eins" "Das Erste"
 	value ZWEI DE "Zwei" "Das weite Programm"
 end domain
