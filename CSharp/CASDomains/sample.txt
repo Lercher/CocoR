@@ -1,9 +1,10 @@
-casdomains languages DE EN FR
+casdomains languages DE EN FR "pl"
 
 domain ACCOUNTING orfi length 15
 	DE "Buchhaltung"
 	EN "Accounting"
 	FR "Compatiblité"
+	"pl" "polska"
 
 	value BILLER_GROUP
 		DE "Rechnungsstellungsgruppe" 
@@ -12,6 +13,7 @@ domain ACCOUNTING orfi length 15
 			"All Employees of Billing"
 		FR "Groupe Facturier"
 			"Tous les employés de la facturation"
+		"pl" "grp v fac" "lodz a liszka"
 
 	value BILLER_GROUP // declared twice
 		DE "Rechnungsstellungsgruppe" 

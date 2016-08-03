@@ -29,6 +29,7 @@ public class Inheritance {
 
             // list all symbol table values
             printST(parser.lang);
+            printST(parser.langstring);
             printST(parser.domains);
 
             if (parser.errors.count > 0)

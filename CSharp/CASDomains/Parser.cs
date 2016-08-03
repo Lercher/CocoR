@@ -29,10 +29,12 @@ public class Parser {
 	int errDist = minErrDist;
 
 	public readonly Symboltable lang = new Symboltable("lang", false, true);
+	public readonly Symboltable langstring = new Symboltable("langstring", false, true);
 	public readonly Symboltable domains = new Symboltable("domains", false, true);
 	public readonly Symboltable values = new Symboltable("values", false, true);
 	public Symboltable symbols(string name) {
 		if (name == "lang") return lang;
+		if (name == "langstring") return langstring;
 		if (name == "domains") return domains;
 		if (name == "values") return values;
 		return null;
@@ -152,8 +154,8 @@ public class Parser {
 			alternatives.tdeclares = lang;
 			Get();
 		} else if (isKind(la, 3)) {
-			if (!lang.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "string", la.val, lang.name));
-			alternatives.tdeclares = lang;
+			if (!langstring.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "string", la.val, langstring.name));
+			alternatives.tdeclares = langstring;
 			Get();
 		} else SynErr(12);
 	}
@@ -190,12 +192,12 @@ public class Parser {
 		addAlt(1); // ALT
 		addAlt(1, lang); // ALT dbcode uses symbol table 'lang'
 		addAlt(3); // ALT
-		addAlt(3, lang); // ALT string uses symbol table 'lang'
+		addAlt(3, langstring); // ALT string uses symbol table 'langstring'
 		if (isKind(la, 1)) {
 			if (!lang.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "dbcode", la.val, lang.name));
 			Get();
 		} else if (isKind(la, 3)) {
-			if (!lang.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "string", la.val, lang.name));
+			if (!langstring.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "string", la.val, langstring.name));
 			Get();
 		} else SynErr(15);
 	}
@@ -290,6 +292,7 @@ public class Parser {
 		CASDomains‿NT();
 		Expect(0);
 		lang.CheckDeclared(errors);
+		langstring.CheckDeclared(errors);
 		domains.CheckDeclared(errors);
 		values.CheckDeclared(errors);
 

@@ -23,18 +23,19 @@ IGNORE cr + lf + tab
 
 SYMBOLTABLES
 	lang STRICT.
+	langstring STRICT.
 	domains STRICT.
 	values STRICT.
 
 PRODUCTIONS
 
 	// names defining symbols
-	LanguageName = dbcode>lang | string>lang .
+	LanguageName = dbcode>lang | string>langstring .
 	DomainName = dbcode>domains | string>domains .
 	ValueName = dbcode>values | string>values .
 
 	// using names
-	UseLanguageName = dbcode:lang | string:lang .
+	UseLanguageName = dbcode:lang | string:langstring .
 
 
 	CASDomains =
