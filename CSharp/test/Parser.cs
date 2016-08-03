@@ -31,14 +31,14 @@ public class Parser {
 	
 	public Scanner scanner;
 	public Errors  errors;
-	public List<Alternative> tokens = new List<Alternative>();
+	public readonly List<Alternative> tokens = new List<Alternative>();
 	
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
 	int errDist = minErrDist;
 
-	public readonly Symboltable variables = new Symboltable("variables", false, false);
-	public readonly Symboltable types = new Symboltable("types", false, true);
+	public readonly Symboltable variables;
+	public readonly Symboltable types;
 	public Symboltable symbols(string name) {
 		if (name == "variables") return variables;
 		if (name == "types") return types;
@@ -50,6 +50,12 @@ public class Parser {
 	public Parser(Scanner scanner) {
 		this.scanner = scanner;
 		errors = new Errors();
+		variables = new Symboltable("variables", false, false, tokens);
+		types = new Symboltable("types", false, true, tokens);
+		types.Add("string");
+		types.Add("int");
+		types.Add("double");
+
 	}
 
 	void SynErr (int n) {
@@ -337,7 +343,7 @@ public class Parser {
 	void Type‿NT() {
 		addAlt(24); // T
 		Expect(24); // "type"
-		if (!types.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
+		if (!types.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
 		alternatives.tdeclares = types;
 		addAlt(2); // T
 		Expect(2); // ident
@@ -429,7 +435,7 @@ public class Parser {
 	}
 
 	void Ident‿NT() {
-		if (!variables.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, variables.name));
+		if (!variables.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, variables.name));
 		alternatives.tdeclares = variables;
 		addAlt(2); // T
 		Expect(2); // ident
@@ -539,9 +545,6 @@ public class Parser {
 		la = new Token();
 		la.val = "";
 		Get();
-		types.Add("string");
-		types.Add("int");
-		types.Add("double");
 		Inheritance‿NT();
 		Expect(0);
 		variables.CheckDeclared(errors);
@@ -710,13 +713,15 @@ public class Symboltable {
 	public readonly string name;
 	public readonly bool ignoreCase;
 	public readonly bool strict;
+	public readonly IEnumerable<Alternative> fixuplist;
 	private Symboltable clone = null;
 
-	public Symboltable(string name, bool ignoreCase, bool strict) {
+	public Symboltable(string name, bool ignoreCase, bool strict, IEnumerable<Alternative> alternatives) {
 		this.name = name;
 		this.ignoreCase = ignoreCase;
 		this.strict = strict;
 		this.scopes = new Stack<List<Token>>();
+		this.fixuplist = alternatives;
 		pushNewScope();
 	}
 
@@ -724,6 +729,7 @@ public class Symboltable {
 		this.name = st.name;
 		this.ignoreCase = st.ignoreCase;
 		this.strict = st.strict;
+		this.fixuplist = st.fixuplist;
 
 		// now copy the scopes and its lists
 		this.scopes = new Stack<List<Token>>();				 		
@@ -769,24 +775,28 @@ public class Symboltable {
 	
 	public bool Use(Token t, Alt a) {
 		a.tdeclared = this;
-		a.declaration = Find(t);
-		if (a.declaration != null) return true; // it's ok, if we know the symbol
-		if (strict) return false; // in strict mode we report an illegal symbol
-		undeclaredTokens.Peek().Add(t); // in non strict mode we store the token for future checking
+		if (strict) {
+			a.declaration = Find(t);
+			if (a.declaration != null) return true; // it's ok, if we know the symbol
+			return false; // in strict mode we report an illegal symbol
+		} else {
+			// in non-strict mode we can only use declarations
+			// known in the top scope, so that we dont't find a declaration 
+			// in a parent scope and redefine a symbol in this topmost scope 
+			a.declaration = Find(currentScope, t);
+			if (a.declaration != null) return true; // it's ok, if we know the symbol in this scope
+		}
+		// in non strict mode we need to store the token for future checking
+		undeclaredTokens.Peek().Add(t); 
 		return true; // we can't report an invalid symbol yet, so report "all ok".
 	}
 
-	public bool Add(Token t, IEnumerable<Alternative> fixuplist) {
+	public bool Add(Token t) {
 		if (Find(currentScope, t) != null)
 			return false;
 		if (strict) clone = null; // if non strict, we have to keep the clone
 		currentScope.Add(t);
-		IEnumerable<Token> nowdeclareds = RemoveFromUndeclared(t);
-		if (fixuplist != null)
-			foreach(Token tok in nowdeclareds)
-				foreach(Alternative a in fixuplist)
-					if (a.t == tok)
-						a.declaration = t;
+		RemoveFromAndFixupList(undeclaredTokens.Peek(), t);
 		return true;
 	}
 
@@ -806,16 +816,18 @@ public class Symboltable {
 		return (Find(t) != null);
 	}
 
-	IEnumerable<Token> RemoveFromUndeclared(Token declaration) {
+	void RemoveFromAndFixupList(List<Token> undeclared, Token declaration) {
 		StringComparer cmp = comparer;
 		List<Token> found = new List<Token>();
-		List<Token> undeclared = undeclaredTokens.Peek(); 
 		foreach(Token t in undeclared)
 			if (0 == cmp.Compare(t.val, declaration.val))
 				found.Add(t);
-		foreach(Token t in found)
+		foreach(Token t in found) {
 			undeclared.Remove(t);
-		return found;
+			foreach(Alternative a in fixuplist)
+				if (a.t == t)
+					a.declaration = declaration;
+		}
 	}
 
 	void pushNewScope() {
@@ -840,6 +852,12 @@ public class Symboltable {
 
 	void PromoteUndeclaredToParent() {
 		List<Token> list = undeclaredTokens.Pop();
+		// now that the lexical scope is about to terminate, we know that there cannot be more declarations in this scope
+		// so we can take the existing declarations of the parent scope to resolve these unresolved tokens in 'list'.
+		foreach(Token decl in currentScope)
+			RemoveFromAndFixupList(list, decl);
+		// now list contains all tokens that were not delared in the popped scope
+		// and not yet declared in the now current scope
 		undeclaredTokens.Peek().AddRange(list);
 	} 
 
@@ -856,10 +874,10 @@ public class Symboltable {
 		get {
 		    if (scopes.Count == 1) return currentScope;
 
-			Symboltable all = new Symboltable(name, ignoreCase, strict);
+			Symboltable all = new Symboltable(name, ignoreCase, true, fixuplist);
 			foreach(List<Token> list in scopes)
 				foreach(Token t in list)
-					all.Add(t, null);
+					all.Add(t);
 			return all.currentScope; 
 		}
 	}

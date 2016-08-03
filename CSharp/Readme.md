@@ -33,9 +33,7 @@ In the winforms editor:
 
 General:
 
-* non strict symbol tables yield the wrong declaration for a scoped
-  token that is used before the symbol is declared localy.
-
+* none
 
 
 ## Resolved Bugs
@@ -91,3 +89,7 @@ General:
 
 * errormessage "dbcode 'SOMETHING' declared twice in 'domains'" points 
   to token before the error -> Fixed
+
+* non strict symbol tables yield the wrong declaration for a scoped
+  token that is used before the symbol is declared locally.
+  -> Fixed

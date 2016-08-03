@@ -246,7 +246,7 @@ public class ParserGen {
 	void GenSymboltableCheck(Node p, int indent) {
 		if (!string.IsNullOrEmpty(p.declares)) {
 			Indent(indent);
-			gen.WriteLine("if (!{0}.Add(la, tokens)) SemErr(la, string.Format(DuplicateSymbol, \"{1}\", la.val, {0}.name));", p.declares, tab.Escape(p.sym.name));
+			gen.WriteLine("if (!{0}.Add(la)) SemErr(la, string.Format(DuplicateSymbol, \"{1}\", la.val, {0}.name));", p.declares, tab.Escape(p.sym.name));
 			Indent(indent);
 			gen.WriteLine("alternatives.tdeclares = {0};", p.declares);
 		} else if (!string.IsNullOrEmpty(p.declared)) {
@@ -538,10 +538,12 @@ public class ParserGen {
 		foreach (SymTab st in tab.symtabs)
 		{
 			if (declare)
-				gen.WriteLine("\tpublic readonly Symboltable {0} = new Symboltable(\"{0}\", {1}, {2});", st.name, toTF(dfa.ignoreCase), toTF(st.strict));
-			else
+				gen.WriteLine("\tpublic readonly Symboltable {0};", st.name);
+			else {
+				gen.WriteLine("\t\t{0} = new Symboltable(\"{0}\", {1}, {2}, tokens);", st.name, toTF(dfa.ignoreCase), toTF(st.strict));
 				foreach(string s in st.predefined)
 					gen.WriteLine("\t\t{0}.Add(\"{1}\");", st.name, tab.Escape(s));
+			}
 		}
 		if (declare) {
 			gen.WriteLine("\tpublic Symboltable symbols(string name) {");
@@ -584,6 +586,7 @@ public class ParserGen {
 		g.CopyFramePart("-->declarations");
 		GenSymbolTables(true);
 		CopySourcePart(tab.semDeclPos, 0);
+		g.CopyFramePart("-->constructor"); GenSymbolTables(false);
 		g.CopyFramePart("-->beginalternatives");
 		g.CopyFramePart("-->endalternatives", GenerateAutocompleteInformation);
 		g.CopyFramePart("-->pragmas"); GenCodePragmas();
@@ -591,7 +594,6 @@ public class ParserGen {
 		g.CopyFramePart("-->endalternativescode", GenerateAutocompleteInformation);
 		g.CopyFramePart("-->productions"); GenProductions();
 		g.CopyFramePart("-->parseRoot"); 
-		GenSymbolTables(false);
 		gen.WriteLine("\t\t{0}{1}();", tab.gramSy.name, PROD_SUFFIX);
 		if (tab.checkEOF) gen.WriteLine("\t\tExpect(0);");
 		GenSymbolTablesChecks(); 

@@ -12,13 +12,17 @@ var var;            // OK now (var inherits ident) but 'ident expected' with the
 var a, b, c;
 var A, B, C;
 var äöü; call(äöü);  // test UTF-8 symbols, german umlauts
+var forwardScope : int;
 { 
-    var a, aa; // redefine a
+    var a, aa, parentscope; // redefine a
     call(a, aa, 10, 1234);
     { 
         var a, aaa;
         call(a, aaa);
+        call(forwardScope); // forward use, should not be declard at toplevel as int but as string
     }
+    call(forwardScope); // forward use, should not be declard at toplevel as int but as string
+    var forwardScope : string; // redefining the int
     // call(aaa); // ident 'aaa' not declared in 'variables'
     {
         var ddd; 
@@ -27,10 +31,12 @@ var äöü; call(äöü);  // test UTF-8 symbols, german umlauts
         call(fff);
         call(a);
     }
+    call(forwardScope); // forward use should be int
 }
+call(forwardScope); // normal (strict) use should be int
+call(a);      // OK, a not removed from variables
 // call(aaa); // ident 'aaa' not declared in 'variables'
 // call(aa);  // ident 'aaa' not declared in 'variables'
-call(a);      // OK, a not removed from variables
 
 var d as int, e as int, f as int;
 var g | h | i | as as as;
