@@ -38,14 +38,14 @@ public class Parser {
 	
 	public Scanner scanner;
 	public Errors  errors;
-	public List<Alternative> tokens = new List<Alternative>();
+	public readonly List<Alternative> tokens = new List<Alternative>();
 	
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
 	int errDist = minErrDist;
 
-	public readonly Symboltable types = new Symboltable("types", true, false);
-	public readonly Symboltable enumtypes = new Symboltable("enumtypes", true, false);
+	public readonly Symboltable types;
+	public readonly Symboltable enumtypes;
 	public Symboltable symbols(string name) {
 		if (name == "types") return types;
 		if (name == "enumtypes") return enumtypes;
@@ -57,6 +57,9 @@ public class Parser {
 	public Parser(Scanner scanner) {
 		this.scanner = scanner;
 		errors = new Errors();
+		types = new Symboltable("types", true, false, tokens);
+		enumtypes = new Symboltable("enumtypes", true, false, tokens);
+
 	}
 
 	void SynErr (int n) {
@@ -65,10 +68,13 @@ public class Parser {
 	}
 
 	public void SemErr (string msg) {
+		SemErr(t, msg);
+	}
+	
+	public void SemErr (Token t, string msg) {
 		if (errDist >= minErrDist) errors.SemErr(t.line, t.col, msg);
 		errDist = 0;
 	}
-	
 
 	void Get () {
 		for (;;) {
@@ -225,7 +231,7 @@ public class Parser {
 		while (!(isKind(la, 0) || isKind(la, 26))) {SynErr(76); Get();}
 		addAlt(26); // T
 		Expect(26); // "class"
-		if (!types.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, types.name));
+		if (!types.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
 		alternatives.tdeclares = types;
 		addAlt(1); // T
 		Expect(1); // ident
@@ -252,7 +258,7 @@ public class Parser {
 		while (!(isKind(la, 0) || isKind(la, 62))) {SynErr(77); Get();}
 		addAlt(62); // T
 		Expect(62); // "subsystem"
-		if (!types.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, types.name));
+		if (!types.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
 		alternatives.tdeclares = types;
 		addAlt(1); // T
 		Expect(1); // ident
@@ -298,7 +304,7 @@ public class Parser {
 		while (!(isKind(la, 0) || isKind(la, 70))) {SynErr(78); Get();}
 		addAlt(70); // T
 		Expect(70); // "enum"
-		if (!enumtypes.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, enumtypes.name));
+		if (!enumtypes.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, enumtypes.name));
 		alternatives.tdeclares = enumtypes;
 		addAlt(1); // T
 		Expect(1); // ident
@@ -313,7 +319,7 @@ public class Parser {
 		while (!(isKind(la, 0) || isKind(la, 69))) {SynErr(79); Get();}
 		addAlt(69); // T
 		Expect(69); // "flags"
-		if (!types.Add(la, tokens)) SemErr(string.Format(DuplicateSymbol, "ident", la.val, types.name));
+		if (!types.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
 		alternatives.tdeclares = types;
 		addAlt(1); // T
 		Expect(1); // ident
@@ -530,7 +536,7 @@ public class Parser {
 		if (StartOf(5)) {
 			BaseType‿NT();
 		} else if (isKind(la, 1)) {
-			if (!types.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "ident", la.val, types.name));
+			if (!types.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "ident", la.val, types.name));
 			Get();
 		} else if (isKind(la, 1) || isKind(la, 2)) {
 			DottedIdent‿NT();
@@ -734,7 +740,7 @@ public class Parser {
 		} else if (isKind(la, 61)) {
 			Ref‿NT();
 		} else if (isKind(la, 1)) {
-			if (!enumtypes.Use(la, alternatives)) SemErr(string.Format(MissingSymbol, "ident", la.val, enumtypes.name));
+			if (!enumtypes.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "ident", la.val, enumtypes.name));
 			Get();
 		} else SynErr(86);
 	}
@@ -1100,13 +1106,15 @@ public class Symboltable {
 	public readonly string name;
 	public readonly bool ignoreCase;
 	public readonly bool strict;
+	public readonly IEnumerable<Alternative> fixuplist;
 	private Symboltable clone = null;
 
-	public Symboltable(string name, bool ignoreCase, bool strict) {
+	public Symboltable(string name, bool ignoreCase, bool strict, IEnumerable<Alternative> alternatives) {
 		this.name = name;
 		this.ignoreCase = ignoreCase;
 		this.strict = strict;
 		this.scopes = new Stack<List<Token>>();
+		this.fixuplist = alternatives;
 		pushNewScope();
 	}
 
@@ -1114,6 +1122,7 @@ public class Symboltable {
 		this.name = st.name;
 		this.ignoreCase = st.ignoreCase;
 		this.strict = st.strict;
+		this.fixuplist = st.fixuplist;
 
 		// now copy the scopes and its lists
 		this.scopes = new Stack<List<Token>>();				 		
@@ -1159,24 +1168,28 @@ public class Symboltable {
 	
 	public bool Use(Token t, Alt a) {
 		a.tdeclared = this;
-		a.declaration = Find(t);
-		if (a.declaration != null) return true; // it's ok, if we know the symbol
-		if (strict) return false; // in strict mode we report an illegal symbol
-		undeclaredTokens.Peek().Add(t); // in non strict mode we store the token for future checking
+		if (strict) {
+			a.declaration = Find(t);
+			if (a.declaration != null) return true; // it's ok, if we know the symbol
+			return false; // in strict mode we report an illegal symbol
+		} else {
+			// in non-strict mode we can only use declarations
+			// known in the top scope, so that we dont't find a declaration 
+			// in a parent scope and redefine a symbol in this topmost scope 
+			a.declaration = Find(currentScope, t);
+			if (a.declaration != null) return true; // it's ok, if we know the symbol in this scope
+		}
+		// in non strict mode we need to store the token for future checking
+		undeclaredTokens.Peek().Add(t); 
 		return true; // we can't report an invalid symbol yet, so report "all ok".
 	}
 
-	public bool Add(Token t, IEnumerable<Alternative> fixuplist) {
+	public bool Add(Token t) {
 		if (Find(currentScope, t) != null)
 			return false;
 		if (strict) clone = null; // if non strict, we have to keep the clone
 		currentScope.Add(t);
-		IEnumerable<Token> nowdeclareds = RemoveFromUndeclared(t);
-		if (fixuplist != null)
-			foreach(Token tok in nowdeclareds)
-				foreach(Alternative a in fixuplist)
-					if (a.t == tok)
-						a.declaration = t;
+		RemoveFromAndFixupList(undeclaredTokens.Peek(), t);
 		return true;
 	}
 
@@ -1196,16 +1209,18 @@ public class Symboltable {
 		return (Find(t) != null);
 	}
 
-	IEnumerable<Token> RemoveFromUndeclared(Token declaration) {
+	void RemoveFromAndFixupList(List<Token> undeclared, Token declaration) {
 		StringComparer cmp = comparer;
 		List<Token> found = new List<Token>();
-		List<Token> undeclared = undeclaredTokens.Peek(); 
 		foreach(Token t in undeclared)
 			if (0 == cmp.Compare(t.val, declaration.val))
 				found.Add(t);
-		foreach(Token t in found)
+		foreach(Token t in found) {
 			undeclared.Remove(t);
-		return found;
+			foreach(Alternative a in fixuplist)
+				if (a.t == t)
+					a.declaration = declaration;
+		}
 	}
 
 	void pushNewScope() {
@@ -1230,6 +1245,12 @@ public class Symboltable {
 
 	void PromoteUndeclaredToParent() {
 		List<Token> list = undeclaredTokens.Pop();
+		// now that the lexical scope is about to terminate, we know that there cannot be more declarations in this scope
+		// so we can take the existing declarations of the parent scope to resolve these unresolved tokens in 'list'.
+		foreach(Token decl in currentScope)
+			RemoveFromAndFixupList(list, decl);
+		// now list contains all tokens that were not delared in the popped scope
+		// and not yet declared in the now current scope
 		undeclaredTokens.Peek().AddRange(list);
 	} 
 
@@ -1246,10 +1267,10 @@ public class Symboltable {
 		get {
 		    if (scopes.Count == 1) return currentScope;
 
-			Symboltable all = new Symboltable(name, ignoreCase, strict);
+			Symboltable all = new Symboltable(name, ignoreCase, true, fixuplist);
 			foreach(List<Token> list in scopes)
 				foreach(Token t in list)
-					all.Add(t, null);
+					all.Add(t);
 			return all.currentScope; 
 		}
 	}
