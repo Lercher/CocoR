@@ -28,8 +28,17 @@ domain SOMETHING length 8
 
 	value EINS
 		DE "Eins" "Das Erste"
-		
+
 	value ZWEI
 		DE "Zwei" "Das weite Programm"
 
+	value SAMPLE_GROUP
+		DE "Beispielgruppe" "Das ist eine Beispielgruppe"	
+
+end domain
+
+domain SOMETHING length 8
+	DE "Na sowas"
+	value EINS DE "Eins" "Das Erste"
+	value ZWEI DE "Zwei" "Das weite Programm"
 end domain
