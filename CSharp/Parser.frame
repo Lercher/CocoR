@@ -61,10 +61,13 @@ public class Parser {
 	}
 
 	public void SemErr (string msg) {
+		SemErr(t, msg);
+	}
+	
+	public void SemErr (Token t, string msg) {
 		if (errDist >= minErrDist) errors.SemErr(t.line, t.col, msg);
 		errDist = 0;
 	}
-	
 
 	void Get () {
 		for (;;) {
