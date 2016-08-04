@@ -29,42 +29,81 @@ SYMBOLTABLES
 
 PRODUCTIONS
 
+/* 	
+	AST Extension described
+	----------------------------------------
+	Use a stack.
+	Each production call pushes an object marker on the stack.
+	On return of a production method, pop until object marker ist found, form lists of list elements and 
+	form an anonymous object, push it on the stack. At toplevel provide the only item on the stack as AST.
+	...'  - as postfix, instead of t, push Prime(t) on the stack. The function Prime: Token -> Token has 
+	     to be defined as a target language function.
+	...=ident - as postfix, instead of t, create an ad hoc token t with t.val = ident
+	Now, if parsing a terminal t: 
+	#  - push t as literal
+	## - push t as literal list element
+	^prop  - push t as property prop, if prop missing use sym.name.lowerd
+	^^prop - push t as property prop list element, if prop missing use sym.name.lowerd
+	If parsing a nonterminal, pop the object o. If marked with ^ or #:
+	#, ## - push o as literal or literal list element
+	^, ^^ - push o as property or property list elements 
+*/
+
 	// names defining symbols
-	LanguageName = dbcode>lang | string>langstring .
-	DomainName = dbcode>domains | string>domains .
-	ValueName = dbcode>values | string>values .
+	LanguageName = 
+		dbcode>lang 					//#
+		| string>langstring 			//#'
+	.
+	
+	DomainName = 
+		dbcode>domains 					//#
+		| string>domains 				//#'
+	.
+	
+	ValueName = 
+		dbcode>values 					//#
+		| string>values 				//#'
+	.
 
 	// using names
-	UseLanguageName = dbcode:lang | string:langstring .
+	UseLanguageName = 
+		dbcode:lang 					//#
+		| string:langstring 			//#'
+	.
 
 
 	CASDomains =
 		"casdomains" 
-		Languages
-		{ Domain }
+		Languages						//^
+		{ Domain						//^^domains 
+		}
 	.
 				
 	Languages = 
 		"languages"
-		LanguageName 
-		{ LanguageName }
+		LanguageName 					//##
+		{ LanguageName 					//## 
+		}
 	.
 
 				
 	Domain SCOPES(values) = 
 		SYNC domain 
-		DomainName 								
-		[ "orfi" ]		 							
-		[ "length" twodigitnumber ]
-		Translations
-		Domainvalue { Domainvalue }
+		DomainName 						//^name		
+		[ "orfi" ]		 				//^orfi = 1			
+		[ "length" twodigitnumber		//^length 
+		]
+		Translations					//^
+		Domainvalue						//^^values 
+		{ Domainvalue 					//^^values
+		}
 		end domain
 	.
 	
 	Domainvalue = 
 		SYNC "value"
-		ValueName
-		TranslationsWithHelptext	
+		ValueName						//^
+		TranslationsWithHelptext		//^translations
 	.
 
 	Translations 
@@ -72,8 +111,8 @@ PRODUCTIONS
 		USEALL(lang, langstring)
 	= 
 		{
-		  UseLanguageName
-		  string
+		  UseLanguageName				//^language
+		  string						//^translation
 		} 
 		.
 
@@ -82,9 +121,9 @@ PRODUCTIONS
 		USEALL(lang, langstring)
 	= 
 		{
-		  UseLanguageName
-		  string
-		  string
+		  UseLanguageName				//^language
+		  string						//^translation
+		  string						//^helptext
 		} 
 		.
 	
