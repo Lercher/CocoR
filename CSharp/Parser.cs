@@ -783,22 +783,28 @@ const int id = 0;
 		} else if (isKind(la, 46)) {
 			ASTLiteral‿NT(p);
 		} else SynErr(61);
+		if (isKind(la, 6)) {
+			ASTPrime‿NT(p);
+		}
+		if (isKind(la, 19)) {
+			ASTConst‿NT(p);
+		}
 	}}
 
 	void ASTProperty‿NT(Node p) {
 		{
 		Expect(45); // "^"
-		p.ast.name = p.sym.name.ToLower(); 
+		string n = p.sym.name;
+		if (n.StartsWith("\"")) n = n.Substring(1, n.Length - 2);
+		p.ast.name = n.ToLower(); 
+		
 		if (isKind(la, 45)) {
 			Get();
 			p.ast.isList = true; 
 		}
 		if (isKind(la, 33)) {
 			Get();
-			AstVal‿NT(out p.ast.name);
-		}
-		if (isKind(la, 6)) {
-			AstPrime‿NT(p);
+			ASTVal‿NT(out p.ast.name);
 		}
 	}}
 
@@ -809,15 +815,21 @@ const int id = 0;
 			Get();
 			p.ast.isList = true; 
 		}
-		if (isKind(la, 6)) {
-			AstPrime‿NT(p);
-		}
-		if (isKind(la, 19)) {
-			AstLiteral‿NT(p);
-		}
 	}}
 
-	void AstVal‿NT(out string val) {
+	void ASTPrime‿NT(Node p) {
+		{
+		Expect(6); // prime
+		p.ast.primed = true; 
+	}}
+
+	void ASTConst‿NT(Node p) {
+		{
+		Expect(19); // "="
+		ASTVal‿NT(out p.ast.literal);
+	}}
+
+	void ASTVal‿NT(out string val) {
 		{
 		val = "?"; 
 		if (isKind(la, 1)) {
@@ -827,18 +839,6 @@ const int id = 0;
 			Get();
 			val = tab.Unescape(t.val); 
 		} else SynErr(62);
-	}}
-
-	void AstPrime‿NT(Node p) {
-		{
-		Expect(6); // prime
-		p.ast.primed = true; 
-	}}
-
-	void AstLiteral‿NT(Node p) {
-		{
-		Expect(19); // "="
-		AstVal‿NT(out p.ast.literal);
 	}}
 
 	void Condition‿NT() {
@@ -1063,7 +1063,7 @@ public class Errors {
 			case 59: s = "invalid Factor"; break;
 			case 60: s = "invalid Attribs"; break;
 			case 61: s = "invalid AST"; break;
-			case 62: s = "invalid AstVal"; break;
+			case 62: s = "invalid ASTVal"; break;
 			case 63: s = "invalid TokenFactor"; break;
 
 			default: s = "error " + n; break;
