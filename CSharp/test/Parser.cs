@@ -949,8 +949,9 @@ public class Symboltable {
 			foreach(Token t in st.items)
 				counter[t.val] = new List<Token>();
 			foreach(Token t in uses)
-				counter[t.val].Add(t);
-			// now check
+				if (counter.ContainsKey(t.val)) // we ignore undeclared Tokens:
+					counter[t.val].Add(t);
+			// now check for validity
 			foreach(string s in counter.Keys) {
 				List<Token> list = counter[s];
 				if (!isValid(list)) {
