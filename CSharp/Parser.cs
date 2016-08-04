@@ -820,7 +820,13 @@ const int id = 0;
 	void ASTPrime‿NT(Node p) {
 		{
 		Expect(6); // prime
-		p.ast.primed = true; 
+		p.ast.primed = true;
+		if (p.typ != Node.t && p.typ != Node.wt)
+		 SemErr("can only prime terminals");
+		if (pgen.IgnoreSemanticActions)
+		 SemErr("can't use token priming when ignoring semantic actions.");
+		 // no way do define the Prime:Token->Token function.                                        
+		
 	}}
 
 	void ASTConst‿NT(Node p) {

@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 
+// belongs
+
 public class Inheritance {
 
     static void printST(Symboltable st) {
