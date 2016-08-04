@@ -453,17 +453,22 @@ Factor<out Graph g>             (. string name; int kind; Position pos; bool wea
 
 AST<Node p>
 =
-  ASTProperty<p>
+  ( ASTProperty<p>
   | ASTLiteral<p>
+  )
+  [ ASTPrime<p> ]
+  [ ASTConst<p> ]
 .
 
 ASTProperty<Node p>
 =
-  '^'                            (. p.ast.name = p.sym.name.ToLower(); .)
+  '^'                            (. string n = p.sym.name;
+                                    if (n.StartsWith("\"")) n = n.Substring(1, n.Length - 2);
+                                    p.ast.name = n.ToLower(); 
+                                  .)
   [ '^'                          (. p.ast.isList = true; .)
   ]
-  [ ':' AstVal<out p.ast.name> ]
-  [ AstPrime<p> ]
+  [ ':' ASTVal<out p.ast.name> ]
 .
 
 ASTLiteral<Node p>
@@ -471,23 +476,20 @@ ASTLiteral<Node p>
   '#'
   [ '#'                          (. p.ast.isList = true; .)
   ]
-  [ AstPrime<p> ]
-  [ AstLiteral<p> ]
 .
 
 
-AstPrime<Node p>
+ASTPrime<Node p>
 =
   prime                          (. p.ast.primed = true; .)  
 .
 
-AstLiteral<Node p>
+ASTConst<Node p>
 =
-  '='
-  AstVal<out p.ast.literal>  
+  '=' ASTVal<out p.ast.literal>  
 .
 
-AstVal<out string val>           (. val = "?"; .)
+ASTVal<out string val>           (. val = "?"; .)
 =
     ident                        (. val = t.val; .)           
     | string                     (. val = tab.Unescape(t.val); .)
