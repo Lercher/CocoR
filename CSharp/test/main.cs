@@ -11,12 +11,20 @@ public abstract class AST {
     public abstract AST this[int i] { get; }
     public abstract AST this[string s] { get; }
     public abstract int count { get; }
-    public static readonly AST empty = new ASTLiteral(string.Empty); 
+    public static readonly AST empty = new ASTLiteral(string.Empty);
+    protected abstract void add(E e);
+
+    public E create(Token t) {
+        E e = new E();
+        e.ast = new ASTLiteral(t.val);
+        return e;
+    }
 
     private abstract class ASTThrows : AST {
         public override string val { get { throw new ApplicationException("not a literal"); } }
         public override AST this[int i] { get { throw new ApplicationException("not a list"); } }
         public override AST this[string s] { get { throw new ApplicationException("not an object"); } }
+        protected override void add(E e) { throw new ApplicationException("add not allowed");}
     }
 
     private class ASTLiteral : ASTThrows {
@@ -27,7 +35,7 @@ public abstract class AST {
     }
 
     private class ASTList : ASTThrows {
-        private readonly AST[] list;        
+        private readonly List<AST> list;        
         public override AST this[int i] { 
             get { 
                 if (i < 0 || count <= i)
@@ -35,7 +43,11 @@ public abstract class AST {
                 return list[i];
             } 
         }
-        public override int count { get { return list.Length; } }
+        public override int count { get { return list.Count; } }
+        
+        protected override void add(E e) { 
+            list.Add(e.ast); 
+        }
     }
 
     private class ASTObject : ASTThrows {
@@ -46,19 +58,79 @@ public abstract class AST {
                     return AST.empty;
                 return ht[s];
             } 
-         }
-         public override int count { get { return ht.Keys.Count; } }
+        }
+        public override int count { get { return ht.Keys.Count; } }
+        
+        protected override void add(E e) { 
+            ht[e.name] = e.ast; 
+        }
+    }
+
+    public class E {
+        public string name;
+        public bool islist = false;
+        public AST ast;
+
+        public static E createNamedList(string name) {
+            E el = new E();
+            el.ast = new ASTList();
+            el.name = name;
+            return el;
+        }
+    }
+
+    public class Builder {
+        private readonly Stack<E> stack = new Stack<E>(); // marker = null
+
+        public Builder() {
+            stack.Push(null); // null = TopLevel Object
+        }
+
+        public AST current { get { return stack.Peek().ast; } }   
+
+        private E construct() {
+            // reverse the stack order:
+            Stack<E> list = new Stack<E>();            
+            while(true) {
+                E e = stack.Pop();
+                if (e == null) break;
+                list.Push(e);
+            }            
+
+            AST obj = null;
+            foreach(E e in list)
+            {
+                if (e.islist) {
+                    // list
+                    if (!string.IsNullOrEmpty(e.name)) {
+                        // list with name
+                        if (obj == null) obj = new ASTObject();
+                        if (obj[e.name] == AST.empty) obj.add(E.createNamedList(e.name));
+                        obj[e.name].add(e);    
+                    } else {
+                        // list without a name
+                        if (obj == null) obj = new ASTList(); 
+                        obj.add(e);
+                    }
+                } else if (!string.IsNullOrEmpty(e.name)) {
+                    // named and no list
+                    if (obj == null) obj = new ASTObject();
+                    obj.add(e);
+                } else {
+                    // not named and no list
+                    if (obj == null) obj = new ASTList(); 
+                    obj.add(e);
+                }
+            }
+            E ret = new E();
+            ret.ast = obj;
+            stack.Push(ret);
+            return ret;
+        }
     }
 }
 
-public class ASTE {
 
-}
-
-public class ASTBuilder {
-    public readonly Stack<ASTE> stack = new Stack<ASTE>();
-        
-}
 
 public class Inheritance {
 
