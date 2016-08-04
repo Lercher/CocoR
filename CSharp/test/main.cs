@@ -1,7 +1,64 @@
 using System;
 using System.IO;
+using System.Collections;
+using System.Collections.Generic;
 
-// belongs
+
+// AST belongs to parser.frame
+
+public abstract class AST {
+    public abstract string val { get; }
+    public abstract AST this[int i] { get; }
+    public abstract AST this[string s] { get; }
+    public abstract int count { get; }
+    public static readonly AST empty = new ASTLiteral(string.Empty); 
+
+    private abstract class ASTThrows : AST {
+        public override string val { get { throw new ApplicationException("not a literal"); } }
+        public override AST this[int i] { get { throw new ApplicationException("not a list"); } }
+        public override AST this[string s] { get { throw new ApplicationException("not an object"); } }
+    }
+
+    private class ASTLiteral : ASTThrows {
+        public ASTLiteral(string s) { _val = s; }
+        private readonly string _val;
+        public override string val { get { return _val; } }
+        public override int count { get { return -1; } }
+    }
+
+    private class ASTList : ASTThrows {
+        private readonly AST[] list;        
+        public override AST this[int i] { 
+            get { 
+                if (i < 0 || count <= i)
+                    return AST.empty;
+                return list[i];
+            } 
+        }
+        public override int count { get { return list.Length; } }
+    }
+
+    private class ASTObject : ASTThrows {
+        private readonly Dictionary<string,AST> ht = new Dictionary<string,AST>();         
+        public override AST this[string s] { 
+            get { 
+                if (!ht.ContainsKey(s))
+                    return AST.empty;
+                return ht[s];
+            } 
+         }
+         public override int count { get { return ht.Keys.Count; } }
+    }
+}
+
+public class ASTE {
+
+}
+
+public class ASTBuilder {
+    public readonly Stack<ASTE> stack = new Stack<ASTE>();
+        
+}
 
 public class Inheritance {
 
