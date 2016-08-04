@@ -84,6 +84,17 @@ public class Symbol {
 
 
 //=====================================================================
+// AstOp AST Operation
+//=====================================================================
+
+public class AstOp {
+	public bool isList = false;
+	public bool primed = false;
+	public string name = null;
+	public string literal = null;
+}
+
+//=====================================================================
 // Node
 //=====================================================================
 
@@ -126,6 +137,7 @@ public class Node {
 													// (only used in DFA.ConvertToStates)
 	public string   declares;    // t, wt: the symbol declares a new entry to the symboltable with this name
 	public string   declared;    // t, wt: the symbol has to be declared in the symboltable with this name
+	public AstOp	ast = new AstOp();	// nt, t, wt: AST Operation, # ## ^ ^^
 
 	public Node(int typ, Symbol sym, int line) {
 		this.typ = typ; this.sym = sym; this.line = line;

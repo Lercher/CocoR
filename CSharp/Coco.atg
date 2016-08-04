@@ -67,6 +67,7 @@ TOKENS
 	string    = '"' { stringCh | '\\' printable } '"'.
 	badString = '"' { stringCh | '\\' printable } (cr | lf).
 	char      = '\'' ( charCh | '\\' printable { hex } ) '\''.
+  prime     = '\''.
 
 PRAGMAS
 	ddtSym    = '$' { digit | letter }.  (. tab.SetDDT(la.val); .)
@@ -429,6 +430,7 @@ Factor<out Graph g>             (. string name; int kind; Position pos; bool wea
                                    else if ((p.pos == null) != (sym.attrPos == null))
                                      SemErr("attribute mismatch between declaration and use of this symbol");
                                  .)
+  [ AST<p> ]
 | '(' Expression<out g> ')'
 | '[' Expression<out g> ']'     (. tab.MakeOption(g); .)
 | '{' Expression<out g> '}'     (. tab.MakeIteration(g); .)
@@ -445,6 +447,50 @@ Factor<out Graph g>             (. string name; int kind; Position pos; bool wea
 )                               (. if (g == null) // invalid start of Factor
                                      g = new Graph(tab.NewNode(Node.eps, null, 0));
                                  .)
+.
+
+/*------------------------------------------------------------------------------------*/
+
+AST<Node p>
+=
+  ASTProperty<p>
+  | ASTLiteral<p>
+.
+
+ASTProperty<Node p>
+=
+  '^'                            (. p.ast.name = p.sym.name.ToLower(); .)
+  [ '^'                          (. p.ast.isList = true; .)
+  ]
+  [ ':' AstVal<out p.ast.name> ]
+  [ AstPrime<p> ]
+.
+
+ASTLiteral<Node p>
+=
+  '#'
+  [ '#'                          (. p.ast.isList = true; .)
+  ]
+  [ AstPrime<p> ]
+  [ AstLiteral<p> ]
+.
+
+
+AstPrime<Node p>
+=
+  prime                          (. p.ast.primed = true; .)  
+.
+
+AstLiteral<Node p>
+=
+  '='
+  AstVal<out p.ast.literal>  
+.
+
+AstVal<out string val>           (. val = "?"; .)
+=
+    ident                        (. val = t.val; .)           
+    | string                     (. val = tab.Unescape(t.val); .)
 .
 
 /*------------------------------------------------------------------------------------*/
