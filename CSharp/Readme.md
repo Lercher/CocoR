@@ -9,6 +9,7 @@ the readme.md in the root directory.
 
 * Compiling
 * **currently broken** - use commits before Aug 4 2016
+* last known good commit is fb08c25b5c23d0e1bf7d5bb76d128cc882a94d11
 * beta testing
 * sample editor with autocompletion available
 
