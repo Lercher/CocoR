@@ -32,7 +32,7 @@ public abstract class AST {
 				case '\r': sb.Append("\\r"); break;
 				case '\n': sb.Append("\\n"); break;
 				default:
-					if (ch < ' ' || ch > '\u007f') sb.AppendFormat("x4",ch);
+					if (ch < ' ' || ch > '\u007f') sb.AppendFormat("{0:x4}",ch);
 					else sb.Append(ch);
 					break;
 			}
@@ -91,12 +91,15 @@ public abstract class AST {
         {
             bool longlist = (count > 3);
             sb.Append('[');
+            if (longlist) AST.newline(indent + 1, sb);
             int n = 0;
             foreach(AST ast in list) {
-                if (n > 0) sb.Append(", ");
-                if (longlist) AST.newline(indent + 1, sb);
                 ast.serialize(sb, indent + 1);
                 n++;
+                if (n < count) {
+                    sb.Append(", ");
+                    if (longlist) AST.newline(indent + 1, sb);
+                }
             }
             if (longlist) AST.newline(indent, sb);
             sb.Append(']');
@@ -123,16 +126,19 @@ public abstract class AST {
         {
             bool longlist = (count > 3);
             sb.Append('{');
+            if (longlist) AST.newline(indent + 1, sb);
             int n = 0;
             foreach(string name in ht.Keys) {
                 AST ast = ht[name];
-                if (n > 0) sb.Append(", ");
-                if (longlist) AST.newline(indent + 1, sb);
                 sb.Append('\"');
                 AST.escape(name, sb);
                 sb.Append("\": ");
                 ast.serialize(sb, indent + 1);
                 n++;
+                if (n < count) {
+                    sb.Append(", ");
+                    if (longlist) AST.newline(indent + 1, sb);
+                }
             }
             if (longlist) AST.newline(indent, sb);
             sb.Append('}');
@@ -159,6 +165,7 @@ public abstract class AST {
 
         // that's what we call, built from an AstOp
         public void process(Token t, string literal, string name, bool islist) {
+            System.Console.WriteLine("{4} >> push token {0,-20} as {2,-10}, is list {3}, literal:{1}.", t.val, literal, name, islist, stack.Count);
             E e;
             if (literal != null)
                 e = AST.create(literal);
@@ -173,18 +180,22 @@ public abstract class AST {
             return new Marker(this);
         }
 
-        private E construct() {
+        private void construct() {
             // reverse the stack order:
             Stack<E> list = new Stack<E>();            
             while(true) {
                 E e = stack.Pop();
-                if (e == null) break;
+                if (e == null) {
+                    System.Console.WriteLine("{0} << null-marker, {1} items found on stack", stack.Count, list.Count);
+                    break;
+                } 
                 list.Push(e);
             }            
 
             AST obj = null;
             foreach(E e in list)
             {
+                System.Console.WriteLine("{2} << {1}={0}", e.ast.GetType().Name, e.name, stack.Count);
                 if (e.islist) {
                     // list
                     if (!string.IsNullOrEmpty(e.name)) {
@@ -207,11 +218,12 @@ public abstract class AST {
                     obj.add(e);
                 }
             }
-            if (obj == null) obj = new ASTObject();
+            if (obj == null) return; // don't push an empty object
             E ret = new E();
             ret.ast = obj;
             stack.Push(ret);
-            return ret;
+            System.Console.WriteLine("{1} >> {0}", ret.ast, stack.Count);
+            return;
         }
 
 
@@ -220,7 +232,8 @@ public abstract class AST {
 
             public Marker(Builder builder) {
                 this.builder = builder;
-                builder.stack.Push(null);            
+                builder.stack.Push(null);
+                System.Console.WriteLine("{0} >> null-marker", builder.stack.Count);            
             }
 
             public void Dispose() {
