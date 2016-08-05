@@ -246,12 +246,12 @@ public class ParserGen {
 	void GenSymboltableCheck(Node p, int indent) {
 		if (!string.IsNullOrEmpty(p.declares)) {
 			Indent(indent);
-			gen.WriteLine("if (!{0}.Add(la)) SemErr(la, string.Format(DuplicateSymbol, \"{1}\", la.val, {0}.name));", p.declares, tab.Escape(p.sym.name));
+			gen.WriteLine("if (!{0}.Add(la)) SemErr(la, string.Format(DuplicateSymbol, {1}, la.val, {0}.name));", p.declares, tab.Quoted(p.sym.name));
 			Indent(indent);
 			gen.WriteLine("alternatives.tdeclares = {0};", p.declares);
 		} else if (!string.IsNullOrEmpty(p.declared)) {
 			Indent(indent);
-			gen.WriteLine("if (!{0}.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, \"{1}\", la.val, {0}.name));", p.declared, tab.Escape(p.sym.name));
+			gen.WriteLine("if (!{0}.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, {1}, la.val, {0}.name));", p.declared, tab.Quoted(p.sym.name));
 		} 
 	}
 
@@ -261,6 +261,17 @@ public class ParserGen {
 			gen.WriteLine("addAlt({0}, {1}); // {3} {2} uses symbol table '{1}'", p.sym.n, p.declared, p.sym.name, comment);
 			Indent(indent);
 		} 
+	}
+
+	void GenAstBuilder(Node p, int indent) {
+		if (p.ast != null) {
+			Indent(indent);
+			string tprime = p.ast.primed ? "Prime(t)" : "t"; 
+			string methodname = p.ast.ishatch ? "hatch" : "sendup";
+			// void hatch(Token t, string literal, string name, bool islist)
+			// void sendup(Token t, string literal, string name, bool islist)
+			gen.WriteLine("astbuilder.{0}({1}, {2}, {3}, {4});", methodname, tprime, tab.Quoted(p.ast.literal), tab.Quoted(p.ast.name), p.ast.isList ? "true" : "false"); 
+		}
 	}
 	
 	void GenCode (Node p, int indent, BitArray isChecked) {
@@ -274,6 +285,7 @@ public class ParserGen {
 					gen.Write("{0}{1}(", p.sym.name, PROD_SUFFIX);
 					CopySourcePart(p.pos, 0); // ... with actual arguments
 					gen.WriteLine(");");
+					GenAstBuilder(p, indent);
 					break;
 				}
 				case Node.t: {
@@ -285,6 +297,7 @@ public class ParserGen {
 						GenAutocomplete(p.sym.n, indent, "T");
 						GenAutocompleteSymboltable(p, indent, "T");
 						gen.WriteLine("Expect({0}); // {1}", p.sym.n, p.sym.name);
+						GenAstBuilder(p, indent);
 					}
 					break;
 				}
@@ -298,6 +311,7 @@ public class ParserGen {
 					GenAutocomplete(p.sym.n, indent, "WT");
 					GenAutocompleteSymboltable(p, indent, "WT");
 					gen.WriteLine("ExpectWeak({0}, {1}); // {2} followed by {3}", p.sym.n, ncs1, p.sym.name, ncs1sym.name);
+					GenAstBuilder(p, indent);
 					break;
 				}
 				case Node.any: {
@@ -462,7 +476,7 @@ public class ParserGen {
 
 	void GenTokenNames() {
 		ForAllTerminals(delegate(Symbol sym) {
-			gen.Write("\"{0}\"", tab.Escape(sym.definedAs));
+			gen.Write("{0}", tab.Quoted(sym.definedAs));
 		});
 	}
 	
@@ -483,7 +497,7 @@ public class ParserGen {
 	void GenUsingSymtabSomething(List<SymTab> list, string method, string param, string comment) {
 		if (list == null) return;
 		foreach(SymTab st in list)
-			gen.WriteLine("\t\tusing({0}.{1}({2})) {3}", st.name, method, param, comment);
+			gen.WriteLine("\t\tusing({0}.{1}({2})) {3}", st.name, method, param, comment); // intentionally no ; !
 	}
 
 	void GenProductions() {
@@ -492,6 +506,7 @@ public class ParserGen {
 			gen.Write("\tvoid {0}{1}(", sym.name, PROD_SUFFIX);
 			CopySourcePart(sym.attrPos, 0);			
 			gen.WriteLine(") {");
+			gen.WriteLine("\t\tusing(astbuilder.createMarker())"); // intentionally no ; !
 			GenUsingSymtabSomething(sym.scopes,   "createScope", "", "");  // needs to be first
 			GenUsingSymtabSomething(sym.useonces, "createUsageCheck", "false, errors, la", "// 0..1"); // needs to be after createScope 
 			GenUsingSymtabSomething(sym.usealls,  "createUsageCheck", "true, errors, la" , "// 1..N");  // needs to be after createScope
@@ -545,13 +560,13 @@ public class ParserGen {
 			else {
 				gen.WriteLine("\t\t{0} = new Symboltable(\"{0}\", {1}, {2}, tokens);", st.name, toTF(dfa.ignoreCase), toTF(st.strict));
 				foreach(string s in st.predefined)
-					gen.WriteLine("\t\t{0}.Add(\"{1}\");", st.name, tab.Escape(s));
+					gen.WriteLine("\t\t{0}.Add({1});", st.name, tab.Quoted(s));
 			}
 		}
 		if (declare) {
 			gen.WriteLine("\tpublic Symboltable symbols(string name) {");
 			foreach (SymTab st in tab.symtabs)
-				gen.WriteLine("\t\tif (name == \"{1}\") return {0};", st.name, tab.Escape(st.name));
+				gen.WriteLine("\t\tif (name == {1}) return {0};", st.name, tab.Quoted(st.name));
 			gen.WriteLine("\t\treturn null;");
 			gen.WriteLine("\t}\n");
 		}

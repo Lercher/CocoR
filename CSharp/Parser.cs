@@ -778,6 +778,7 @@ const int id = 0;
 
 	void AST‿NT(Node p) {
 		{
+		p.ast = new AstOp(); 
 		if (isKind(la, 45)) {
 			ASTProperty‿NT(p);
 		} else if (isKind(la, 46)) {
@@ -794,6 +795,7 @@ const int id = 0;
 	void ASTProperty‿NT(Node p) {
 		{
 		Expect(45); // "^"
+		p.ast.ishatch = false;
 		string n = p.sym.name;
 		if (n.StartsWith("\"")) n = n.Substring(1, n.Length - 2);
 		p.ast.name = n.ToLower(); 
@@ -820,7 +822,12 @@ const int id = 0;
 	void ASTPrime‿NT(Node p) {
 		{
 		Expect(6); // prime
-		p.ast.primed = true; 
+		p.ast.primed = true;
+		if (p.typ != Node.t && p.typ != Node.wt)
+		 SemErr("can only prime terminals");
+		if (pgen.IgnoreSemanticActions)
+		 SemErr("can't use token priming when ignoring semantic actions.");
+		 // no way do define the Prime:Token->Token function.                                        
 	}}
 
 	void ASTConst‿NT(Node p) {

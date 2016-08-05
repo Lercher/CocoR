@@ -451,18 +451,16 @@ Factor<out Graph g>             (. string name; int kind; Position pos; bool wea
 
 /*------------------------------------------------------------------------------------*/
 
-AST<Node p>
+AST<Node p>                     (. p.ast = new AstOp(); .)
 =
-  ( ASTProperty<p>
-  | ASTLiteral<p>
-  )
-  [ ASTPrime<p> ]
-  [ ASTConst<p> ]
+  ASTSendUp<p>
+  | ASTHatch<p>
 .
 
-ASTProperty<Node p>
+ASTSendUp<Node p>
 =
-  '^'                            (. string n = p.sym.name;
+  '^'                            (. p.ast.ishatch = false;
+                                    string n = p.sym.name;
                                     if (n.StartsWith("\"")) n = n.Substring(1, n.Length - 2);
                                     p.ast.name = n.ToLower(); 
                                   .)
@@ -471,22 +469,33 @@ ASTProperty<Node p>
   [ ':' ASTVal<out p.ast.name> ]
 .
 
-ASTLiteral<Node p>
+ASTHatch<Node p>
 =
-  '#'
+  '#'                            (. p.ast.ishatch = true; .)
   [ '#'                          (. p.ast.isList = true; .)
+  ]
+  [ ':' ASTVal<out p.ast.name> 
+  ]
+  [ ASTPrime<p>
+  | '=' ASTConst<p> 
   ]
 .
 
 
 ASTPrime<Node p>
 =
-  prime                          (. p.ast.primed = true; .)  
+  prime                          (. p.ast.primed = true;
+                                    if (p.typ != Node.t && p.typ != Node.wt)
+                                      SemErr("can only prime terminals");
+                                    if (pgen.IgnoreSemanticActions)
+                                      SemErr("can't use token priming when ignoring semantic actions.");
+                                      // no way do define the Prime:Token->Token function.                                        
+                                  .)  
 .
 
 ASTConst<Node p>
 =
-  '=' ASTVal<out p.ast.literal>  
+  ASTVal<out p.ast.literal>  
 .
 
 ASTVal<out string val>           (. val = "?"; .)

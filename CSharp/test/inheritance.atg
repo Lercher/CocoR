@@ -5,7 +5,10 @@
 
 COMPILER Inheritance
 
- // IGNORECASE
+// IGNORECASE
+
+    // priming for the AST is implemented trivially here
+    Token Prime(Token t) { return t; }
 
 CHARACTERS
     ucletter  = 'A'..'Z'.
@@ -68,15 +71,15 @@ PRODUCTIONS
             NumberIdent
             ')' ';'
          } 
-         { Call }
+         { Call^^ }
          { "check" ("t" ident:types | "v" ident:variables) ';' }
          { IdentOrNumber }.
 
-    TDBs =  { Type<"new type declared: "> | Declaration | Block | Call }.
+    TDBs =  { Type<"new type declared: "> | Declaration | Block | Call^^:tbdcall }.
 
     Block SCOPES(variables, types) = "{" TDBs "}". 
 
-    Call = "call" "(" Param { "," Param } ")" ";".
+    Call = "call" "(" Param## { "," Param## } ")" ";".
 
     Type<string fmt> = "type" ident>types (. Console.WriteLine("{0}{1}", fmt, t.val); .) ';'.
 
