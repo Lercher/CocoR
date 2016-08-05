@@ -453,28 +453,30 @@ Factor<out Graph g>             (. string name; int kind; Position pos; bool wea
 
 AST<Node p>                     (. p.ast = new AstOp(); .)
 =
-  ( ASTProperty<p>
-  | ASTLiteral<p>
-  )
-  [ ASTPrime<p> ]
-  [ ASTConst<p> ]
+  ASTSendUp<p>
+  | ASTHatch<p>
 .
 
-ASTProperty<Node p>
+ASTSendUp<Node p>
 =
-  '^'                            (. string n = p.sym.name;
+  '^'                            (. p.ast.ishatch = false;
+                                    string n = p.sym.name;
                                     if (n.StartsWith("\"")) n = n.Substring(1, n.Length - 2);
                                     p.ast.name = n.ToLower(); 
                                   .)
   [ '^'                          (. p.ast.isList = true; .)
   ]
   [ ':' ASTVal<out p.ast.name> ]
+  [ ASTConst<p> ]
 .
 
-ASTLiteral<Node p>
+ASTHatch<Node p>
 =
-  '#'
+  '#'                            (. p.ast.ishatch = true; .)
   [ '#'                          (. p.ast.isList = true; .)
+  ]
+  [ ASTPrime<p>
+  | ASTConst<p> 
   ]
 .
 

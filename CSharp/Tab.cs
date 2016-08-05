@@ -90,6 +90,7 @@ public class Symbol {
 public class AstOp {
 	public bool isList = false;
 	public bool primed = false;
+	public bool ishatch = true;	// t - # or ## (hatch), f - ^ or ^^ (sendup) 
 	public string name = null;
 	public string literal = null;
 }

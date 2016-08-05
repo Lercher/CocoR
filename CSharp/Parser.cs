@@ -795,6 +795,7 @@ const int id = 0;
 	void ASTProperty‿NT(Node p) {
 		{
 		Expect(45); // "^"
+		p.ast.ishatch = false;
 		string n = p.sym.name;
 		if (n.StartsWith("\"")) n = n.Substring(1, n.Length - 2);
 		p.ast.name = n.ToLower(); 
