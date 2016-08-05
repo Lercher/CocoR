@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -13,11 +14,41 @@ public abstract class AST {
     public abstract int count { get; }
     public static readonly AST empty = new ASTLiteral(string.Empty);
     protected abstract void add(E e);
+    protected abstract void serialize(StringBuilder sb, int indent);
+
+	public static void newline(int indent, StringBuilder sb) {
+        sb.AppendLine();
+        for(int i = 0; i < indent; i++);
+            sb.Append("  ");
+    }
+
+	public static void escape(string s, StringBuilder sb) {
+		foreach (char ch in s) {
+			switch(ch) {
+				case '\\': sb.Append("\\\\"); break;
+				case '\'': sb.Append("\\'"); break;
+				case '\"': sb.Append("\\\""); break;
+				case '\t': sb.Append("\\t"); break;
+				case '\r': sb.Append("\\r"); break;
+				case '\n': sb.Append("\\n"); break;
+				default:
+					if (ch < ' ' || ch > '\u007f') sb.AppendFormat("x4",ch);
+					else sb.Append(ch);
+					break;
+			}
+		}
+	}
 
     public E create(Token t) {
         E e = new E();
         e.ast = new ASTLiteral(t.val);
         return e;
+    }
+
+    public override string ToString() {
+        StringBuilder sb = new StringBuilder();
+        serialize(sb, 0);
+        return sb.ToString();
     }
 
     private abstract class ASTThrows : AST {
@@ -32,10 +63,17 @@ public abstract class AST {
         private readonly string _val;
         public override string val { get { return _val; } }
         public override int count { get { return -1; } }
+
+        protected override void serialize(StringBuilder sb, int indent)
+        {
+            sb.Append('\"');
+            AST.escape(val, sb);
+            sb.Append('\"');
+        }
     }
 
     private class ASTList : ASTThrows {
-        private readonly List<AST> list;        
+        private readonly List<AST> list = new List<AST>();        
         public override AST this[int i] { 
             get { 
                 if (i < 0 || count <= i)
@@ -48,6 +86,22 @@ public abstract class AST {
         protected override void add(E e) { 
             list.Add(e.ast); 
         }
+
+        protected override void serialize(StringBuilder sb, int indent)
+        {
+            bool longlist = (count > 3);
+            sb.Append('[');
+            int n = 0;
+            foreach(AST ast in list) {
+                if (n > 0) sb.Append(", ");
+                if (longlist) AST.newline(indent + 1, sb);
+                ast.serialize(sb, indent + 1);
+                n++;
+            }
+            if (longlist) AST.newline(indent, sb);
+            sb.Append(']');
+        }
+
     }
 
     private class ASTObject : ASTThrows {
@@ -63,6 +117,25 @@ public abstract class AST {
         
         protected override void add(E e) { 
             ht[e.name] = e.ast; 
+        }
+
+        protected override void serialize(StringBuilder sb, int indent)
+        {
+            bool longlist = (count > 3);
+            sb.Append('{');
+            int n = 0;
+            foreach(string name in ht.Keys) {
+                AST ast = ht[name];
+                if (n > 0) sb.Append(", ");
+                if (longlist) AST.newline(indent + 1, sb);
+                sb.Append('\"');
+                AST.escape(name, sb);
+                sb.Append("\": ");
+                ast.serialize(sb, indent + 1);
+                n++;
+            }
+            if (longlist) AST.newline(indent, sb);
+            sb.Append('}');
         }
     }
 
@@ -82,11 +155,11 @@ public abstract class AST {
     public class Builder {
         private readonly Stack<E> stack = new Stack<E>(); // marker = null
 
-        public Builder() {
-            stack.Push(null); // null = TopLevel Object
-        }
+        public AST current { get { return stack.Peek().ast; } }
 
-        public AST current { get { return stack.Peek().ast; } }   
+        public IDisposable createMarker() {
+            return new Marker(this);
+        }
 
         private E construct() {
             // reverse the stack order:
@@ -122,11 +195,27 @@ public abstract class AST {
                     obj.add(e);
                 }
             }
+            if (obj == null) obj = new ASTObject();
             E ret = new E();
             ret.ast = obj;
             stack.Push(ret);
             return ret;
         }
+
+
+        private class Marker : IDisposable {
+            public readonly Builder builder;
+
+            public Marker(Builder builder) {
+                this.builder = builder;
+                builder.stack.Push(null);            
+            }
+
+            public void Dispose() {
+                builder.construct();
+            }
+        }
+
     }
 }
 
@@ -160,6 +249,9 @@ public class Inheritance {
             // list all symbol table values
             printST(parser.types);
             printST(parser.variables);
+
+            System.Console.WriteLine("----------------------- AST ----------------------------");
+            System.Console.WriteLine(parser.ast);
 
             if (arg.Length > 1) {
                 // list all alternatives

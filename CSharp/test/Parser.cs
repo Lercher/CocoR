@@ -32,6 +32,8 @@ public class Parser {
 	public Scanner scanner;
 	public Errors  errors;
 	public readonly List<Alternative> tokens = new List<Alternative>();
+	public AST ast;
+	private readonly AST.Builder astbuilder = new AST.Builder(); 
 	
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
@@ -161,6 +163,7 @@ public class Parser {
 
 	
 	void Inheritance‿NT() {
+		using(astbuilder.createMarker())
 		using(types.createUsageCheck(false, errors, la)) // 0..1
 		using(types.createUsageCheck(true, errors, la)) // 1..N
 		{
@@ -212,6 +215,7 @@ public class Parser {
 	}}
 
 	void TDBs‿NT() {
+		using(astbuilder.createMarker())
 		{
 		addAlt(set0, 2); // ITER start
 		while (StartOf(2)) {
@@ -233,6 +237,7 @@ public class Parser {
 	}}
 
 	void NumberIdent‿NT() {
+		using(astbuilder.createMarker())
 		{
 		addAlt(26); // ALT
 		addAlt(27); // ALT
@@ -318,6 +323,7 @@ public class Parser {
 	}}
 
 	void Call‿NT() {
+		using(astbuilder.createMarker())
 		{
 		addAlt(22); // T
 		Expect(22); // "call"
@@ -337,6 +343,7 @@ public class Parser {
 	}}
 
 	void IdentOrNumber‿NT() {
+		using(astbuilder.createMarker())
 		{
 		addAlt(2); // ALT
 		addAlt(set0, 4); // ALT
@@ -348,6 +355,7 @@ public class Parser {
 	}}
 
 	void Type‿NT() {
+		using(astbuilder.createMarker())
 		{
 		addAlt(24); // T
 		Expect(24); // "type"
@@ -360,6 +368,7 @@ public class Parser {
 	}}
 
 	void Declaration‿NT() {
+		using(astbuilder.createMarker())
 		{
 		Var‿NT();
 		Ident‿NT();
@@ -375,6 +384,7 @@ public class Parser {
 	}}
 
 	void Block‿NT() {
+		using(astbuilder.createMarker())
 		using(variables.createScope()) 
 		using(types.createScope()) 
 		{
@@ -386,6 +396,7 @@ public class Parser {
 	}}
 
 	void Param‿NT() {
+		using(astbuilder.createMarker())
 		{
 		addAlt(2); // ALT
 		addAlt(2, variables); // ALT ident uses symbol table 'variables'
@@ -399,6 +410,7 @@ public class Parser {
 	}}
 
 	void Var‿NT() {
+		using(astbuilder.createMarker())
 		{
 		addAlt(4); // ALT
 		addAlt(5); // ALT
@@ -448,6 +460,7 @@ public class Parser {
 	}}
 
 	void Ident‿NT() {
+		using(astbuilder.createMarker())
 		{
 		if (!variables.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, variables.name));
 		alternatives.tdeclares = variables;
@@ -470,6 +483,7 @@ public class Parser {
 	}}
 
 	void Separator‿NT() {
+		using(astbuilder.createMarker())
 		{
 		addAlt(23); // ALT
 		addAlt(25); // ALT
@@ -483,6 +497,7 @@ public class Parser {
 	}}
 
 	void NumberVar‿NT() {
+		using(astbuilder.createMarker())
 		{
 		addAlt(26); // ALT
 		addAlt(27); // ALT
@@ -566,6 +581,7 @@ public class Parser {
 		variables.CheckDeclared(errors);
 		types.CheckDeclared(errors);
 
+		ast = astbuilder.current;
 	}
 	
 	// a token's base type

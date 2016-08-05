@@ -43,6 +43,8 @@ public class Parser {
 	public Scanner scanner;
 	public Errors  errors;
 	public readonly List<Alternative> tokens = new List<Alternative>();
+	public AST ast;
+	private readonly AST.Builder astbuilder = new AST.Builder(); 
 	
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
@@ -165,6 +167,7 @@ public class Parser {
 		la.val = "";
 		Get();
 -->parseRoot
+		ast = astbuilder.current;
 	}
 	
 	// a token's base type
