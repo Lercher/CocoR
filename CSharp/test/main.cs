@@ -39,9 +39,9 @@ public abstract class AST {
 		}
 	}
 
-    public E create(Token t) {
+    public static E create(string lit) {
         E e = new E();
-        e.ast = new ASTLiteral(t.val);
+        e.ast = new ASTLiteral(lit);
         return e;
     }
 
@@ -156,6 +156,17 @@ public abstract class AST {
         private readonly Stack<E> stack = new Stack<E>(); // marker = null
 
         public AST current { get { return stack.Peek().ast; } }
+
+        // that's what we call, built from an AstOp
+        void process(Token t, string literal, string name, bool islist) {
+            E e;
+            if (literal != null)
+                e = AST.create(literal);
+            else
+                e = AST.create(t.val);
+            e.name = name;
+            e.islist = islist;
+        }
 
         public IDisposable createMarker() {
             return new Marker(this);

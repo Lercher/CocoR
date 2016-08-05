@@ -246,12 +246,12 @@ public class ParserGen {
 	void GenSymboltableCheck(Node p, int indent) {
 		if (!string.IsNullOrEmpty(p.declares)) {
 			Indent(indent);
-			gen.WriteLine("if (!{0}.Add(la)) SemErr(la, string.Format(DuplicateSymbol, \"{1}\", la.val, {0}.name));", p.declares, tab.Escape(p.sym.name));
+			gen.WriteLine("if (!{0}.Add(la)) SemErr(la, string.Format(DuplicateSymbol, {1}, la.val, {0}.name));", p.declares, tab.Quoted(p.sym.name));
 			Indent(indent);
 			gen.WriteLine("alternatives.tdeclares = {0};", p.declares);
 		} else if (!string.IsNullOrEmpty(p.declared)) {
 			Indent(indent);
-			gen.WriteLine("if (!{0}.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, \"{1}\", la.val, {0}.name));", p.declared, tab.Escape(p.sym.name));
+			gen.WriteLine("if (!{0}.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, {1}, la.val, {0}.name));", p.declared, tab.Quoted(p.sym.name));
 		} 
 	}
 
@@ -267,6 +267,12 @@ public class ParserGen {
 		Node p2;
 		BitArray s1, s2;
 		while (p != null) {
+			if (p.ast != null) {
+				Indent(indent);
+				string tprime = p.ast.primed ? "Prime(t)" : "t"; 
+				// void process(Token t, string literal, string name, bool islist)				
+				gen.WriteLine("// astbuilder.process({0}, {1}, {2}, {3});", tprime, tab.Quoted(p.ast.literal), tab.Quoted(p.ast.name), p.ast.isList); 
+			}
 			switch (p.typ) {
 				case Node.nt: {
 					// generate a production method call ...
@@ -462,7 +468,7 @@ public class ParserGen {
 
 	void GenTokenNames() {
 		ForAllTerminals(delegate(Symbol sym) {
-			gen.Write("\"{0}\"", tab.Escape(sym.definedAs));
+			gen.Write("{0}", tab.Quoted(sym.definedAs));
 		});
 	}
 	
@@ -546,13 +552,13 @@ public class ParserGen {
 			else {
 				gen.WriteLine("\t\t{0} = new Symboltable(\"{0}\", {1}, {2}, tokens);", st.name, toTF(dfa.ignoreCase), toTF(st.strict));
 				foreach(string s in st.predefined)
-					gen.WriteLine("\t\t{0}.Add(\"{1}\");", st.name, tab.Escape(s));
+					gen.WriteLine("\t\t{0}.Add({1});", st.name, tab.Quoted(s));
 			}
 		}
 		if (declare) {
 			gen.WriteLine("\tpublic Symboltable symbols(string name) {");
 			foreach (SymTab st in tab.symtabs)
-				gen.WriteLine("\t\tif (name == \"{1}\") return {0};", st.name, tab.Escape(st.name));
+				gen.WriteLine("\t\tif (name == {1}) return {0};", st.name, tab.Quoted(st.name));
 			gen.WriteLine("\t\treturn null;");
 			gen.WriteLine("\t}\n");
 		}

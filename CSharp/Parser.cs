@@ -778,6 +778,7 @@ const int id = 0;
 
 	void AST‿NT(Node p) {
 		{
+		p.ast = new AstOp(); 
 		if (isKind(la, 45)) {
 			ASTProperty‿NT(p);
 		} else if (isKind(la, 46)) {
