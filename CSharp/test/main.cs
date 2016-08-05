@@ -13,10 +13,9 @@ public abstract class AST {
     public abstract AST this[string s] { get; }
     public abstract int count { get; }
     public static readonly AST empty = new ASTLiteral(string.Empty);
-    protected abstract E add(E you, E e);
     protected abstract void serialize(StringBuilder sb, int indent);
-    protected abstract AST toList();
 
+#region Formatting
 	public static void newline(int indent, StringBuilder sb) {
         sb.AppendLine();
         for(int i = 0; i < indent; i++);
@@ -40,29 +39,18 @@ public abstract class AST {
 		}
 	}
 
-    public static E create(string lit) {
-        E e = new E();
-        e.ast = new ASTLiteral(lit);
-        return e;
-    }
-
     public override string ToString() {
         StringBuilder sb = new StringBuilder();
         serialize(sb, 0);
         return sb.ToString();
     }
 
+#endregion
+
     private abstract class ASTThrows : AST {
         public override string val { get { throw new ApplicationException("not a literal"); } }
         public override AST this[int i] { get { throw new ApplicationException("not a list"); } }
         public override AST this[string s] { get { throw new ApplicationException("not an object"); } }
-
-        // Wrap the literal/object in a list: lit/o -> [lit/o]
-        protected override AST toList() { 
-            ASTList list = new ASTList();
-            list.add(this);
-            return list;
-        }
     }
 
     private class ASTLiteral : ASTThrows {
@@ -77,14 +65,25 @@ public abstract class AST {
             AST.escape(val, sb);
             sb.Append('\"');
         }
-
-        protected override E add(E you, E e) {
-            return you; // TODO what does it mean to add sth to a literal? 
-        }
     }
 
     private class ASTList : ASTThrows {
-        private readonly List<AST> list = new List<AST>();        
+        public readonly List<AST> list;
+
+        public ASTList(AST a) {
+            if (a is ASTList)
+                list = ((ASTList)a).list;
+            else {
+                list = new List<AST>();
+                list.Add(a);
+            }
+        }
+
+        public ASTList(AST a, int i) {
+            list = new List<AST>();
+            list.Add(a);
+        }
+
         public override AST this[int i] { 
             get { 
                 if (i < 0 || count <= i)
@@ -94,18 +93,14 @@ public abstract class AST {
         }
         public override int count { get { return list.Count; } }
         
-        public AST add(AST a) {
-            list.Add(a);
+        public AST merge(AST a) {
+            if (a is ASTList) {
+                ASTList li = (ASTList) a;
+                list.AddRange(li.list);
+            } else
+                list.Add(a);
             return a;
         }
-
-        protected override E add(E you, E e) { 
-            list.Add(e.ast);
-            return you;
-        }
-
-        // identity
-        protected override AST toList() { return this; }
 
         protected override void serialize(StringBuilder sb, int indent)
         {
@@ -138,14 +133,11 @@ public abstract class AST {
         }
         public override int count { get { return ht.Keys.Count; } }
         
-        protected override E add(E you, E e) {
+        public void add(E e) {
             ht[e.name] = e.ast; 
-            return you;  
         }
 
-
-        protected override void serialize(StringBuilder sb, int indent)
-        {
+        protected override void serialize(StringBuilder sb, int indent) {
             bool longlist = (count > 3);
             sb.Append('{');
             if (longlist) AST.newline(indent + 1, sb);
@@ -169,85 +161,166 @@ public abstract class AST {
 
     public class E {
         public string name = null;
-        public bool islist = false;
         public AST ast = null;
 
-        public void handleList() {
-            if (islist) ast = ast.toList();
-            islist = false;
+        public override string ToString() {
+            string a = ast == null ? "null" : ast.ToString();
+            string n = name == null ? "." : name;
+            return string.Format("{0} = {1};", n, a);
         }
 
-        public void add(E e) {
-            ast.add(this, e);
+        public E add(E e) {
+            if (name == e.name) {
+                ASTList list = new ASTList(ast);
+                list.merge(e.ast);
+                E ret = new E();
+                ret.ast = list;
+                ret.name = name;
+                return ret;
+            } else if (name != null && e.name != null) {
+                ASTObject obj = new ASTObject();
+                obj.add(this);
+                obj.add(e);
+                E ret = new E();
+                ret.ast = obj;
+                return ret;
+            }
+            return null;
         }
 
-        public static E createNamedList(string name) {
-            E el = new E();
-            el.ast = new ASTList();
-            el.name = name;
-            return el;
-        }
-
-        public static E createObject() {
-            E eo = new E();
-            eo.ast = new ASTObject();
-            return eo;
+        public void wrapinlist() {
+            ast = new ASTList(ast, 1);
         }
     }
 
     public class Builder {
         public readonly Errors errors;
-        private E currentE;
+        private readonly Stack<E> stack = new Stack<E>();
 
         public Builder(Errors errors) {
             this.errors = errors;
-            currentE = new E();  // we start with null
+        }
+        
+        public E currentE { get { return stack.Peek(); } }
+        public AST current { get { return currentE.ast; } }
+
+        public override string ToString() {
+            StringBuilder sb = new StringBuilder();
+            foreach(E e in stack)
+                sb.AppendFormat("{0}\n", e);
+            return sb.ToString();
         }
 
-        public AST current { get { return currentE.ast; } }
+        private void push(E e) {
+            stack.Push(e);
+            System.Console.WriteLine("-> push {0}, size {1}", e, stack.Count);
+        }
 
         // that's what we call for #/##, built from an AstOp
         public void hatch(Token t, string literal, string name, bool islist) {
             System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1}.", t.val, literal, name, islist);
-            E e = AST.create(literal != null ? literal : t.val);
+            E e = new E();
+            e.ast = new ASTLiteral(literal != null ? literal : t.val);
+            if (islist)
+                e.ast = new ASTList(e.ast);
             e.name = name;
-            e.islist = islist;
-            merge(e);
-            System.Console.WriteLine("== {0}", currentE);
+            push(e);
         }
 
-        // that's what we call for ^/^^, built from an AstOp
+        // that's what we call for ^, built from an AstOp
         public void sendup(Token t, string literal, string name, bool islist) {
-            System.Console.WriteLine(">> send up as {0,-10}, islist {1}", name, islist);
-            if (currentE.name != null && name != currentE.name) errors.Warning(t.line, t.col, string.Format("overwriting AST objectname '{0}' with '{1}'", currentE.name, name));
-            if (currentE.islist && !islist) errors.SemErr(t.line, t.col, string.Format("downgrading list to literal for '{0}'", currentE.name));            
-            currentE.name = name;
-            currentE.islist = islist;
-            System.Console.WriteLine("== {0}", currentE);
+            E e = currentE;
+            if (islist)
+                System.Console.WriteLine(">> send up as [{0}]: {1}", name, e);
+            else
+                System.Console.WriteLine(">> send up as {0}: {1}", name, e);
+            if (name != e.name) {
+                if (islist)
+                    e.wrapinlist(); 
+                else 
+                    errors.Warning(t.line, t.col, string.Format("overwriting AST objectname '{0}' with '{1}'", e.name, name));
+            }
+            e.name = name;
+            mergeCompatibles(false);
+            System.Console.WriteLine("-------------> top {0}", e);
+        }
+
+        public void mergeCompatibles(bool final) {
+            E ret = null;
+            while(true) {                
+                E e = currentE;
+                if (e == null) {
+                    if (!final) break;                        
+                    stack.Pop();
+                } else if (ret == null) { 
+                    ret = e;
+                    stack.Pop();
+                } else {
+                    System.Console.Write(">> try merge {0} with {1}", ret, e);
+                    E merged = e.add(ret);
+                    if (merged != null) {
+                        ret = merged;
+                        stack.Pop();
+                    }                        
+                    else 
+                        break;
+                }
+                System.Console.WriteLine(" -> ret={0}", ret);
+            }
+            push(ret);
+        }
+
+        private void mergeToNull() {
+            Stack<E> list = new Stack<E>();
+            int cnt = 0;
+            while(true) {
+                E e = stack.Pop();
+                if (e == null) break;
+                list.Push(e);
+                cnt++;
+            }
+            if (cnt == 0) return; // nothing was pushed
+            if (cnt == 1) {
+                // we promote the one thing on the stack to the parent frame:
+                push(list.Pop());
+                return;
+            }
+            // merge as much as we can and push the results. Start with null
+            E ret = null;
+            int n = 0;
+            foreach(E e in list) {
+                n++;
+                System.Console.Write(">> {1} of {2}   merge: {0}", e, n, cnt);
+                if (ret == null) 
+                    ret = e;
+                else {
+                    E merged = ret.add(e);
+                    if (merged != null)
+                        ret = merged;
+                    else {
+                        push(ret);
+                        ret = e;
+                    }
+                }
+                System.Console.WriteLine(" -> ret={0}", ret);
+            }
+            push(ret);
         }
 
         public IDisposable createMarker() {
             return new Marker(this);
         }
 
-        private void merge(E e) {
-            if (currentE.ast == null) {
-                e.handleList();
-                currentE = e;
-                return;
-            }
-            currentE.add(e);
-        }
-
-
         private class Marker : IDisposable {
             public readonly Builder builder;
 
             public Marker(Builder builder) {
                 this.builder = builder;
+                builder.stack.Push(null);
             }
 
             public void Dispose() {
+                builder.mergeToNull();
             }
         }
 
@@ -284,6 +357,9 @@ public class Inheritance {
             // list all symbol table values
             printST(parser.types);
             printST(parser.variables);
+
+            System.Console.WriteLine("----------------------- AST stack ----------------------------");
+            System.Console.WriteLine(parser.astbuilder);
 
             System.Console.WriteLine("----------------------- AST ----------------------------");
             System.Console.WriteLine(parser.ast);

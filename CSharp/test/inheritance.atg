@@ -71,11 +71,11 @@ PRODUCTIONS
             NumberIdent
             ')' ';'
          } 
-         { Call^^:calls }
+         { Call^^ }
          { "check" ("t" ident:types | "v" ident:variables) ';' }
          { IdentOrNumber }.
 
-    TDBs =  { Type<"new type declared: "> | Declaration | Block | Call }.
+    TDBs =  { Type<"new type declared: "> | Declaration | Block | Call^^:tbdcall }.
 
     Block SCOPES(variables, types) = "{" TDBs "}". 
 

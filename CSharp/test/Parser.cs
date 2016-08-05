@@ -33,7 +33,7 @@ public class Parser {
 	public Errors  errors;
 	public readonly List<Alternative> tokens = new List<Alternative>();
 	public AST ast;
-	private readonly AST.Builder astbuilder; 
+	public readonly AST.Builder astbuilder; 
 	
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
@@ -184,7 +184,7 @@ public class Parser {
 		addAlt(22); // ITER start
 		while (isKind(la, 22)) {
 			Call‿NT();
-			astbuilder.sendup(t, null, "calls", true);
+			astbuilder.sendup(t, null, "call", true);
 			addAlt(22); // ITER end
 		}
 		addAlt(19); // ITER start
@@ -233,6 +233,7 @@ public class Parser {
 				Block‿NT();
 			} else {
 				Call‿NT();
+				astbuilder.sendup(t, null, "tbdcall", true);
 			}
 			addAlt(set0, 2); // ITER end
 		}
@@ -585,6 +586,7 @@ public class Parser {
 		variables.CheckDeclared(errors);
 		types.CheckDeclared(errors);
 
+		astbuilder.mergeCompatibles(true);
 		ast = astbuilder.current;
 	}
 	

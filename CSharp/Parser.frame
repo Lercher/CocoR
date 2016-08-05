@@ -44,7 +44,7 @@ public class Parser {
 	public Errors  errors;
 	public readonly List<Alternative> tokens = new List<Alternative>();
 	public AST ast;
-	private readonly AST.Builder astbuilder; 
+	public readonly AST.Builder astbuilder; 
 	
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
@@ -168,6 +168,7 @@ public class Parser {
 		la.val = "";
 		Get();
 -->parseRoot
+		astbuilder.mergeCompatibles(true);
 		ast = astbuilder.current;
 	}
 	

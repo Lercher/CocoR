@@ -11,11 +11,11 @@ var var;            // OK now (var inherits ident) but 'ident expected' with the
 //var keyword;      // 'ident expected' b/c keyword is not an ident
 var a, b, c;
 var A, B, C;
-var äöü; call(äöü);  // test UTF-8 symbols, german umlauts
+var äöü; call(äöü, 10, 20);  // test UTF-8 symbols, german umlauts
 var forwardScope : int;
 { 
     var a, aa, parentscope; // redefine a
-    call(a, aa, 10, 1234);
+    call(a, aa, 10);
     { 
         var a, aaa;
         call(a, aaa);
