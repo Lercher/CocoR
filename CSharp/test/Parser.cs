@@ -1195,7 +1195,12 @@ public abstract class AST {
         }
         
         public E currentE { get { return stack.Peek(); } }
-        public AST current { get { return currentE.ast; } }
+        
+		public AST current { 
+			get { 
+				return stack.Count > 0 ? currentE.ast : new ASTObject(); 
+			} 
+		}
 
         public override string ToString() {
             StringBuilder sb = new StringBuilder();
@@ -1222,6 +1227,7 @@ public abstract class AST {
 
         // that's what we call for ^, built from an AstOp
         public void sendup(Token t, string literal, string name, bool islist) {
+			if (stack.Count == 0) return;
             E e = currentE;
             if (islist)
                 System.Console.WriteLine(">> send up as [{0}]: {1}", name, e);
