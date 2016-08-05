@@ -1,5 +1,6 @@
 
 using System;
+using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -54,12 +55,14 @@ public class Parser {
 		return null;
 	}
 
+	public Token Prime() { return t; }
+
 
 
 	public Parser(Scanner scanner) {
 		this.scanner = scanner;
 		errors = new Errors();
-		astbuilder = new AST.Builder(errors);
+		astbuilder = new AST.Builder(this);
 		types = new Symboltable("types", true, false, tokens);
 		enumtypes = new Symboltable("enumtypes", true, false, tokens);
 
@@ -168,7 +171,6 @@ public class Parser {
 
 	
 	void WFModel‿NT() {
-		using(astbuilder.createMarker())
 		{
 		Version‿NT();
 		Namespace‿NT();
@@ -198,7 +200,6 @@ public class Parser {
 	}}
 
 	void Version‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(13); // T
 		Expect(13); // version
@@ -207,7 +208,6 @@ public class Parser {
 	}}
 
 	void Namespace‿NT() {
-		using(astbuilder.createMarker())
 		{
 		while (!(isKind(la, 0) || isKind(la, 22))) {SynErr(73); Get();}
 		addAlt(22); // T
@@ -216,7 +216,6 @@ public class Parser {
 	}}
 
 	void ReaderWriterPrefix‿NT() {
-		using(astbuilder.createMarker())
 		{
 		while (!(isKind(la, 0) || isKind(la, 23))) {SynErr(74); Get();}
 		addAlt(23); // T
@@ -226,7 +225,6 @@ public class Parser {
 	}}
 
 	void RootClass‿NT() {
-		using(astbuilder.createMarker())
 		{
 		while (!(isKind(la, 0) || isKind(la, 24))) {SynErr(75); Get();}
 		addAlt(24); // T
@@ -241,7 +239,6 @@ public class Parser {
 	}}
 
 	void Class‿NT() {
-		using(astbuilder.createMarker())
 		{
 		while (!(isKind(la, 0) || isKind(la, 26))) {SynErr(76); Get();}
 		addAlt(26); // T
@@ -270,7 +267,6 @@ public class Parser {
 	}}
 
 	void SubSystem‿NT() {
-		using(astbuilder.createMarker())
 		{
 		while (!(isKind(la, 0) || isKind(la, 62))) {SynErr(77); Get();}
 		addAlt(62); // T
@@ -318,7 +314,6 @@ public class Parser {
 	}}
 
 	void Enum‿NT() {
-		using(astbuilder.createMarker())
 		{
 		while (!(isKind(la, 0) || isKind(la, 70))) {SynErr(78); Get();}
 		addAlt(70); // T
@@ -335,7 +330,6 @@ public class Parser {
 	}}
 
 	void Flags‿NT() {
-		using(astbuilder.createMarker())
 		{
 		while (!(isKind(la, 0) || isKind(la, 69))) {SynErr(79); Get();}
 		addAlt(69); // T
@@ -356,7 +350,6 @@ public class Parser {
 	}}
 
 	void EndNamespace‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(8); // T
 		Expect(8); // end
@@ -365,7 +358,6 @@ public class Parser {
 	}}
 
 	void DottedIdent‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(2); // OPT
 		if (isKind(la, 2)) {
@@ -385,7 +377,6 @@ public class Parser {
 	}}
 
 	void Properties‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(set0, 2); // ITER start
 		while (StartOf(2)) {
@@ -395,14 +386,12 @@ public class Parser {
 	}}
 
 	void Title‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(6); // T
 		Expect(6); // braced
 	}}
 
 	void Inherits‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(28); // T
 		Expect(28); // "inherits"
@@ -410,7 +399,6 @@ public class Parser {
 	}}
 
 	void Via‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(27); // T
 		Expect(27); // "via"
@@ -418,7 +406,6 @@ public class Parser {
 	}}
 
 	void Prop‿NT() {
-		using(astbuilder.createMarker())
 		{
 		while (!(StartOf(3))) {SynErr(80); Get();}
 		addAlt(29); // ALT
@@ -475,7 +462,6 @@ public class Parser {
 	}}
 
 	void Property‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(29); // T
 		Expect(29); // "property"
@@ -485,7 +471,6 @@ public class Parser {
 	}}
 
 	void InfoProperty‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(30); // T
 		Expect(30); // "infoproperty"
@@ -495,7 +480,6 @@ public class Parser {
 	}}
 
 	void APProperty‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(31); // T
 		Expect(31); // "approperty"
@@ -505,7 +489,6 @@ public class Parser {
 	}}
 
 	void List‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(32); // T
 		Expect(32); // "list"
@@ -518,7 +501,6 @@ public class Parser {
 	}}
 
 	void SelectList‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(33); // T
 		Expect(33); // "selectlist"
@@ -528,7 +510,6 @@ public class Parser {
 	}}
 
 	void FlagsList‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(34); // T
 		Expect(34); // "flagslist"
@@ -538,7 +519,6 @@ public class Parser {
 	}}
 
 	void LongProperty‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(35); // T
 		Expect(35); // "longproperty"
@@ -547,7 +527,6 @@ public class Parser {
 	}}
 
 	void InfoLongProperty‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(36); // T
 		Expect(36); // "infolongproperty"
@@ -556,7 +535,6 @@ public class Parser {
 	}}
 
 	void Type‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(set0, 4); // ALT
 		addAlt(41); // ALT
@@ -580,7 +558,6 @@ public class Parser {
 	}}
 
 	void As‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(41); // T
 		Expect(41); // "as"
@@ -599,7 +576,6 @@ public class Parser {
 	}}
 
 	void Mimics‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(57); // T
 		Expect(57); // "mimics"
@@ -607,12 +583,10 @@ public class Parser {
 	}}
 
 	void EmptyType‿NT() {
-		using(astbuilder.createMarker())
 		{
 	}}
 
 	void InitValue‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(3); // ALT
 		addAlt(4); // ALT
@@ -679,14 +653,12 @@ public class Parser {
 	}}
 
 	void SampleValue‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(6); // T
 		Expect(6); // braced
 	}}
 
 	void FunctionCall‿NT() {
-		using(astbuilder.createMarker())
 		{
 		DottedIdent‿NT();
 		addAlt(7); // T
@@ -694,7 +666,6 @@ public class Parser {
 	}}
 
 	void BaseType‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(42); // ALT
 		addAlt(43); // ALT
@@ -792,7 +763,6 @@ public class Parser {
 	}}
 
 	void MimicsSpec‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(58); // ALT
 		addAlt(59); // ALT
@@ -815,7 +785,6 @@ public class Parser {
 	}}
 
 	void Query‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(58); // T
 		Expect(58); // "query"
@@ -833,7 +802,6 @@ public class Parser {
 	}}
 
 	void Txt‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(59); // T
 		Expect(59); // "txt"
@@ -851,7 +819,6 @@ public class Parser {
 	}}
 
 	void XL‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(60); // T
 		Expect(60); // "xl"
@@ -869,7 +836,6 @@ public class Parser {
 	}}
 
 	void Ref‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(61); // T
 		Expect(61); // "ref"
@@ -888,7 +854,6 @@ public class Parser {
 	}}
 
 	void StringOrIdent‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(5); // ALT
 		addAlt(new int[] {1, 2}); // ALT
@@ -900,7 +865,6 @@ public class Parser {
 	}}
 
 	void SSCommands‿NT() {
-		using(astbuilder.createMarker())
 		{
 		SSCommand‿NT();
 		addAlt(10); // ITER start
@@ -912,7 +876,6 @@ public class Parser {
 	}}
 
 	void SSCommand‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(14); // ALT
 		addAlt(15); // ALT
@@ -933,7 +896,6 @@ public class Parser {
 	}}
 
 	void EnumValue‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(1); // T
 		Expect(1); // ident
@@ -944,7 +906,6 @@ public class Parser {
 	}}
 
 	void EnumValues‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(1); // ITER start
 		while (isKind(la, 1)) {
@@ -962,7 +923,6 @@ public class Parser {
 	}}
 
 	void EnumIntValue‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(37); // T
 		Expect(37); // "="
@@ -976,12 +936,12 @@ public class Parser {
 		la = new Token();
 		la.val = "";
 		Get();
+		using(astbuilder.createMarker(null, null, false, false, false))
 		WFModel‿NT();
 		Expect(0);
 		types.CheckDeclared(errors);
 		enumtypes.CheckDeclared(errors);
 
-		astbuilder.mergeCompatibles(true);
 		ast = astbuilder.current;
 	}
 	
@@ -1436,4 +1396,328 @@ public class Symboltable {
 			} 
 		}
 	}
+}
+
+public abstract class AST {
+    public abstract string val { get; }
+    public abstract AST this[int i] { get; }
+    public abstract AST this[string s] { get; }
+    public abstract int count { get; }
+    public static readonly AST empty = new ASTLiteral(string.Empty);
+    protected abstract void serialize(StringBuilder sb, int indent);
+    public virtual bool merge(E e) { return false; }
+    
+#region Formatting
+	public static void newline(int indent, StringBuilder sb) {
+        sb.AppendLine();
+        for(int i = 0; i < indent; i++)
+            sb.Append("  ");
+    }
+
+	public static void escape(string s, StringBuilder sb) {
+		foreach (char ch in s) {
+			switch(ch) {
+				case '\\': sb.Append("\\\\"); break;
+				case '\'': sb.Append("\\'"); break;
+				case '\"': sb.Append("\\\""); break;
+				case '\t': sb.Append("\\t"); break;
+				case '\r': sb.Append("\\r"); break;
+				case '\n': sb.Append("\\n"); break;
+				default:
+					if (ch < ' ' || ch > '\u007f') sb.AppendFormat("{0:x4}",ch);
+					else sb.Append(ch);
+					break;
+			}
+		}
+	}
+
+    public override string ToString() {
+        StringBuilder sb = new StringBuilder();
+        serialize(sb, 0);
+        return sb.ToString();
+    }
+
+#endregion
+
+    private abstract class ASTThrows : AST {
+        public override string val { get { throw new ApplicationException("not a literal"); } }
+        public override AST this[int i] { get { throw new ApplicationException("not a list"); } }
+        public override AST this[string s] { get { throw new ApplicationException("not an object"); } }
+    }
+
+    private class ASTLiteral : ASTThrows {
+        public ASTLiteral(string s) { _val = s; }
+        private readonly string _val;
+        public override string val { get { return _val; } }
+        public override int count { get { return -1; } }
+
+        protected override void serialize(StringBuilder sb, int indent)
+        {
+            sb.Append('\"');
+            AST.escape(val, sb);
+            sb.Append('\"');
+        }
+    }
+
+    private class ASTList : ASTThrows {
+        public readonly List<AST> list;
+
+        public ASTList(AST a) {
+            if (a is ASTList)
+                list = ((ASTList)a).list;
+            else {
+                list = new List<AST>();
+                list.Add(a);
+            }
+        }
+
+        public ASTList(AST a, int i) {
+            list = new List<AST>();
+            list.Add(a);
+        }
+
+        public override AST this[int i] { 
+            get { 
+                if (i < 0 || count <= i)
+                    return AST.empty;
+                return list[i];
+            } 
+        }
+        public override int count { get { return list.Count; } }
+        
+        public AST merge(AST a) {
+            if (a is ASTList) {
+                ASTList li = (ASTList) a;
+                list.AddRange(li.list);
+            } else
+                list.Add(a);
+            return a;
+        }
+
+        protected override void serialize(StringBuilder sb, int indent)
+        {
+            bool longlist = (count > 3);
+            sb.Append('[');
+            if (longlist) AST.newline(indent, sb);
+            int n = 0;
+            foreach(AST ast in list) {
+                ast.serialize(sb, indent + 1);
+                n++;
+                if (n < count) {
+                    sb.Append(", ");
+                    if (longlist) AST.newline(indent, sb);
+                }
+            }
+            if (longlist) AST.newline(indent - 1, sb);
+            sb.Append(']');
+        }
+
+    }
+
+    private class ASTObject : ASTThrows {
+        private readonly Dictionary<string,AST> ht = new Dictionary<string,AST>();         
+        public override AST this[string s] { 
+            get { 
+                if (!ht.ContainsKey(s))
+                    return AST.empty;
+                return ht[s];
+            } 
+        }
+        public override int count { get { return ht.Keys.Count; } }
+        
+        public void add(E e) {
+            ht[e.name] = e.ast; 
+        }
+
+        public override bool merge(E e) {
+            if (e.name == null) return false; // cannot merge an unnamed thing
+            if (!ht.ContainsKey(e.name)) {
+                add(e);
+                return true;
+            }
+            // we have e.nam, call it a thing:
+            AST thing = ht[e.name];
+            if (thing is ASTList) {
+                ((ASTList) thing).merge(e.ast);
+                return true;
+            }
+            // thing is not a list, so we cannot merge it with e
+            return false;
+        }
+
+        protected override void serialize(StringBuilder sb, int indent) {
+            bool longlist = (count > 3);
+            sb.Append('{');
+            if (longlist) AST.newline(indent + 1, sb);
+            int n = 0;
+            foreach(string name in ht.Keys) {
+                AST ast = ht[name];
+                sb.Append('\"');
+                AST.escape(name, sb);
+                sb.Append("\": ");
+                ast.serialize(sb, indent + 1);
+                n++;
+                if (n < count) {
+                    sb.Append(", ");
+                    if (longlist) AST.newline(indent + 1, sb);
+                }
+            }
+            if (longlist) AST.newline(indent, sb);
+            sb.Append('}');
+        }
+    }
+
+    public class E {
+        public string name = null;
+        public AST ast = null;
+
+        public override string ToString() {
+            string a = ast == null ? "null" : ast.ToString();
+            string n = name == null ? "." : name;
+            return string.Format("{0} = {1};", n, a);
+        }
+
+        public E add(E e) {
+            if (name == e.name) {
+                ASTList list = new ASTList(ast);
+                list.merge(e.ast);
+                E ret = new E();
+                ret.ast = list;
+                ret.name = name;
+                return ret;
+            } else if (name != null && e.name != null) {
+                ASTObject obj = new ASTObject();
+                obj.add(this);
+                obj.add(e);
+                E ret = new E();
+                ret.ast = obj;
+                return ret;
+            } else if (ast.merge(e))
+                return this;
+            return null;
+        }
+
+        public void wrapinlist() {
+            ast = new ASTList(ast, 1);
+        }
+    }
+
+    public class Builder {
+        public readonly Parser parser;
+        private readonly Stack<E> stack = new Stack<E>();
+
+        public Builder(Parser parser) {
+            this.parser = parser;
+        }
+        
+        public E currentE { get { return stack.Peek(); } }
+        public AST current { get { return currentE.ast; } }
+
+        public override string ToString() {
+            StringBuilder sb = new StringBuilder();
+            foreach(E e in stack)
+                sb.AppendFormat("{0}\n", e);
+            return sb.ToString();
+        }
+
+        private void push(E e) {
+            stack.Push(e);
+            System.Console.WriteLine("-> push {0}, size {1}", e, stack.Count);
+        }
+
+        // that's what we call for #/##, built from an AstOp
+        public void hatch(Token t, string literal, string name, bool islist) {
+            System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1}.", t.val, literal, name, islist);
+            E e = new E();
+            e.ast = new ASTLiteral(literal != null ? literal : t.val);
+            if (islist)
+                e.ast = new ASTList(e.ast);
+            e.name = name;
+            push(e);
+        }
+
+        // that's what we call for ^, built from an AstOp
+        public void sendup(Token t, string literal, string name, bool islist) {
+            E e = currentE;
+            if (islist)
+                System.Console.WriteLine(">> send up as [{0}]: {1}", name, e);
+            else
+                System.Console.WriteLine(">> send up as {0}: {1}", name, e);
+            if (name != e.name) {
+                if (islist)
+                    e.wrapinlist(); 
+                else 
+                    parser.errors.Warning(t.line, t.col, string.Format("overwriting AST objectname '{0}' with '{1}'", e.name, name));
+            }
+            e.name = name;
+            System.Console.WriteLine("-------------> top {0}", e);
+        }
+
+        private void mergeToNull() {
+            Stack<E> list = new Stack<E>();
+            int cnt = 0;
+            while(true) {
+                E e = stack.Pop();
+                if (e == null) break;
+                list.Push(e);
+                cnt++;
+            }
+            if (cnt == 0) return; // nothing was pushed
+            if (cnt == 1) {
+                // we promote the one thing on the stack to the parent frame:
+                push(list.Pop());
+                return;
+            }
+            // merge as much as we can and push the results. Start with null
+            E ret = null;
+            int n = 0;
+            foreach(E e in list) {
+                n++;
+                System.Console.Write(">> {1} of {2}   merge: {0}", e, n, cnt);
+                if (ret == null) 
+                    ret = e;
+                else {
+                    E merged = ret.add(e);
+                    if (merged != null)
+                        ret = merged;
+                    else {
+                        push(ret);
+                        ret = e;
+                    }
+                }
+                System.Console.WriteLine(" -> ret={0}", ret);
+            }
+            push(ret);
+        }
+
+        public IDisposable createMarker(string literal, string name, bool islist, bool ishatch, bool primed) {
+            return new Marker(this, literal, name, islist, ishatch, primed);
+        }
+
+        private class Marker : IDisposable {
+            public readonly Builder builder;
+            public readonly string literal;
+            public readonly string name;
+            public readonly bool islist;
+            public readonly bool ishatch;
+            public readonly bool primed;
+
+            public Marker(Builder builder, string literal, string name, bool islist, bool ishatch, bool primed) {
+                this.builder = builder;                
+                this.literal = literal;
+                this.name = name;
+                this.ishatch = ishatch;
+                this.islist = islist;
+                this.primed = primed;
+                builder.stack.Push(null); // push a marker
+            }
+
+            public void Dispose() {
+                Token t = primed ? builder.parser.Prime() : builder.parser.t;
+                if (ishatch) builder.hatch(t, literal, name, islist);
+                builder.mergeToNull();
+                if (!ishatch) builder.sendup(t, literal, name, islist);
+            }
+        }
+    }
 }
