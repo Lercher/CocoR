@@ -39,6 +39,8 @@ public class Parser {
 	public Scanner scanner;
 	public Errors  errors;
 	public readonly List<Alternative> tokens = new List<Alternative>();
+	public AST ast;
+	public readonly AST.Builder astbuilder; 
 	
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
@@ -57,6 +59,7 @@ public class Parser {
 	public Parser(Scanner scanner) {
 		this.scanner = scanner;
 		errors = new Errors();
+		astbuilder = new AST.Builder(errors);
 		types = new Symboltable("types", true, false, tokens);
 		enumtypes = new Symboltable("enumtypes", true, false, tokens);
 
@@ -165,6 +168,8 @@ public class Parser {
 
 	
 	void WFModel‿NT() {
+		using(astbuilder.createMarker())
+		{
 		Version‿NT();
 		Namespace‿NT();
 		addAlt(23); // OPT
@@ -190,31 +195,39 @@ public class Parser {
 			addAlt(set0, 1); // ITER end
 		}
 		EndNamespace‿NT();
-	}
+	}}
 
 	void Version‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(13); // T
 		Expect(13); // version
 		addAlt(12); // T
 		Expect(12); // versionnumber
-	}
+	}}
 
 	void Namespace‿NT() {
+		using(astbuilder.createMarker())
+		{
 		while (!(isKind(la, 0) || isKind(la, 22))) {SynErr(73); Get();}
 		addAlt(22); // T
 		Expect(22); // "namespace"
 		DottedIdent‿NT();
-	}
+	}}
 
 	void ReaderWriterPrefix‿NT() {
+		using(astbuilder.createMarker())
+		{
 		while (!(isKind(la, 0) || isKind(la, 23))) {SynErr(74); Get();}
 		addAlt(23); // T
 		Expect(23); // "readerwriterprefix"
 		addAlt(1); // T
 		Expect(1); // ident
-	}
+	}}
 
 	void RootClass‿NT() {
+		using(astbuilder.createMarker())
+		{
 		while (!(isKind(la, 0) || isKind(la, 24))) {SynErr(75); Get();}
 		addAlt(24); // T
 		Expect(24); // "rootclass"
@@ -225,9 +238,11 @@ public class Parser {
 		Expect(8); // end
 		addAlt(26); // T
 		Expect(26); // "class"
-	}
+	}}
 
 	void Class‿NT() {
+		using(astbuilder.createMarker())
+		{
 		while (!(isKind(la, 0) || isKind(la, 26))) {SynErr(76); Get();}
 		addAlt(26); // T
 		Expect(26); // "class"
@@ -252,9 +267,11 @@ public class Parser {
 		Expect(8); // end
 		addAlt(26); // T
 		Expect(26); // "class"
-	}
+	}}
 
 	void SubSystem‿NT() {
+		using(astbuilder.createMarker())
+		{
 		while (!(isKind(la, 0) || isKind(la, 62))) {SynErr(77); Get();}
 		addAlt(62); // T
 		Expect(62); // "subsystem"
@@ -298,9 +315,11 @@ public class Parser {
 		Expect(8); // end
 		addAlt(62); // T
 		Expect(62); // "subsystem"
-	}
+	}}
 
 	void Enum‿NT() {
+		using(astbuilder.createMarker())
+		{
 		while (!(isKind(la, 0) || isKind(la, 70))) {SynErr(78); Get();}
 		addAlt(70); // T
 		Expect(70); // "enum"
@@ -313,9 +332,11 @@ public class Parser {
 		Expect(8); // end
 		addAlt(70); // T
 		Expect(70); // "enum"
-	}
+	}}
 
 	void Flags‿NT() {
+		using(astbuilder.createMarker())
+		{
 		while (!(isKind(la, 0) || isKind(la, 69))) {SynErr(79); Get();}
 		addAlt(69); // T
 		Expect(69); // "flags"
@@ -332,16 +353,20 @@ public class Parser {
 		Expect(8); // end
 		addAlt(69); // T
 		Expect(69); // "flags"
-	}
+	}}
 
 	void EndNamespace‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(8); // T
 		Expect(8); // end
 		addAlt(22); // T
 		Expect(22); // "namespace"
-	}
+	}}
 
 	void DottedIdent‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(2); // OPT
 		if (isKind(la, 2)) {
 			Get();
@@ -357,34 +382,44 @@ public class Parser {
 		}
 		addAlt(1); // T
 		Expect(1); // ident
-	}
+	}}
 
 	void Properties‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(set0, 2); // ITER start
 		while (StartOf(2)) {
 			Prop‿NT();
 			addAlt(set0, 2); // ITER end
 		}
-	}
+	}}
 
 	void Title‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(6); // T
 		Expect(6); // braced
-	}
+	}}
 
 	void Inherits‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(28); // T
 		Expect(28); // "inherits"
 		DottedIdent‿NT();
-	}
+	}}
 
 	void Via‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(27); // T
 		Expect(27); // "via"
 		DottedIdent‿NT();
-	}
+	}}
 
 	void Prop‿NT() {
+		using(astbuilder.createMarker())
+		{
 		while (!(StartOf(3))) {SynErr(80); Get();}
 		addAlt(29); // ALT
 		addAlt(30); // ALT
@@ -437,33 +472,41 @@ public class Parser {
 		}
 		default: SynErr(81); break;
 		}
-	}
+	}}
 
 	void Property‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(29); // T
 		Expect(29); // "property"
 		addAlt(1); // T
 		Expect(1); // ident
 		Type‿NT();
-	}
+	}}
 
 	void InfoProperty‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(30); // T
 		Expect(30); // "infoproperty"
 		addAlt(1); // T
 		Expect(1); // ident
 		Type‿NT();
-	}
+	}}
 
 	void APProperty‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(31); // T
 		Expect(31); // "approperty"
 		addAlt(1); // T
 		Expect(1); // ident
 		Type‿NT();
-	}
+	}}
 
 	void List‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(32); // T
 		Expect(32); // "list"
 		addAlt(1); // T
@@ -472,39 +515,49 @@ public class Parser {
 		if (isKind(la, 41)) {
 			As‿NT();
 		}
-	}
+	}}
 
 	void SelectList‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(33); // T
 		Expect(33); // "selectlist"
 		addAlt(1); // T
 		Expect(1); // ident
 		As‿NT();
-	}
+	}}
 
 	void FlagsList‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(34); // T
 		Expect(34); // "flagslist"
 		addAlt(1); // T
 		Expect(1); // ident
 		Mimics‿NT();
-	}
+	}}
 
 	void LongProperty‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(35); // T
 		Expect(35); // "longproperty"
 		addAlt(1); // T
 		Expect(1); // ident
-	}
+	}}
 
 	void InfoLongProperty‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(36); // T
 		Expect(36); // "infolongproperty"
 		addAlt(1); // T
 		Expect(1); // ident
-	}
+	}}
 
 	void Type‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(set0, 4); // ALT
 		addAlt(41); // ALT
 		addAlt(57); // ALT
@@ -524,9 +577,11 @@ public class Parser {
 		if (isKind(la, 6)) {
 			SampleValue‿NT();
 		}
-	}
+	}}
 
 	void As‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(41); // T
 		Expect(41); // "as"
 		addAlt(set0, 5); // ALT
@@ -541,18 +596,24 @@ public class Parser {
 		} else if (isKind(la, 1) || isKind(la, 2)) {
 			DottedIdent‿NT();
 		} else SynErr(83);
-	}
+	}}
 
 	void Mimics‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(57); // T
 		Expect(57); // "mimics"
 		MimicsSpec‿NT();
-	}
+	}}
 
 	void EmptyType‿NT() {
-	}
+		using(astbuilder.createMarker())
+		{
+	}}
 
 	void InitValue‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(3); // ALT
 		addAlt(4); // ALT
 		addAlt(5); // ALT
@@ -615,20 +676,26 @@ public class Parser {
 		}
 		default: SynErr(84); break;
 		}
-	}
+	}}
 
 	void SampleValue‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(6); // T
 		Expect(6); // braced
-	}
+	}}
 
 	void FunctionCall‿NT() {
+		using(astbuilder.createMarker())
+		{
 		DottedIdent‿NT();
 		addAlt(7); // T
 		Expect(7); // bracketed
-	}
+	}}
 
 	void BaseType‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(42); // ALT
 		addAlt(43); // ALT
 		addAlt(44); // ALT
@@ -722,9 +789,11 @@ public class Parser {
 		}
 		default: SynErr(85); break;
 		}
-	}
+	}}
 
 	void MimicsSpec‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(58); // ALT
 		addAlt(59); // ALT
 		addAlt(60); // ALT
@@ -743,9 +812,11 @@ public class Parser {
 			if (!enumtypes.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "ident", la.val, enumtypes.name));
 			Get();
 		} else SynErr(86);
-	}
+	}}
 
 	void Query‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(58); // T
 		Expect(58); // "query"
 		addAlt(11); // T
@@ -759,9 +830,11 @@ public class Parser {
 		addAlt(11); // T
 		Expect(11); // colon
 		StringOrIdent‿NT();
-	}
+	}}
 
 	void Txt‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(59); // T
 		Expect(59); // "txt"
 		addAlt(11); // T
@@ -775,9 +848,11 @@ public class Parser {
 		addAlt(11); // T
 		Expect(11); // colon
 		StringOrIdent‿NT();
-	}
+	}}
 
 	void XL‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(60); // T
 		Expect(60); // "xl"
 		addAlt(11); // T
@@ -791,9 +866,11 @@ public class Parser {
 		addAlt(11); // T
 		Expect(11); // colon
 		StringOrIdent‿NT();
-	}
+	}}
 
 	void Ref‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(61); // T
 		Expect(61); // "ref"
 		addAlt(11); // T
@@ -808,9 +885,11 @@ public class Parser {
 		addAlt(11); // T
 		Expect(11); // colon
 		StringOrIdent‿NT();
-	}
+	}}
 
 	void StringOrIdent‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(5); // ALT
 		addAlt(new int[] {1, 2}); // ALT
 		if (isKind(la, 5)) {
@@ -818,9 +897,11 @@ public class Parser {
 		} else if (isKind(la, 1) || isKind(la, 2)) {
 			DottedIdent‿NT();
 		} else SynErr(88);
-	}
+	}}
 
 	void SSCommands‿NT() {
+		using(astbuilder.createMarker())
+		{
 		SSCommand‿NT();
 		addAlt(10); // ITER start
 		while (isKind(la, 10)) {
@@ -828,9 +909,11 @@ public class Parser {
 			SSCommand‿NT();
 			addAlt(10); // ITER end
 		}
-	}
+	}}
 
 	void SSCommand‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(14); // ALT
 		addAlt(15); // ALT
 		addAlt(16); // ALT
@@ -847,18 +930,22 @@ public class Parser {
 		} else if (isKind(la, 18)) {
 			Get();
 		} else SynErr(89);
-	}
+	}}
 
 	void EnumValue‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(1); // T
 		Expect(1); // ident
 		addAlt(37); // OPT
 		if (isKind(la, 37)) {
 			EnumIntValue‿NT();
 		}
-	}
+	}}
 
 	void EnumValues‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(1); // ITER start
 		while (isKind(la, 1)) {
 			EnumValue‿NT();
@@ -872,14 +959,16 @@ public class Parser {
 			EnumValue‿NT();
 			addAlt(1); // ITER end
 		}
-	}
+	}}
 
 	void EnumIntValue‿NT() {
+		using(astbuilder.createMarker())
+		{
 		addAlt(37); // T
 		Expect(37); // "="
 		addAlt(4); // T
 		Expect(4); // int
-	}
+	}}
 
 
 
@@ -892,6 +981,8 @@ public class Parser {
 		types.CheckDeclared(errors);
 		enumtypes.CheckDeclared(errors);
 
+		astbuilder.mergeCompatibles(true);
+		ast = astbuilder.current;
 	}
 	
 	// a token's base type
@@ -1100,16 +1191,18 @@ public class Alternative {
 	}
 }
 
+public delegate void TokenEventHandler(Token t);
 public class Symboltable {
 	private Stack<List<Token>> scopes;
 	private Stack<List<Token>> undeclaredTokens = new Stack<List<Token>>();
 	public readonly string name;
 	public readonly bool ignoreCase;
 	public readonly bool strict;
-	public readonly IEnumerable<Alternative> fixuplist;
+	public readonly List<Alternative> fixuplist;
 	private Symboltable clone = null;
+	public event TokenEventHandler TokenUsed;
 
-	public Symboltable(string name, bool ignoreCase, bool strict, IEnumerable<Alternative> alternatives) {
+	public Symboltable(string name, bool ignoreCase, bool strict, List<Alternative> alternatives) {
 		this.name = name;
 		this.ignoreCase = ignoreCase;
 		this.strict = strict;
@@ -1167,6 +1260,7 @@ public class Symboltable {
 	// ----------------------------------- for Parser use start -------------------- 
 	
 	public bool Use(Token t, Alt a) {
+		if (TokenUsed != null) TokenUsed(t);
 		a.tdeclared = this;
 		if (strict) {
 			a.declaration = Find(t);
@@ -1259,6 +1353,10 @@ public class Symboltable {
 		return new Popper(this);
 	} 
 
+	public IDisposable createUsageCheck(bool oneOrMore, Errors errors, Token scopeToken) {
+		return new UseCounter(this, oneOrMore, errors, scopeToken);
+	}
+
 	public List<Token> currentScope {
 		get { return scopes.Peek(); } 
 	}
@@ -1288,6 +1386,54 @@ public class Symboltable {
 
 		public void Dispose() {
 			st.popScope();
+		}
+	}
+
+	private class UseCounter : IDisposable {
+		private readonly Symboltable st;
+		public readonly bool oneOrMore; // t - 1..N, f - 0..1
+		public readonly List<Token> uses;
+		public readonly Errors errors;
+		public readonly Token scopeToken;
+
+		public UseCounter(Symboltable st, bool oneOrMore, Errors errors, Token scopeToken) {
+			this.st = st;
+			this.oneOrMore = oneOrMore;
+			this.errors = errors;
+			this.scopeToken = scopeToken;
+			this.uses = new List<Token>();
+			st.TokenUsed += uses.Add;
+		}
+
+		private bool isValid(List<Token> list) {
+			int cnt = list.Count;
+			if (oneOrMore) return (cnt >= 1);
+			return (cnt <= 1);
+		}
+
+		public void Dispose() {
+			st.TokenUsed -= uses.Add;
+			Dictionary<string, List<Token>> counter = new Dictionary<string, List<Token>>(st.comparer);
+			foreach(Token t in st.items)
+				counter[t.val] = new List<Token>();
+			foreach(Token t in uses)
+				if (counter.ContainsKey(t.val)) // we ignore undeclared Tokens:
+					counter[t.val].Add(t);
+			// now check for validity
+			foreach(string s in counter.Keys) {
+				List<Token> list = counter[s];
+				if (!isValid(list)) {
+					if (oneOrMore) {
+						string msg = string.Format("token '{0}' has to be used in this scope.", s); 
+						errors.SemErr(scopeToken.line, scopeToken.col, msg);
+					} else {
+						string msg = string.Format("token '{0}' is used {1:n0} time(s) instead of at most once in this scope, see following errors for locations.", s, list.Count); 
+						errors.SemErr(scopeToken.line, scopeToken.col, msg);
+						foreach(Token t in list)
+							errors.SemErr(t.line, t.col, "... here");
+					}
+				}
+			} 
 		}
 	}
 }

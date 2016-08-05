@@ -1,5 +1,8 @@
 using System;
 using System.IO;
+using System.Text;
+using System.Collections;
+using System.Collections.Generic;
 
 public class Inheritance {
 
@@ -31,6 +34,12 @@ public class Inheritance {
             printST(parser.lang);
             printST(parser.langstring);
             printST(parser.domains);
+
+            System.Console.WriteLine("----------------------- AST builder stack ----------------------------");
+            System.Console.WriteLine(parser.astbuilder);
+
+            System.Console.WriteLine("----------------------- AST ----------------------------");
+            System.Console.WriteLine(parser.ast);
 
             if (parser.errors.count > 0)
                 return 1;

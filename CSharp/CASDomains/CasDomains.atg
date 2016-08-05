@@ -52,23 +52,23 @@ PRODUCTIONS
 	// names defining symbols
 	LanguageName = 
 		dbcode>lang 					#
-		| string>langstring 			#'
+		| string>langstring 			#
 	.
 	
 	DomainName = 
 		dbcode>domains 					#
-		| string>domains 				#'
+		| string>domains 				#
 	.
 	
 	ValueName = 
 		dbcode>values 					#
-		| string>values 				#'
+		| string>values 				#
 	.
 
 	// using names
 	UseLanguageName = 
 		dbcode:lang 					#
-		| string:langstring 			#'
+		| string:langstring 			#
 	.
 
 

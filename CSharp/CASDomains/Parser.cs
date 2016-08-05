@@ -23,6 +23,8 @@ public class Parser {
 	public Scanner scanner;
 	public Errors  errors;
 	public readonly List<Alternative> tokens = new List<Alternative>();
+	public AST ast;
+	public readonly AST.Builder astbuilder; 
 	
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
@@ -45,6 +47,7 @@ public class Parser {
 	public Parser(Scanner scanner) {
 		this.scanner = scanner;
 		errors = new Errors();
+		astbuilder = new AST.Builder(errors);
 		lang = new Symboltable("lang", false, true, tokens);
 		langstring = new Symboltable("langstring", false, true, tokens);
 		domains = new Symboltable("domains", false, true, tokens);
@@ -155,6 +158,7 @@ public class Parser {
 
 	
 	void LanguageName‿NT() {
+		using(astbuilder.createMarker())
 		{
 		addAlt(1); // ALT
 		addAlt(3); // ALT
@@ -170,6 +174,7 @@ public class Parser {
 	}}
 
 	void DomainName‿NT() {
+		using(astbuilder.createMarker())
 		{
 		addAlt(1); // ALT
 		addAlt(3); // ALT
@@ -185,6 +190,7 @@ public class Parser {
 	}}
 
 	void ValueName‿NT() {
+		using(astbuilder.createMarker())
 		{
 		addAlt(1); // ALT
 		addAlt(3); // ALT
@@ -200,6 +206,7 @@ public class Parser {
 	}}
 
 	void UseLanguageName‿NT() {
+		using(astbuilder.createMarker())
 		{
 		addAlt(1); // ALT
 		addAlt(1, lang); // ALT dbcode uses symbol table 'lang'
@@ -215,36 +222,44 @@ public class Parser {
 	}}
 
 	void CASDomains‿NT() {
+		using(astbuilder.createMarker())
 		{
 		addAlt(6); // T
 		Expect(6); // "casdomains"
 		Languages‿NT();
+		astbuilder.sendup(t, null, "languages", false);
 		addAlt(4); // ITER start
 		while (isKind(la, 4)) {
 			Domain‿NT();
+			astbuilder.sendup(t, null, "domains", true);
 			addAlt(4); // ITER end
 		}
 	}}
 
 	void Languages‿NT() {
+		using(astbuilder.createMarker())
 		{
 		addAlt(7); // T
 		Expect(7); // "languages"
 		LanguageName‿NT();
+		astbuilder.hatch(t, null, null, true);
 		addAlt(new int[] {1, 3}); // ITER start
 		while (isKind(la, 1) || isKind(la, 3)) {
 			LanguageName‿NT();
+			astbuilder.hatch(t, null, null, true);
 			addAlt(new int[] {1, 3}); // ITER end
 		}
 	}}
 
 	void Domain‿NT() {
+		using(astbuilder.createMarker())
 		using(values.createScope()) 
 		{
 		while (!(isKind(la, 0) || isKind(la, 4))) {SynErr(16); Get();}
 		addAlt(4); // T
 		Expect(4); // domain
 		DomainName‿NT();
+		astbuilder.sendup(t, null, "name", false);
 		addAlt(8); // OPT
 		if (isKind(la, 8)) {
 			Get();
@@ -254,12 +269,16 @@ public class Parser {
 			Get();
 			addAlt(2); // T
 			Expect(2); // twodigitnumber
+			astbuilder.sendup(t, null, "length", false);
 		}
 		Translations‿NT();
+		astbuilder.sendup(t, null, "translations", false);
 		Domainvalue‿NT();
+		astbuilder.sendup(t, null, "values", true);
 		addAlt(10); // ITER start
 		while (isKind(la, 10)) {
 			Domainvalue‿NT();
+			astbuilder.sendup(t, null, "values", true);
 			addAlt(10); // ITER end
 		}
 		addAlt(5); // T
@@ -269,6 +288,7 @@ public class Parser {
 	}}
 
 	void Translations‿NT() {
+		using(astbuilder.createMarker())
 		using(lang.createUsageCheck(false, errors, la)) // 0..1
 		using(langstring.createUsageCheck(false, errors, la)) // 0..1
 		using(lang.createUsageCheck(true, errors, la)) // 1..N
@@ -277,22 +297,28 @@ public class Parser {
 		addAlt(new int[] {1, 3}); // ITER start
 		while (isKind(la, 1) || isKind(la, 3)) {
 			UseLanguageName‿NT();
+			astbuilder.sendup(t, null, "language", false);
 			addAlt(3); // T
 			Expect(3); // string
+			astbuilder.sendup(t, null, "translation", false);
 			addAlt(new int[] {1, 3}); // ITER end
 		}
 	}}
 
 	void Domainvalue‿NT() {
+		using(astbuilder.createMarker())
 		{
 		while (!(isKind(la, 0) || isKind(la, 10))) {SynErr(17); Get();}
 		addAlt(10); // T
 		Expect(10); // "value"
 		ValueName‿NT();
+		astbuilder.sendup(t, null, "name", false);
 		TranslationsWithHelptext‿NT();
+		astbuilder.sendup(t, null, "translations", false);
 	}}
 
 	void TranslationsWithHelptext‿NT() {
+		using(astbuilder.createMarker())
 		using(lang.createUsageCheck(false, errors, la)) // 0..1
 		using(langstring.createUsageCheck(false, errors, la)) // 0..1
 		using(lang.createUsageCheck(true, errors, la)) // 1..N
@@ -301,10 +327,13 @@ public class Parser {
 		addAlt(new int[] {1, 3}); // ITER start
 		while (isKind(la, 1) || isKind(la, 3)) {
 			UseLanguageName‿NT();
+			astbuilder.sendup(t, null, "language", false);
 			addAlt(3); // T
 			Expect(3); // string
+			astbuilder.sendup(t, null, "translation", false);
 			addAlt(3); // T
 			Expect(3); // string
+			astbuilder.sendup(t, null, "helptext", false);
 			addAlt(new int[] {1, 3}); // ITER end
 		}
 	}}
@@ -322,6 +351,8 @@ public class Parser {
 		domains.CheckDeclared(errors);
 		values.CheckDeclared(errors);
 
+		astbuilder.mergeCompatibles(true);
+		ast = astbuilder.current;
 	}
 	
 	// a token's base type
