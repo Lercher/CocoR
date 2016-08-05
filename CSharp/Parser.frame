@@ -55,7 +55,7 @@ public class Parser {
 	public Parser(Scanner scanner) {
 		this.scanner = scanner;
 		errors = new Errors();
-		astbuilder = new AST.Builder(errors);
+		astbuilder = new AST.Builder(this);
 -->constructor
 	}
 
@@ -167,8 +167,8 @@ public class Parser {
 		la = new Token();
 		la.val = "";
 		Get();
+		using(astbuilder.createMarker(null, null, false, false, false))
 -->parseRoot
-		astbuilder.mergeCompatibles(true);
 		ast = astbuilder.current;
 	}
 	

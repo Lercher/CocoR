@@ -19,7 +19,7 @@ public abstract class AST {
 #region Formatting
 	public static void newline(int indent, StringBuilder sb) {
         sb.AppendLine();
-        for(int i = 0; i < indent; i++);
+        for(int i = 0; i < indent; i++)
             sb.Append("  ");
     }
 
@@ -107,17 +107,17 @@ public abstract class AST {
         {
             bool longlist = (count > 3);
             sb.Append('[');
-            if (longlist) AST.newline(indent + 1, sb);
+            if (longlist) AST.newline(indent, sb);
             int n = 0;
             foreach(AST ast in list) {
                 ast.serialize(sb, indent + 1);
                 n++;
                 if (n < count) {
                     sb.Append(", ");
-                    if (longlist) AST.newline(indent + 1, sb);
+                    if (longlist) AST.newline(indent, sb);
                 }
             }
-            if (longlist) AST.newline(indent, sb);
+            if (longlist) AST.newline(indent - 1, sb);
             sb.Append(']');
         }
 
@@ -212,11 +212,11 @@ public abstract class AST {
     }
 
     public class Builder {
-        public readonly Errors errors;
+        public readonly Parser parser;
         private readonly Stack<E> stack = new Stack<E>();
 
-        public Builder(Errors errors) {
-            this.errors = errors;
+        public Builder(Parser parser) {
+            this.parser = parser;
         }
         
         public E currentE { get { return stack.Peek(); } }
@@ -256,36 +256,10 @@ public abstract class AST {
                 if (islist)
                     e.wrapinlist(); 
                 else 
-                    errors.Warning(t.line, t.col, string.Format("overwriting AST objectname '{0}' with '{1}'", e.name, name));
+                    parser.errors.Warning(t.line, t.col, string.Format("overwriting AST objectname '{0}' with '{1}'", e.name, name));
             }
             e.name = name;
-            mergeCompatibles(false);
             System.Console.WriteLine("-------------> top {0}", e);
-        }
-
-        public void mergeCompatibles(bool final) {
-            E ret = null;
-            while(stack.Count > 0) {      
-                E e = currentE;
-                if (e == null) {
-                    if (!final) break;                        
-                    stack.Pop();
-                } else if (ret == null) { 
-                    ret = e;
-                    stack.Pop();
-                } else {
-                    System.Console.Write(">> try merge {0} with {1}", ret, e);
-                    E merged = e.add(ret);
-                    if (merged != null) {
-                        ret = merged;
-                        stack.Pop();
-                    }                        
-                    else 
-                        break;
-                }
-                System.Console.WriteLine(" -> ret={0}", ret);
-            }
-            push(ret);
         }
 
         private void mergeToNull() {
@@ -325,23 +299,35 @@ public abstract class AST {
             push(ret);
         }
 
-        public IDisposable createMarker() {
-            return new Marker(this);
+        public IDisposable createMarker(string literal, string name, bool islist, bool ishatch, bool primed) {
+            return new Marker(this, literal, name, islist, ishatch, primed);
         }
 
         private class Marker : IDisposable {
             public readonly Builder builder;
+            public readonly string literal;
+            public readonly string name;
+            public readonly bool islist;
+            public readonly bool ishatch;
+            public readonly bool primed;
 
-            public Marker(Builder builder) {
-                this.builder = builder;
-                builder.stack.Push(null);
+            public Marker(Builder builder, string literal, string name, bool islist, bool ishatch, bool primed) {
+                this.builder = builder;                
+                this.literal = literal;
+                this.name = name;
+                this.ishatch = ishatch;
+                this.islist = islist;
+                this.primed = primed;
+                builder.stack.Push(null); // push a marker
             }
 
             public void Dispose() {
+                Token t = primed ? builder.parser.Prime() : builder.parser.t;
+                if (ishatch) builder.hatch(t, literal, name, islist);
                 builder.mergeToNull();
+                if (!ishatch) builder.sendup(t, literal, name, islist);
             }
         }
-
     }
 }
 

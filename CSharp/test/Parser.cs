@@ -47,12 +47,14 @@ public class Parser {
 		return null;
 	}
 
+	public Token Prime() { return t; }
+
 
 
 	public Parser(Scanner scanner) {
 		this.scanner = scanner;
 		errors = new Errors();
-		astbuilder = new AST.Builder(errors);
+		astbuilder = new AST.Builder(this);
 		variables = new Symboltable("variables", false, false, tokens);
 		types = new Symboltable("types", false, true, tokens);
 		types.Add("string");
@@ -164,7 +166,6 @@ public class Parser {
 
 	
 	void Inheritance‿NT() {
-		using(astbuilder.createMarker())
 		using(types.createUsageCheck(false, errors, la)) // 0..1
 		using(types.createUsageCheck(true, errors, la)) // 1..N
 		{
@@ -183,8 +184,8 @@ public class Parser {
 		}
 		addAlt(22); // ITER start
 		while (isKind(la, 22)) {
-			Call‿NT();
-			astbuilder.sendup(t, null, "call", true);
+			using(astbuilder.createMarker(null, "call", true, false, false))
+				Call‿NT();
 			addAlt(22); // ITER end
 		}
 		addAlt(19); // ITER start
@@ -217,7 +218,6 @@ public class Parser {
 	}}
 
 	void TDBs‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(set0, 2); // ITER start
 		while (StartOf(2)) {
@@ -232,15 +232,14 @@ public class Parser {
 			} else if (isKind(la, 20)) {
 				Block‿NT();
 			} else {
-				Call‿NT();
-				astbuilder.sendup(t, null, "tbdcall", true);
+				using(astbuilder.createMarker(null, "tbdcall", true, false, false))
+					Call‿NT();
 			}
 			addAlt(set0, 2); // ITER end
 		}
 	}}
 
 	void NumberIdent‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(26); // ALT
 		addAlt(27); // ALT
@@ -326,19 +325,18 @@ public class Parser {
 	}}
 
 	void Call‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(22); // T
 		Expect(22); // "call"
 		addAlt(16); // T
 		Expect(16); // "("
-		Param‿NT();
-		astbuilder.hatch(t, null, null, true);
+		using(astbuilder.createMarker(null, null, true, true, false))
+			Param‿NT();
 		addAlt(23); // ITER start
 		while (isKind(la, 23)) {
 			Get();
-			Param‿NT();
-			astbuilder.hatch(t, null, null, true);
+			using(astbuilder.createMarker(null, null, true, true, false))
+				Param‿NT();
 			addAlt(23); // ITER end
 		}
 		addAlt(17); // T
@@ -348,7 +346,6 @@ public class Parser {
 	}}
 
 	void IdentOrNumber‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(2); // ALT
 		addAlt(set0, 4); // ALT
@@ -360,7 +357,6 @@ public class Parser {
 	}}
 
 	void Type‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(24); // T
 		Expect(24); // "type"
@@ -373,7 +369,6 @@ public class Parser {
 	}}
 
 	void Declaration‿NT() {
-		using(astbuilder.createMarker())
 		{
 		Var‿NT();
 		Ident‿NT();
@@ -389,7 +384,6 @@ public class Parser {
 	}}
 
 	void Block‿NT() {
-		using(astbuilder.createMarker())
 		using(variables.createScope()) 
 		using(types.createScope()) 
 		{
@@ -401,7 +395,6 @@ public class Parser {
 	}}
 
 	void Param‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(2); // ALT
 		addAlt(2, variables); // ALT ident uses symbol table 'variables'
@@ -415,7 +408,6 @@ public class Parser {
 	}}
 
 	void Var‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(4); // ALT
 		addAlt(5); // ALT
@@ -465,7 +457,6 @@ public class Parser {
 	}}
 
 	void Ident‿NT() {
-		using(astbuilder.createMarker())
 		{
 		if (!variables.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, variables.name));
 		alternatives.tdeclares = variables;
@@ -488,7 +479,6 @@ public class Parser {
 	}}
 
 	void Separator‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(23); // ALT
 		addAlt(25); // ALT
@@ -502,7 +492,6 @@ public class Parser {
 	}}
 
 	void NumberVar‿NT() {
-		using(astbuilder.createMarker())
 		{
 		addAlt(26); // ALT
 		addAlt(27); // ALT
@@ -581,12 +570,12 @@ public class Parser {
 		la = new Token();
 		la.val = "";
 		Get();
+		using(astbuilder.createMarker(null, null, false, false, false))
 		Inheritance‿NT();
 		Expect(0);
 		variables.CheckDeclared(errors);
 		types.CheckDeclared(errors);
 
-		astbuilder.mergeCompatibles(true);
 		ast = astbuilder.current;
 	}
 	

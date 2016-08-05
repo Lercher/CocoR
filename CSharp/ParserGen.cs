@@ -265,12 +265,8 @@ public class ParserGen {
 
 	void GenAstBuilder(Node p, int indent) {
 		if (p.ast != null) {
-			Indent(indent);
-			string tprime = p.ast.primed ? "Prime(t)" : "t"; 
-			string methodname = p.ast.ishatch ? "hatch" : "sendup";
-			// void hatch(Token t, string literal, string name, bool islist)
-			// void sendup(Token t, string literal, string name, bool islist)
-			gen.WriteLine("astbuilder.{0}({1}, {2}, {3}, {4});", methodname, tprime, tab.Quoted(p.ast.literal), tab.Quoted(p.ast.name), p.ast.isList ? "true" : "false"); 
+			gen.WriteLine("using(astbuilder.createMarker({0}, {1}, {2}, {3}, {4}))", tab.Quoted(p.ast.literal), tab.Quoted(p.ast.name), toTF(p.ast.isList), toTF(p.ast.ishatch), toTF(p.ast.primed));
+			Indent(indent + 1);
 		}
 	}
 	
@@ -282,10 +278,10 @@ public class ParserGen {
 				case Node.nt: {
 					// generate a production method call ...
 					Indent(indent);
+					GenAstBuilder(p, indent);
 					gen.Write("{0}{1}(", p.sym.name, PROD_SUFFIX);
 					CopySourcePart(p.pos, 0); // ... with actual arguments
 					gen.WriteLine(");");
-					GenAstBuilder(p, indent);
 					break;
 				}
 				case Node.t: {
@@ -296,8 +292,8 @@ public class ParserGen {
 					else {
 						GenAutocomplete(p.sym.n, indent, "T");
 						GenAutocompleteSymboltable(p, indent, "T");
-						gen.WriteLine("Expect({0}); // {1}", p.sym.n, p.sym.name);
 						GenAstBuilder(p, indent);
+						gen.WriteLine("Expect({0}); // {1}", p.sym.n, p.sym.name);
 					}
 					break;
 				}
@@ -310,8 +306,8 @@ public class ParserGen {
 					Symbol ncs1sym = (Symbol)tab.terminals[ncs1];
 					GenAutocomplete(p.sym.n, indent, "WT");
 					GenAutocompleteSymboltable(p, indent, "WT");
-					gen.WriteLine("ExpectWeak({0}, {1}); // {2} followed by {3}", p.sym.n, ncs1, p.sym.name, ncs1sym.name);
 					GenAstBuilder(p, indent);
+					gen.WriteLine("ExpectWeak({0}, {1}); // {2} followed by {3}", p.sym.n, ncs1, p.sym.name, ncs1sym.name);
 					break;
 				}
 				case Node.any: {
@@ -506,7 +502,6 @@ public class ParserGen {
 			gen.Write("\tvoid {0}{1}(", sym.name, PROD_SUFFIX);
 			CopySourcePart(sym.attrPos, 0);			
 			gen.WriteLine(") {");
-			gen.WriteLine("\t\tusing(astbuilder.createMarker())"); // intentionally no ; !
 			GenUsingSymtabSomething(sym.scopes,   "createScope", "", "");  // needs to be first
 			GenUsingSymtabSomething(sym.useonces, "createUsageCheck", "false, errors, la", "// 0..1"); // needs to be after createScope 
 			GenUsingSymtabSomething(sym.usealls,  "createUsageCheck", "true, errors, la" , "// 1..N");  // needs to be after createScope
@@ -603,6 +598,7 @@ public class ParserGen {
 		GenPragmas(); /* ML 2005/09/23 write the pragma kinds */
 		g.CopyFramePart("-->declarations");
 		GenSymbolTables(true);
+		if (IgnoreSemanticActions) gen.WriteLine("\tpublic Token Prime() { return t; }\n");
 		CopySourcePart(tab.semDeclPos, 0);
 		g.CopyFramePart("-->constructor"); GenSymbolTables(false);
 		g.CopyFramePart("-->beginalternatives");
@@ -611,8 +607,7 @@ public class ParserGen {
 		g.CopyFramePart("-->beginalternativescode");
 		g.CopyFramePart("-->endalternativescode", GenerateAutocompleteInformation);
 		g.CopyFramePart("-->productions"); GenProductions();
-		g.CopyFramePart("-->parseRoot"); 
-		gen.WriteLine("\t\t{0}{1}();", tab.gramSy.name, PROD_SUFFIX);
+		g.CopyFramePart("-->parseRoot"); gen.WriteLine("\t\t{0}{1}();", tab.gramSy.name, PROD_SUFFIX);
 		if (tab.checkEOF) gen.WriteLine("\t\tExpect(0);");
 		GenSymbolTablesChecks(); 
 		g.CopyFramePart("-->tbase"); GenTokenBase(); // write all tokens base types

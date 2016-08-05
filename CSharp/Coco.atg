@@ -488,8 +488,8 @@ ASTPrime<Node p>
                                     if (p.typ != Node.t && p.typ != Node.wt)
                                       SemErr("can only prime terminals");
                                     if (pgen.IgnoreSemanticActions)
-                                      SemErr("can't use token priming when ignoring semantic actions.");
-                                      // no way do define the Prime:Token->Token function.                                        
+                                      Warning("can't use token priming when ignoring semantic actions.");
+                                      // no way do define the Prime:void->Token function.                                        
                                   .)  
 .
 
