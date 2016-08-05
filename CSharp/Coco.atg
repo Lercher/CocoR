@@ -467,7 +467,7 @@ ASTSendUp<Node p>
   [ '^'                          (. p.ast.isList = true; .)
   ]
   [ ':' ASTVal<out p.ast.name> ]
-  [ ASTConst<p> ]
+  [ '=' ASTConst<p> ]
 .
 
 ASTHatch<Node p>
@@ -475,8 +475,10 @@ ASTHatch<Node p>
   '#'                            (. p.ast.ishatch = true; .)
   [ '#'                          (. p.ast.isList = true; .)
   ]
+  [ ':' ASTVal<out p.ast.name> 
+  ]
   [ ASTPrime<p>
-  | ASTConst<p> 
+  | '=' ASTConst<p> 
   ]
 .
 
@@ -494,7 +496,7 @@ ASTPrime<Node p>
 
 ASTConst<Node p>
 =
-  '=' ASTVal<out p.ast.literal>  
+  ASTVal<out p.ast.literal>  
 .
 
 ASTVal<out string val>           (. val = "?"; .)
