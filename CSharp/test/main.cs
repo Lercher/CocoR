@@ -14,7 +14,8 @@ public abstract class AST {
     public abstract int count { get; }
     public static readonly AST empty = new ASTLiteral(string.Empty);
     protected abstract void serialize(StringBuilder sb, int indent);
-
+    public virtual bool merge(E e) { return false; }
+    
 #region Formatting
 	public static void newline(int indent, StringBuilder sb) {
         sb.AppendLine();
@@ -137,6 +138,22 @@ public abstract class AST {
             ht[e.name] = e.ast; 
         }
 
+        public override bool merge(E e) {
+            if (e.name == null) return false; // cannot merge an unnamed thing
+            if (!ht.ContainsKey(e.name)) {
+                add(e);
+                return true;
+            }
+            // we have e.nam, call it a thing:
+            AST thing = ht[e.name];
+            if (thing is ASTList) {
+                ((ASTList) thing).merge(e.ast);
+                return true;
+            }
+            // thing is not a list, so we cannot merge it with e
+            return false;
+        }
+
         protected override void serialize(StringBuilder sb, int indent) {
             bool longlist = (count > 3);
             sb.Append('{');
@@ -184,7 +201,8 @@ public abstract class AST {
                 E ret = new E();
                 ret.ast = obj;
                 return ret;
-            }
+            } else if (ast.merge(e))
+                return this;
             return null;
         }
 
@@ -247,7 +265,7 @@ public abstract class AST {
 
         public void mergeCompatibles(bool final) {
             E ret = null;
-            while(true) {                
+            while(stack.Count > 0) {      
                 E e = currentE;
                 if (e == null) {
                     if (!final) break;                        
@@ -358,7 +376,7 @@ public class Inheritance {
             printST(parser.types);
             printST(parser.variables);
 
-            System.Console.WriteLine("----------------------- AST stack ----------------------------");
+            System.Console.WriteLine("----------------------- AST builder stack ----------------------------");
             System.Console.WriteLine(parser.astbuilder);
 
             System.Console.WriteLine("----------------------- AST ----------------------------");
