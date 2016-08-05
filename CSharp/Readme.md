@@ -8,9 +8,10 @@ the readme.md in the root directory.
 ## Status
 
 * Compiling
-* no known bugs
+* **currently broken** - use commits before Aug 4 2016
 * beta testing
 * sample editor with autocompletion available
+
 
 ## Sub-Folders
 
