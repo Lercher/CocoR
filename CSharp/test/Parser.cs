@@ -33,7 +33,7 @@ public class Parser {
 	public Errors  errors;
 	public readonly List<Alternative> tokens = new List<Alternative>();
 	public AST ast;
-	private readonly AST.Builder astbuilder = new AST.Builder(); 
+	private readonly AST.Builder astbuilder; 
 	
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
@@ -52,6 +52,7 @@ public class Parser {
 	public Parser(Scanner scanner) {
 		this.scanner = scanner;
 		errors = new Errors();
+		astbuilder = new AST.Builder(errors);
 		variables = new Symboltable("variables", false, false, tokens);
 		types = new Symboltable("types", false, true, tokens);
 		types.Add("string");
@@ -183,7 +184,7 @@ public class Parser {
 		addAlt(22); // ITER start
 		while (isKind(la, 22)) {
 			Call‿NT();
-			astbuilder.process(t, null, "calls", true);
+			astbuilder.sendup(t, null, "calls", true);
 			addAlt(22); // ITER end
 		}
 		addAlt(19); // ITER start
@@ -331,12 +332,12 @@ public class Parser {
 		addAlt(16); // T
 		Expect(16); // "("
 		Param‿NT();
-		astbuilder.process(t, null, "param", true);
+		astbuilder.hatch(t, null, null, true);
 		addAlt(23); // ITER start
 		while (isKind(la, 23)) {
 			Get();
 			Param‿NT();
-			astbuilder.process(t, null, "param", true);
+			astbuilder.hatch(t, null, null, true);
 			addAlt(23); // ITER end
 		}
 		addAlt(17); // T

@@ -44,7 +44,7 @@ public class Parser {
 	public Errors  errors;
 	public readonly List<Alternative> tokens = new List<Alternative>();
 	public AST ast;
-	private readonly AST.Builder astbuilder = new AST.Builder(); 
+	private readonly AST.Builder astbuilder; 
 	
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
@@ -55,6 +55,7 @@ public class Parser {
 	public Parser(Scanner scanner) {
 		this.scanner = scanner;
 		errors = new Errors();
+		astbuilder = new AST.Builder(errors);
 -->constructor
 	}
 

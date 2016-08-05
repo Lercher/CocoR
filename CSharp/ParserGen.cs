@@ -267,8 +267,10 @@ public class ParserGen {
 		if (p.ast != null) {
 			Indent(indent);
 			string tprime = p.ast.primed ? "Prime(t)" : "t"; 
-			// void process(Token t, string literal, string name, bool islist)				
-			gen.WriteLine("astbuilder.process({0}, {1}, {2}, {3});", tprime, tab.Quoted(p.ast.literal), tab.Quoted(p.ast.name), p.ast.isList ? "true" : "false"); 
+			string methodname = p.ast.ishatch ? "hatch" : "sendup";
+			// void hatch(Token t, string literal, string name, bool islist)
+			// void sendup(Token t, string literal, string name, bool islist)
+			gen.WriteLine("astbuilder.{0}({1}, {2}, {3}, {4});", methodname, tprime, tab.Quoted(p.ast.literal), tab.Quoted(p.ast.name), p.ast.isList ? "true" : "false"); 
 		}
 	}
 	

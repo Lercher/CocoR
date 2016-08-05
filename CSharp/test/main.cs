@@ -13,8 +13,9 @@ public abstract class AST {
     public abstract AST this[string s] { get; }
     public abstract int count { get; }
     public static readonly AST empty = new ASTLiteral(string.Empty);
-    protected abstract void add(E e);
+    protected abstract E add(E you, E e);
     protected abstract void serialize(StringBuilder sb, int indent);
+    protected abstract AST toList();
 
 	public static void newline(int indent, StringBuilder sb) {
         sb.AppendLine();
@@ -55,7 +56,13 @@ public abstract class AST {
         public override string val { get { throw new ApplicationException("not a literal"); } }
         public override AST this[int i] { get { throw new ApplicationException("not a list"); } }
         public override AST this[string s] { get { throw new ApplicationException("not an object"); } }
-        protected override void add(E e) { throw new ApplicationException("add not allowed");}
+
+        // Wrap the literal/object in a list: lit/o -> [lit/o]
+        protected override AST toList() { 
+            ASTList list = new ASTList();
+            list.add(this);
+            return list;
+        }
     }
 
     private class ASTLiteral : ASTThrows {
@@ -70,6 +77,10 @@ public abstract class AST {
             AST.escape(val, sb);
             sb.Append('\"');
         }
+
+        protected override E add(E you, E e) {
+            return you; // TODO what does it mean to add sth to a literal? 
+        }
     }
 
     private class ASTList : ASTThrows {
@@ -83,9 +94,18 @@ public abstract class AST {
         }
         public override int count { get { return list.Count; } }
         
-        protected override void add(E e) { 
-            list.Add(e.ast); 
+        public AST add(AST a) {
+            list.Add(a);
+            return a;
         }
+
+        protected override E add(E you, E e) { 
+            list.Add(e.ast);
+            return you;
+        }
+
+        // identity
+        protected override AST toList() { return this; }
 
         protected override void serialize(StringBuilder sb, int indent)
         {
@@ -118,9 +138,11 @@ public abstract class AST {
         }
         public override int count { get { return ht.Keys.Count; } }
         
-        protected override void add(E e) { 
+        protected override E add(E you, E e) {
             ht[e.name] = e.ast; 
+            return you;  
         }
+
 
         protected override void serialize(StringBuilder sb, int indent)
         {
@@ -146,9 +168,18 @@ public abstract class AST {
     }
 
     public class E {
-        public string name;
+        public string name = null;
         public bool islist = false;
-        public AST ast;
+        public AST ast = null;
+
+        public void handleList() {
+            if (islist) ast = ast.toList();
+            islist = false;
+        }
+
+        public void add(E e) {
+            ast.add(this, e);
+        }
 
         public static E createNamedList(string name) {
             E el = new E();
@@ -156,74 +187,56 @@ public abstract class AST {
             el.name = name;
             return el;
         }
+
+        public static E createObject() {
+            E eo = new E();
+            eo.ast = new ASTObject();
+            return eo;
+        }
     }
 
     public class Builder {
-        private readonly Stack<E> stack = new Stack<E>(); // marker = null
+        public readonly Errors errors;
+        private E currentE;
 
-        public AST current { get { return stack.Peek().ast; } }
+        public Builder(Errors errors) {
+            this.errors = errors;
+            currentE = new E();  // we start with null
+        }
 
-        // that's what we call, built from an AstOp
-        public void process(Token t, string literal, string name, bool islist) {
-            System.Console.WriteLine("{4} >> push token {0,-20} as {2,-10}, is list {3}, literal:{1}.", t.val, literal, name, islist, stack.Count);
-            E e;
-            if (literal != null)
-                e = AST.create(literal);
-            else
-                e = AST.create(t.val);
+        public AST current { get { return currentE.ast; } }
+
+        // that's what we call for #/##, built from an AstOp
+        public void hatch(Token t, string literal, string name, bool islist) {
+            System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1}.", t.val, literal, name, islist);
+            E e = AST.create(literal != null ? literal : t.val);
             e.name = name;
             e.islist = islist;
-            stack.Push(e);
+            merge(e);
+            System.Console.WriteLine("== {0}", currentE);
+        }
+
+        // that's what we call for ^/^^, built from an AstOp
+        public void sendup(Token t, string literal, string name, bool islist) {
+            System.Console.WriteLine(">> send up as {0,-10}, islist {1}", name, islist);
+            if (currentE.name != null && name != currentE.name) errors.Warning(t.line, t.col, string.Format("overwriting AST objectname '{0}' with '{1}'", currentE.name, name));
+            if (currentE.islist && !islist) errors.SemErr(t.line, t.col, string.Format("downgrading list to literal for '{0}'", currentE.name));            
+            currentE.name = name;
+            currentE.islist = islist;
+            System.Console.WriteLine("== {0}", currentE);
         }
 
         public IDisposable createMarker() {
             return new Marker(this);
         }
 
-        private void construct() {
-            // reverse the stack order:
-            Stack<E> list = new Stack<E>();            
-            while(true) {
-                E e = stack.Pop();
-                if (e == null) {
-                    System.Console.WriteLine("{0} << null-marker, {1} items found on stack", stack.Count, list.Count);
-                    break;
-                } 
-                list.Push(e);
-            }            
-
-            AST obj = null;
-            foreach(E e in list)
-            {
-                System.Console.WriteLine("{2} << {1}={0}", e.ast.GetType().Name, e.name, stack.Count);
-                if (e.islist) {
-                    // list
-                    if (!string.IsNullOrEmpty(e.name)) {
-                        // list with name
-                        if (obj == null) obj = new ASTObject();
-                        if (obj[e.name] == AST.empty) obj.add(E.createNamedList(e.name));
-                        obj[e.name].add(e);    
-                    } else {
-                        // list without a name
-                        if (obj == null) obj = new ASTList(); 
-                        obj.add(e);
-                    }
-                } else if (!string.IsNullOrEmpty(e.name)) {
-                    // named and no list
-                    if (obj == null) obj = new ASTObject();
-                    obj.add(e);
-                } else {
-                    // not named and no list
-                    if (obj == null) obj = new ASTList(); 
-                    obj.add(e);
-                }
+        private void merge(E e) {
+            if (currentE.ast == null) {
+                e.handleList();
+                currentE = e;
+                return;
             }
-            if (obj == null) return; // don't push an empty object
-            E ret = new E();
-            ret.ast = obj;
-            stack.Push(ret);
-            System.Console.WriteLine("{1} >> {0}", ret.ast, stack.Count);
-            return;
+            currentE.add(e);
         }
 
 
@@ -232,12 +245,9 @@ public abstract class AST {
 
             public Marker(Builder builder) {
                 this.builder = builder;
-                builder.stack.Push(null);
-                System.Console.WriteLine("{0} >> null-marker", builder.stack.Count);            
             }
 
             public void Dispose() {
-                builder.construct();
             }
         }
 

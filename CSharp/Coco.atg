@@ -467,7 +467,6 @@ ASTSendUp<Node p>
   [ '^'                          (. p.ast.isList = true; .)
   ]
   [ ':' ASTVal<out p.ast.name> ]
-  [ '=' ASTConst<p> ]
 .
 
 ASTHatch<Node p>
