@@ -158,7 +158,7 @@ public abstract class AST {
         public AST current { get { return stack.Peek().ast; } }
 
         // that's what we call, built from an AstOp
-        void process(Token t, string literal, string name, bool islist) {
+        public void process(Token t, string literal, string name, bool islist) {
             E e;
             if (literal != null)
                 e = AST.create(literal);
@@ -166,6 +166,7 @@ public abstract class AST {
                 e = AST.create(t.val);
             e.name = name;
             e.islist = islist;
+            stack.Push(e);
         }
 
         public IDisposable createMarker() {

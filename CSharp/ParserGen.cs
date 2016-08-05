@@ -262,17 +262,20 @@ public class ParserGen {
 			Indent(indent);
 		} 
 	}
+
+	void GenAstBuilder(Node p, int indent) {
+		if (p.ast != null) {
+			Indent(indent);
+			string tprime = p.ast.primed ? "Prime(t)" : "t"; 
+			// void process(Token t, string literal, string name, bool islist)				
+			gen.WriteLine("astbuilder.process({0}, {1}, {2}, {3});", tprime, tab.Quoted(p.ast.literal), tab.Quoted(p.ast.name), p.ast.isList ? "true" : "false"); 
+		}
+	}
 	
 	void GenCode (Node p, int indent, BitArray isChecked) {
 		Node p2;
 		BitArray s1, s2;
 		while (p != null) {
-			if (p.ast != null) {
-				Indent(indent);
-				string tprime = p.ast.primed ? "Prime(t)" : "t"; 
-				// void process(Token t, string literal, string name, bool islist)				
-				gen.WriteLine("// astbuilder.process({0}, {1}, {2}, {3});", tprime, tab.Quoted(p.ast.literal), tab.Quoted(p.ast.name), p.ast.isList); 
-			}
 			switch (p.typ) {
 				case Node.nt: {
 					// generate a production method call ...
@@ -280,6 +283,7 @@ public class ParserGen {
 					gen.Write("{0}{1}(", p.sym.name, PROD_SUFFIX);
 					CopySourcePart(p.pos, 0); // ... with actual arguments
 					gen.WriteLine(");");
+					GenAstBuilder(p, indent);
 					break;
 				}
 				case Node.t: {
@@ -291,6 +295,7 @@ public class ParserGen {
 						GenAutocomplete(p.sym.n, indent, "T");
 						GenAutocompleteSymboltable(p, indent, "T");
 						gen.WriteLine("Expect({0}); // {1}", p.sym.n, p.sym.name);
+						GenAstBuilder(p, indent);
 					}
 					break;
 				}
@@ -304,6 +309,7 @@ public class ParserGen {
 					GenAutocomplete(p.sym.n, indent, "WT");
 					GenAutocompleteSymboltable(p, indent, "WT");
 					gen.WriteLine("ExpectWeak({0}, {1}); // {2} followed by {3}", p.sym.n, ncs1, p.sym.name, ncs1sym.name);
+					GenAstBuilder(p, indent);
 					break;
 				}
 				case Node.any: {

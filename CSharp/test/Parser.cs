@@ -182,8 +182,8 @@ public class Parser {
 		}
 		addAlt(22); // ITER start
 		while (isKind(la, 22)) {
-			// astbuilder.process(t, null, "calls", True);
 			Call‿NT();
+			astbuilder.process(t, null, "calls", true);
 			addAlt(22); // ITER end
 		}
 		addAlt(19); // ITER start
@@ -330,13 +330,13 @@ public class Parser {
 		Expect(22); // "call"
 		addAlt(16); // T
 		Expect(16); // "("
-		// astbuilder.process(t, null, "param", True);
 		Param‿NT();
+		astbuilder.process(t, null, "param", true);
 		addAlt(23); // ITER start
 		while (isKind(la, 23)) {
 			Get();
-			// astbuilder.process(t, null, "param", True);
 			Param‿NT();
+			astbuilder.process(t, null, "param", true);
 			addAlt(23); // ITER end
 		}
 		addAlt(17); // T
