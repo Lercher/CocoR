@@ -34,16 +34,16 @@ PRODUCTIONS
 	----------------------------------------
 	Use a stack.
 	Each production call pushes an object marker on the stack.
-	On return of a production method, pop until object marker ist found, form lists of list elements and 
-	form an anonymous object, push it on the stack. At toplevel provide the only item on the stack as AST.
+	On return of a production method, pop until object marker ist found, merge them into an anonymous object, push it on the stack. 
+	At toplevel provide the only item on the stack as the resulting AST.
 	...'  - as postfix, instead of t, push Prime(t) on the stack. The function Prime: Token -> Token has 
 	     to be defined as a target language function.
-	...=ident - as postfix, instead of t, create an ad hoc token t with t.val = ident
+	...=ident - as postfix, instead of t hatch ident.
 	Now, if parsing a terminal t: 
-	#  - push t as literal
-	## - push t as literal list element
-	^prop  - push t as property prop, if prop missing use sym.name.lowerd
-	^^prop - push t as property prop list element, if prop missing use sym.name.lowerd
+	#:prop  - hatch - push t as literal with name prop = "hatch (hash with t) a terminal". If prop missing, don't use a name.
+	##:prop - hatch list - push t as literal list element with list name prop = "hatch (hash with t) multiple terminals". If prop missing, don't use a list name.
+	^:prop  - send upwards - give the top object the name prop = "send up as prop". If prop missing use sym.name.lowerd.
+	^^:prop - send list upwards - create a list named prop and add the top object = "send up multiple as prop". If prop missing use sym.name.lowerd.
 	If parsing a nonterminal, pop the object o. If marked with ^ or #:
 	#, ## - push o as literal or literal list element
 	^, ^^ - push o as property or property list elements 
