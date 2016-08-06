@@ -812,8 +812,10 @@ public abstract class AST {
                     E merged = ret.add(e);
                     if (merged != null)
                         ret = merged;
-                    else 
-						mergeConflict(t, e, ret);                    
+                    else {
+						ret = e; 
+						mergeConflict(t, e, ret);
+					}                    
                 }
                 System.Console.WriteLine(" -> ret={0}", ret);
             }
