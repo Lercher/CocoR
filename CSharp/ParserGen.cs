@@ -503,6 +503,7 @@ public class ParserGen {
 			gen.Write("\tvoid {0}{1}(", sym.name, PROD_SUFFIX);
 			CopySourcePart(sym.attrPos, 0);			
 			gen.WriteLine(") {");
+			gen.WriteLine("\t\tusing(astbuilder.createBarrier())"); // intentionally no ; !
 			GenUsingSymtabSomething(sym.scopes,   "createScope", "", "");  // needs to be first
 			GenUsingSymtabSomething(sym.useonces, "createUsageCheck", "false, errors, la", "// 0..1"); // needs to be after createScope 
 			GenUsingSymtabSomething(sym.usealls,  "createUsageCheck", "true, errors, la" , "// 1..N");  // needs to be after createScope
