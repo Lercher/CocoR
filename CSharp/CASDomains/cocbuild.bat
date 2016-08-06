@@ -1,4 +1,4 @@
-..\coco CasDomains.atg -frames .. -ac -is -utf8
+..\coco CasDomains.atg -frames .. -ac -utf8
 if not errorlevel 1 (
     CasDomains.exe sample.txt
     %windir%\Microsoft.Net\Framework\v2.0.50727\csc.exe /out:CasDomainsEditor.exe /t:exe Editor.cs Parser.cs Scanner.cs

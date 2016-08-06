@@ -43,7 +43,11 @@ public class Parser {
 		return null;
 	}
 
-	public void Prime(Token t) { }
+public void Prime(Token t) { 
+		//if (t.kind == _string) 
+		t.val = t.val.Substring(1, t.val.Length - 2);
+	}
+
 
 
 
@@ -959,9 +963,9 @@ public abstract class AST {
             System.Console.WriteLine("-------------> top {0}", e);
         }
 
-		private void mergeConflict(Token t, E e, E with) {
+		private void mergeConflict(Token t, E e, E with, string typ) {
 			mergeconflicts.Add(e.ast);
-			parser.errors.SemErr(t.line, t.col, string.Format("AST merge conflict: {0} WITH {1}", e, with));
+			parser.errors.Warning(t.line, t.col, string.Format("AST merge {2}: {0} WITH {1}", e, with, typ));
 		}
 
         private void mergeToNull(Token t) {
@@ -989,10 +993,14 @@ public abstract class AST {
                     ret = e;
                 else {
                     E merged = ret.add(e);
-                    if (merged != null)
+                    if (merged != null) {
+						mergeConflict(t, e, ret, "success");
                         ret = merged;
-                    else 
-						mergeConflict(t, e, ret);                    
+                    } else {
+						mergeConflict(t, e, ret, "conflict");
+						push(ret);
+						ret = e; 
+					}                    
                 }
                 System.Console.WriteLine(" -> ret={0}", ret);
             }
