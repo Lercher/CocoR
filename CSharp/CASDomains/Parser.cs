@@ -774,6 +774,14 @@ public abstract class AST {
     private class ASTList : ASTThrows {
         public readonly List<AST> list;
 
+        public ASTList() {
+			list = new List<AST>();
+		}
+
+        public ASTList(AST a, int i) : this() {
+            list.Add(a);
+        }
+
         public ASTList(AST a) {
             if (a is ASTList)
                 list = ((ASTList)a).list;
@@ -781,11 +789,6 @@ public abstract class AST {
                 list = new List<AST>();
                 list.Add(a);
             }
-        }
-
-        public ASTList(AST a, int i) {
-            list = new List<AST>();
-            list.Add(a);
         }
 
         public override AST this[int i] { 
@@ -891,10 +894,7 @@ public abstract class AST {
 
         public E add(E e) {
             if (name == e.name) {
-				if (name == null) 
-					Console.WriteLine(" [merge two unnamed to a single list]");
-				else
-					Console.WriteLine(" [merge two named {0} to a single list]", name);
+				//if (name == null) Console.WriteLine(" [merge two unnamed to a single list]"); else Console.WriteLine(" [merge two named {0} to a single list]", name);
                 ASTList list = new ASTList(ast);
                 list.merge(e.ast);
                 E ret = new E();
@@ -902,7 +902,7 @@ public abstract class AST {
                 ret.name = name;
                 return ret;
             } else if (name != null && e.name != null) {
-				Console.WriteLine(" [merge named {0}+{1} to an unnamed object]", name, e.name);
+				//Console.WriteLine(" [merge named {0}+{1} to an unnamed object]", name, e.name);
                 ASTObject obj = new ASTObject();
                 obj.add(this);
                 obj.add(e);
@@ -910,14 +910,19 @@ public abstract class AST {
                 ret.ast = obj;
                 return ret;
             } else if (ast.merge(e)) {
-				Console.WriteLine(" [merged {1} into object {0}]", name, e.name);
+				//Console.WriteLine(" [merged {1} into object {0}]", name, e.name);
                 return this;
 			}
-			Console.WriteLine(" [no merge available for {0}+{1}]", name, e.name);
+			//Console.WriteLine(" [no merge available for {0}+{1}]", name, e.name);
             return null;
         }
 
-        public void wrapinlist() {
+        public void wrapinlist(bool merge) {			
+			if (ast == null) { 
+				ast = new ASTList();
+				return;
+			}
+			if (merge && (ast is ASTList)) return;
             ast = new ASTList(ast, 1);
         }
     }
@@ -925,7 +930,6 @@ public abstract class AST {
     public class Builder {
         public readonly Parser parser;
         private readonly Stack<E> stack = new Stack<E>();
-		public readonly List<AST> mergeconflicts = new List<AST>(); 
 
         public Builder(Parser parser) {
             this.parser = parser;
@@ -948,12 +952,12 @@ public abstract class AST {
 
         private void push(E e) {
             stack.Push(e);
-            System.Console.WriteLine("-> push {0}, size {1}", e, stack.Count);
+            //System.Console.WriteLine("-> push {0}, size {1}", e, stack.Count);
         }
 
         // that's what we call for #/##, built from an AstOp
         public void hatch(Token t, string literal, string name, bool islist) {
-            System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1} at {4},{5}.", t.val, literal, name, islist, t.line, t.col);
+            //System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1} at {4},{5}.", t.val, literal, name, islist, t.line, t.col);
             E e = new E();
             e.ast = new ASTLiteral(literal != null ? literal : t.val);
             if (islist)
@@ -962,34 +966,47 @@ public abstract class AST {
             push(e);
         }
 
-        // that's what we call for ^, built from an AstOp
+        // that's what we call for ^/^^, built from an AstOp
         public void sendup(Token t, string literal, string name, bool islist) {
 			if (stack.Count == 0) return;
             E e = currentE;
-            if (islist)
-                System.Console.WriteLine(">> send up as [{0}]: {1}", name, e);
-            else
-                System.Console.WriteLine(">> send up as {0}: {1}", name, e);
+			if (e == null) {
+				e = new E();
+				if (islist)
+					e.ast = new ASTList();
+				else
+					e.ast = new ASTObject();
+				push(e);
+			}
+            //if (islist) System.Console.WriteLine(">> send up as [{0}]: {1}", name, e); else System.Console.WriteLine(">> send up as {0}: {1}", name, e);
             if (name != e.name) {
-                if (islist)
-                    e.wrapinlist(); 
-                else if (e.name != null)
+                if (islist) {
+					bool merge = (e.name == null);
+                    e.wrapinlist(merge);
+				} else if (e.name != null)
                     parser.errors.Warning(t.line, t.col, string.Format("overwriting AST objectname '{0}' with '{1}'", e.name, name));
             }
             e.name = name;
-            System.Console.WriteLine("-------------> top {0}", e);
+            //System.Console.WriteLine("-------------> top {0}", e);
         }
 
+		/*
 		private void mergeConflict(Token t, E e, E with, string typ, int n) {
-			mergeconflicts.Add(e.ast);
 			parser.errors.Warning(t.line, t.col, string.Format("AST merge {2} size {3}: {0} WITH {1}", e, with, typ, n));
-		}
+		} 
+		*/
 
+		// remove the topmost null on the stack, keeping anythng else 
 		public void popNull() {
-			if (stack.Count == 0) return; // should not happen.
-			E e = stack.Pop();
-			if (e == null) return;
-			parser.SemErr(string.Format("expected to pop null, fund instead: {0}", e));
+			Stack<E> list = new Stack<E>();
+			while(true) {
+				if (stack.Count == 0) break;
+				E e = stack.Pop();
+				if (e == null) break;
+				list.Push(e);
+			}
+			foreach(E e in list)
+				stack.Push(e);
 		}
 
 		private void mergeAt(Token t) {
@@ -1021,22 +1038,22 @@ public abstract class AST {
 			int n = 0;
 			foreach(E e in list) {
 				n++;
-				System.Console.Write("{3}>> {1} of {2}   merge: {0}", e, n, cnt, stack.Count);
+				//System.Console.Write("{3}>> {1} of {2}   merge: {0}", e, n, cnt, stack.Count);
 				if (ret == null) 
 					ret = e;
 				else {
 					E merged = ret.add(e);
 					if (merged != null) {
 						somethingMerged = true;
-						mergeConflict(t, e, ret, "success", stack.Count);
+						//mergeConflict(t, e, ret, "success", stack.Count);
 						ret = merged;
 					} else {
-						mergeConflict(t, e, ret, "conflict", stack.Count);
+						//mergeConflict(t, e, ret, "conflict", stack.Count);
 						push(ret);
 						ret = e; 
 					}                    
 				}
-				System.Console.WriteLine(" -> ret={0}", ret);
+				//System.Console.WriteLine(" -> ret={0}", ret);
 			}
 			push(ret);
 			return somethingMerged;
@@ -1073,7 +1090,13 @@ public abstract class AST {
 				GC.SuppressFinalize(this);
                 Token t = builder.parser.t;				
                 if (ishatch) {
-					if (primed) { t = t.Copy(); builder.parser.Prime(t); }
+					if (primed) {
+						try { 
+							t = t.Copy(); builder.parser.Prime(t);
+						} catch(Exception ex) {
+							builder.parser.SemErr(string.Format("unexpected error in Prime(t): {0}", ex.Message));
+						} 
+					}
 					builder.hatch(t, literal, name, islist);
 				} else {
                 	builder.sendup(t, literal, name, islist);
