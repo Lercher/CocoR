@@ -264,6 +264,7 @@ Example text:
       FR "..."
     term "cat" 
       DE "Katze" 
+      RF "Mieze" // undeclared lang 'RF'
       // missing EN, missing FR
     term ...
 
@@ -380,9 +381,11 @@ https://code.visualstudio.com/docs/extensions/example-language-server
 
 *under development*
 
-The main technical terms we like to introduce are *hatching a token*,  
-*sending up* and *priming*. Denoted by the symbols `#` (hash - hatch),
- `^` and `'`. Operating in a list context is marked by doubling the symbol.
+The main technical terms we like to introduce 
+are *hatching a token*, *sending up* and *priming*. 
+Denoted by the symbols `#` (hash - hatch),
+ `^` (up) and `'` (prime). Operating in a list context is 
+ marked by doubling the symbol.
 
 * hatching a token with `#` - push `t` on the stack. Call this a hatch.
 
@@ -435,7 +438,7 @@ Example text
 
 Resulting AST in JSON notation
 
-   TODO
+    TODO
 
 
 
