@@ -952,7 +952,7 @@ public abstract class AST {
             if (name != e.name) {
                 if (islist)
                     e.wrapinlist(); 
-                else 
+                else if (e.name != null)
                     parser.errors.Warning(t.line, t.col, string.Format("overwriting AST objectname '{0}' with '{1}'", e.name, name));
             }
             e.name = name;
@@ -961,7 +961,7 @@ public abstract class AST {
 
 		private void mergeConflict(Token t, E e, E with) {
 			mergeconflicts.Add(e.ast);
-			parser.errors.SemErr(t.line, t.col, string.Format("ast merge conflict: {0} with {1}", e, with));
+			parser.errors.SemErr(t.line, t.col, string.Format("AST merge conflict: {0} WITH {1}", e, with));
 		}
 
         private void mergeToNull(Token t) {

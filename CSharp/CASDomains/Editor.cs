@@ -192,6 +192,8 @@ namespace WinFormsEditor
                 parser = new Parser(scanner);
                 parser.errors.errorStream = w;
                 parser.Parse();
+                w.WriteLine("\n----------------------- AST ----------------------------");
+                w.WriteLine(parser.ast);
                 w.WriteLine("\n{0:n0} error(s) detected", parser.errors.count);
             }
             textLog.Text = sb.ToString();
