@@ -76,6 +76,19 @@ in a stream or from a file that is written by a tool that
 writes UTF-8 but no byte order marks. The Coco executable
 has a new command line option that forces UTF-8 processing.
 
+* Declarative, language independent AST -
+Forming an abstract syntax tree (AST) from the parse can e done
+using semantic actions. However, this couples the AST generation
+to the target language. With this extension some prototyping can 
+be done to explore the desired object hierarchy.
+Starting with the extraction of the token from a terminal or
+nonterminal or a literal, you can give them names and form lists.
+As these objects travel up the call tree, you can compose objects
+and lists from named objects deeper in the call tree. If all runs
+well, you get at toplevel a structured object made up from 
+other objects, lists and string as leaf datatype. 
+With functions to inspect the structure and export it to JSON. 
+
 
 ## Token Inheritance
 
@@ -187,7 +200,7 @@ So the extended Coco/R syntax for productions is
 
     // Coco/R grammar
     Production = ident [FormalAttributes] [ScopesDecl] [LocalDecl] '=' Expression '.'.
-    ScopesDecl = "SCOPES" '(' ident { ',' ident } ')'.
+    ScopesDecl = "SCOPES" '(' ident { ',' ident } ')' .
 
 See http://www.ssw.uni-linz.ac.at/Coco/Doc/UserManual.pdf 
 section "2.4 Parser Specification".
@@ -199,6 +212,28 @@ to preseve the content of a lexically scoped symbol table, store it's
 `currentScope`, which is a `List<Token>` (C#) / `List(Of Token)` (VB.Net)
 inside a semantic action. If you need all symbols in all currently active 
 scopes, take a look at `items` which is an `IEnumerable<Token>`.
+
+
+### Useall and Useonce Scopes
+
+The extended Coco/R syntax for productions is
+
+    // Coco/R grammar
+    Production = ident [FormalAttributes] [ScopesDecl] [ UseOnceDecl ] [ UseAllDecl ] [LocalDecl] '=' Expression '.'.
+    ScopesDecl  = "SCOPES"  '(' ident { ',' ident } ')' .
+    UseOnceDecl = "USEONCE" '(' ident { ',' ident } ')' .
+    UseAllDecl  = "USEALL"  '(' ident { ',' ident } ')' .
+
+`USEONCE` and `USEALL` both create a scope for the production method,
+where each use of a symbol in the symbol tables denoted by the `ident, ...` list 
+is counted. After leaving the scope `USEONCE` checks that each symbol is used zero
+to one times and `USEALL` checks that each symbol is used at least one time. Undeclared
+symbols are not counted. If a check fails a samantic error or a list of them (`USEONCE`) 
+are logged.
+
+Example
+
+
 
 
 ### Accessing symbol tables form outside
@@ -336,6 +371,7 @@ byte order mark. This is the default e.g. if you use Visual Studio Code.
   -utf8 switch *beta*,
   editor *beta*,
   BOM free scanner *beta*
+  AST *alpha*
 
 * VB.Net - VisualBasic - 
   token inheritance *beta*
