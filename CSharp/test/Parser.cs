@@ -55,7 +55,10 @@ public class Parser {
 		return null;
 	}
 
-	public void Prime(Token t) { }
+public void Prime(Token t) { 
+		if (t.kind == _string || t.kind == _braced || t.kind == _bracketed) 
+		t.val = t.val.Substring(1, t.val.Length - 2);
+	}
 
 
 
@@ -187,13 +190,13 @@ public class Parser {
 			addAlt(70); // ALT
 			addAlt(69); // ALT
 			if (isKind(la, 26)) {
-				Class‿NT();
+				using(astbuilder.createMarker(null, "class", true, false, false))  Class‿NT();
 			} else if (isKind(la, 62)) {
-				SubSystem‿NT();
+				using(astbuilder.createMarker(null, "subsystem", true, false, false))  SubSystem‿NT();
 			} else if (isKind(la, 70)) {
-				Enum‿NT();
+				using(astbuilder.createMarker(null, "enum", true, false, false))  Enum‿NT();
 			} else {
-				Flags‿NT();
+				using(astbuilder.createMarker(null, "flags", true, false, false))  Flags‿NT();
 			}
 			addAlt(set0, 1); // ITER end
 		}
@@ -252,7 +255,7 @@ public class Parser {
 		if (!types.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
 		alternatives.tdeclares = types;
 		addAlt(1); // T
-		Expect(1); // ident
+		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
 		addAlt(6); // OPT
 		if (isKind(la, 6)) {
 			Title‿NT();
@@ -265,7 +268,7 @@ public class Parser {
 		if (isKind(la, 27)) {
 			Via‿NT();
 		}
-		Properties‿NT();
+		using(astbuilder.createMarker(null, "properties", true, false, false))  Properties‿NT();
 		addAlt(8); // T
 		Expect(8); // end
 		addAlt(26); // T
@@ -281,7 +284,7 @@ public class Parser {
 		if (!types.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
 		alternatives.tdeclares = types;
 		addAlt(1); // T
-		Expect(1); // ident
+		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
 		addAlt(63); // T
 		Expect(63); // "ssname"
 		addAlt(1); // T
@@ -329,7 +332,7 @@ public class Parser {
 		if (!enumtypes.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, enumtypes.name));
 		alternatives.tdeclares = enumtypes;
 		addAlt(1); // T
-		Expect(1); // ident
+		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
 		EnumValues‿NT();
 		addAlt(8); // T
 		Expect(8); // end
@@ -346,7 +349,7 @@ public class Parser {
 		if (!types.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
 		alternatives.tdeclares = types;
 		addAlt(1); // T
-		Expect(1); // ident
+		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
 		addAlt(1); // ITER start
 		while (isKind(la, 1)) {
 			EnumValue‿NT();
@@ -483,7 +486,7 @@ public class Parser {
 		addAlt(29); // T
 		Expect(29); // "property"
 		addAlt(1); // T
-		Expect(1); // ident
+		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
 		Type‿NT();
 	}}
 
@@ -493,7 +496,7 @@ public class Parser {
 		addAlt(30); // T
 		Expect(30); // "infoproperty"
 		addAlt(1); // T
-		Expect(1); // ident
+		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
 		Type‿NT();
 	}}
 
@@ -503,7 +506,7 @@ public class Parser {
 		addAlt(31); // T
 		Expect(31); // "approperty"
 		addAlt(1); // T
-		Expect(1); // ident
+		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
 		Type‿NT();
 	}}
 
@@ -513,7 +516,7 @@ public class Parser {
 		addAlt(32); // T
 		Expect(32); // "list"
 		addAlt(1); // T
-		Expect(1); // ident
+		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
 		addAlt(41); // OPT
 		if (isKind(la, 41)) {
 			As‿NT();
@@ -526,7 +529,7 @@ public class Parser {
 		addAlt(33); // T
 		Expect(33); // "selectlist"
 		addAlt(1); // T
-		Expect(1); // ident
+		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
 		As‿NT();
 	}}
 
@@ -536,7 +539,7 @@ public class Parser {
 		addAlt(34); // T
 		Expect(34); // "flagslist"
 		addAlt(1); // T
-		Expect(1); // ident
+		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
 		Mimics‿NT();
 	}}
 
@@ -546,7 +549,7 @@ public class Parser {
 		addAlt(35); // T
 		Expect(35); // "longproperty"
 		addAlt(1); // T
-		Expect(1); // ident
+		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
 	}}
 
 	void InfoLongProperty‿NT() {
@@ -555,7 +558,7 @@ public class Parser {
 		addAlt(36); // T
 		Expect(36); // "infolongproperty"
 		addAlt(1); // T
-		Expect(1); // ident
+		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
 	}}
 
 	void Type‿NT() {
