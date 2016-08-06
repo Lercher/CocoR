@@ -35,7 +35,9 @@ In the winforms editor:
 
 General:
 
-* none
+* the hierarchy building for the new AST features is broken. I have
+  to rethink the process. Probably a marker barrier on the stack
+  at the production level may be helpful.
 
 
 ## Resolved Bugs
