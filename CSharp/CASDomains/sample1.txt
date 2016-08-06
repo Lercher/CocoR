@@ -1,16 +1,18 @@
-casdomains languages DE "pl"
+casdomains languages DE EN "pl"
 
 domain ACCOUNTING orfi length 15
 	DE "Buchhaltung"
+	EN "Accounting"
 	"pl" "polska"
 
 	value BILLER_GROUP
-		DE "Rechnungsstellungsgruppe" 
-			"Alle Angestellten der Rechnungsstellung"
+		DE "Rechnungsstellungsgruppe" "Alle Angestellten der Rechnungsstellung"
+		EN "ACC grp" "accounting group"
 		"pl" "grp v fac" "lodz a liszka"
 
 	value SAMPLE_GROUP
-		DE "Beispielgruppe" "Das ist eine Beispielgruppe"	
+		DE "Beispielgruppe" "Das ist eine Beispielgruppe"
+		EN "Sample" "Samplehelp"	
 		"pl" "2grp v fac" "2lodz a liszka"
 
 end domain
