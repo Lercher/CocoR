@@ -3,6 +3,7 @@ using System.IO;
 
 
 using System;
+using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -31,6 +32,8 @@ public class Parser {
 	public Scanner scanner;
 	public Errors  errors;
 	public readonly List<Alternative> tokens = new List<Alternative>();
+	public AST ast;
+	public readonly AST.Builder astbuilder; 
 	
 	public Token t;    // last recognized token
 	public Token la;   // lookahead token
@@ -52,6 +55,8 @@ const int id = 0;
 	string tokenString;         // used in declarations of literal tokens
 	string noString = "-none-"; // used in declarations of literal tokens
 
+  public void Prime(Token t) { }
+
 /*-------------------------------------------------------------------------*/
 
 
@@ -59,6 +64,7 @@ const int id = 0;
 	public Parser(Scanner scanner) {
 		this.scanner = scanner;
 		errors = new Errors();
+		astbuilder = new AST.Builder(this);
 
 	}
 
@@ -780,19 +786,13 @@ const int id = 0;
 		{
 		p.ast = new AstOp(); 
 		if (isKind(la, 45)) {
-			ASTProperty‿NT(p);
+			ASTSendUp‿NT(p);
 		} else if (isKind(la, 46)) {
-			ASTLiteral‿NT(p);
+			ASTHatch‿NT(p);
 		} else SynErr(61);
-		if (isKind(la, 6)) {
-			ASTPrime‿NT(p);
-		}
-		if (isKind(la, 19)) {
-			ASTConst‿NT(p);
-		}
 	}}
 
-	void ASTProperty‿NT(Node p) {
+	void ASTSendUp‿NT(Node p) {
 		{
 		Expect(45); // "^"
 		p.ast.ishatch = false;
@@ -810,30 +810,25 @@ const int id = 0;
 		}
 	}}
 
-	void ASTLiteral‿NT(Node p) {
+	void ASTHatch‿NT(Node p) {
 		{
 		Expect(46); // "#"
+		p.ast.ishatch = true; 
 		if (isKind(la, 46)) {
 			Get();
 			p.ast.isList = true; 
 		}
-	}}
-
-	void ASTPrime‿NT(Node p) {
-		{
-		Expect(6); // prime
-		p.ast.primed = true;
-		if (p.typ != Node.t && p.typ != Node.wt)
-		 SemErr("can only prime terminals");
-		if (pgen.IgnoreSemanticActions)
-		 SemErr("can't use token priming when ignoring semantic actions.");
-		 // no way do define the Prime:Token->Token function.                                        
-	}}
-
-	void ASTConst‿NT(Node p) {
-		{
-		Expect(19); // "="
-		ASTVal‿NT(out p.ast.literal);
+		if (isKind(la, 6)) {
+			ASTPrime‿NT(p);
+		}
+		if (isKind(la, 33)) {
+			Get();
+			ASTVal‿NT(out p.ast.name);
+		}
+		if (isKind(la, 19)) {
+			Get();
+			ASTConst‿NT(p);
+		}
 	}}
 
 	void ASTVal‿NT(out string val) {
@@ -844,8 +839,25 @@ const int id = 0;
 			val = t.val; 
 		} else if (isKind(la, 3)) {
 			Get();
-			val = tab.Unescape(t.val); 
+			val = t.val.Substring(1, t.val.Length - 2); 
 		} else SynErr(62);
+	}}
+
+	void ASTPrime‿NT(Node p) {
+		{
+		Expect(6); // prime
+		p.ast.primed = true;
+		if (p.typ != Node.t && p.typ != Node.wt)
+		 SemErr("can only prime terminals");
+		if (pgen.IgnoreSemanticActions)
+		 errors.Warning(t.line, t.col, "token priming is ignored when ignoring semantic actions (-is switch).");
+		 // no way do define the Prime:void->Token function.                                        
+		
+	}}
+
+	void ASTConst‿NT(Node p) {
+		{
+		ASTVal‿NT(out p.ast.literal);
 	}}
 
 	void Condition‿NT() {
@@ -925,9 +937,11 @@ const int id = 0;
 		la = new Token();
 		la.val = "";
 		Get();
+		using(astbuilder.createMarker(null, null, false, false, false))
 		Coco‿NT();
 		Expect(0);
 
+		ast = astbuilder.current;
 	}
 	
 	// a token's base type
@@ -1332,6 +1346,7 @@ public class Symboltable {
 		}
 
 		public void Dispose() {
+			GC.SuppressFinalize(this);
 			st.popScope();
 		}
 	}
@@ -1359,6 +1374,7 @@ public class Symboltable {
 		}
 
 		public void Dispose() {
+			GC.SuppressFinalize(this);
 			st.TokenUsed -= uses.Add;
 			Dictionary<string, List<Token>> counter = new Dictionary<string, List<Token>>(st.comparer);
 			foreach(Token t in st.items)
@@ -1383,5 +1399,337 @@ public class Symboltable {
 			} 
 		}
 	}
+}
+
+public abstract class AST {
+    public abstract string val { get; }
+    public abstract AST this[int i] { get; }
+    public abstract AST this[string s] { get; }
+    public abstract int count { get; }
+    public static readonly AST empty = new ASTLiteral(string.Empty);
+    protected abstract void serialize(StringBuilder sb, int indent);
+    public virtual bool merge(E e) { return false; }
+    
+#region Formatting
+	public static void newline(int indent, StringBuilder sb) {
+        sb.AppendLine();
+        for(int i = 0; i < indent; i++)
+            sb.Append("  ");
+    }
+
+	public static void escape(string s, StringBuilder sb) {
+		foreach (char ch in s) {
+			switch(ch) {
+				case '\\': sb.Append("\\\\"); break;
+				case '\'': sb.Append("\\'"); break;
+				case '\"': sb.Append("\\\""); break;
+				case '\t': sb.Append("\\t"); break;
+				case '\r': sb.Append("\\r"); break;
+				case '\n': sb.Append("\\n"); break;
+				default:
+					if (ch < ' ' || ch > '\u007f') sb.AppendFormat("{0:x4}",ch);
+					else sb.Append(ch);
+					break;
+			}
+		}
+	}
+
+    public override string ToString() {
+        StringBuilder sb = new StringBuilder();
+        serialize(sb, 0);
+        return sb.ToString();
+    }
+
+#endregion
+
+    private abstract class ASTThrows : AST {
+        public override string val { get { throw new ApplicationException("not a literal"); } }
+        public override AST this[int i] { get { throw new ApplicationException("not a list"); } }
+        public override AST this[string s] { get { throw new ApplicationException("not an object"); } }
+    }
+
+    private class ASTLiteral : ASTThrows {
+        public ASTLiteral(string s) { _val = s; }
+        private readonly string _val;
+        public override string val { get { return _val; } }
+        public override int count { get { return -1; } }
+
+        protected override void serialize(StringBuilder sb, int indent)
+        {
+            sb.Append('\"');
+            AST.escape(val, sb);
+            sb.Append('\"');
+        }
+    }
+
+    private class ASTList : ASTThrows {
+        public readonly List<AST> list;
+
+        public ASTList(AST a) {
+            if (a is ASTList)
+                list = ((ASTList)a).list;
+            else {
+                list = new List<AST>();
+                list.Add(a);
+            }
+        }
+
+        public ASTList(AST a, int i) {
+            list = new List<AST>();
+            list.Add(a);
+        }
+
+        public override AST this[int i] { 
+            get { 
+                if (i < 0 || count <= i)
+                    return AST.empty;
+                return list[i];
+            } 
+        }
+        public override int count { get { return list.Count; } }
+        
+        public AST merge(AST a) {
+            if (a is ASTList) {
+                ASTList li = (ASTList) a;
+                list.AddRange(li.list);
+            } else
+                list.Add(a);
+            return a;
+        }
+
+        protected override void serialize(StringBuilder sb, int indent)
+        {
+            bool longlist = (count > 3);
+            sb.Append('[');
+            if (longlist) AST.newline(indent + 1, sb);
+            int n = 0;
+            foreach(AST ast in list) {
+                ast.serialize(sb, indent + 1);
+                n++;
+                if (n < count) {
+                    sb.Append(", ");
+                    if (longlist) AST.newline(indent + 1, sb);
+                }
+            }
+            if (longlist) AST.newline(indent, sb);
+            sb.Append(']');
+        }
+
+    }
+
+    private class ASTObject : ASTThrows {
+        private readonly Dictionary<string,AST> ht = new Dictionary<string,AST>();         
+        public override AST this[string s] { 
+            get { 
+                if (!ht.ContainsKey(s))
+                    return AST.empty;
+                return ht[s];
+            } 
+        }
+        public override int count { get { return ht.Keys.Count; } }
+        
+        public void add(E e) {
+            ht[e.name] = e.ast; 
+        }
+
+        public override bool merge(E e) {
+            if (e.name == null) return false; // cannot merge an unnamed thing
+            if (!ht.ContainsKey(e.name)) {
+                add(e);
+                return true;
+            }
+            // we have e.nam, call it a thing:
+            AST thing = ht[e.name];
+            if (thing is ASTList) {
+                ((ASTList) thing).merge(e.ast);
+                return true;
+            }
+            // thing is not a list, so we cannot merge it with e
+            return false;
+        }
+
+        protected override void serialize(StringBuilder sb, int indent) {
+            bool longlist = (count > 3);
+            sb.Append('{');
+            if (longlist) AST.newline(indent + 1, sb);
+            int n = 0;
+            foreach(string name in ht.Keys) {
+                AST ast = ht[name];
+                sb.Append('\"');
+                AST.escape(name, sb);
+                sb.Append("\": ");
+                ast.serialize(sb, indent + 1);
+                n++;
+                if (n < count) {
+                    sb.Append(", ");
+                    if (longlist) AST.newline(indent + 1, sb);
+                }
+            }
+            if (longlist) AST.newline(indent, sb);
+            sb.Append('}');
+        }
+    }
+
+    public class E {
+        public string name = null;
+        public AST ast = null;
+
+        public override string ToString() {
+            string a = ast == null ? "null" : ast.ToString();
+            string n = name == null ? "." : name;
+            return string.Format("{0} = {1};", n, a);
+        }
+
+        public E add(E e) {
+            if (name == e.name) {
+                ASTList list = new ASTList(ast);
+                list.merge(e.ast);
+                E ret = new E();
+                ret.ast = list;
+                ret.name = name;
+                return ret;
+            } else if (name != null && e.name != null) {
+                ASTObject obj = new ASTObject();
+                obj.add(this);
+                obj.add(e);
+                E ret = new E();
+                ret.ast = obj;
+                return ret;
+            } else if (ast.merge(e))
+                return this;
+            return null;
+        }
+
+        public void wrapinlist() {
+            ast = new ASTList(ast, 1);
+        }
+    }
+
+    public class Builder {
+        public readonly Parser parser;
+        private readonly Stack<E> stack = new Stack<E>();
+
+        public Builder(Parser parser) {
+            this.parser = parser;
+        }
+        
+        public E currentE { get { return stack.Peek(); } }
+        
+		public AST current { 
+			get { 
+				return stack.Count > 0 ? currentE.ast : new ASTObject(); 
+			} 
+		}
+
+        public override string ToString() {
+            StringBuilder sb = new StringBuilder();
+            foreach(E e in stack)
+                sb.AppendFormat("{0}\n", e);
+            return sb.ToString();
+        }
+
+        private void push(E e) {
+            stack.Push(e);
+            System.Console.WriteLine("-> push {0}, size {1}", e, stack.Count);
+        }
+
+        // that's what we call for #/##, built from an AstOp
+        public void hatch(Token t, string literal, string name, bool islist) {
+            System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1} at {4},{5}.", t.val, literal, name, islist, t.line, t.col);
+            E e = new E();
+            e.ast = new ASTLiteral(literal != null ? literal : t.val);
+            if (islist)
+                e.ast = new ASTList(e.ast);
+            e.name = name;
+            push(e);
+        }
+
+        // that's what we call for ^, built from an AstOp
+        public void sendup(Token t, string literal, string name, bool islist) {
+			if (stack.Count == 0) return;
+            E e = currentE;
+            if (islist)
+                System.Console.WriteLine(">> send up as [{0}]: {1}", name, e);
+            else
+                System.Console.WriteLine(">> send up as {0}: {1}", name, e);
+            if (name != e.name) {
+                if (islist)
+                    e.wrapinlist(); 
+                else 
+                    parser.errors.Warning(t.line, t.col, string.Format("overwriting AST objectname '{0}' with '{1}'", e.name, name));
+            }
+            e.name = name;
+            System.Console.WriteLine("-------------> top {0}", e);
+        }
+
+        private void mergeToNull() {
+            Stack<E> list = new Stack<E>();
+            int cnt = 0;
+            while(true) {
+                E e = stack.Pop();
+                if (e == null) break;
+                list.Push(e);
+                cnt++;
+            }
+            if (cnt == 0) return; // nothing was pushed
+            if (cnt == 1) {
+                // we promote the one thing on the stack to the parent frame:
+                push(list.Pop());
+                return;
+            }
+            // merge as much as we can and push the results. Start with null
+            E ret = null;
+            int n = 0;
+            foreach(E e in list) {
+                n++;
+                System.Console.Write(">> {1} of {2}   merge: {0}", e, n, cnt);
+                if (ret == null) 
+                    ret = e;
+                else {
+                    E merged = ret.add(e);
+                    if (merged != null)
+                        ret = merged;
+                    else {
+                        push(ret);
+                        ret = e;
+                    }
+                }
+                System.Console.WriteLine(" -> ret={0}", ret);
+            }
+            push(ret);
+        }
+
+        public IDisposable createMarker(string literal, string name, bool islist, bool ishatch, bool primed) {
+            return new Marker(this, literal, name, islist, ishatch, primed);
+        }
+
+        private class Marker : IDisposable {
+            public readonly Builder builder;
+            public readonly string literal;
+            public readonly string name;
+            public readonly bool islist;
+            public readonly bool ishatch;
+            public readonly bool primed;
+
+            public Marker(Builder builder, string literal, string name, bool islist, bool ishatch, bool primed) {
+                this.builder = builder;                
+                this.literal = literal;
+                this.name = name;
+                this.ishatch = ishatch;
+                this.islist = islist;
+                this.primed = primed;
+                builder.stack.Push(null); // push a marker
+            }
+
+            public void Dispose() {
+				GC.SuppressFinalize(this);
+                Token t = builder.parser.t;
+				if (primed) {t = t.Copy(); builder.parser.Prime(t); }
+                if (ishatch) builder.hatch(t, literal, name, islist);
+                builder.mergeToNull();
+                if (!ishatch) builder.sendup(t, literal, name, islist);
+            }
+        }
+    }
 }
 }

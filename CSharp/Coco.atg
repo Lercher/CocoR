@@ -48,6 +48,8 @@ COMPILER Coco
 	string tokenString;         // used in declarations of literal tokens
 	string noString = "-none-"; // used in declarations of literal tokens
 
+  public void Prime(Token t) { }
+
 /*-------------------------------------------------------------------------*/
 
 CHARACTERS
@@ -474,11 +476,9 @@ ASTHatch<Node p>
   '#'                            (. p.ast.ishatch = true; .)
   [ '#'                          (. p.ast.isList = true; .)
   ]
-  [ ':' ASTVal<out p.ast.name> 
-  ]
-  [ ASTPrime<p>
-  | '=' ASTConst<p> 
-  ]
+  [ ASTPrime<p> ]
+  [ ':' ASTVal<out p.ast.name> ]
+  [ '=' ASTConst<p> ]
 .
 
 
@@ -488,7 +488,7 @@ ASTPrime<Node p>
                                     if (p.typ != Node.t && p.typ != Node.wt)
                                       SemErr("can only prime terminals");
                                     if (pgen.IgnoreSemanticActions)
-                                      Warning("can't use token priming when ignoring semantic actions.");
+                                      errors.Warning(t.line, t.col, "token priming is ignored when ignoring semantic actions (-is switch).");
                                       // no way do define the Prime:void->Token function.                                        
                                   .)  
 .
@@ -501,7 +501,7 @@ ASTConst<Node p>
 ASTVal<out string val>           (. val = "?"; .)
 =
     ident                        (. val = t.val; .)           
-    | string                     (. val = tab.Unescape(t.val); .)
+    | string                     (. val = t.val.Substring(1, t.val.Length - 2); .)
 .
 
 /*------------------------------------------------------------------------------------*/
