@@ -55,7 +55,7 @@ public class Parser {
 		return null;
 	}
 
-	public Token Prime() { return t; }
+	public void Prime(Token t) { }
 
 
 
@@ -1345,6 +1345,7 @@ public class Symboltable {
 		}
 
 		public void Dispose() {
+			GC.SuppressFinalize(this);
 			st.popScope();
 		}
 	}
@@ -1372,6 +1373,7 @@ public class Symboltable {
 		}
 
 		public void Dispose() {
+			GC.SuppressFinalize(this);
 			st.TokenUsed -= uses.Add;
 			Dictionary<string, List<Token>> counter = new Dictionary<string, List<Token>>(st.comparer);
 			foreach(Token t in st.items)
@@ -1498,17 +1500,17 @@ public abstract class AST {
         {
             bool longlist = (count > 3);
             sb.Append('[');
-            if (longlist) AST.newline(indent, sb);
+            if (longlist) AST.newline(indent + 1, sb);
             int n = 0;
             foreach(AST ast in list) {
                 ast.serialize(sb, indent + 1);
                 n++;
                 if (n < count) {
                     sb.Append(", ");
-                    if (longlist) AST.newline(indent, sb);
+                    if (longlist) AST.newline(indent + 1, sb);
                 }
             }
-            if (longlist) AST.newline(indent - 1, sb);
+            if (longlist) AST.newline(indent, sb);
             sb.Append(']');
         }
 
@@ -1605,6 +1607,7 @@ public abstract class AST {
     public class Builder {
         public readonly Parser parser;
         private readonly Stack<E> stack = new Stack<E>();
+		public readonly List<AST> mergeconflicts = new List<AST>(); 
 
         public Builder(Parser parser) {
             this.parser = parser;
@@ -1632,7 +1635,7 @@ public abstract class AST {
 
         // that's what we call for #/##, built from an AstOp
         public void hatch(Token t, string literal, string name, bool islist) {
-            System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1}.", t.val, literal, name, islist);
+            System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1} at {4},{5}.", t.val, literal, name, islist, t.line, t.col);
             E e = new E();
             e.ast = new ASTLiteral(literal != null ? literal : t.val);
             if (islist)
@@ -1659,7 +1662,12 @@ public abstract class AST {
             System.Console.WriteLine("-------------> top {0}", e);
         }
 
-        private void mergeToNull() {
+		private void mergeConflict(Token t, E e, E with) {
+			mergeconflicts.Add(e.ast);
+			parser.errors.SemErr(t.line, t.col, string.Format("ast merge conflict: {0} with {1}", e, with));
+		}
+
+        private void mergeToNull(Token t) {
             Stack<E> list = new Stack<E>();
             int cnt = 0;
             while(true) {
@@ -1686,10 +1694,8 @@ public abstract class AST {
                     E merged = ret.add(e);
                     if (merged != null)
                         ret = merged;
-                    else {
-                        push(ret);
-                        ret = e;
-                    }
+                    else 
+						mergeConflict(t, e, ret);                    
                 }
                 System.Console.WriteLine(" -> ret={0}", ret);
             }
@@ -1719,9 +1725,11 @@ public abstract class AST {
             }
 
             public void Dispose() {
-                Token t = primed ? builder.parser.Prime() : builder.parser.t;
+				GC.SuppressFinalize(this);
+                Token t = builder.parser.t;
+				if (primed) {t = t.Copy(); builder.parser.Prime(t); }
                 if (ishatch) builder.hatch(t, literal, name, islist);
-                builder.mergeToNull();
+                builder.mergeToNull(t);
                 if (!ishatch) builder.sendup(t, literal, name, islist);
             }
         }
