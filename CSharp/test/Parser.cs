@@ -1187,6 +1187,7 @@ public abstract class AST {
     public class Builder {
         public readonly Parser parser;
         private readonly Stack<E> stack = new Stack<E>();
+		public readonly List<AST> mergeconflicts = new List<AST>(); 
 
         public Builder(Parser parser) {
             this.parser = parser;
@@ -1241,7 +1242,12 @@ public abstract class AST {
             System.Console.WriteLine("-------------> top {0}", e);
         }
 
-        private void mergeToNull() {
+		private void mergeConflict(Token t, E e, E with) {
+			mergeconflicts.Add(e.ast);
+			parser.errors.SemErr(t.line, t.col, string.Format("ast merge conflict: {0} with {1}", e, with));
+		}
+
+        private void mergeToNull(Token t) {
             Stack<E> list = new Stack<E>();
             int cnt = 0;
             while(true) {
@@ -1268,10 +1274,8 @@ public abstract class AST {
                     E merged = ret.add(e);
                     if (merged != null)
                         ret = merged;
-                    else {
-                        push(ret);
-                        ret = e;
-                    }
+                    else 
+						mergeConflict(t, e, ret);                    
                 }
                 System.Console.WriteLine(" -> ret={0}", ret);
             }
@@ -1305,7 +1309,7 @@ public abstract class AST {
                 Token t = builder.parser.t;
 				if (primed) {t = t.Copy(); builder.parser.Prime(t); }
                 if (ishatch) builder.hatch(t, literal, name, islist);
-                builder.mergeToNull();
+                builder.mergeToNull(t);
                 if (!ishatch) builder.sendup(t, literal, name, islist);
             }
         }
