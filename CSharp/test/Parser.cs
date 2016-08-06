@@ -1718,7 +1718,8 @@ public abstract class AST {
 			if (stack.Count == 0) return; // should not happen.
 			E e = stack.Pop();
 			if (e == null) return;
-			parser.SemErr(string.Format("expected to pop null, fund instead: {0}", e));
+			parser.SemErr(string.Format("expected to pop null, found instead at size {1}: {0}", e, stack.Count));
+			//throw new Exception();
 		}
 
 		private void mergeAt(Token t) {
