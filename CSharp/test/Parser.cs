@@ -1161,6 +1161,10 @@ public abstract class AST {
 
         public E add(E e) {
             if (name == e.name) {
+				if (name == null) 
+					Console.WriteLine(">> merge two unnamed to a single list");
+				else
+					Console.WriteLine(">> merge two named {0} to a single list", name);
                 ASTList list = new ASTList(ast);
                 list.merge(e.ast);
                 E ret = new E();
@@ -1235,51 +1239,60 @@ public abstract class AST {
             if (name != e.name) {
                 if (islist)
                     e.wrapinlist(); 
-                else 
+                else if (e.name != null)
                     parser.errors.Warning(t.line, t.col, string.Format("overwriting AST objectname '{0}' with '{1}'", e.name, name));
             }
             e.name = name;
             System.Console.WriteLine("-------------> top {0}", e);
         }
 
-		private void mergeConflict(Token t, E e, E with) {
+		private void mergeConflict(Token t, E e, E with, string typ, int n) {
 			mergeconflicts.Add(e.ast);
-			parser.errors.SemErr(t.line, t.col, string.Format("ast merge conflict: {0} with {1}", e, with));
+			parser.errors.Warning(t.line, t.col, string.Format("AST merge {2} size {3}: {0} WITH {1}", e, with, typ, n));
 		}
 
-        private void mergeToNull(Token t) {
-            Stack<E> list = new Stack<E>();
-            int cnt = 0;
-            while(true) {
-                E e = stack.Pop();
-                if (e == null) break;
-                list.Push(e);
-                cnt++;
-            }
-            if (cnt == 0) return; // nothing was pushed
-            if (cnt == 1) {
-                // we promote the one thing on the stack to the parent frame:
-                push(list.Pop());
-                return;
-            }
-            // merge as much as we can and push the results. Start with null
-            E ret = null;
-            int n = 0;
-            foreach(E e in list) {
-                n++;
-                System.Console.Write(">> {1} of {2}   merge: {0}", e, n, cnt);
-                if (ret == null) 
-                    ret = e;
-                else {
-                    E merged = ret.add(e);
-                    if (merged != null)
-                        ret = merged;
-                    else 
-						mergeConflict(t, e, ret);                    
-                }
-                System.Console.WriteLine(" -> ret={0}", ret);
-            }
-            push(ret);
+        private void mergeToNull(Token t, bool keepNull) {
+			bool somethingMerged = false;
+			Stack<E> list = new Stack<E>();
+			int cnt = 0;
+			while(true) {
+				if (stack.Count == 0) return;
+				if (currentE == null) {
+					if (!keepNull) stack.Pop();
+					break; // don't pop the null
+				}
+				list.Push(stack.Pop());
+				cnt++;
+			}
+			if (cnt == 0) return; // nothing was pushed
+			if (cnt == 1) {
+				// we promote the one thing on the stack to the parent frame:
+				stack.Push(list.Pop());
+				return;
+			}
+			// merge as much as we can and push the results. Start with null
+			E ret = null;
+			int n = 0;
+			foreach(E e in list) {
+				n++;
+				System.Console.Write("{3}>> {1} of {2}   merge: {0}", e, n, cnt, stack.Count);
+				if (ret == null) 
+					ret = e;
+				else {
+					E merged = ret.add(e);
+					if (merged != null) {
+						somethingMerged = true;
+						mergeConflict(t, e, ret, "success", stack.Count);
+						ret = merged;
+					} else {
+						mergeConflict(t, e, ret, "conflict", stack.Count);
+						push(ret);
+						ret = e; 
+					}                    
+				}
+				System.Console.WriteLine(" -> ret={0}", ret);
+			}
+			push(ret);
         }
 
         public IDisposable createMarker(string literal, string name, bool islist, bool ishatch, bool primed) {
@@ -1301,16 +1314,21 @@ public abstract class AST {
                 this.ishatch = ishatch;
                 this.islist = islist;
                 this.primed = primed;
-                builder.stack.Push(null); // push a marker
+				if (!ishatch)
+                	builder.stack.Push(null); // push a marker
             }
 
             public void Dispose() {
 				GC.SuppressFinalize(this);
-                Token t = builder.parser.t;
-				if (primed) {t = t.Copy(); builder.parser.Prime(t); }
-                if (ishatch) builder.hatch(t, literal, name, islist);
-                builder.mergeToNull(t);
-                if (!ishatch) builder.sendup(t, literal, name, islist);
+                Token t = builder.parser.t;				
+                if (ishatch) {
+					if (primed) { t = t.Copy(); builder.parser.Prime(t); }
+					builder.hatch(t, literal, name, islist);
+					builder.mergeToNull(t, true);
+				} else {
+                	builder.sendup(t, literal, name, islist);
+					builder.mergeToNull(t, false);
+				}
             }
         }
     }
