@@ -897,7 +897,13 @@ public abstract class AST {
 				GC.SuppressFinalize(this);
                 Token t = builder.parser.t;				
                 if (ishatch) {
-					if (primed) { t = t.Copy(); builder.parser.Prime(t); }
+					if (primed) {
+						try { 
+							t = t.Copy(); builder.parser.Prime(t);
+						} catch(Exception ex) {
+							parser.SemErr(string.Format("unexpected error in Prime(t): {0}", ex.Message);
+						} 
+					}
 					builder.hatch(t, literal, name, islist);
 				} else {
                 	builder.sendup(t, literal, name, islist);
