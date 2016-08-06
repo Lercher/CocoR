@@ -231,9 +231,37 @@ to one times and `USEALL` checks that each symbol is used at least one time. Und
 symbols are not counted. If a check fails a samantic error or a list of them (`USEONCE`) 
 are logged.
 
-Example
+For our example, we consider a dictionary for a list of target languages, where
+this list of target languages is not known in advance. So we add the list
+to our grammar and demand that each term has at least one translation in 
+each declared language.
 
+Example grammar:
 
+    COMPILER Dictionary
+
+    SYMBOLTABLES
+      lang STRICT.
+    
+    PRODUCTIONS
+      Dictionary = Languages { Term }.      
+      Languages = "languages" { ident>lang }.
+      Term USEALL(lang) = "term" string { Translation }.
+      Translation = ident:lang string.
+
+Example text:
+
+    languages EN DE FR
+    
+    term "car" 
+      DE "Auto" 
+      DE "Fahrzeug" 
+      EN "vehicle" 
+      FR "..."
+    term "cat" 
+      DE "Katze" 
+      // missing EN, missing FR
+    term ...
 
 
 ### Accessing symbol tables form outside
