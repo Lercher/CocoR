@@ -39,6 +39,10 @@ General:
   to rethink the process. Probably a marker barrier on the stack
   at the production level may be helpful.
 
+* sprinkled Console.WriteLine()s in the generated parser
+
+* Priming function is mandatory but it shouldn't
+
 
 ## Resolved Bugs
 
