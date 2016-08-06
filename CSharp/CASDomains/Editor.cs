@@ -12,7 +12,7 @@ namespace WinFormsEditor
         Parser parser;        
 
         void loadSampleTxt() {
-            string fn = @"sample1.txt";
+            string fn = @"sample.txt";
             string s = System.IO.File.ReadAllText(fn);
             textSource.Text = s;
             this.Text += " - " + fn;

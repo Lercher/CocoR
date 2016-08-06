@@ -171,6 +171,7 @@ public class Parser {
 
 	
 	void WFModel‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		Version‿NT();
 		Namespace‿NT();
@@ -200,6 +201,7 @@ public class Parser {
 	}}
 
 	void Version‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(13); // T
 		Expect(13); // version
@@ -208,6 +210,7 @@ public class Parser {
 	}}
 
 	void Namespace‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		while (!(isKind(la, 0) || isKind(la, 22))) {SynErr(73); Get();}
 		addAlt(22); // T
@@ -216,6 +219,7 @@ public class Parser {
 	}}
 
 	void ReaderWriterPrefix‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		while (!(isKind(la, 0) || isKind(la, 23))) {SynErr(74); Get();}
 		addAlt(23); // T
@@ -225,6 +229,7 @@ public class Parser {
 	}}
 
 	void RootClass‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		while (!(isKind(la, 0) || isKind(la, 24))) {SynErr(75); Get();}
 		addAlt(24); // T
@@ -239,6 +244,7 @@ public class Parser {
 	}}
 
 	void Class‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		while (!(isKind(la, 0) || isKind(la, 26))) {SynErr(76); Get();}
 		addAlt(26); // T
@@ -267,6 +273,7 @@ public class Parser {
 	}}
 
 	void SubSystem‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		while (!(isKind(la, 0) || isKind(la, 62))) {SynErr(77); Get();}
 		addAlt(62); // T
@@ -314,6 +321,7 @@ public class Parser {
 	}}
 
 	void Enum‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		while (!(isKind(la, 0) || isKind(la, 70))) {SynErr(78); Get();}
 		addAlt(70); // T
@@ -330,6 +338,7 @@ public class Parser {
 	}}
 
 	void Flags‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		while (!(isKind(la, 0) || isKind(la, 69))) {SynErr(79); Get();}
 		addAlt(69); // T
@@ -350,6 +359,7 @@ public class Parser {
 	}}
 
 	void EndNamespace‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(8); // T
 		Expect(8); // end
@@ -358,6 +368,7 @@ public class Parser {
 	}}
 
 	void DottedIdent‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(2); // OPT
 		if (isKind(la, 2)) {
@@ -377,6 +388,7 @@ public class Parser {
 	}}
 
 	void Properties‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(set0, 2); // ITER start
 		while (StartOf(2)) {
@@ -386,12 +398,14 @@ public class Parser {
 	}}
 
 	void Title‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(6); // T
 		Expect(6); // braced
 	}}
 
 	void Inherits‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(28); // T
 		Expect(28); // "inherits"
@@ -399,6 +413,7 @@ public class Parser {
 	}}
 
 	void Via‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(27); // T
 		Expect(27); // "via"
@@ -406,6 +421,7 @@ public class Parser {
 	}}
 
 	void Prop‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		while (!(StartOf(3))) {SynErr(80); Get();}
 		addAlt(29); // ALT
@@ -462,6 +478,7 @@ public class Parser {
 	}}
 
 	void Property‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(29); // T
 		Expect(29); // "property"
@@ -471,6 +488,7 @@ public class Parser {
 	}}
 
 	void InfoProperty‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(30); // T
 		Expect(30); // "infoproperty"
@@ -480,6 +498,7 @@ public class Parser {
 	}}
 
 	void APProperty‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(31); // T
 		Expect(31); // "approperty"
@@ -489,6 +508,7 @@ public class Parser {
 	}}
 
 	void List‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(32); // T
 		Expect(32); // "list"
@@ -501,6 +521,7 @@ public class Parser {
 	}}
 
 	void SelectList‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(33); // T
 		Expect(33); // "selectlist"
@@ -510,6 +531,7 @@ public class Parser {
 	}}
 
 	void FlagsList‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(34); // T
 		Expect(34); // "flagslist"
@@ -519,6 +541,7 @@ public class Parser {
 	}}
 
 	void LongProperty‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(35); // T
 		Expect(35); // "longproperty"
@@ -527,6 +550,7 @@ public class Parser {
 	}}
 
 	void InfoLongProperty‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(36); // T
 		Expect(36); // "infolongproperty"
@@ -535,6 +559,7 @@ public class Parser {
 	}}
 
 	void Type‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(set0, 4); // ALT
 		addAlt(41); // ALT
@@ -558,6 +583,7 @@ public class Parser {
 	}}
 
 	void As‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(41); // T
 		Expect(41); // "as"
@@ -576,6 +602,7 @@ public class Parser {
 	}}
 
 	void Mimics‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(57); // T
 		Expect(57); // "mimics"
@@ -583,10 +610,12 @@ public class Parser {
 	}}
 
 	void EmptyType‿NT() {
+		using(astbuilder.createBarrier())
 		{
 	}}
 
 	void InitValue‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(3); // ALT
 		addAlt(4); // ALT
@@ -653,12 +682,14 @@ public class Parser {
 	}}
 
 	void SampleValue‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(6); // T
 		Expect(6); // braced
 	}}
 
 	void FunctionCall‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		DottedIdent‿NT();
 		addAlt(7); // T
@@ -666,6 +697,7 @@ public class Parser {
 	}}
 
 	void BaseType‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(42); // ALT
 		addAlt(43); // ALT
@@ -763,6 +795,7 @@ public class Parser {
 	}}
 
 	void MimicsSpec‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(58); // ALT
 		addAlt(59); // ALT
@@ -785,6 +818,7 @@ public class Parser {
 	}}
 
 	void Query‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(58); // T
 		Expect(58); // "query"
@@ -802,6 +836,7 @@ public class Parser {
 	}}
 
 	void Txt‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(59); // T
 		Expect(59); // "txt"
@@ -819,6 +854,7 @@ public class Parser {
 	}}
 
 	void XL‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(60); // T
 		Expect(60); // "xl"
@@ -836,6 +872,7 @@ public class Parser {
 	}}
 
 	void Ref‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(61); // T
 		Expect(61); // "ref"
@@ -854,6 +891,7 @@ public class Parser {
 	}}
 
 	void StringOrIdent‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(5); // ALT
 		addAlt(new int[] {1, 2}); // ALT
@@ -865,6 +903,7 @@ public class Parser {
 	}}
 
 	void SSCommands‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		SSCommand‿NT();
 		addAlt(10); // ITER start
@@ -876,6 +915,7 @@ public class Parser {
 	}}
 
 	void SSCommand‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(14); // ALT
 		addAlt(15); // ALT
@@ -896,6 +936,7 @@ public class Parser {
 	}}
 
 	void EnumValue‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(1); // T
 		Expect(1); // ident
@@ -906,6 +947,7 @@ public class Parser {
 	}}
 
 	void EnumValues‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(1); // ITER start
 		while (isKind(la, 1)) {
@@ -923,6 +965,7 @@ public class Parser {
 	}}
 
 	void EnumIntValue‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(37); // T
 		Expect(37); // "="
@@ -936,7 +979,6 @@ public class Parser {
 		la = new Token();
 		la.val = "";
 		Get();
-		using(astbuilder.createMarker(null, null, false, false, false))
 		WFModel‿NT();
 		Expect(0);
 		types.CheckDeclared(errors);
@@ -1582,9 +1624,9 @@ public abstract class AST {
         public E add(E e) {
             if (name == e.name) {
 				if (name == null) 
-					Console.WriteLine(">> merge two unnamed to a single list");
+					Console.WriteLine(" [merge two unnamed to a single list]");
 				else
-					Console.WriteLine(">> merge two named {0} to a single list", name);
+					Console.WriteLine(" [merge two named {0} to a single list]", name);
                 ASTList list = new ASTList(ast);
                 list.merge(e.ast);
                 E ret = new E();
@@ -1592,14 +1634,18 @@ public abstract class AST {
                 ret.name = name;
                 return ret;
             } else if (name != null && e.name != null) {
+				Console.WriteLine(" [merge named {0}+{1} to an unnamed object]", name, e.name);
                 ASTObject obj = new ASTObject();
                 obj.add(this);
                 obj.add(e);
                 E ret = new E();
                 ret.ast = obj;
                 return ret;
-            } else if (ast.merge(e))
+            } else if (ast.merge(e)) {
+				Console.WriteLine(" [merged {1} into object {0}]", name, e.name);
                 return this;
+			}
+			Console.WriteLine(" [no merge available for {0}+{1}]", name, e.name);
             return null;
         }
 
@@ -1671,23 +1717,35 @@ public abstract class AST {
 			parser.errors.Warning(t.line, t.col, string.Format("AST merge {2} size {3}: {0} WITH {1}", e, with, typ, n));
 		}
 
-        private bool mergeToNull(Token t, bool keepNull) {
+		public void popNull() {
+			if (stack.Count == 0) return; // should not happen.
+			E e = stack.Pop();
+			if (e == null) return;
+			parser.SemErr(string.Format("expected to pop null, fund instead: {0}", e));
+		}
+
+		private void mergeAt(Token t) {
+			while(mergeToNull(t))
+				/**/;
+			popNull();
+		}
+
+        private bool mergeToNull(Token t) {
 			bool somethingMerged = false;
 			Stack<E> list = new Stack<E>();
 			int cnt = 0;
 			while(true) {
 				if (stack.Count == 0) return false;
-				if (currentE == null) {
-					if (!keepNull) stack.Pop();
-					break; // don't pop the null
-				}
+				if (currentE == null) break; // don't pop the null
 				list.Push(stack.Pop());
 				cnt++;
 			}
 			if (cnt == 0) return false; // nothing was pushed
 			if (cnt == 1) {
-				// we promote the one thing on the stack to the parent frame:
+				// we promote the one thing on the stack to the parent frame, i.e. swap:
+				popNull();
 				stack.Push(list.Pop());
+				stack.Push(null);
 				return false;
 			}
 			// merge as much as we can and push the results. Start with null
@@ -1720,6 +1778,10 @@ public abstract class AST {
             return new Marker(this, literal, name, islist, ishatch, primed);
         }
 
+        public IDisposable createBarrier() {
+            return new Barrier(this);
+        }
+
         private class Marker : IDisposable {
             public readonly Builder builder;
             public readonly string literal;
@@ -1745,12 +1807,25 @@ public abstract class AST {
                 if (ishatch) {
 					if (primed) { t = t.Copy(); builder.parser.Prime(t); }
 					builder.hatch(t, literal, name, islist);
-					while(builder.mergeToNull(t, true))
-						/**/;
 				} else {
                 	builder.sendup(t, literal, name, islist);
-					builder.mergeToNull(t, false);
+					builder.mergeAt(t);
 				}
+            }
+        }
+
+        private class Barrier : IDisposable {
+            public readonly Builder builder;
+
+            public Barrier(Builder builder) {
+                this.builder = builder;             
+				builder.stack.Push(null); // push a marker
+            }
+
+            public void Dispose() {
+				GC.SuppressFinalize(this);
+                Token t = builder.parser.t;
+				builder.mergeAt(t);				
             }
         }
     }

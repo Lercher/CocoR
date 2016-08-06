@@ -165,6 +165,7 @@ public void Prime(Token t) {
 
 	
 	void LanguageName‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(1); // ALT
 		addAlt(3); // ALT
@@ -180,6 +181,7 @@ public void Prime(Token t) {
 	}}
 
 	void DomainName‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(1); // ALT
 		addAlt(3); // ALT
@@ -195,6 +197,7 @@ public void Prime(Token t) {
 	}}
 
 	void ValueName‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(1); // ALT
 		addAlt(3); // ALT
@@ -210,6 +213,7 @@ public void Prime(Token t) {
 	}}
 
 	void UseLanguageName‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(1); // ALT
 		addAlt(1, lang); // ALT dbcode uses symbol table 'lang'
@@ -225,6 +229,7 @@ public void Prime(Token t) {
 	}}
 
 	void CASDomains‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(6); // T
 		Expect(6); // "casdomains"
@@ -237,6 +242,7 @@ public void Prime(Token t) {
 	}}
 
 	void Languages‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		addAlt(7); // T
 		Expect(7); // "languages"
@@ -249,6 +255,7 @@ public void Prime(Token t) {
 	}}
 
 	void Domain‿NT() {
+		using(astbuilder.createBarrier())
 		using(values.createScope()) 
 		{
 		while (!(isKind(la, 0) || isKind(la, 4))) {SynErr(16); Get();}
@@ -279,6 +286,7 @@ public void Prime(Token t) {
 	}}
 
 	void Translations‿NT() {
+		using(astbuilder.createBarrier())
 		using(lang.createUsageCheck(false, errors, la)) // 0..1
 		using(langstring.createUsageCheck(false, errors, la)) // 0..1
 		using(lang.createUsageCheck(true, errors, la)) // 1..N
@@ -294,6 +302,7 @@ public void Prime(Token t) {
 	}}
 
 	void Domainvalue‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		while (!(isKind(la, 0) || isKind(la, 10))) {SynErr(17); Get();}
 		addAlt(10); // T
@@ -303,6 +312,7 @@ public void Prime(Token t) {
 	}}
 
 	void TranslationsWithHelptext‿NT() {
+		using(astbuilder.createBarrier())
 		using(lang.createUsageCheck(false, errors, la)) // 0..1
 		using(langstring.createUsageCheck(false, errors, la)) // 0..1
 		using(lang.createUsageCheck(true, errors, la)) // 1..N
@@ -325,7 +335,6 @@ public void Prime(Token t) {
 		la = new Token();
 		la.val = "";
 		Get();
-		using(astbuilder.createMarker(null, null, false, false, false))
 		CASDomains‿NT();
 		Expect(0);
 		lang.CheckDeclared(errors);
@@ -883,9 +892,9 @@ public abstract class AST {
         public E add(E e) {
             if (name == e.name) {
 				if (name == null) 
-					Console.WriteLine(">> merge two unnamed to a single list");
+					Console.WriteLine(" [merge two unnamed to a single list]");
 				else
-					Console.WriteLine(">> merge two named {0} to a single list", name);
+					Console.WriteLine(" [merge two named {0} to a single list]", name);
                 ASTList list = new ASTList(ast);
                 list.merge(e.ast);
                 E ret = new E();
@@ -893,14 +902,18 @@ public abstract class AST {
                 ret.name = name;
                 return ret;
             } else if (name != null && e.name != null) {
+				Console.WriteLine(" [merge named {0}+{1} to an unnamed object]", name, e.name);
                 ASTObject obj = new ASTObject();
                 obj.add(this);
                 obj.add(e);
                 E ret = new E();
                 ret.ast = obj;
                 return ret;
-            } else if (ast.merge(e))
+            } else if (ast.merge(e)) {
+				Console.WriteLine(" [merged {1} into object {0}]", name, e.name);
                 return this;
+			}
+			Console.WriteLine(" [no merge available for {0}+{1}]", name, e.name);
             return null;
         }
 
@@ -972,23 +985,35 @@ public abstract class AST {
 			parser.errors.Warning(t.line, t.col, string.Format("AST merge {2} size {3}: {0} WITH {1}", e, with, typ, n));
 		}
 
-        private bool mergeToNull(Token t, bool keepNull) {
+		public void popNull() {
+			if (stack.Count == 0) return; // should not happen.
+			E e = stack.Pop();
+			if (e == null) return;
+			parser.SemErr(string.Format("expected to pop null, fund instead: {0}", e));
+		}
+
+		private void mergeAt(Token t) {
+			while(mergeToNull(t))
+				/**/;
+			popNull();
+		}
+
+        private bool mergeToNull(Token t) {
 			bool somethingMerged = false;
 			Stack<E> list = new Stack<E>();
 			int cnt = 0;
 			while(true) {
 				if (stack.Count == 0) return false;
-				if (currentE == null) {
-					if (!keepNull) stack.Pop();
-					break; // don't pop the null
-				}
+				if (currentE == null) break; // don't pop the null
 				list.Push(stack.Pop());
 				cnt++;
 			}
 			if (cnt == 0) return false; // nothing was pushed
 			if (cnt == 1) {
-				// we promote the one thing on the stack to the parent frame:
+				// we promote the one thing on the stack to the parent frame, i.e. swap:
+				popNull();
 				stack.Push(list.Pop());
+				stack.Push(null);
 				return false;
 			}
 			// merge as much as we can and push the results. Start with null
@@ -1021,6 +1046,10 @@ public abstract class AST {
             return new Marker(this, literal, name, islist, ishatch, primed);
         }
 
+        public IDisposable createBarrier() {
+            return new Barrier(this);
+        }
+
         private class Marker : IDisposable {
             public readonly Builder builder;
             public readonly string literal;
@@ -1046,12 +1075,25 @@ public abstract class AST {
                 if (ishatch) {
 					if (primed) { t = t.Copy(); builder.parser.Prime(t); }
 					builder.hatch(t, literal, name, islist);
-					while(builder.mergeToNull(t, true))
-						/**/;
 				} else {
                 	builder.sendup(t, literal, name, islist);
-					builder.mergeToNull(t, false);
+					builder.mergeAt(t);
 				}
+            }
+        }
+
+        private class Barrier : IDisposable {
+            public readonly Builder builder;
+
+            public Barrier(Builder builder) {
+                this.builder = builder;             
+				builder.stack.Push(null); // push a marker
+            }
+
+            public void Dispose() {
+				GC.SuppressFinalize(this);
+                Token t = builder.parser.t;
+				builder.mergeAt(t);				
             }
         }
     }
