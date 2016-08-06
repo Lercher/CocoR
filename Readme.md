@@ -232,6 +232,9 @@ to one times and `USEALL` checks that each symbol is used at least one time. Und
 symbols are not counted. If a check fails, 1 (`USEALL`) or 2..N (`USEONCE`) semantic errors 
 are logged.
 
+Note: A *use* is logged if a suffixed Coco/R symbol like `ident:symboltable` is
+parsed and the token is recognized as a member of `symboltable`.
+
 For our example, we consider a dictionary for a list of target languages, where
 this list of target languages is not known in advance. So we add the list
 to our grammar and demand that each term has at least one translation in 
