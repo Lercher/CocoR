@@ -794,6 +794,7 @@ public abstract class AST {
 				Stack<E> list = new Stack<E>();
 				int cnt = 0;
 				while(true) {
+					if (stack.Count == 0) return;
 					E e = stack.Pop();
 					if (e == null) break;
 					list.Push(e);
@@ -855,11 +856,14 @@ public abstract class AST {
 
             public void Dispose() {
 				GC.SuppressFinalize(this);
-                Token t = builder.parser.t;
-				if (primed) {t = t.Copy(); builder.parser.Prime(t); }
-                if (ishatch) builder.hatch(t, literal, name, islist);
-                builder.mergeToNull(t);
-                if (!ishatch) builder.sendup(t, literal, name, islist);
+                Token t = builder.parser.t;				
+                if (ishatch) {
+					if (primed) { t = t.Copy(); builder.parser.Prime(t); }
+					builder.hatch(t, literal, name, islist);
+				} else {
+                	builder.mergeToNull(t);
+                	builder.sendup(t, literal, name, islist);
+				}
             }
         }
     }
