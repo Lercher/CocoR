@@ -813,8 +813,9 @@ public abstract class AST {
                     if (merged != null)
                         ret = merged;
                     else {
-						ret = e; 
 						mergeConflict(t, e, ret);
+						push(ret);
+						ret = e; 
 					}                    
                 }
                 System.Console.WriteLine(" -> ret={0}", ret);
