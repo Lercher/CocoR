@@ -963,48 +963,55 @@ public abstract class AST {
             System.Console.WriteLine("-------------> top {0}", e);
         }
 
-		private void mergeConflict(Token t, E e, E with, string typ) {
+		private void mergeConflict(Token t, E e, E with, string typ, int n) {
 			mergeconflicts.Add(e.ast);
-			parser.errors.Warning(t.line, t.col, string.Format("AST merge {2}: {0} WITH {1}", e, with, typ));
+			parser.errors.Warning(t.line, t.col, string.Format("AST merge {2} round {3}: {0} WITH {1}", e, with, typ, n));
 		}
 
         private void mergeToNull(Token t) {
-            Stack<E> list = new Stack<E>();
-            int cnt = 0;
-            while(true) {
-                E e = stack.Pop();
-                if (e == null) break;
-                list.Push(e);
-                cnt++;
-            }
-            if (cnt == 0) return; // nothing was pushed
-            if (cnt == 1) {
-                // we promote the one thing on the stack to the parent frame:
-                push(list.Pop());
-                return;
-            }
-            // merge as much as we can and push the results. Start with null
-            E ret = null;
-            int n = 0;
-            foreach(E e in list) {
-                n++;
-                System.Console.Write(">> {1} of {2}   merge: {0}", e, n, cnt);
-                if (ret == null) 
-                    ret = e;
-                else {
-                    E merged = ret.add(e);
-                    if (merged != null) {
-						mergeConflict(t, e, ret, "success");
-                        ret = merged;
-                    } else {
-						mergeConflict(t, e, ret, "conflict");
-						push(ret);
-						ret = e; 
-					}                    
-                }
-                System.Console.WriteLine(" -> ret={0}", ret);
-            }
-            push(ret);
+			bool somethingMerged = true;
+			int n = 0;
+			while(somethingMerged) {				
+				somethingMerged = false;
+				n++;
+				Stack<E> list = new Stack<E>();
+				int cnt = 0;
+				while(true) {
+					E e = stack.Pop();
+					if (e == null) break;
+					list.Push(e);
+					cnt++;
+				}
+				if (cnt == 0) return; // nothing was pushed
+				if (cnt == 1) {
+					// we promote the one thing on the stack to the parent frame:
+					push(list.Pop());
+					return;
+				}
+				// merge as much as we can and push the results. Start with null
+				E ret = null;
+				int n = 0;
+				foreach(E e in list) {
+					n++;
+					System.Console.Write(">> {1} of {2}   merge: {0}", e, n, cnt);
+					if (ret == null) 
+						ret = e;
+					else {
+						E merged = ret.add(e);
+						if (merged != null) {
+							somethingMerged = true;
+							mergeConflict(t, e, ret, "success", n);
+							ret = merged;
+						} else {
+							mergeConflict(t, e, ret, "conflict", n);
+							push(ret);
+							ret = e; 
+						}                    
+					}
+					System.Console.WriteLine(" -> ret={0}", ret);
+				}
+				push(ret);
+			}
         }
 
         public IDisposable createMarker(string literal, string name, bool islist, bool ishatch, bool primed) {
