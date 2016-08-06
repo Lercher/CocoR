@@ -252,7 +252,7 @@ Example grammar:
 Example text:
 
     languages EN DE FR
-    
+
     term "car" 
       DE "Auto" 
       DE "Fahrzeug" 
@@ -370,6 +370,68 @@ responsiveness can be called "instant" on my machine
 
 Planned: Build a language-server for Visual Studio Code. See
 https://code.visualstudio.com/docs/extensions/example-language-server
+
+
+## Declarative, Language Independent AST
+
+*under development*
+
+The main technical terms we like to introduce are *hatching a token*,  
+*sending up* and *priming*. Denoted by the symbols `#` (hash - hatch),
+ `^` and `'`. Operating in a list context is marked by doubling the symbol.
+
+* hatching a token with `#` - push `t` on the stack. Call this a hatch.
+
+* hatching a token as a list with `##` - push `[t]` on the stack.
+
+* priming it with `#'` or `##'` - instead of `t` operate on `Prime(t)`, where
+  `public void Prime(Token t)` has to be defined in the `COMPILER` section and
+  modifies a copy of the token `t`. Priming is commonly used to strip typical
+  string-like decorators `"` from a token based on it's kind. Priming can only
+  be combind with hatching a token.
+
+* give it a name with `##':name` - append `:name`. Without such a name, the hatched
+  token has no name. You can give it a name afterwards with `^`.
+
+* give it a value with `##':name=value` - append `=value` or `="string"` if
+  your value is not a valid Coco/R identifier. Commonly used after literal terminal
+  symbols.
+
+Inside the scope of a production, unnamed and equally named hatches
+combine as an unnamed list or a list with the same name. This is even the case,
+when any is a list, these lists are merged. Differently named hatches form an object with each
+hatch as a property under its name. An object hatch plus a named token hatch is 
+combined in the object. Unnamed hatches can never be integrated in a hatch object.
+They stay on the stack until they can be combined.
+
+* send it up with `^` - give the topmost unnamed hatch the name of the preceeding
+  Coco/R symbol lowercased. If there is no hatch, form a new empty object hatch `{}`. 
+
+* send it up as a list with `^^` - give the topmost unnamed hatch the name of the preceeding
+  Coco/R symbol lowercased and wrap it in a list. If it is an unnamed list, don't wrap it in a list again.
+  If there is no hatch, form a new empty list hatch `[]`. 
+
+* give it a different name with `^^:name` - append `:name`. Without such a name, the
+  hatch is named by its preceeding Coco/R symbol.
+
+
+
+Coco/R Syntax extension
+
+    // Coco/R grammar
+    TODO
+
+Example grammar
+
+    TODO
+
+Example text
+
+    TODO
+
+Resulting AST in JSON notation
+
+   TODO
 
 
 
