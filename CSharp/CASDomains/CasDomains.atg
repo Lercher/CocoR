@@ -1,4 +1,12 @@
+// cls & pushd .. & build & popd & cocbuild1.bat
+
 COMPILER CASDomains
+
+	public void Prime(Token t) { 
+		//if (t.kind == _string) 
+		t.val = t.val.Substring(1, t.val.Length - 2);
+	}
+
 
 CHARACTERS
 	uppercaseletter = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".
@@ -51,24 +59,24 @@ PRODUCTIONS
 
 	// names defining symbols
 	LanguageName = 
-		dbcode>lang 					#
-		| string>langstring 			#
+		dbcode>lang 					##
+		| string>langstring 			##'
 	.
 	
 	DomainName = 
 		dbcode>domains 					#
-		| string>domains 				#
+		| string>domains 				#'
 	.
 	
 	ValueName = 
 		dbcode>values 					#
-		| string>values 				#
+		| string>values 				#'
 	.
 
 	// using names
 	UseLanguageName = 
 		dbcode:lang 					#
-		| string:langstring 			#
+		| string:langstring 			#'
 	.
 
 
@@ -81,20 +89,20 @@ PRODUCTIONS
 				
 	Languages = 
 		"languages"
-		LanguageName 					##
-		{ LanguageName 					## 
+		LanguageName 					
+		{ LanguageName 					 
 		}
 	.
 
 				
 	Domain SCOPES(values) = 
 		SYNC domain 
-		DomainName 						^:name		
-		[ "orfi"						^="1"
+		DomainName 						^:domain		
+		[ "orfi"						#:orfi="t"
 		]			
-		[ "length" twodigitnumber		^:length 
+		[ "length" twodigitnumber		#:length 
 		]
-		Translations					^
+		Translations					^^
 		Domainvalue						^^:values 
 		{ Domainvalue 					^^:values
 		}
@@ -103,8 +111,8 @@ PRODUCTIONS
 	
 	Domainvalue = 
 		SYNC "value"
-		ValueName						^:name
-		TranslationsWithHelptext		^:translations
+		ValueName						^:value
+		TranslationsWithHelptext		^^:translations
 	.
 
 	Translations 
@@ -112,8 +120,8 @@ PRODUCTIONS
 		USEALL(lang, langstring)
 	= 
 		{
-		  UseLanguageName				^:language
-		  string						^:translation
+		  UseLanguageName				^:lang
+		  string						#':tl
 		} 
 		.
 
@@ -122,9 +130,9 @@ PRODUCTIONS
 		USEALL(lang, langstring)
 	= 
 		{
-		  UseLanguageName				^:language
-		  string						^:translation
-		  string						^:helptext
+		  UseLanguageName				^:lang
+		  string						#':tl
+		  string						#':help
 		} 
 		.
 	

@@ -43,7 +43,11 @@ public class Parser {
 		return null;
 	}
 
-	public Token Prime() { return t; }
+public void Prime(Token t) { 
+		//if (t.kind == _string) 
+		t.val = t.val.Substring(1, t.val.Length - 2);
+	}
+
 
 
 
@@ -167,11 +171,11 @@ public class Parser {
 		if (isKind(la, 1)) {
 			if (!lang.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "dbcode", la.val, lang.name));
 			alternatives.tdeclares = lang;
-			Get();
+			using(astbuilder.createMarker(null, null, true, true, false))  Get();
 		} else if (isKind(la, 3)) {
 			if (!langstring.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "string", la.val, langstring.name));
 			alternatives.tdeclares = langstring;
-			Get();
+			using(astbuilder.createMarker(null, null, true, true, true))  Get();
 		} else SynErr(12);
 	}}
 
@@ -182,11 +186,11 @@ public class Parser {
 		if (isKind(la, 1)) {
 			if (!domains.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "dbcode", la.val, domains.name));
 			alternatives.tdeclares = domains;
-			Get();
+			using(astbuilder.createMarker(null, null, false, true, false))  Get();
 		} else if (isKind(la, 3)) {
 			if (!domains.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "string", la.val, domains.name));
 			alternatives.tdeclares = domains;
-			Get();
+			using(astbuilder.createMarker(null, null, false, true, true))  Get();
 		} else SynErr(13);
 	}}
 
@@ -197,11 +201,11 @@ public class Parser {
 		if (isKind(la, 1)) {
 			if (!values.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "dbcode", la.val, values.name));
 			alternatives.tdeclares = values;
-			Get();
+			using(astbuilder.createMarker(null, null, false, true, false))  Get();
 		} else if (isKind(la, 3)) {
 			if (!values.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "string", la.val, values.name));
 			alternatives.tdeclares = values;
-			Get();
+			using(astbuilder.createMarker(null, null, false, true, true))  Get();
 		} else SynErr(14);
 	}}
 
@@ -213,10 +217,10 @@ public class Parser {
 		addAlt(3, langstring); // ALT string uses symbol table 'langstring'
 		if (isKind(la, 1)) {
 			if (!lang.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "dbcode", la.val, lang.name));
-			Get();
+			using(astbuilder.createMarker(null, null, false, true, false))  Get();
 		} else if (isKind(la, 3)) {
 			if (!langstring.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "string", la.val, langstring.name));
-			Get();
+			using(astbuilder.createMarker(null, null, false, true, true))  Get();
 		} else SynErr(15);
 	}}
 
@@ -224,12 +228,10 @@ public class Parser {
 		{
 		addAlt(6); // T
 		Expect(6); // "casdomains"
-		using(astbuilder.createMarker(null, "languages", false, false, false))
-			Languages‿NT();
+		using(astbuilder.createMarker(null, "languages", false, false, false))  Languages‿NT();
 		addAlt(4); // ITER start
 		while (isKind(la, 4)) {
-			using(astbuilder.createMarker(null, "domains", true, false, false))
-				Domain‿NT();
+			using(astbuilder.createMarker(null, "domains", true, false, false))  Domain‿NT();
 			addAlt(4); // ITER end
 		}
 	}}
@@ -238,12 +240,10 @@ public class Parser {
 		{
 		addAlt(7); // T
 		Expect(7); // "languages"
-		using(astbuilder.createMarker(null, null, true, true, false))
-			LanguageName‿NT();
+		LanguageName‿NT();
 		addAlt(new int[] {1, 3}); // ITER start
 		while (isKind(la, 1) || isKind(la, 3)) {
-			using(astbuilder.createMarker(null, null, true, true, false))
-				LanguageName‿NT();
+			LanguageName‿NT();
 			addAlt(new int[] {1, 3}); // ITER end
 		}
 	}}
@@ -254,27 +254,22 @@ public class Parser {
 		while (!(isKind(la, 0) || isKind(la, 4))) {SynErr(16); Get();}
 		addAlt(4); // T
 		Expect(4); // domain
-		using(astbuilder.createMarker(null, "name", false, false, false))
-			DomainName‿NT();
+		using(astbuilder.createMarker(null, "domain", false, false, false))  DomainName‿NT();
 		addAlt(8); // OPT
 		if (isKind(la, 8)) {
-			Get();
+			using(astbuilder.createMarker("t", "orfi", false, true, false))  Get();
 		}
 		addAlt(9); // OPT
 		if (isKind(la, 9)) {
 			Get();
 			addAlt(2); // T
-			using(astbuilder.createMarker(null, "length", false, false, false))
-				Expect(2); // twodigitnumber
+			using(astbuilder.createMarker(null, "length", false, true, false))  Expect(2); // twodigitnumber
 		}
-		using(astbuilder.createMarker(null, "translations", false, false, false))
-			Translations‿NT();
-		using(astbuilder.createMarker(null, "values", true, false, false))
-			Domainvalue‿NT();
+		using(astbuilder.createMarker(null, "translations", true, false, false))  Translations‿NT();
+		using(astbuilder.createMarker(null, "values", true, false, false))  Domainvalue‿NT();
 		addAlt(10); // ITER start
 		while (isKind(la, 10)) {
-			using(astbuilder.createMarker(null, "values", true, false, false))
-				Domainvalue‿NT();
+			using(astbuilder.createMarker(null, "values", true, false, false))  Domainvalue‿NT();
 			addAlt(10); // ITER end
 		}
 		addAlt(5); // T
@@ -291,11 +286,9 @@ public class Parser {
 		{
 		addAlt(new int[] {1, 3}); // ITER start
 		while (isKind(la, 1) || isKind(la, 3)) {
-			using(astbuilder.createMarker(null, "language", false, false, false))
-				UseLanguageName‿NT();
+			using(astbuilder.createMarker(null, "lang", false, false, false))  UseLanguageName‿NT();
 			addAlt(3); // T
-			using(astbuilder.createMarker(null, "translation", false, false, false))
-				Expect(3); // string
+			using(astbuilder.createMarker(null, "tl", false, true, true))  Expect(3); // string
 			addAlt(new int[] {1, 3}); // ITER end
 		}
 	}}
@@ -305,10 +298,8 @@ public class Parser {
 		while (!(isKind(la, 0) || isKind(la, 10))) {SynErr(17); Get();}
 		addAlt(10); // T
 		Expect(10); // "value"
-		using(astbuilder.createMarker(null, "name", false, false, false))
-			ValueName‿NT();
-		using(astbuilder.createMarker(null, "translations", false, false, false))
-			TranslationsWithHelptext‿NT();
+		using(astbuilder.createMarker(null, "value", false, false, false))  ValueName‿NT();
+		using(astbuilder.createMarker(null, "translations", true, false, false))  TranslationsWithHelptext‿NT();
 	}}
 
 	void TranslationsWithHelptext‿NT() {
@@ -319,14 +310,11 @@ public class Parser {
 		{
 		addAlt(new int[] {1, 3}); // ITER start
 		while (isKind(la, 1) || isKind(la, 3)) {
-			using(astbuilder.createMarker(null, "language", false, false, false))
-				UseLanguageName‿NT();
+			using(astbuilder.createMarker(null, "lang", false, false, false))  UseLanguageName‿NT();
 			addAlt(3); // T
-			using(astbuilder.createMarker(null, "translation", false, false, false))
-				Expect(3); // string
+			using(astbuilder.createMarker(null, "tl", false, true, true))  Expect(3); // string
 			addAlt(3); // T
-			using(astbuilder.createMarker(null, "helptext", false, false, false))
-				Expect(3); // string
+			using(astbuilder.createMarker(null, "help", false, true, true))  Expect(3); // string
 			addAlt(new int[] {1, 3}); // ITER end
 		}
 	}}
@@ -658,6 +646,7 @@ public class Symboltable {
 		}
 
 		public void Dispose() {
+			GC.SuppressFinalize(this);
 			st.popScope();
 		}
 	}
@@ -685,6 +674,7 @@ public class Symboltable {
 		}
 
 		public void Dispose() {
+			GC.SuppressFinalize(this);
 			st.TokenUsed -= uses.Add;
 			Dictionary<string, List<Token>> counter = new Dictionary<string, List<Token>>(st.comparer);
 			foreach(Token t in st.items)
@@ -811,17 +801,17 @@ public abstract class AST {
         {
             bool longlist = (count > 3);
             sb.Append('[');
-            if (longlist) AST.newline(indent, sb);
+            if (longlist) AST.newline(indent + 1, sb);
             int n = 0;
             foreach(AST ast in list) {
                 ast.serialize(sb, indent + 1);
                 n++;
                 if (n < count) {
                     sb.Append(", ");
-                    if (longlist) AST.newline(indent, sb);
+                    if (longlist) AST.newline(indent + 1, sb);
                 }
             }
-            if (longlist) AST.newline(indent - 1, sb);
+            if (longlist) AST.newline(indent, sb);
             sb.Append(']');
         }
 
@@ -945,7 +935,7 @@ public abstract class AST {
 
         // that's what we call for #/##, built from an AstOp
         public void hatch(Token t, string literal, string name, bool islist) {
-            System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1}.", t.val, literal, name, islist);
+            System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1} at {4},{5}.", t.val, literal, name, islist, t.line, t.col);
             E e = new E();
             e.ast = new ASTLiteral(literal != null ? literal : t.val);
             if (islist)
@@ -1032,7 +1022,9 @@ public abstract class AST {
             }
 
             public void Dispose() {
-                Token t = primed ? builder.parser.Prime() : builder.parser.t;
+				GC.SuppressFinalize(this);
+                Token t = builder.parser.t;
+				if (primed) {t = t.Copy(); builder.parser.Prime(t); }
                 if (ishatch) builder.hatch(t, literal, name, islist);
                 builder.mergeToNull();
                 if (!ishatch) builder.sendup(t, literal, name, islist);
