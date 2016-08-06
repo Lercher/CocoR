@@ -265,8 +265,7 @@ public class ParserGen {
 
 	void GenAstBuilder(Node p, int indent) {
 		if (p.ast != null) {
-			gen.WriteLine("using(astbuilder.createMarker({0}, {1}, {2}, {3}, {4}))", tab.Quoted(p.ast.literal), tab.Quoted(p.ast.name), toTF(p.ast.isList), toTF(p.ast.ishatch), toTF(p.ast.primed));
-			Indent(indent + 1);
+			gen.Write("using(astbuilder.createMarker({0}, {1}, {2}, {3}, {4}))  ", tab.Quoted(p.ast.literal), tab.Quoted(p.ast.name), toTF(p.ast.isList), toTF(p.ast.ishatch), toTF(p.ast.primed));
 		}
 	}
 	
@@ -288,8 +287,10 @@ public class ParserGen {
 					GenSymboltableCheck(p, indent);
 					Indent(indent);
 					// assert: if isChecked[p.sym.n] is true, then isChecked contains only p.sym.n
-					if (isChecked[p.sym.n]) gen.WriteLine("Get();");
-					else {
+					if (isChecked[p.sym.n]) {
+						GenAstBuilder(p, indent); 
+						gen.WriteLine("Get();");
+					} else {
 						GenAutocomplete(p.sym.n, indent, "T");
 						GenAutocompleteSymboltable(p, indent, "T");
 						GenAstBuilder(p, indent);
@@ -598,7 +599,7 @@ public class ParserGen {
 		GenPragmas(); /* ML 2005/09/23 write the pragma kinds */
 		g.CopyFramePart("-->declarations");
 		GenSymbolTables(true);
-		if (IgnoreSemanticActions) gen.WriteLine("\tpublic Token Prime() { return t; }\n");
+		if (IgnoreSemanticActions) gen.WriteLine("\tpublic void Prime(Token t) { }\n");
 		CopySourcePart(tab.semDeclPos, 0);
 		g.CopyFramePart("-->constructor"); GenSymbolTables(false);
 		g.CopyFramePart("-->beginalternatives");
