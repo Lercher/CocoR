@@ -389,27 +389,30 @@ Denoted by the symbols `#` (hash - hatch),
 
 * hatching a token with `#` - push `t` on the stack. Call this a hatch.
 
-* hatching a token as a list with `##` - push `[t]` on the stack.
+* hatching a token as a list with `##` - push `[t]` on the stack. Call 
+  this a list hatch.
 
-* priming it with `#'` or `##'` - instead of `t` operate on `Prime(t)`, where
+* priming it with `#'` or `##'` - instead of `t`, operate on `Prime(t)`, where
   `public void Prime(Token t)` has to be defined in the `COMPILER` section and
   modifies a copy of the token `t`. Priming is commonly used to strip typical
   string-like decorators `"` from a token based on it's kind. Priming can only
   be combind with hatching a token.
 
 * give it a name with `##':name` - append `:name`. Without such a name, the hatched
-  token has no name. You can give it a name afterwards with `^`.
+  token has no name. You can give it a name afterwards with `^` (up).
 
-* give it a value with `##':name=value` - append `=value` or `="string"` if
-  your value is not a valid Coco/R identifier. Commonly used after literal terminal
-  symbols.
+* give it a value with `##':name=value` - append `=value`, or `="string"` if
+  your value is not a valid Coco/R identifier. Commonly used after an optional
+  literal terminal symbol.
 
 Inside the scope of a production, unnamed and equally named hatches
-combine as an unnamed list or a list with the same name. This is even the case,
-when any is a list, these lists are merged. Differently named hatches form an object with each
-hatch as a property under its name. An object hatch plus a named token hatch is 
-combined in the object. Unnamed hatches can never be integrated in a hatch object.
-They stay on the stack until they can be combined.
+combine as an unnamed list or a list with the same name. This is even the case
+when any is a list, these lists are merged. Differently named hatches form 
+an object with each hatch as a property under its name. An object hatch
+plus a named token hatch is combined in the object hatch. 
+
+Unnamed hatches can never be integrated in a hatch object. They stay on the
+stack until they can be combined.
 
 * send it up with `^` - give the topmost unnamed hatch the name of the preceeding
   Coco/R symbol lowercased. If there is no hatch, form a new empty object hatch `{}`. 
