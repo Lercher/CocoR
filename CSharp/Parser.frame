@@ -810,7 +810,7 @@ public abstract class AST {
 				int n = 0;
 				foreach(E e in list) {
 					n++;
-					System.Console.Write("[3}>> {1} of {2}   merge: {0}", e, n, cnt, nn);
+					System.Console.Write("{3}>> {1} of {2}   merge: {0}", e, n, cnt, nn);
 					if (ret == null) 
 						ret = e;
 					else {
