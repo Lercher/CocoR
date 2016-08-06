@@ -1509,6 +1509,14 @@ public abstract class AST {
     private class ASTList : ASTThrows {
         public readonly List<AST> list;
 
+        public ASTList() {
+			list = new List<AST>();
+		}
+
+        public ASTList(AST a, int i) : this() {
+            list.Add(a);
+        }
+
         public ASTList(AST a) {
             if (a is ASTList)
                 list = ((ASTList)a).list;
@@ -1516,11 +1524,6 @@ public abstract class AST {
                 list = new List<AST>();
                 list.Add(a);
             }
-        }
-
-        public ASTList(AST a, int i) {
-            list = new List<AST>();
-            list.Add(a);
         }
 
         public override AST this[int i] { 
@@ -1650,6 +1653,8 @@ public abstract class AST {
         }
 
         public void wrapinlist() {
+			if (ast == null) ast = new ASTList();
+			if (ast is ASTList) return;
             ast = new ASTList(ast, 1);
         }
     }
@@ -1697,6 +1702,14 @@ public abstract class AST {
         public void sendup(Token t, string literal, string name, bool islist) {
 			if (stack.Count == 0) return;
             E e = currentE;
+			if (e == null) {
+				e = new E();
+				if (islist)
+					e.ast = new ASTList();
+				else
+					e.ast = new ASTObject();
+				push(e);
+			}
             //if (islist) System.Console.WriteLine(">> send up as [{0}]: {1}", name, e); else System.Console.WriteLine(">> send up as {0}: {1}", name, e);
             if (name != e.name) {
                 if (islist)
