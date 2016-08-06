@@ -48,7 +48,7 @@ public class Parser {
 		return null;
 	}
 
-	public Token Prime() { return t; }
+	public void Prime(Token t) { }
 
 
 
@@ -185,8 +185,7 @@ public class Parser {
 		}
 		addAlt(22); // ITER start
 		while (isKind(la, 22)) {
-			using(astbuilder.createMarker(null, "call", true, false, false))
-				Call‿NT();
+			using(astbuilder.createMarker(null, "call", true, false, false))  Call‿NT();
 			addAlt(22); // ITER end
 		}
 		addAlt(19); // ITER start
@@ -233,8 +232,7 @@ public class Parser {
 			} else if (isKind(la, 20)) {
 				Block‿NT();
 			} else {
-				using(astbuilder.createMarker(null, "tbdcall", true, false, false))
-					Call‿NT();
+				using(astbuilder.createMarker(null, "tbdcall", true, false, false))  Call‿NT();
 			}
 			addAlt(set0, 2); // ITER end
 		}
@@ -331,13 +329,11 @@ public class Parser {
 		Expect(22); // "call"
 		addAlt(16); // T
 		Expect(16); // "("
-		using(astbuilder.createMarker(null, null, true, true, false))
-			Param‿NT();
+		using(astbuilder.createMarker(null, null, true, true, false))  Param‿NT();
 		addAlt(23); // ITER start
 		while (isKind(la, 23)) {
 			Get();
-			using(astbuilder.createMarker(null, null, true, true, false))
-				Param‿NT();
+			using(astbuilder.createMarker(null, null, true, true, false))  Param‿NT();
 			addAlt(23); // ITER end
 		}
 		addAlt(17); // T
@@ -929,6 +925,7 @@ public class Symboltable {
 		}
 
 		public void Dispose() {
+			GC.SuppressFinalize(this);
 			st.popScope();
 		}
 	}
@@ -956,6 +953,7 @@ public class Symboltable {
 		}
 
 		public void Dispose() {
+			GC.SuppressFinalize(this);
 			st.TokenUsed -= uses.Add;
 			Dictionary<string, List<Token>> counter = new Dictionary<string, List<Token>>(st.comparer);
 			foreach(Token t in st.items)
@@ -1082,17 +1080,17 @@ public abstract class AST {
         {
             bool longlist = (count > 3);
             sb.Append('[');
-            if (longlist) AST.newline(indent, sb);
+            if (longlist) AST.newline(indent + 1, sb);
             int n = 0;
             foreach(AST ast in list) {
                 ast.serialize(sb, indent + 1);
                 n++;
                 if (n < count) {
                     sb.Append(", ");
-                    if (longlist) AST.newline(indent, sb);
+                    if (longlist) AST.newline(indent + 1, sb);
                 }
             }
-            if (longlist) AST.newline(indent - 1, sb);
+            if (longlist) AST.newline(indent, sb);
             sb.Append(']');
         }
 
@@ -1216,7 +1214,7 @@ public abstract class AST {
 
         // that's what we call for #/##, built from an AstOp
         public void hatch(Token t, string literal, string name, bool islist) {
-            System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1}.", t.val, literal, name, islist);
+            System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1} at {4},{5}.", t.val, literal, name, islist, t.line, t.col);
             E e = new E();
             e.ast = new ASTLiteral(literal != null ? literal : t.val);
             if (islist)
@@ -1303,7 +1301,9 @@ public abstract class AST {
             }
 
             public void Dispose() {
-                Token t = primed ? builder.parser.Prime() : builder.parser.t;
+				GC.SuppressFinalize(this);
+                Token t = builder.parser.t;
+				if (primed) {t = t.Copy(); builder.parser.Prime(t); }
                 if (ishatch) builder.hatch(t, literal, name, islist);
                 builder.mergeToNull();
                 if (!ishatch) builder.sendup(t, literal, name, islist);

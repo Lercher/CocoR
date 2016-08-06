@@ -851,7 +851,8 @@ const int id = 0;
 		 SemErr("can only prime terminals");
 		if (pgen.IgnoreSemanticActions)
 		 errors.Warning(t.line, t.col, "token priming is ignored when ignoring semantic actions (-is switch).");
-		 // no way do define the Prime:void->Token function.                                        	
+		 // no way do define the Prime:void->Token function.                                        
+		
 	}}
 
 	void ASTConst‿NT(Node p) {
