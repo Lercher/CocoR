@@ -1652,9 +1652,12 @@ public abstract class AST {
             return null;
         }
 
-        public void wrapinlist() {
-			if (ast == null) ast = new ASTList();
-			if (ast is ASTList) return;
+        public void wrapinlist(bool merge) {			
+			if (ast == null) { 
+				ast = new ASTList();
+				return;
+			}
+			if (merge && (ast is ASTList)) return;
             ast = new ASTList(ast, 1);
         }
     }
@@ -1712,9 +1715,10 @@ public abstract class AST {
 			}
             //if (islist) System.Console.WriteLine(">> send up as [{0}]: {1}", name, e); else System.Console.WriteLine(">> send up as {0}: {1}", name, e);
             if (name != e.name) {
-                if (islist)
-                    e.wrapinlist(); 
-                else if (e.name != null)
+                if (islist) {
+					bool merge = (e.name == null);
+                    e.wrapinlist(merge);
+				} else if (e.name != null)
                     parser.errors.Warning(t.line, t.col, string.Format("overwriting AST objectname '{0}' with '{1}'", e.name, name));
             }
             e.name = name;
