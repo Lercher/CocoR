@@ -787,10 +787,10 @@ public abstract class AST {
 
         private void mergeToNull(Token t) {
 			bool somethingMerged = true;
-			int n = 0;
+			int nn = 0;
 			while(somethingMerged) {				
 				somethingMerged = false;
-				n++;
+				nn++;
 				Stack<E> list = new Stack<E>();
 				int cnt = 0;
 				while(true) {
@@ -810,17 +810,17 @@ public abstract class AST {
 				int n = 0;
 				foreach(E e in list) {
 					n++;
-					System.Console.Write(">> {1} of {2}   merge: {0}", e, n, cnt);
+					System.Console.Write("[3}>> {1} of {2}   merge: {0}", e, n, cnt, nn);
 					if (ret == null) 
 						ret = e;
 					else {
 						E merged = ret.add(e);
 						if (merged != null) {
 							somethingMerged = true;
-							mergeConflict(t, e, ret, "success", n);
+							mergeConflict(t, e, ret, "success", nn);
 							ret = merged;
 						} else {
-							mergeConflict(t, e, ret, "conflict", n);
+							mergeConflict(t, e, ret, "conflict", nn);
 							push(ret);
 							ret = e; 
 						}                    
