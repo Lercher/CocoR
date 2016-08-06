@@ -1251,12 +1251,12 @@ public abstract class AST {
 			parser.errors.Warning(t.line, t.col, string.Format("AST merge {2} size {3}: {0} WITH {1}", e, with, typ, n));
 		}
 
-        private void mergeToNull(Token t, bool keepNull) {
+        private bool mergeToNull(Token t, bool keepNull) {
 			bool somethingMerged = false;
 			Stack<E> list = new Stack<E>();
 			int cnt = 0;
 			while(true) {
-				if (stack.Count == 0) return;
+				if (stack.Count == 0) return false;
 				if (currentE == null) {
 					if (!keepNull) stack.Pop();
 					break; // don't pop the null
@@ -1264,11 +1264,11 @@ public abstract class AST {
 				list.Push(stack.Pop());
 				cnt++;
 			}
-			if (cnt == 0) return; // nothing was pushed
+			if (cnt == 0) return false; // nothing was pushed
 			if (cnt == 1) {
 				// we promote the one thing on the stack to the parent frame:
 				stack.Push(list.Pop());
-				return;
+				return false;
 			}
 			// merge as much as we can and push the results. Start with null
 			E ret = null;
@@ -1293,6 +1293,7 @@ public abstract class AST {
 				System.Console.WriteLine(" -> ret={0}", ret);
 			}
 			push(ret);
+			return somethingMerged;
         }
 
         public IDisposable createMarker(string literal, string name, bool islist, bool ishatch, bool primed) {
@@ -1324,7 +1325,8 @@ public abstract class AST {
                 if (ishatch) {
 					if (primed) { t = t.Copy(); builder.parser.Prime(t); }
 					builder.hatch(t, literal, name, islist);
-					builder.mergeToNull(t, true);
+					while(builder.mergeToNull(t, true))
+						/**/;
 				} else {
                 	builder.sendup(t, literal, name, islist);
 					builder.mergeToNull(t, false);
