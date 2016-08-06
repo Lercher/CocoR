@@ -182,7 +182,7 @@ public void Prime(Token t) {
 		if (isKind(la, 23)) {
 			ReaderWriterPrefix‿NT();
 		}
-		RootClass‿NT();
+		using(astbuilder.createMarker(null, "rootclass", false, false, false))  RootClass‿NT();
 		addAlt(set0, 1); // ITER start
 		while (StartOf(1)) {
 			addAlt(26); // ALT
@@ -236,10 +236,10 @@ public void Prime(Token t) {
 		{
 		while (!(isKind(la, 0) || isKind(la, 24))) {SynErr(75); Get();}
 		addAlt(24); // T
-		Expect(24); // "rootclass"
+		using(astbuilder.createMarker(null, "typ", false, true, false))  Expect(24); // "rootclass"
 		addAlt(25); // T
-		Expect(25); // "data"
-		Properties‿NT();
+		using(astbuilder.createMarker(null, "name", false, true, false))  Expect(25); // "data"
+		using(astbuilder.createMarker(null, "properties", true, false, false))  Properties‿NT();
 		addAlt(8); // T
 		Expect(8); // end
 		addAlt(26); // T
@@ -251,11 +251,11 @@ public void Prime(Token t) {
 		{
 		while (!(isKind(la, 0) || isKind(la, 26))) {SynErr(76); Get();}
 		addAlt(26); // T
-		Expect(26); // "class"
+		using(astbuilder.createMarker(null, "typ", false, true, false))  Expect(26); // "class"
 		if (!types.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
 		alternatives.tdeclares = types;
 		addAlt(1); // T
-		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
+		using(astbuilder.createMarker(null, "name", false, true, false))  Expect(1); // ident
 		addAlt(6); // OPT
 		if (isKind(la, 6)) {
 			Title‿NT();
@@ -1714,12 +1714,17 @@ public abstract class AST {
 		} 
 		*/
 
+		// remove the topmost null on the stack, keeping anythng else 
 		public void popNull() {
-			if (stack.Count == 0) return; // should not happen.
-			E e = stack.Pop();
-			if (e == null) return;
-			parser.SemErr(string.Format("expected to pop null, found instead at size {1}: {0}", e, stack.Count));
-			//throw new Exception();
+			Stack<E> list = new Stack<E>();
+			while(true) {
+				if (stack.Count == 0) break;
+				E e = stack.Pop();
+				if (e == null) break;
+				list.Push(e);
+			}
+			foreach(E e in list)
+				stack.Push(e);
 		}
 
 		private void mergeAt(Token t) {

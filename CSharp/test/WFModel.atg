@@ -64,7 +64,7 @@ WFModel =
 	Version
 	Namespace
 	[ ReaderWriterPrefix ]
-	RootClass
+	RootClass^
 	{
 	Class^^
 	| SubSystem^^
@@ -102,20 +102,20 @@ ReaderWriterPrefix =
 
 RootClass =
 	SYNC
-	"RootClass"
-	"Data"
-	Properties
+	"RootClass"		      #:typ
+	"Data"                #:name
+	Properties            ^^
 	end "Class"
 	.
 	
 Class =
 	SYNC
-	"Class" 
-	ident>types #
+	"Class"               #:typ
+	ident>types           #:name
 	[ Title ]
 	[ Inherits ]
 	[ Via ]
-	Properties ^^
+	Properties            ^^
 	end "Class"
 	.
 
@@ -154,37 +154,37 @@ Prop =
 	.
 
 Property =
-	"Property" ident #
+	"Property" ident       #
 	Type
 	.
 
 InfoProperty =
-	"InfoProperty" ident #
+	"InfoProperty" ident   #
 	Type
 	.
 
 APProperty =
-	"APProperty" ident #
+	"APProperty" ident     #
 	Type
 	.
 
 List =
-	"List" ident #
+	"List" ident           #
 	[ As ]
 	.
 
 SelectList =
-	"SelectList" ident #
+	"SelectList" ident     #
 	As
 	.
 
 FlagsList =
-	"FlagsList" ident #
+	"FlagsList" ident      #
 	Mimics
 	.
 
 LongProperty =
-	"LongProperty" ident #
+	"LongProperty" ident   #
 	.
 
 InfoLongProperty =
