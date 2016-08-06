@@ -1261,11 +1261,17 @@ public abstract class AST {
 		} 
 		*/
 
+		// remove the topmost null on the stack, keeping anythng else 
 		public void popNull() {
-			if (stack.Count == 0) return; // should not happen.
-			E e = stack.Pop();
-			if (e == null) return;
-			parser.SemErr(string.Format("expected to pop null, fund instead: {0}", e));
+			Stack<E> list = new Stack<E>();
+			while(true) {
+				if (stack.Count == 0) break;
+				E e = stack.Pop();
+				if (e == null) break;
+				list.Push(e);
+			}
+			foreach(E e in list)
+				stack.Push(e);
 		}
 
 		private void mergeAt(Token t) {
