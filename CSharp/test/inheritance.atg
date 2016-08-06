@@ -79,7 +79,7 @@ PRODUCTIONS
 
     Block SCOPES(variables, types) = "{" TDBs "}". 
 
-    Call = "call" "(" Param## { "," Param## } ")" ";".
+    Call = "call" "(" Param##:p { "," Param##:p } ")" ";".
 
     Type<string fmt> = "type" ident>types (. Console.WriteLine("{0}{1}", fmt, t.val); .) ';'.
 

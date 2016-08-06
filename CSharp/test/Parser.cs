@@ -333,11 +333,11 @@ public class Parser {
 		Expect(22); // "call"
 		addAlt(16); // T
 		Expect(16); // "("
-		using(astbuilder.createMarker(null, null, true, true, false))  Param‿NT();
+		using(astbuilder.createMarker(null, "p", true, true, false))  Param‿NT();
 		addAlt(23); // ITER start
 		while (isKind(la, 23)) {
 			Get();
-			using(astbuilder.createMarker(null, null, true, true, false))  Param‿NT();
+			using(astbuilder.createMarker(null, "p", true, true, false))  Param‿NT();
 			addAlt(23); // ITER end
 		}
 		addAlt(17); // T
@@ -1056,6 +1056,14 @@ public abstract class AST {
     private class ASTList : ASTThrows {
         public readonly List<AST> list;
 
+        public ASTList() {
+			list = new List<AST>();
+		}
+
+        public ASTList(AST a, int i) : this() {
+            list.Add(a);
+        }
+
         public ASTList(AST a) {
             if (a is ASTList)
                 list = ((ASTList)a).list;
@@ -1063,11 +1071,6 @@ public abstract class AST {
                 list = new List<AST>();
                 list.Add(a);
             }
-        }
-
-        public ASTList(AST a, int i) {
-            list = new List<AST>();
-            list.Add(a);
         }
 
         public override AST this[int i] { 
@@ -1196,7 +1199,12 @@ public abstract class AST {
             return null;
         }
 
-        public void wrapinlist() {
+        public void wrapinlist(bool merge) {			
+			if (ast == null) { 
+				ast = new ASTList();
+				return;
+			}
+			if (merge && (ast is ASTList)) return;
             ast = new ASTList(ast, 1);
         }
     }
@@ -1244,11 +1252,20 @@ public abstract class AST {
         public void sendup(Token t, string literal, string name, bool islist) {
 			if (stack.Count == 0) return;
             E e = currentE;
+			if (e == null) {
+				e = new E();
+				if (islist)
+					e.ast = new ASTList();
+				else
+					e.ast = new ASTObject();
+				push(e);
+			}
             //if (islist) System.Console.WriteLine(">> send up as [{0}]: {1}", name, e); else System.Console.WriteLine(">> send up as {0}: {1}", name, e);
             if (name != e.name) {
-                if (islist)
-                    e.wrapinlist(); 
-                else if (e.name != null)
+                if (islist) {
+					bool merge = (e.name == null);
+                    e.wrapinlist(merge);
+				} else if (e.name != null)
                     parser.errors.Warning(t.line, t.col, string.Format("overwriting AST objectname '{0}' with '{1}'", e.name, name));
             }
             e.name = name;
