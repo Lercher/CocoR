@@ -77,17 +77,18 @@ writes UTF-8 but no byte order marks. The Coco executable
 has a new command line option that forces UTF-8 processing.
 
 * Declarative, language independent AST -
-Forming an abstract syntax tree (AST) from the parse can e done
+Forming an abstract syntax tree (AST) from the parse can be done
 using semantic actions. However, this couples the AST generation
-to the target language. With this extension some prototyping can 
-be done to explore the desired object hierarchy.
+strictly to the target language. With this extension, some prototyping 
+can be done to explore the desired object hierarchy.
 Starting with the extraction of the token from a terminal or
 nonterminal or a literal, you can give them names and form lists.
 As these objects travel up the call tree, you can compose objects
-and lists from named objects deeper in the call tree. If all runs
+and lists from named objects deeper in the call tree by reusing
+the names of your productions. If all runs
 well, you get at toplevel a structured object made up from 
 other objects, lists and string as leaf datatype. 
-With functions to inspect the structure and export it to JSON. 
+There are functions to inspect the structure and export it to JSON. 
 
 
 ## Token Inheritance
@@ -216,7 +217,7 @@ scopes, take a look at `items` which is an `IEnumerable<Token>`.
 
 ### Useall and Useonce Scopes
 
-The extended Coco/R syntax for productions is
+The once more extended Coco/R syntax for productions is
 
     // Coco/R grammar
     Production = ident [FormalAttributes] [ScopesDecl] [ UseOnceDecl ] [ UseAllDecl ] [LocalDecl] '=' Expression '.'.
@@ -228,7 +229,7 @@ The extended Coco/R syntax for productions is
 where each use of a symbol in the symbol tables denoted by the `ident, ...` list 
 is counted. After leaving the scope `USEONCE` checks that each symbol is used zero
 to one times and `USEALL` checks that each symbol is used at least one time. Undeclared
-symbols are not counted. If a check fails a samantic error or a list of them (`USEONCE`) 
+symbols are not counted. If a check fails, 1 (`USEALL`) or 2..N (`USEONCE`) semantic errors 
 are logged.
 
 For our example, we consider a dictionary for a list of target languages, where
