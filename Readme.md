@@ -405,7 +405,7 @@ Denoted by the symbols `#` (hash - hatch),
   this a list hatch.
 
 * priming it with `#'` or `##'` - instead of `t`, operate on `Prime(t)`, where
-  `public void Prime(Token t)` has to be defined in the `COMPILER` section and
+  `public overrode void Prime(Token t)` can be defined in the `COMPILER` section and
   modifies a copy of the token `t`. Priming is commonly used to strip typical
   string-like decorators `"` from a token based on it's kind. Priming can only
   be combind with hatching a token.

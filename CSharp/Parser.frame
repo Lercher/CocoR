@@ -33,7 +33,11 @@ using System.Collections.Generic;
 
 -->namespace
 
-public class Parser {
+public class Parserbase {
+	public virtual void Prime(Token t) { /* hook */ }
+}
+
+public class Parser : Parserbase {
 -->constants
 	const bool _T = true;
 	const bool _x = false;

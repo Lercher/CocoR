@@ -600,7 +600,6 @@ public class ParserGen {
 		GenPragmas(); /* ML 2005/09/23 write the pragma kinds */
 		g.CopyFramePart("-->declarations");
 		GenSymbolTables(true);
-		if (IgnoreSemanticActions) gen.WriteLine("\tpublic void Prime(Token t) { }\n");
 		CopySourcePart(tab.semDeclPos, 0);
 		g.CopyFramePart("-->constructor"); GenSymbolTables(false);
 		g.CopyFramePart("-->beginalternatives");

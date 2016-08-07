@@ -11,7 +11,11 @@ namespace at.jku.ssw.Coco {
 
 
 
-public class Parser {
+public class Parserbase {
+	public virtual void Prime(Token t) { /* hook */ }
+}
+
+public class Parser : Parserbase {
 	public const int _EOF = 0; // TOKEN EOF
 	public const int _ident = 1; // TOKEN ident
 	public const int _number = 2; // TOKEN number
@@ -54,8 +58,6 @@ const int id = 0;
 	bool   genScanner;
 	string tokenString;         // used in declarations of literal tokens
 	string noString = "-none-"; // used in declarations of literal tokens
-
-  public void Prime(Token t) { }
 
 /*-------------------------------------------------------------------------*/
 
@@ -144,6 +146,7 @@ const int id = 0;
 
 	
 	void Coco‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		Symbol sym; Graph g, g1, g2; string gramName; CharSet s; int beg, line; 
 		if (StartOf(1)) {
@@ -294,6 +297,7 @@ const int id = 0;
 	}}
 
 	void SetDecl‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		CharSet s; 
 		Expect(1); // ident
@@ -310,6 +314,7 @@ const int id = 0;
 	}}
 
 	void TokenDecl‿NT(int typ) {
+		using(astbuilder.createBarrier())
 		{
 		string name; int kind; Symbol sym; Graph g; 
 		string inheritsName; int inheritsKind; Symbol inheritsSym; 
@@ -362,6 +367,7 @@ const int id = 0;
 	}}
 
 	void TokenExpr‿NT(out Graph g) {
+		using(astbuilder.createBarrier())
 		{
 		Graph g2; 
 		TokenTerm‿NT(out g);
@@ -375,6 +381,7 @@ const int id = 0;
 	}}
 
 	void Set‿NT(out CharSet s) {
+		using(astbuilder.createBarrier())
 		{
 		CharSet s2; 
 		SimSet‿NT(out s);
@@ -392,6 +399,7 @@ const int id = 0;
 	}}
 
 	void SymboltableDecl‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		SymTab st; 
 		Expect(1); // ident
@@ -417,6 +425,7 @@ const int id = 0;
 	}}
 
 	void AttrDecl‿NT(Symbol sym) {
+		using(astbuilder.createBarrier())
 		{
 		if (isKind(la, 34)) {
 			Get();
@@ -450,6 +459,7 @@ const int id = 0;
 	}}
 
 	void ScopesDecl‿NT(Symbol sym) {
+		using(astbuilder.createBarrier())
 		{
 		sym.scopes = new List<SymTab>(); 
 		Expect(23); // "SCOPES"
@@ -463,6 +473,7 @@ const int id = 0;
 	}}
 
 	void UseOnceDecl‿NT(Symbol sym) {
+		using(astbuilder.createBarrier())
 		{
 		sym.useonces = new List<SymTab>(); 
 		Expect(27); // "USEONCE"
@@ -476,6 +487,7 @@ const int id = 0;
 	}}
 
 	void UseAllDecl‿NT(Symbol sym) {
+		using(astbuilder.createBarrier())
 		{
 		sym.usealls = new List<SymTab>(); 
 		Expect(28); // "USEALL"
@@ -489,6 +501,7 @@ const int id = 0;
 	}}
 
 	void SemText‿NT(out Position pos) {
+		using(astbuilder.createBarrier())
 		{
 		Expect(49); // "(."
 		int beg = la.pos; int col = la.col; int line = la.line; 
@@ -508,6 +521,7 @@ const int id = 0;
 	}}
 
 	void Expression‿NT(out Graph g) {
+		using(astbuilder.createBarrier())
 		{
 		Graph g2; 
 		Term‿NT(out g);
@@ -521,6 +535,7 @@ const int id = 0;
 	}}
 
 	void Symboltable‿NT(List<SymTab> sts ) {
+		using(astbuilder.createBarrier())
 		{
 		Expect(1); // ident
 		string stname = t.val.ToLower();
@@ -531,6 +546,7 @@ const int id = 0;
 	}}
 
 	void SimSet‿NT(out CharSet s) {
+		using(astbuilder.createBarrier())
 		{
 		int n1, n2; 
 		s = new CharSet(); 
@@ -561,6 +577,7 @@ const int id = 0;
 	}}
 
 	void Char‿NT(out int n) {
+		using(astbuilder.createBarrier())
 		{
 		Expect(5); // char
 		string name = t.val; n = 0;
@@ -572,6 +589,7 @@ const int id = 0;
 	}}
 
 	void Sym‿NT(out string name, out int kind) {
+		using(astbuilder.createBarrier())
 		{
 		name = "???"; kind = id; 
 		if (isKind(la, 1)) {
@@ -593,6 +611,7 @@ const int id = 0;
 	}}
 
 	void Term‿NT(out Graph g) {
+		using(astbuilder.createBarrier())
 		{
 		Graph g2; Node rslv = null; g = null; 
 		if (StartOf(17)) {
@@ -618,6 +637,7 @@ const int id = 0;
 	}}
 
 	void Resolver‿NT(out Position pos) {
+		using(astbuilder.createBarrier())
 		{
 		Expect(47); // "IF"
 		Expect(24); // "("
@@ -627,6 +647,7 @@ const int id = 0;
 	}}
 
 	void Factor‿NT(out Graph g) {
+		using(astbuilder.createBarrier())
 		{
 		string name; int kind; Position pos; bool weak = false; 
 		g = null;
@@ -752,6 +773,7 @@ const int id = 0;
 	}}
 
 	void Attribs‿NT(Node p) {
+		using(astbuilder.createBarrier())
 		{
 		if (isKind(la, 34)) {
 			Get();
@@ -783,6 +805,7 @@ const int id = 0;
 	}}
 
 	void AST‿NT(Node p) {
+		using(astbuilder.createBarrier())
 		{
 		p.ast = new AstOp(); 
 		if (isKind(la, 45)) {
@@ -793,6 +816,7 @@ const int id = 0;
 	}}
 
 	void ASTSendUp‿NT(Node p) {
+		using(astbuilder.createBarrier())
 		{
 		Expect(45); // "^"
 		p.ast.ishatch = false;
@@ -811,6 +835,7 @@ const int id = 0;
 	}}
 
 	void ASTHatch‿NT(Node p) {
+		using(astbuilder.createBarrier())
 		{
 		Expect(46); // "#"
 		p.ast.ishatch = true; 
@@ -832,6 +857,7 @@ const int id = 0;
 	}}
 
 	void ASTVal‿NT(out string val) {
+		using(astbuilder.createBarrier())
 		{
 		val = "?"; 
 		if (isKind(la, 1)) {
@@ -844,6 +870,7 @@ const int id = 0;
 	}}
 
 	void ASTPrime‿NT(Node p) {
+		using(astbuilder.createBarrier())
 		{
 		Expect(6); // prime
 		p.ast.primed = true;
@@ -856,11 +883,13 @@ const int id = 0;
 	}}
 
 	void ASTConst‿NT(Node p) {
+		using(astbuilder.createBarrier())
 		{
 		ASTVal‿NT(out p.ast.literal);
 	}}
 
 	void Condition‿NT() {
+		using(astbuilder.createBarrier())
 		{
 		while (StartOf(21)) {
 			if (isKind(la, 24)) {
@@ -874,6 +903,7 @@ const int id = 0;
 	}}
 
 	void TokenTerm‿NT(out Graph g) {
+		using(astbuilder.createBarrier())
 		{
 		Graph g2; 
 		TokenFactor‿NT(out g);
@@ -892,6 +922,7 @@ const int id = 0;
 	}}
 
 	void TokenFactor‿NT(out Graph g) {
+		using(astbuilder.createBarrier())
 		{
 		string name; int kind; 
 		g = null; 
@@ -937,7 +968,6 @@ const int id = 0;
 		la = new Token();
 		la.val = "";
 		Get();
-		using(astbuilder.createMarker(null, null, false, false, false))
 		Coco‿NT();
 		Expect(0);
 
@@ -1465,6 +1495,14 @@ public abstract class AST {
     private class ASTList : ASTThrows {
         public readonly List<AST> list;
 
+        public ASTList() {
+			list = new List<AST>();
+		}
+
+        public ASTList(AST a, int i) : this() {
+            list.Add(a);
+        }
+
         public ASTList(AST a) {
             if (a is ASTList)
                 list = ((ASTList)a).list;
@@ -1472,11 +1510,6 @@ public abstract class AST {
                 list = new List<AST>();
                 list.Add(a);
             }
-        }
-
-        public ASTList(AST a, int i) {
-            list = new List<AST>();
-            list.Add(a);
         }
 
         public override AST this[int i] { 
@@ -1582,6 +1615,7 @@ public abstract class AST {
 
         public E add(E e) {
             if (name == e.name) {
+				//if (name == null) Console.WriteLine(" [merge two unnamed to a single list]"); else Console.WriteLine(" [merge two named {0} to a single list]", name);
                 ASTList list = new ASTList(ast);
                 list.merge(e.ast);
                 E ret = new E();
@@ -1589,18 +1623,27 @@ public abstract class AST {
                 ret.name = name;
                 return ret;
             } else if (name != null && e.name != null) {
+				//Console.WriteLine(" [merge named {0}+{1} to an unnamed object]", name, e.name);
                 ASTObject obj = new ASTObject();
                 obj.add(this);
                 obj.add(e);
                 E ret = new E();
                 ret.ast = obj;
                 return ret;
-            } else if (ast.merge(e))
+            } else if (ast.merge(e)) {
+				//Console.WriteLine(" [merged {1} into object {0}]", name, e.name);
                 return this;
+			}
+			//Console.WriteLine(" [no merge available for {0}+{1}]", name, e.name);
             return null;
         }
 
-        public void wrapinlist() {
+        public void wrapinlist(bool merge) {			
+			if (ast == null) { 
+				ast = new ASTList();
+				return;
+			}
+			if (merge && (ast is ASTList)) return;
             ast = new ASTList(ast, 1);
         }
     }
@@ -1630,12 +1673,12 @@ public abstract class AST {
 
         private void push(E e) {
             stack.Push(e);
-            System.Console.WriteLine("-> push {0}, size {1}", e, stack.Count);
+            //System.Console.WriteLine("-> push {0}, size {1}", e, stack.Count);
         }
 
         // that's what we call for #/##, built from an AstOp
         public void hatch(Token t, string literal, string name, bool islist) {
-            System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1} at {4},{5}.", t.val, literal, name, islist, t.line, t.col);
+            //System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1} at {4},{5}.", t.val, literal, name, islist, t.line, t.col);
             E e = new E();
             e.ast = new ASTLiteral(literal != null ? literal : t.val);
             if (islist)
@@ -1644,63 +1687,105 @@ public abstract class AST {
             push(e);
         }
 
-        // that's what we call for ^, built from an AstOp
+        // that's what we call for ^/^^, built from an AstOp
         public void sendup(Token t, string literal, string name, bool islist) {
 			if (stack.Count == 0) return;
             E e = currentE;
-            if (islist)
-                System.Console.WriteLine(">> send up as [{0}]: {1}", name, e);
-            else
-                System.Console.WriteLine(">> send up as {0}: {1}", name, e);
+			if (e == null) {
+				e = new E();
+				if (islist)
+					e.ast = new ASTList();
+				else
+					e.ast = new ASTObject();
+				push(e);
+			}
+            //if (islist) System.Console.WriteLine(">> send up as [{0}]: {1}", name, e); else System.Console.WriteLine(">> send up as {0}: {1}", name, e);
             if (name != e.name) {
-                if (islist)
-                    e.wrapinlist(); 
-                else 
+                if (islist) {
+					bool merge = (e.name == null);
+                    e.wrapinlist(merge);
+				} else if (e.name != null)
                     parser.errors.Warning(t.line, t.col, string.Format("overwriting AST objectname '{0}' with '{1}'", e.name, name));
             }
             e.name = name;
-            System.Console.WriteLine("-------------> top {0}", e);
+            //System.Console.WriteLine("-------------> top {0}", e);
         }
 
-        private void mergeToNull() {
-            Stack<E> list = new Stack<E>();
-            int cnt = 0;
-            while(true) {
-                E e = stack.Pop();
-                if (e == null) break;
-                list.Push(e);
-                cnt++;
-            }
-            if (cnt == 0) return; // nothing was pushed
-            if (cnt == 1) {
-                // we promote the one thing on the stack to the parent frame:
-                push(list.Pop());
-                return;
-            }
-            // merge as much as we can and push the results. Start with null
-            E ret = null;
-            int n = 0;
-            foreach(E e in list) {
-                n++;
-                System.Console.Write(">> {1} of {2}   merge: {0}", e, n, cnt);
-                if (ret == null) 
-                    ret = e;
-                else {
-                    E merged = ret.add(e);
-                    if (merged != null)
-                        ret = merged;
-                    else {
-                        push(ret);
-                        ret = e;
-                    }
-                }
-                System.Console.WriteLine(" -> ret={0}", ret);
-            }
-            push(ret);
+		/*
+		private void mergeConflict(Token t, E e, E with, string typ, int n) {
+			parser.errors.Warning(t.line, t.col, string.Format("AST merge {2} size {3}: {0} WITH {1}", e, with, typ, n));
+		} 
+		*/
+
+		// remove the topmost null on the stack, keeping anythng else 
+		public void popNull() {
+			Stack<E> list = new Stack<E>();
+			while(true) {
+				if (stack.Count == 0) break;
+				E e = stack.Pop();
+				if (e == null) break;
+				list.Push(e);
+			}
+			foreach(E e in list)
+				stack.Push(e);
+		}
+
+		private void mergeAt(Token t) {
+			while(mergeToNull(t))
+				/**/;
+			popNull();
+		}
+
+        private bool mergeToNull(Token t) {
+			bool somethingMerged = false;
+			Stack<E> list = new Stack<E>();
+			int cnt = 0;
+			while(true) {
+				if (stack.Count == 0) return false;
+				if (currentE == null) break; // don't pop the null
+				list.Push(stack.Pop());
+				cnt++;
+			}
+			if (cnt == 0) return false; // nothing was pushed
+			if (cnt == 1) {
+				// we promote the one thing on the stack to the parent frame, i.e. swap:
+				popNull();
+				stack.Push(list.Pop());
+				stack.Push(null);
+				return false;
+			}
+			// merge as much as we can and push the results. Start with null
+			E ret = null;
+			int n = 0;
+			foreach(E e in list) {
+				n++;
+				//System.Console.Write("{3}>> {1} of {2}   merge: {0}", e, n, cnt, stack.Count);
+				if (ret == null) 
+					ret = e;
+				else {
+					E merged = ret.add(e);
+					if (merged != null) {
+						somethingMerged = true;
+						//mergeConflict(t, e, ret, "success", stack.Count);
+						ret = merged;
+					} else {
+						//mergeConflict(t, e, ret, "conflict", stack.Count);
+						push(ret);
+						ret = e; 
+					}                    
+				}
+				//System.Console.WriteLine(" -> ret={0}", ret);
+			}
+			push(ret);
+			return somethingMerged;
         }
 
         public IDisposable createMarker(string literal, string name, bool islist, bool ishatch, bool primed) {
             return new Marker(this, literal, name, islist, ishatch, primed);
+        }
+
+        public IDisposable createBarrier() {
+            return new Barrier(this);
         }
 
         private class Marker : IDisposable {
@@ -1718,16 +1803,41 @@ public abstract class AST {
                 this.ishatch = ishatch;
                 this.islist = islist;
                 this.primed = primed;
-                builder.stack.Push(null); // push a marker
+				if (!ishatch)
+                	builder.stack.Push(null); // push a marker
+            }
+
+            public void Dispose() {
+				GC.SuppressFinalize(this);
+                Token t = builder.parser.t;				
+                if (ishatch) {
+					if (primed) {
+						try { 
+							t = t.Copy(); builder.parser.Prime(t);
+						} catch(Exception ex) {
+							builder.parser.SemErr(string.Format("unexpected error in Prime(t): {0}", ex.Message));
+						} 
+					}
+					builder.hatch(t, literal, name, islist);
+				} else {
+                	builder.sendup(t, literal, name, islist);
+					builder.mergeAt(t);
+				}
+            }
+        }
+
+        private class Barrier : IDisposable {
+            public readonly Builder builder;
+
+            public Barrier(Builder builder) {
+                this.builder = builder;             
+				builder.stack.Push(null); // push a marker
             }
 
             public void Dispose() {
 				GC.SuppressFinalize(this);
                 Token t = builder.parser.t;
-				if (primed) {t = t.Copy(); builder.parser.Prime(t); }
-                if (ishatch) builder.hatch(t, literal, name, islist);
-                builder.mergeToNull();
-                if (!ishatch) builder.sendup(t, literal, name, islist);
+				builder.mergeAt(t);				
             }
         }
     }

@@ -6,7 +6,11 @@ using System.Collections.Generic;
 
 
 
-public class Parser {
+public class Parserbase {
+	public virtual void Prime(Token t) { /* hook */ }
+}
+
+public class Parser : Parserbase {
 	public const int _EOF = 0; // TOKEN EOF
 	public const int _number = 1; // TOKEN number
 	public const int _ident = 2; // TOKEN ident
@@ -47,8 +51,6 @@ public class Parser {
 		if (name == "types") return types;
 		return null;
 	}
-
-	public void Prime(Token t) { }
 
 
 
@@ -1372,7 +1374,13 @@ public abstract class AST {
 				GC.SuppressFinalize(this);
                 Token t = builder.parser.t;				
                 if (ishatch) {
-					if (primed) { t = t.Copy(); builder.parser.Prime(t); }
+					if (primed) {
+						try { 
+							t = t.Copy(); builder.parser.Prime(t);
+						} catch(Exception ex) {
+							builder.parser.SemErr(string.Format("unexpected error in Prime(t): {0}", ex.Message));
+						} 
+					}
 					builder.hatch(t, literal, name, islist);
 				} else {
                 	builder.sendup(t, literal, name, islist);

@@ -48,8 +48,6 @@ COMPILER Coco
 	string tokenString;         // used in declarations of literal tokens
 	string noString = "-none-"; // used in declarations of literal tokens
 
-  public void Prime(Token t) { }
-
 /*-------------------------------------------------------------------------*/
 
 CHARACTERS
