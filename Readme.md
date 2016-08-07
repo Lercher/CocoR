@@ -383,6 +383,11 @@ provide suggestions to Visual Studio Code.
 See https://github.com/saviorisdead/RustyCode/blob/master/src/services/suggestService.ts
 and its dependencies.
 
+Alternativly: Build a JavaScript/TypeScript version of Coco/R with this extensions
+and implement the language service in Visual Studio Code's native 
+language (node + ECMA Script 6). Maybe the C# sources can be transformed to JS 
+by a tool to bootstrap the process.
+
 
 ## Declarative, Language Independent AST
 
