@@ -373,8 +373,15 @@ However, for the current sample grammar and sample text in this repository, the
 responsiveness can be called "instant" on my machine 
 (2011 Windows PC box, Core i5 CPU, 16GB RAM, SSD).  
 
-Planned: Build a language-server for Visual Studio Code. See
+
+
+Planned: Build a language-server for Visual Studio Code and other IDEs. See
 https://code.visualstudio.com/docs/extensions/example-language-server
+
+Alternativly: Adopt RUST's way (via stdin/stdout and the RACER process) to
+provide suggestions to Visual Studio Code. 
+See https://github.com/saviorisdead/RustyCode/blob/master/src/services/suggestService.ts
+and its dependencies.
 
 
 ## Declarative, Language Independent AST
