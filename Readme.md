@@ -76,6 +76,20 @@ in a stream or from a file that is written by a tool that
 writes UTF-8 but no byte order marks. The Coco executable
 has a new command line option that forces UTF-8 processing.
 
+* Declarative, language independent AST -
+Forming an abstract syntax tree (AST) from the parse can be done
+using semantic actions. However, this couples the AST generation
+strictly to the target language. With this extension, some prototyping 
+can be done to explore the desired object hierarchy.
+Starting with the extraction of the token from a terminal or
+nonterminal or a literal, you can give them names and form lists.
+As these objects travel up the call tree, you can compose objects
+and lists from named objects deeper in the call tree by reusing
+the names of your productions. If all runs
+well, you get at toplevel a structured object made up from 
+other objects, lists and string as leaf datatype. 
+There are functions to inspect the structure and export it to JSON. 
+
 
 ## Token Inheritance
 
@@ -187,7 +201,7 @@ So the extended Coco/R syntax for productions is
 
     // Coco/R grammar
     Production = ident [FormalAttributes] [ScopesDecl] [LocalDecl] '=' Expression '.'.
-    ScopesDecl = "SCOPES" '(' ident { ',' ident } ')'.
+    ScopesDecl = "SCOPES" '(' ident { ',' ident } ')' .
 
 See http://www.ssw.uni-linz.ac.at/Coco/Doc/UserManual.pdf 
 section "2.4 Parser Specification".
@@ -199,6 +213,60 @@ to preseve the content of a lexically scoped symbol table, store it's
 `currentScope`, which is a `List<Token>` (C#) / `List(Of Token)` (VB.Net)
 inside a semantic action. If you need all symbols in all currently active 
 scopes, take a look at `items` which is an `IEnumerable<Token>`.
+
+
+### Useall and Useonce Scopes
+
+The once more extended Coco/R syntax for productions is
+
+    // Coco/R grammar
+    Production = ident [FormalAttributes] [ScopesDecl] [ UseOnceDecl ] [ UseAllDecl ] [LocalDecl] '=' Expression '.'.
+    ScopesDecl  = "SCOPES"  '(' ident { ',' ident } ')' .
+    UseOnceDecl = "USEONCE" '(' ident { ',' ident } ')' .
+    UseAllDecl  = "USEALL"  '(' ident { ',' ident } ')' .
+
+`USEONCE` and `USEALL` both create a scope for the production method,
+where each use of a symbol in the symbol tables denoted by the `ident, ...` list 
+is counted. After leaving the scope `USEONCE` checks that each symbol is used zero
+to one times and `USEALL` checks that each symbol is used at least one time. Undeclared
+symbols are not counted. If a check fails, 1 (`USEALL`) or 2..N (`USEONCE`) semantic errors 
+are logged.
+
+Note: A *use* is logged if a suffixed Coco/R symbol like `ident:symboltable` is
+parsed and the token is recognized as a member of `symboltable`.
+
+For our example, we consider a dictionary for a list of target languages, where
+this list of target languages is not known in advance. So we add the list
+to our grammar and demand that each term has at least one translation in 
+each declared language.
+
+Example grammar:
+
+    COMPILER Dictionary
+
+    SYMBOLTABLES
+      lang STRICT.
+    
+    PRODUCTIONS
+      Dictionary = Languages { Term }.      
+      Languages = "languages" { ident>lang }.
+      Term USEALL(lang) = "term" string { Translation }.
+      Translation = ident:lang string.
+
+Example text:
+
+    languages EN DE FR
+
+    term "car" 
+      DE "Auto" 
+      DE "Fahrzeug" 
+      EN "vehicle" 
+      FR "..."
+    term "cat" 
+      DE "Katze" 
+      RF "Mieze" // undeclared lang 'RF'
+      // missing EN, missing FR
+    term ...
 
 
 ### Accessing symbol tables form outside
@@ -305,8 +373,87 @@ However, for the current sample grammar and sample text in this repository, the
 responsiveness can be called "instant" on my machine 
 (2011 Windows PC box, Core i5 CPU, 16GB RAM, SSD).  
 
-Planned: Build a language-server for Visual Studio Code. See
+
+
+Planned: Build a language-server for Visual Studio Code and other IDEs. See
 https://code.visualstudio.com/docs/extensions/example-language-server
+
+Alternativly: Adopt RUST's way (via stdin/stdout and the RACER process) to
+provide suggestions to Visual Studio Code. 
+See https://github.com/saviorisdead/RustyCode/blob/master/src/services/suggestService.ts
+and its dependencies.
+
+Alternativly: Build a JavaScript/TypeScript version of Coco/R with this extensions
+and implement the language service in Visual Studio Code's native 
+language (node + ECMA Script 6). Maybe the C# sources can be transformed to JS 
+by a tool to bootstrap the process.
+
+
+## Declarative, Language Independent AST
+
+*under development*
+
+The main technical terms we like to introduce 
+are *hatching a token*, *sending up* and *priming*. 
+Denoted by the symbols `#` (hash - hatch),
+ `^` (up) and `'` (prime). Operating in a list context is 
+ marked by doubling the symbol.
+
+* hatching a token with `#` - push `t` on the stack. Call this a hatch.
+
+* hatching a token as a list with `##` - push `[t]` on the stack. Call 
+  this a list hatch.
+
+* priming it with `#'` or `##'` - instead of `t`, operate on `Prime(t)`, where
+  `public overrode void Prime(Token t)` can be defined in the `COMPILER` section and
+  modifies a copy of the token `t`. Priming is commonly used to strip typical
+  string-like decorators `"` from a token based on it's kind. Priming can only
+  be combind with hatching a token.
+
+* give it a name with `##':name` - append `:name`. Without such a name, the hatched
+  token has no name. You can give it a name afterwards with `^` (up).
+
+* give it a value with `##':name=value` - append `=value`, or `="string"` if
+  your value is not a valid Coco/R identifier. Commonly used after an optional
+  literal terminal symbol.
+
+Inside the scope of a production, unnamed and equally named hatches
+combine as an unnamed list or a list with the same name. This is even the case
+when any is a list, these lists are merged. Differently named hatches form 
+an object with each hatch as a property under its name. An object hatch
+plus a named token hatch is combined in the object hatch. 
+
+Unnamed hatches can never be integrated in a hatch object. They stay on the
+stack until they can be combined.
+
+* send it up with `^` - give the topmost unnamed hatch the name of the preceeding
+  Coco/R symbol lowercased. If there is no hatch, form a new empty object hatch `{}`. 
+
+* send it up as a list with `^^` - give the topmost unnamed hatch the name of the preceeding
+  Coco/R symbol lowercased and wrap it in a list. If it is an unnamed list, don't wrap it in a list again.
+  If there is no hatch, form a new empty list hatch `[]`. 
+
+* give it a different name with `^^:name` - append `:name`. Without such a name, the
+  hatch is named by its preceeding Coco/R symbol.
+
+
+
+Coco/R Syntax extension
+
+    // Coco/R grammar
+    TODO
+
+Example grammar
+
+    TODO
+
+Example text
+
+    TODO
+
+Resulting AST in JSON notation
+
+    TODO
 
 
 
@@ -336,6 +483,7 @@ byte order mark. This is the default e.g. if you use Visual Studio Code.
   -utf8 switch *beta*,
   editor *beta*,
   BOM free scanner *beta*
+  AST *alpha*
 
 * VB.Net - VisualBasic - 
   token inheritance *beta*

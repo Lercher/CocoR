@@ -6,7 +6,11 @@ using System.Collections.Generic;
 
 
 
-public class Parser {
+public class Parserbase {
+	public virtual void Prime(Token t) { /* hook */ }
+}
+
+public class Parser : Parserbase {
 	public const int _EOF = 0; // TOKEN EOF
 	public const int _dbcode = 1; // TOKEN dbcode
 	public const int _twodigitnumber = 2; // TOKEN twodigitnumber
@@ -43,7 +47,7 @@ public class Parser {
 		return null;
 	}
 
-public void Prime(Token t) { 
+public override void Prime(Token t) { 
 		//if (t.kind == _string) 
 		t.val = t.val.Substring(1, t.val.Length - 2);
 	}
