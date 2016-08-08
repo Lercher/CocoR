@@ -48,6 +48,7 @@ public class ParserGen {
 	public Position usingPos; // "using" definitions from the attributed grammar
 	public bool GenerateAutocompleteInformation = false;  // generate addAlt() calls to fill the "alt" set with alternatives to the next to Get() token.
 	public bool IgnoreSemanticActions = false;
+	public bool needsAST = false;
 	private readonly DFA dfa; 
 
 	int errorNr;      // highest parser error number
@@ -264,7 +265,7 @@ public class ParserGen {
 	}
 
 	void GenAstBuilder(Node p, int indent) {
-		if (p.ast != null) {
+		if (needsAST && p.ast != null) {
 			gen.Write("using(astbuilder.createMarker({0}, {1}, {2}, {3}, {4}))  ", tab.Quoted(p.ast.literal), tab.Quoted(p.ast.name), toTF(p.ast.isList), toTF(p.ast.ishatch), toTF(p.ast.primed));
 		}
 	}
@@ -503,7 +504,8 @@ public class ParserGen {
 			gen.Write("\tvoid {0}{1}(", sym.name, PROD_SUFFIX);
 			CopySourcePart(sym.attrPos, 0);			
 			gen.WriteLine(") {");
-			gen.WriteLine("\t\tusing(astbuilder.createBarrier())"); // intentionally no ; !
+			if (needsAST)
+				gen.WriteLine("\t\tusing(astbuilder.createBarrier())"); // intentionally no ; !
 			GenUsingSymtabSomething(sym.scopes,   "createScope", "", "");  // needs to be first
 			GenUsingSymtabSomething(sym.useonces, "createUsageCheck", "false, errors, la", "// 0..1"); // needs to be after createScope 
 			GenUsingSymtabSomething(sym.usealls,  "createUsageCheck", "true, errors, la" , "// 1..N");  // needs to be after createScope
@@ -601,7 +603,9 @@ public class ParserGen {
 		g.CopyFramePart("-->declarations");
 		GenSymbolTables(true);
 		CopySourcePart(tab.semDeclPos, 0);
-		g.CopyFramePart("-->constructor"); GenSymbolTables(false);
+		g.CopyFramePart("-->constructor"); 
+		GenSymbolTables(false);
+		if (needsAST) gen.Write("\t\tastbuilder = new AST.Builder(this);");
 		g.CopyFramePart("-->beginalternatives");
 		g.CopyFramePart("-->endalternatives", GenerateAutocompleteInformation);
 		g.CopyFramePart("-->pragmas"); GenCodePragmas();
@@ -615,6 +619,8 @@ public class ParserGen {
 		g.CopyFramePart("-->tname"); GenTokenNames(); // write all token names
 		g.CopyFramePart("-->initialization0"); InitSets0();
 		g.CopyFramePart("-->initialization"); InitSets();
+		g.CopyFramePart("-->beginastcode"); // class AST, only needed, if declarative AST is used.
+		g.CopyFramePart("-->endastcode", needsAST);
 		g.CopyFramePart("-->errors"); gen.Write(err.ToString());
 		g.CopyFramePart(null);
 		/* AW 2002-12-20 close namespace, if it exists */

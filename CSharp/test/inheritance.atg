@@ -7,8 +7,6 @@ COMPILER Inheritance
 
 // IGNORECASE
 
-    // priming for the AST is implemented trivially here
-    Token Prime(Token t) { return t; }
 
 CHARACTERS
     ucletter  = 'A'..'Z'.
