@@ -451,7 +451,7 @@ Factor<out Graph g>             (. string name; int kind; Position pos; bool wea
 
 /*------------------------------------------------------------------------------------*/
 
-AST<Node p>                     (. p.ast = new AstOp(); .)
+AST<Node p>                     (. p.ast = new AstOp(); pgen.needsAST = true; .)
 =
   ASTSendUp<p>
   | ASTHatch<p>
