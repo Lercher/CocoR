@@ -78,10 +78,43 @@ The autocomplete information includes data to locate
 the token that declares the currently parsed symbol.
 
 ### Sample Winforms Editor
-Proof of concept, to show autocomplete information
+Proof of concept to show autocomplete information
 interactively. Supports error location, "Goto declaration",
 instant "Find all references" as well as alternatives
 for keywords and declared symbols.
+
+### Sample Winforms Editor with Live AngularJS projections
+Proof of concept to display live projections of the generated
+AST to a Webpage that uses AngularJS as a templating engine.
+In the sample the AST consists of `call` elements with their
+parameters as a list of lists. Such calls can be placed inside
+a block (tbdcalls) or at toplevel (call). The web app displays 
+each in a separate list.
+
+These are the moving parts to display a projection, where `AST` here is
+the generated `.ast` of the parser:
+
+    <section class="column">
+        <h2>TBD calls</h2>
+        <div ng-repeat="c in AST.tbdcall track by $index">
+            call(<code ng-repeat="p in c track by $index" ng-bind="p" class="bg-success"></code>);
+        </div>
+    </section>
+
+    <section class="column">
+        <h2>Standard calls</h2>
+
+        <div ng-repeat="c in AST.call track by $index">
+            call(<code ng-repeat="p in c track by $index" ng-bind="p" class="bg-success"></code>);
+        </div>
+    </section>
+
+    <section>
+        <h2>Raw AST as JSON</h2>
+        <pre ng-bind="AST | json"></pre>
+    </section>
+
+Note: This needs .Net 4 Framework and the Fleck library. See https://github.com/statianzo/Fleck
 
 
 ## BOM Free UTF-8 Scanner

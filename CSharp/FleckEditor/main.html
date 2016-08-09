@@ -26,7 +26,7 @@
 angular.module("dsl", ['ui.bootstrap']);
 angular.module("dsl").controller("dslController", function ($scope) {
     $scope.log = [];
-    $scope.D = {};
+    $scope.AST = {};
     var wsImpl = window.WebSocket || window.MozWebSocket;
     $scope.ws = new wsImpl('ws://localhost:8181/');
 
@@ -39,7 +39,7 @@ angular.module("dsl").controller("dslController", function ($scope) {
     function log(s) { $scope.log.push(s); $scope.log = $scope.log.slice(-5); }
     function onopen() { log("[connection open]"); $scope.$digest(); }
     function onclose() { log("[connection close]"); $scope.ws = null; $scope.$digest(); }
-    function onmsg(e) { log(e.data); $scope.D = JSON.parse(e.data); $scope.$digest();}
+    function onmsg(e) { log(e.data); $scope.AST = JSON.parse(e.data); $scope.$digest();}
 });
     </script>
 </head>
@@ -51,7 +51,7 @@ angular.module("dsl").controller("dslController", function ($scope) {
 
     <section class="column">
         <h2>TBD calls</h2>
-        <div ng-repeat="c in D.tbdcall track by $index">
+        <div ng-repeat="c in AST.tbdcall track by $index">
             call(<code ng-repeat="p in c track by $index" ng-bind="p" class="bg-success"></code>);
         </div>
     </section>
@@ -59,14 +59,14 @@ angular.module("dsl").controller("dslController", function ($scope) {
     <section class="column">
         <h2>Standard calls</h2>
 
-        <div ng-repeat="c in D.call track by $index">
+        <div ng-repeat="c in AST.call track by $index">
             call(<code ng-repeat="p in c track by $index" ng-bind="p" class="bg-success"></code>);
         </div>
     </section>
 
     <section>
         <h2>Raw AST as JSON</h2>
-        <pre ng-bind="D | json"></pre>
+        <pre ng-bind="AST | json"></pre>
     </section>
 
     <section ng-show="log">
