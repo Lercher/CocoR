@@ -8,8 +8,6 @@ the readme.md in the root directory.
 ## Status
 
 * Compiling
-* **currently broken** - use commits before Aug 4 2016
-* last known good commit is fb08c25b5c23d0e1bf7d5bb76d128cc882a94d11
 * beta testing
 * sample editor with autocompletion available
 
@@ -35,7 +33,7 @@ In the winforms editor:
 
 General:
 
-* Priming function is mandatory but it shouldn't
+* None
 
 
 ## Resolved Bugs
@@ -104,4 +102,5 @@ General:
 * sprinkled Console.WriteLine()s in the generated parser
   -> Fixed
   
-
+* Priming function is mandatory but it shouldn't. -> Is now a hook in the
+  parsers base class that can but don't have to be overridden. -> Fixed

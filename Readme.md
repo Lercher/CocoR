@@ -12,23 +12,26 @@ information can be found in the following sections.
 
 
 ## Token Inheritance
-A typical usage scenario for the extension
-would be to allow keywords as identifiers 
-based on a parsing context that expects an identifier.
+A typical usage scenario for this extension
+would be, to allow keywords (literal tokens) as identifiers
+(token classes) based on a parsing context that
+expects an identifier.
 
 
 ## Symbol Tables
 
 Having autocomplete information is quite useless
 for token classes, unless you can specify from where
-you will take all valid identifiers. In this version
+you will take all valid i.e. declared identifiers. 
+
+In this version
 of Coco/R you can declare global symbol tables for
 a parser and mark tokenclasses in productions to 
 create a new symbol, error out if it was already
 declared and mark a tokenclass to use such a symbol,
-i.e. error out if it was not declared before. At such 
+i.e. error out if it was not declared. At such 
 a symbol use point, when looking at alternatives, you
-can ask the parser of which symbols it knows at this
+can ask the parser, of which symbols it knows at this
 point to provide autocomplete for token classes.
 
 ### Lexical Scopes for Symbol Tables
@@ -36,23 +39,28 @@ The existance and no-redefinition checks can be scoped
 lexically by marking a production as a scope for a symbol
 table. By creating a new scope for a production, you can
 create and redefine any symbol, as well as use any symbol
-in this scope and all of it's parent scopes. This scope
-as well as all newly created symbols is destroyed when 
+in this scope and all of it's parent scopes. This scope,
+as well as all newly created symbols, is destroyed when 
 you leave the generated production method. So if you 
-need to preserve the scoped symbols you might want to
+need to preserve the scoped symbols, you might want to
 add a semantic action that stores the symbol 
-table's current scope `currentScope` in your AST. 
+table's current scope i.e. *symboltable*.`currentScope` 
+in your AST. 
 
 ### Useonce and Useall Scopes for Symbols
 You can declare at the production level, that any symbol
-has to be used at most (useonce) or at least (useall) once
-inside this lexical scope. This is usefull for metaprogramming
-where you declare idents as keyword-like and state that each such
-keyword-like ident has to be used or can appear only one time.
+has to be used at most once (useonce) or at least once (useall) 
+inside this lexical scope. This is usefull for metaprogramming,
+where you declare idents as keyword-like in your language 
+and state that each such keyword-like ident has to be used, 
+or can appear only one time.
+
+Of course, these two declarations can be used together to
+form a use-exactly-once semantic. 
 
 ### Strict and Non Strict Symbol Tables
-Symbol tables can be strict, i.e. every symbol has to be
-declared before its use (aka *one-pass*), or non strict,
+Symbol tables can be *strict*, i.e. every symbol has to be
+declared before its use (aka *one-pass*), or *non-strict*,
 meaning that a symbol can be used and declared anywhere 
 acording to common scoping rules (aka *two-pass*). However,
 there are actually no multiple passes, the generated 
@@ -61,8 +69,8 @@ parser always makes only one pass.
 
 ## Autocomplete Information
 If the switch -ac is set, the generator produces a
-parser that records to any parsed terminal symbol
-all alternative terminal symbols that would be valid
+parser, that records for any parsed terminal symbol
+all alternative terminal symbols, that would be valid
 instead of the actually parsed token.
 
 ### Find Symbol Declaration
@@ -70,9 +78,10 @@ The autocomplete information includes data to locate
 the token that declares the currently parsed symbol.
 
 ### Sample Winforms Editor
-Proof of concept to show autocomplete information
-interactively. Supports "Goto declaration" and "Find all
-references" as well as alternatives for keywords and symbols.
+Proof of concept, to show autocomplete information
+interactively. Supports error location, "Goto declaration",
+instant "Find all references" as well as alternatives
+for keywords and declared symbols.
 
 
 ## BOM Free UTF-8 Scanner
@@ -83,21 +92,35 @@ in a stream or from a file that is written by a tool that
 writes UTF-8 but no byte order marks. The Coco executable
 has a new command line option that forces UTF-8 processing.
 
+Note: The 2011 version recognizes UTF-8 only by the existance
+of a UTF-8 BOM. In this version with the new constructor, the BOM
+is optional but it is mandatory that the stream is UTF-8 encoded.
+
 
 ## Declarative, language independent AST -
 Forming an abstract syntax tree (AST) from the parse can be done
-using semantic actions. However, this couples the AST generation
-strictly to the target language. With this extension, some prototyping 
-can be done to explore the desired object hierarchy.
-Starting with the extraction of the token from a terminal or
-nonterminal or a literal, you can give them names and form lists.
+using semantic actions in the 2011 version. 
+However, this couples the AST generation strictly to the target
+language.
+
+With this extension, some prototyping 
+can be done to explore a planned/desired object hierarchy.
+Starting with the extraction of the token from a terminal, nonterminal 
+or grammar-defined literal, you can give them names and form object
+structures lists. These structures need not resemble the production
+graph, you are free to ignore particular nodes or even complete
+hierarchies between the token(s) and their names. 
+
 As these objects travel up the call tree, you can compose objects
 and lists from named objects deeper in the call tree by reusing
 the names of your productions. If all runs
-well, you get at toplevel a structured object made up from 
-other objects, lists and string as leaf datatype. 
+well, you get at toplevel a structured object, made up from 
+other objects, lists and strings as leaf datatype.
+
 There are functions to inspect the structure and export it to JSON.
-AST code is only generated by Coco/R, if you use it. 
+AST code is only generated by Coco/R, if you use it in the grammar. 
+
+
 
 Now we are ready to discuss these topics in detail, starting with
 Token Inheritance.
@@ -118,7 +141,7 @@ in the TOKENS section of the grammar file like that:
       var : ident = "var". //  ": ident" is the new syntax 
       as = "as".
 
-meaning that the keyword "var" is now valid in a 
+meaning that the keyword `var` is now valid in a 
 production at a place, where an ident would be expected.
 So, if you have a production like
 
@@ -450,23 +473,52 @@ stack until they can be combined.
   hatch is named by its preceeding Coco/R symbol.
 
 
-
-Coco/R Syntax extension
+## Coco/R Syntax extension:
 
     // Coco/R grammar
     TODO
 
-Example grammar
 
-    TODO
+## Example
 
-Example text
+As an example, we consider our previously used dictionary. We use this example shortened grammar:
 
-    TODO
+    COMPILER Dictionary
+    ...    
+    PRODUCTIONS
+      Dictionary = Languages^^ { Term^^:terms }.      
+      Languages = "languages" { ident ## }.
+      Term = "term" string #:term  { Translation^^:translations }.
+      Translation = ident #:lang  string #:text .
 
-Resulting AST in JSON notation
+Example text:
 
-    TODO
+    languages EN DE
+    term "car" 
+      DE "Auto"   DE "Fahrzeug"   EN "vehicle" 
+    term "cat" 
+      DE "Katze"  EN "tiger"
+
+Resulting AST in JSON notation:
+
+    { 
+      languages: ["EN", "DE],
+      terms: [
+        {
+          term: "car",
+          translations: [
+              {lang: "DE", text: "Auto"},
+              {lang: "DE", text: "Fahrzeug"},
+              {lang: "EN", text: "vehicle"}   ]
+        },
+        {
+          term: "cat",
+          translations: [
+              {lang: "DE", text: "Katze"},
+              {lang: "EN", text: "tiger"}     ]
+        }
+      ]
+    }
 
 
 Note: AST specific code and AST classes are only generated, if you use
@@ -539,13 +591,13 @@ There are no dependencies to use the generated scanners and parsers.
 
 ## License
 
-Coco/R, including this extension, is distributed under the terms
-of the GNU General Public License (slightly extended).
+    Coco/R, including this extension, is distributed under the terms
+    of the GNU General Public License (slightly extended).
 
 This means that you have to open source any extension to
 Coco/R itself but you are licensed to use generated
 scanners and parsers in any software that you build, 
-even in closed source projects:
+even for closed source projects:
 
     As an exception, it is allowed to write an extension of Coco/R that is
     used as a plugin in non-free software.
@@ -555,6 +607,12 @@ even in closed source projects:
 
 
 ## Collaboration
+
+As an exception, it is allowed to write an extension of Coco/R that is
+used as a plugin in non-free software.
+
+If not otherwise stated, any source code generated by Coco/R (other than 
+Coco/R itself) does not fall under the GNU General Public License.
 
 Contributions are very welcome. Please feel free to fork/clone
 this repository.
