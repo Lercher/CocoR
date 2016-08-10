@@ -1,4 +1,6 @@
 
+//#define POSITIONS
+
 using System;
 using System.Text;
 using System.Collections;
@@ -630,8 +632,10 @@ public class Parser : Parserbase {
 		public abstract AST this[string s] { get; }
 		public abstract int count { get; }
 		public static readonly AST empty = new ASTLiteral(string.Empty);
-		protected abstract void serialize(StringBuilder sb, int indent);
+		protected abstract void serialize(StringBuilder sb, int indent, Token at);
 		public virtual bool merge(E e) { return false; }
+		public Token startToken = null;
+		public Token endToken = null;		
 		
 	#region Formatting
 		public static void newline(int indent, StringBuilder sb) {
@@ -658,9 +662,50 @@ public class Parser : Parserbase {
 		}
 
 		public override string ToString() {
+			Token at0 = new Token(); at0.pos = -1; at0.charPos = -1;
+			return ToString(at0);
+		}
+
+		public string ToString(Token at) {
 			StringBuilder sb = new StringBuilder();
-			serialize(sb, 0);
+			serialize(sb, 0, at);
 			return sb.ToString();
+		}
+
+		protected bool inOrder(Token at) {
+			return inOrder(startToken, at, endToken);
+		}
+
+		protected static bool inOrder(Token t1, Token at, Token t2) {
+			if (t1 == null || at == null || t2 == null)
+				return false;
+			return t1.pos <= at.pos && at.pos <= t2.pos;
+		}
+
+		protected void mergeStart(Token t) {
+			if (t != null && (startToken == null || t.pos < startToken.pos))
+				startToken = t;
+		}
+
+		protected void mergeEnd(Token t) {
+			if (t != null && (endToken == null || endToken.pos < t.pos))
+				endToken = t;
+		}
+
+		protected void mergeStartEnd(AST a) {
+			mergeStart(a.startToken);
+			mergeEnd(a.endToken);
+		}
+
+		// optional listing of character pos ranges for objects
+		protected void addPos(StringBuilder sb) { 
+		#if POSITIONS
+			if (startToken == null || endToken == null) return;
+			if (startToken.pos == endToken.pos)
+				sb.AppendFormat("/*{0}*/", startToken.charPos);
+			else
+				sb.AppendFormat("/*{0}-{1}*/", startToken.charPos, endToken.charPos);
+		#endif
 		}
 
 	#endregion
@@ -677,11 +722,12 @@ public class Parser : Parserbase {
 			public override string val { get { return _val; } }
 			public override int count { get { return -1; } }
 
-			protected override void serialize(StringBuilder sb, int indent)
+			protected override void serialize(StringBuilder sb, int indent, Token at)
 			{
 				sb.Append('\"');
 				AST.escape(val, sb);
 				sb.Append('\"');
+				addPos(sb);
 			}
 		}
 
@@ -694,15 +740,22 @@ public class Parser : Parserbase {
 
 			public ASTList(AST a, int i) : this() {
 				list.Add(a);
+				startToken = a.startToken;
+				endToken = a.endToken;
 			}
 
 			public ASTList(AST a) {
-				if (a is ASTList)
-					list = ((ASTList)a).list;
-				else {
-					list = new List<AST>();
-					list.Add(a);
+				if (a is ASTList) {
+					ASTList li = (ASTList) a;
+					list = li.list;
+					startToken = li.startToken;
+					endToken = li.endToken;
+					return;
 				}
+				list = new List<AST>();
+				list.Add(a);
+				startToken = a.startToken;
+				endToken = a.endToken;
 			}
 
 			public override AST this[int i] { 
@@ -718,19 +771,24 @@ public class Parser : Parserbase {
 				if (a is ASTList) {
 					ASTList li = (ASTList) a;
 					list.AddRange(li.list);
-				} else
+					foreach(AST ast in li.list)
+						mergeStartEnd(ast);
+				} else {
 					list.Add(a);
+					mergeStartEnd(a);
+				}
 				return a;
 			}
 
-			protected override void serialize(StringBuilder sb, int indent)
+			protected override void serialize(StringBuilder sb, int indent, Token at) // ASTList
 			{
 				bool longlist = (count > 3);
 				sb.Append('[');
+				addPos(sb);
 				if (longlist) AST.newline(indent + 1, sb);
 				int n = 0;
 				foreach(AST ast in list) {
-					ast.serialize(sb, indent + 1);
+					ast.serialize(sb, indent + 1, at);
 					n++;
 					if (n < count) {
 						sb.Append(", ");
@@ -744,7 +802,8 @@ public class Parser : Parserbase {
 		}
 
 		private class ASTObject : ASTThrows {
-			private readonly Dictionary<string,AST> ht = new Dictionary<string,AST>();         
+			private readonly Dictionary<string,AST> ht = new Dictionary<string,AST>();
+
 			public override AST this[string s] { 
 				get { 
 					if (!ht.ContainsKey(s))
@@ -752,10 +811,12 @@ public class Parser : Parserbase {
 					return ht[s];
 				} 
 			}
+			
 			public override int count { get { return ht.Keys.Count; } }
 			
 			public void add(E e) {
-				ht[e.name] = e.ast; 
+				ht[e.name] = e.ast;
+				mergeStartEnd(e.ast); 
 			}
 
 			public override bool merge(E e) {
@@ -768,23 +829,28 @@ public class Parser : Parserbase {
 				AST thing = ht[e.name];
 				if (thing is ASTList) {
 					((ASTList) thing).merge(e.ast);
+					mergeStartEnd(thing);
 					return true;
 				}
 				// thing is not a list, so we cannot merge it with e
 				return false;
 			}
 
-			protected override void serialize(StringBuilder sb, int indent) {
+			protected override void serialize(StringBuilder sb, int indent, Token at) // ASTObject 
+			{
 				bool longlist = (count > 3);
 				sb.Append('{');
+				addPos(sb);
 				if (longlist) AST.newline(indent + 1, sb);
 				int n = 0;
+				if (inOrder(at))
+					sb.Append("\"$active\": true, ");
 				foreach(string name in ht.Keys) {
 					AST ast = ht[name];
 					sb.Append('\"');
 					AST.escape(name, sb);
 					sb.Append("\": ");
-					ast.serialize(sb, indent + 1);
+					ast.serialize(sb, indent + 1, at);
 					n++;
 					if (n < count) {
 						sb.Append(", ");
@@ -870,10 +936,12 @@ public class Parser : Parserbase {
 			}
 
 			// that's what we call for #/##, built from an AstOp
-			public void hatch(Token t, string literal, string name, bool islist) {
+			public void hatch(Token s, Token t, string literal, string name, bool islist) {
 				//System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1} at {4},{5}.", t.val, literal, name, islist, t.line, t.col);
 				E e = new E();
 				e.ast = new ASTLiteral(literal != null ? literal : t.val);
+				e.ast.mergeStart(s);
+				e.ast.mergeEnd(t);
 				if (islist)
 					e.ast = new ASTList(e.ast);
 				e.name = name;
@@ -881,7 +949,7 @@ public class Parser : Parserbase {
 			}
 
 			// that's what we call for ^/^^, built from an AstOp
-			public void sendup(Token t, string literal, string name, bool islist) {
+			public void sendup(Token s, Token t, string literal, string name, bool islist) {
 				if (stack.Count == 0) return;
 				E e = currentE;
 				if (e == null) {
@@ -892,6 +960,8 @@ public class Parser : Parserbase {
 						e.ast = new ASTObject();
 					push(e);
 				}
+				e.ast.mergeStart(s);
+				e.ast.mergeEnd(t);
 				//if (islist) System.Console.WriteLine(">> send up as [{0}]: {1}", name, e); else System.Console.WriteLine(">> send up as {0}: {1}", name, e);
 				if (name != e.name) {
 					if (islist) {
@@ -988,6 +1058,7 @@ public class Parser : Parserbase {
 				public readonly bool islist;
 				public readonly bool ishatch;
 				public readonly bool primed;
+				public readonly Token startToken;
 
 				public Marker(Builder builder, string literal, string name, bool islist, bool ishatch, bool primed) {
 					this.builder = builder;                
@@ -996,6 +1067,7 @@ public class Parser : Parserbase {
 					this.ishatch = ishatch;
 					this.islist = islist;
 					this.primed = primed;
+					this.startToken = builder.parser.la;
 					if (!ishatch)
 						builder.stack.Push(null); // push a marker
 				}
@@ -1011,9 +1083,9 @@ public class Parser : Parserbase {
 								builder.parser.SemErr(string.Format("unexpected error in Prime(t): {0}", ex.Message));
 							} 
 						}
-						builder.hatch(t, literal, name, islist);
+						builder.hatch(startToken, t, literal, name, islist);
 					} else {
-						builder.sendup(t, literal, name, islist);
+						builder.sendup(startToken, t, literal, name, islist);
 						builder.mergeAt(t);
 					}
 				}

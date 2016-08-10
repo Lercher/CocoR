@@ -100,6 +100,8 @@ namespace WinFormsEditor
             Alternative a = findAlternative(pos);
             if (a == null) return;
 
+            publishAstAt(a.t);
+
             string s = a.t.val;
             if (s.Length > 60) s = s.Substring(0, 60) + " ...";
             System.Console.WriteLine("token \"{0}\"", s);
@@ -195,14 +197,18 @@ namespace WinFormsEditor
                 parser.errors.errorStream = w;
                 parser.Parse();
                 w.WriteLine("\n{0:n0} error(s) detected", parser.errors.count);
-                string astJSON = parser.ast.ToString();
-                socket.send(astJSON);
             }
             textLog.Text = sb.ToString();
             textLog.Select(0, 0);
             textLog.SelectionChanged += logSelectionChanged;            
             listAlternativesAtSelection();
        }
+
+        private void publishAstAt(Token at) {
+            string astJSON = parser.ast.ToString(at);
+            socket.send(astJSON);
+        }
+
 
 /* ------------------------------------- designer code ---------------------------- */
 
