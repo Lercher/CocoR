@@ -154,41 +154,49 @@ Prop =
 	.
 
 Property =
-	"Property" ident       #
+	"Property"  #:typ
+	ident       #:name
 	Type
 	.
 
 InfoProperty =
-	"InfoProperty" ident   #
+	"InfoProperty" #:typ 
+	ident   #:name
 	Type
 	.
 
 APProperty =
-	"APProperty" ident     #
+	"APProperty" #:typ 
+	ident     #:name
 	Type
 	.
 
 List =
-	"List" ident           #
+	"List" #:typ 
+	ident #:name
 	[ As ]
 	.
 
 SelectList =
-	"SelectList" ident     #
+	"SelectList" #:typ 
+	ident     	 #:name
 	As
 	.
 
 FlagsList =
-	"FlagsList" ident      #
+	"FlagsList"	#:typ 
+	ident      #:name
 	Mimics
 	.
 
 LongProperty =
-	"LongProperty" ident   #
+	"LongProperty" #:typ
+	ident   #:name
 	.
 
 InfoLongProperty =
-	"InfoLongProperty" ident #
+	"InfoLongProperty" #:typ
+	ident #:name
 	.
 
 Type =
