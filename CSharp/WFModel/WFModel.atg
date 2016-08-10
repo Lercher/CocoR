@@ -82,7 +82,7 @@ Version =
 Namespace = 
 	SYNC
 	"Namespace" 
-	DottedIdent 
+	DottedIdent ^:namespace
 	.
 	
 EndNamespace =
@@ -91,7 +91,7 @@ EndNamespace =
 	.
 
 DottedIdent = 
-	[ dottedident dot { dottedident dot } ] ident 
+	[ dottedident # dot { dottedident # dot } ] ident # 
 	.
 
 ReaderWriterPrefix = 
@@ -112,9 +112,9 @@ Class =
 	SYNC
 	"Class"               #:typ
 	ident>types           #:name
-	[ Title ]
-	[ Inherits ]
-	[ Via ]
+	[ Title^ ]
+	[ Inherits^]
+	[ Via^ ]
 	Properties            ^^
 	end "Class"
 	.
@@ -125,7 +125,7 @@ Via =
 	.
 	
 Title =
-	braced
+	braced	#
 	.
 	
 Inherits =
@@ -156,37 +156,37 @@ Prop =
 Property =
 	"Property"  #:typ
 	ident       #:name
-	Type
+	Type^
 	.
 
 InfoProperty =
 	"InfoProperty" #:typ 
 	ident   #:name
-	Type
+	Type^
 	.
 
 APProperty =
 	"APProperty" #:typ 
 	ident     #:name
-	Type
+	Type^
 	.
 
 List =
 	"List" #:typ 
 	ident #:name
-	[ As ]
+	[ As^:type ]
 	.
 
 SelectList =
 	"SelectList" #:typ 
 	ident     	 #:name
-	As
+	As^:type
 	.
 
 FlagsList =
 	"FlagsList"	#:typ 
 	ident      #:name
-	Mimics
+	Mimics^:type
 	.
 
 LongProperty =
@@ -201,7 +201,7 @@ InfoLongProperty =
 
 Type =
 	(
-	EmptyType
+	EmptyType #="String"
 	| As
 	| Mimics
 	)
@@ -233,32 +233,32 @@ EmptyType =
 As =
 	"As"
 	(
-	BaseType
-	| ident:types
-	| DottedIdent
+	BaseType 
+	| ident:types #
+	| DottedIdent //^+"." Join with "."
 	)
 	.
 
 BaseType =
-	"double"
-	| "date"
-	| "datetime"
-	| "integer"
-	| "percent"
-	| "percentwithdefault"
-	| "doublewithdefault"
-	| "integerwithdefault"
-	| "n2"
-	| "n0"
-	| "String"
-	| "boolean"
-	| "Guid"
-	| "String()"
-	| "XML"
+	"double" #
+	| "date" #
+	| "datetime" #
+	| "integer" #
+	| "percent" #=double
+	| "percentwithdefault" #
+	| "doublewithdefault" #
+	| "integerwithdefault" #
+	| "n2" #=double
+	| "n0" #=integer
+	| "String" #
+	| "boolean" #
+	| "Guid" #
+	| "String()" #
+	| "XML" #
 	.
 
 Mimics =
-	"Mimics"
+	"Mimics" #="String"
 	MimicsSpec
 	.
 
