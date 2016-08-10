@@ -15,7 +15,7 @@
         header {margin-bottom: 1em; font-size: 120%; font-weight: bolder; }
         footer {margin-top: 1em; }
         section { margin: 0px 5px 0px 5px; }
-        section.column { display: inline-block; width: 25em; vertical-align: top; }
+        section.column { display: inline-block; width: 49%; vertical-align: top; }
         textarea.full { width: 100%; height: 30ex; font-family: monospace;  }
         textarea.half { width: 100%; height: 20ex; font-size: 90%; } 
         code { margin-right: 0.35em; margin-left: 0.35em; }       
@@ -41,6 +41,15 @@ angular.module("dsl").controller("dslController", function ($scope) {
     function onclose() { log("[connection close]"); $scope.ws = null; $scope.$digest(); }
     function onmsg(e) { log(e.data); $scope.AST = JSON.parse(e.data); $scope.$digest();}
 });
+angular.module("dsl").filter("active", function() {
+    return function(input) {
+        var ret = [];
+        for(var i in input)
+            if (input[i].$active)
+                ret.push(input[i]);
+        return ret;
+    }
+});
     </script>
 </head>
 <body ng-app="dsl" ng-controller="dslController">
@@ -50,28 +59,37 @@ angular.module("dsl").controller("dslController", function ($scope) {
 
 
     <section class="column">
-        <h2>TBD calls</h2>
-        <div ng-repeat="c in AST.tbdcall track by $index">
-            call(<code ng-repeat="p in c track by $index" ng-bind="p" class="bg-success"></code>);
+        <div ng-repeat="c in AST.class | active track by name">
+            <div ng-repeat="p in c.properties | active track by p.name">
+                <h2>Reader Code {{c.name}}.{{p.name}}</h2>                
+                <pre><%# Server.HtmlEncode({{c.name}}.{{p.name}}.ToString()) %></pre>
+            </div>
+        </div>
+        <div ng-repeat="c in AST.class | active track by name">
+            <h2>{{c.name}}, alle Eigenschaften</h2>
+            <pre><div ng-repeat="p in c.properties track by p.name">&lt;tr>&lt;td>{{p.name}}&lt;/td> &lt;td><%# Server.HtmlEncode({{c.name}}.{{p.name}}.ToString()) %>&lt;/td>&lt;/tr></div></pre>            
         </div>
     </section>
 
     <section class="column">
-        <h2>Standard calls</h2>
-
-        <div ng-repeat="c in AST.call track by $index">
-            call(<code ng-repeat="p in c track by $index" ng-bind="p" class="bg-success"></code>);
+        <div ng-repeat="c in AST.class | active track by name">
+            <div ng-repeat="p in c.properties | active track by p.name">                
+                <h2>Writer Code {{c.name}}.{{p.name}}</h2>
+                <pre><span>TODO</span></pre>
+                <pre><%# TODO %></pre>
+                <pre>TODO</pre>
+            </div>
         </div>
     </section>
 
     <section>
-        <h2>Raw AST as JSON</h2>
-        <pre ng-bind="AST | json"></pre>
-    </section>
+        <h3><input type="checkbox" ng-model="displayAST"> AST as JSON</h3>
+        <div ng-show="displayAST">
+            <pre ng-bind="AST | json"></pre>
 
-    <section ng-show="log">
-        <h3>Log</h3>
-        <div ng-repeat="v in log track by $index">{{$index}}. {{v}}</div>
+            <h3>Log</h3>
+            <div ng-repeat="v in log track by $index">{{$index}}. {{v}}</div>
+        </div>
     </section>
 
     <footer>
