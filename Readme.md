@@ -488,6 +488,9 @@ Denoted by the symbols `#` (hash - hatch),
   your value is not a valid Coco/R identifier. Commonly used after an optional
   literal terminal symbol.
 
+Note: you can hatch a list of tokens after one Coco/R symbol. However, most of these
+tokens will be named constants. 
+
 Inside the scope of a production, unnamed and equally named hatches
 combine as an unnamed list or a list with the same name. This is even the case
 when any is a list, these lists are merged. Differently named hatches form 
@@ -506,6 +509,14 @@ stack until they can be combined.
 
 * give it a different name with `^^:name` - append `:name`. Without such a name, the
   hatch is named by its preceeding Coco/R symbol.
+
+Some special actions:
+
+* Join list to literal with `+"."` - take the list on top of the stack and form
+  a literal by concatenation with the string after the `+`. Only valid at the
+  production level, i.e. between the production declaration symbol and the `=`
+  mark.
+
 
 ## Token Positions
 

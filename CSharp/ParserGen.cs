@@ -265,8 +265,11 @@ public class ParserGen {
 	}
 
 	void GenAstBuilder(Node p, int indent) {
-		if (needsAST && p.ast != null) {
-			gen.Write("using(astbuilder.createMarker({0}, {1}, {2}, {3}, {4}))  ", tab.Quoted(p.ast.literal), tab.Quoted(p.ast.name), toTF(p.ast.isList), toTF(p.ast.ishatch), toTF(p.ast.primed));
+		if (needsAST && p.asts != null) {
+			foreach(AstOp ast in p.asts) {
+				gen.WriteLine("using(astbuilder.createMarker({0}, {1}, {2}, {3}, {4}))", tab.Quoted(ast.name), tab.Quoted(ast.literal), toTF(ast.isList), toTF(ast.ishatch), toTF(ast.primed));
+				Indent(indent);
+			}
 		}
 	}
 	

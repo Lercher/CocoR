@@ -2,6 +2,8 @@ using System.IO;
 
 
 
+//#define POSITIONS
+
 using System;
 using System.Text;
 using System.Collections;
@@ -783,50 +785,55 @@ const int id = 0;
 
 	void AST‿NT(Node p) {
 		{
-		p.ast = new AstOp(); pgen.needsAST = true; 
+		p.asts = new List<AstOp>(); pgen.needsAST = true; 
 		if (isKind(la, 45)) {
 			ASTSendUp‿NT(p);
 		} else if (isKind(la, 46)) {
 			ASTHatch‿NT(p);
+			while (WeakSeparator(25,21,22) ) {
+				ASTHatch‿NT(p);
+							}
 		} else SynErr(61);
 	}}
 
 	void ASTSendUp‿NT(Node p) {
 		{
+		AstOp ast = p.addAstOp(); 
 		Expect(45); // "^"
-		p.ast.ishatch = false;
+		ast.ishatch = false;
 		string n = p.sym.name;
 		if (n.StartsWith("\"")) n = n.Substring(1, n.Length - 2);
-		p.ast.name = n.ToLower(); 
+		ast.name = n.ToLower(); 
 		
 		if (isKind(la, 45)) {
 			Get();
-			p.ast.isList = true; 
+			ast.isList = true; 
 		}
 		if (isKind(la, 33)) {
 			Get();
-			ASTVal‿NT(out p.ast.name);
+			ASTVal‿NT(out ast.name);
 		}
 	}}
 
 	void ASTHatch‿NT(Node p) {
 		{
+		AstOp ast = p.addAstOp(); 
 		Expect(46); // "#"
-		p.ast.ishatch = true; 
+		ast.ishatch = true; 
 		if (isKind(la, 46)) {
 			Get();
-			p.ast.isList = true; 
+			ast.isList = true; 
 		}
 		if (isKind(la, 6)) {
-			ASTPrime‿NT(p);
+			ASTPrime‿NT(p, ast);
 		}
 		if (isKind(la, 33)) {
 			Get();
-			ASTVal‿NT(out p.ast.name);
+			ASTVal‿NT(out ast.name);
 		}
 		if (isKind(la, 19)) {
 			Get();
-			ASTConst‿NT(p);
+			ASTConst‿NT(ast);
 		}
 	}}
 
@@ -842,10 +849,10 @@ const int id = 0;
 		} else SynErr(62);
 	}}
 
-	void ASTPrime‿NT(Node p) {
+	void ASTPrime‿NT(Node p, AstOp ast) {
 		{
 		Expect(6); // prime
-		p.ast.primed = true;
+		ast.primed = true;
 		if (p.typ != Node.t && p.typ != Node.wt)
 		 SemErr("can only prime terminals");
 		if (pgen.IgnoreSemanticActions)
@@ -854,14 +861,14 @@ const int id = 0;
 		
 	}}
 
-	void ASTConst‿NT(Node p) {
+	void ASTConst‿NT(AstOp ast) {
 		{
-		ASTVal‿NT(out p.ast.literal);
+		ASTVal‿NT(out ast.literal);
 	}}
 
 	void Condition‿NT() {
 		{
-		while (StartOf(21)) {
+		while (StartOf(23)) {
 			if (isKind(la, 24)) {
 				Get();
 				Condition‿NT();
@@ -978,6 +985,8 @@ const int id = 0;
 		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_T, _T,_x,_T,_x, _T,_x,_x,_x, _x,_T,_x,_x, _x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x},
+		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _T,_x,_T,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_T,_x,_x, _x},
 		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}
 
 	};
@@ -1005,9 +1014,14 @@ const int id = 0;
 		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_T, _T,_x,_T,_x, _T,_x,_x,_x, _x,_T,_x,_x, _x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x},
+		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _T,_x,_T,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_T,_x,_x, _x},
 		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}
 
 	};
+
+
+
 } // end Parser
 
 
@@ -1396,7 +1410,5 @@ public class Symboltable {
 			} 
 		}
 	}
-
-
 }
 }

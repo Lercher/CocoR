@@ -138,10 +138,16 @@ public class Node {
 													// (only used in DFA.ConvertToStates)
 	public string   declares;    // t, wt: the symbol declares a new entry to the symboltable with this name
 	public string   declared;    // t, wt: the symbol has to be declared in the symboltable with this name
-	public AstOp	ast;		 // nt, t, wt: AST Operation, # ## ^ ^^
+	public List<AstOp>	asts;		 // nt, t, wt: AST Operations, # ## ^ ^^ +
 
 	public Node(int typ, Symbol sym, int line) {
 		this.typ = typ; this.sym = sym; this.line = line;
+	}
+
+	public AstOp addAstOp() {
+		AstOp ao = new AstOp();
+		asts.Add(ao);
+		return ao;
 	}
 }
 

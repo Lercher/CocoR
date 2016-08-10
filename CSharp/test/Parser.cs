@@ -187,7 +187,8 @@ public class Parser : Parserbase {
 		}
 		addAlt(22); // ITER start
 		while (isKind(la, 22)) {
-			using(astbuilder.createMarker(null, "call", true, false, false))  Call‿NT();
+			using(astbuilder.createMarker("call", null, true, false, false))
+			Call‿NT();
 			addAlt(22); // ITER end
 		}
 		addAlt(19); // ITER start
@@ -235,7 +236,8 @@ public class Parser : Parserbase {
 			} else if (isKind(la, 20)) {
 				Block‿NT();
 			} else {
-				using(astbuilder.createMarker(null, "tbdcall", true, false, false))  Call‿NT();
+				using(astbuilder.createMarker("tbdcall", null, true, false, false))
+				Call‿NT();
 			}
 			addAlt(set0, 2); // ITER end
 		}
@@ -331,14 +333,21 @@ public class Parser : Parserbase {
 		using(astbuilder.createBarrier())
 		{
 		addAlt(22); // T
+		using(astbuilder.createMarker("typ", null, false, true, false))
+		using(astbuilder.createMarker("call1", "call1", false, true, false))
+		using(astbuilder.createMarker("call2", "calla", true, true, false))
+		using(astbuilder.createMarker("call2", "callb", true, true, false))
+		using(astbuilder.createMarker("call2", "callc", true, true, false))
 		Expect(22); // "call"
 		addAlt(16); // T
 		Expect(16); // "("
-		using(astbuilder.createMarker(null, "p", true, true, false))  Param‿NT();
+		using(astbuilder.createMarker("p", null, true, true, false))
+		Param‿NT();
 		addAlt(23); // ITER start
 		while (isKind(la, 23)) {
 			Get();
-			using(astbuilder.createMarker(null, "p", true, true, false))  Param‿NT();
+			using(astbuilder.createMarker("p", null, true, true, false))
+			Param‿NT();
 			addAlt(23); // ITER end
 		}
 		addAlt(17); // T
@@ -1043,8 +1052,8 @@ public class Parser : Parserbase {
 				return somethingMerged;
 			}
 
-			public IDisposable createMarker(string literal, string name, bool islist, bool ishatch, bool primed) {
-				return new Marker(this, literal, name, islist, ishatch, primed);
+			public IDisposable createMarker(string name, string literal, bool islist, bool ishatch, bool primed) {
+				return new Marker(this, name, literal, islist, ishatch, primed);
 			}
 
 			public IDisposable createBarrier() {
@@ -1060,21 +1069,15 @@ public class Parser : Parserbase {
 				public readonly bool primed;
 				public readonly Token startToken;
 
-				public Marker(Builder builder, string literal, string name, bool islist, bool ishatch, bool primed) {
+				public Marker(Builder builder, string name, string literal, bool islist, bool ishatch, bool primed) {
 					this.builder = builder;                
 					this.literal = literal;
 					this.name = name;
 					this.ishatch = ishatch;
 					this.islist = islist;
 					this.primed = primed;
-					this.startToken = builder.parser.la;
-					if (!ishatch)
-						builder.stack.Push(null); // push a marker
-				}
-
-				public void Dispose() {
-					GC.SuppressFinalize(this);
-					Token t = builder.parser.t;				
+					Token t =  builder.parser.la;
+					this.startToken = t;
 					if (ishatch) {
 						if (primed) {
 							try { 
@@ -1083,8 +1086,16 @@ public class Parser : Parserbase {
 								builder.parser.SemErr(string.Format("unexpected error in Prime(t): {0}", ex.Message));
 							} 
 						}
-						builder.hatch(startToken, t, literal, name, islist);
+						builder.hatch(t, t, literal, name, islist);
 					} else {
+						builder.stack.Push(null); // push a marker
+					}
+				}
+
+				public void Dispose() {
+					GC.SuppressFinalize(this);
+					Token t = builder.parser.t;				
+					if (!ishatch) {
 						builder.sendup(startToken, t, literal, name, islist);
 						builder.mergeAt(t);
 					}

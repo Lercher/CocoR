@@ -615,8 +615,8 @@ public class Parser : Parserbase {
 				return somethingMerged;
 			}
 
-			public IDisposable createMarker(string literal, string name, bool islist, bool ishatch, bool primed) {
-				return new Marker(this, literal, name, islist, ishatch, primed);
+			public IDisposable createMarker(string name, string literal, bool islist, bool ishatch, bool primed) {
+				return new Marker(this, name, literal, islist, ishatch, primed);
 			}
 
 			public IDisposable createBarrier() {
@@ -632,21 +632,15 @@ public class Parser : Parserbase {
 				public readonly bool primed;
 				public readonly Token startToken;
 
-				public Marker(Builder builder, string literal, string name, bool islist, bool ishatch, bool primed) {
+				public Marker(Builder builder, string name, string literal, bool islist, bool ishatch, bool primed) {
 					this.builder = builder;                
 					this.literal = literal;
 					this.name = name;
 					this.ishatch = ishatch;
 					this.islist = islist;
 					this.primed = primed;
-					this.startToken = builder.parser.la;
-					if (!ishatch)
-						builder.stack.Push(null); // push a marker
-				}
-
-				public void Dispose() {
-					GC.SuppressFinalize(this);
-					Token t = builder.parser.t;				
+					Token t =  builder.parser.la;
+					this.startToken = t;
 					if (ishatch) {
 						if (primed) {
 							try { 
@@ -655,8 +649,16 @@ public class Parser : Parserbase {
 								builder.parser.SemErr(string.Format("unexpected error in Prime(t): {0}", ex.Message));
 							} 
 						}
-						builder.hatch(startToken, t, literal, name, islist);
+						builder.hatch(t, t, literal, name, islist);
 					} else {
+						builder.stack.Push(null); // push a marker
+					}
+				}
+
+				public void Dispose() {
+					GC.SuppressFinalize(this);
+					Token t = builder.parser.t;				
+					if (!ishatch) {
 						builder.sendup(startToken, t, literal, name, islist);
 						builder.mergeAt(t);
 					}
