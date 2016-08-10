@@ -1,3 +1,5 @@
 *.old
 *.exe
 *.pdb
+/CSharp/*.dll
+/VisualBasic/*.dll
