@@ -3,3 +3,10 @@
 *.pdb
 /CSharp/*.dll
 /VisualBasic/*.dll
+
+Parser.*
+!/CSharp/Parser.cs
+!/VisualBasic/Parser.vb
+Scanner.*
+!/CSharp/Scanner.cs
+!/VisualBasic/Scanner.vb
