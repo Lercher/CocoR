@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>DSL AST projection</title>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.13/angular.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.3.13/angular-sanitize.js"></script>
+    <script src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.13.0.js"></script>
+    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet"/>
+    <style type="text/css">
+        pre {margin: 2ex; font-size: 80%; }
+        body { opacity: 0.9; }
+        td {padding-right: 0.5em; padding-bottom: 0.5ex;}
+        header, footer { margin: 0px 0px 0px 0px; padding: 2em 1em 2em 1em; background-color: #ccc; width: 100%;}
+        header {margin-bottom: 1em; font-size: 120%; font-weight: bolder; }
+        footer {margin-top: 1em; }
+        section { margin: 0px 5px 0px 5px; }
+        section.column { display: inline-block; width: 25em; vertical-align: top; }
+        textarea.full { width: 100%; height: 30ex; font-family: monospace;  }
+        textarea.half { width: 100%; height: 20ex; font-size: 90%; } 
+        code { margin-right: 0.35em; margin-left: 0.35em; }       
+    </style>
+
+    <script>
+"use strict";
+angular.module("dsl", ['ui.bootstrap']);
+angular.module("dsl").controller("dslController", function ($scope) {
+    $scope.log = [];
+    $scope.AST = {};
+    var wsImpl = window.WebSocket || window.MozWebSocket;
+    $scope.ws = new wsImpl('ws://localhost:8181/');
+
+    $scope.ws.onopen = onopen;
+    $scope.ws.onclose = onclose;
+    $scope.ws.onmessage = onmsg;
+    
+
+    // we need to $digest here, b/c angular doesn't watch websocket communication:
+    function log(s) { $scope.log.push(s); $scope.log = $scope.log.slice(-5); }
+    function onopen() { log("[connection open]"); $scope.$digest(); }
+    function onclose() { log("[connection close]"); $scope.ws = null; $scope.$digest(); }
+    function onmsg(e) { log(e.data); $scope.AST = JSON.parse(e.data); $scope.$digest();}
+});
+    </script>
+</head>
+<body ng-app="dsl" ng-controller="dslController">
+    <header>
+        DSL AST projection
+    </header>
+
+
+    <section class="column">
+        <h2>TBD calls</h2>
+        <div ng-repeat="c in AST.tbdcall track by $index">
+            call(<code ng-repeat="p in c track by $index" ng-bind="p" class="bg-success"></code>);
+        </div>
+    </section>
+
+    <section class="column">
+        <h2>Standard calls</h2>
+
+        <div ng-repeat="c in AST.call track by $index">
+            call(<code ng-repeat="p in c track by $index" ng-bind="p" class="bg-success"></code>);
+        </div>
+    </section>
+
+    <section>
+        <h2>Raw AST as JSON</h2>
+        <pre ng-bind="AST | json"></pre>
+    </section>
+
+    <section ng-show="log">
+        <h3>Log</h3>
+        <div ng-repeat="v in log track by $index">{{$index}}. {{v}}</div>
+    </section>
+
+    <footer>
+        Made for <a href="https://github.com/lercher/CocoR" title="sorce code">Coco/R</a>.
+    </footer>
+</body>
+</html>
