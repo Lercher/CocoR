@@ -14,28 +14,21 @@ public class Parserbase {
 
 public class Parser : Parserbase {
 	public const int _EOF = 0; // TOKEN EOF
-	public const int _ident = 1; // TOKEN ident
-	public const int _dottedident = 2; // TOKEN dottedident
-	public const int _number = 3; // TOKEN number
-	public const int _int = 4; // TOKEN int
-	public const int _string = 5; // TOKEN string
-	public const int _braced = 6; // TOKEN braced
-	public const int _bracketed = 7; // TOKEN bracketed
-	public const int _end = 8; // TOKEN end
-	public const int _dot = 9; // TOKEN dot
-	public const int _bar = 10; // TOKEN bar
-	public const int _colon = 11; // TOKEN colon
-	public const int _versionnumber = 12; // TOKEN versionnumber
-	public const int _version = 13; // TOKEN version INHERITS ident
-	public const int _search = 14; // TOKEN search INHERITS ident
-	public const int _select = 15; // TOKEN select INHERITS ident
-	public const int _details = 16; // TOKEN details INHERITS ident
-	public const int _edit = 17; // TOKEN edit INHERITS ident
-	public const int _clear = 18; // TOKEN clear INHERITS ident
-	public const int _keys = 19; // TOKEN keys INHERITS ident
-	public const int _displayname = 20; // TOKEN displayname INHERITS ident
-	public const int _vbident = 21; // TOKEN vbident INHERITS ident
-	public const int maxT = 72;
+	public const int _number = 1; // TOKEN number
+	public const int _ident = 2; // TOKEN ident
+	public const int _keyword = 3; // TOKEN keyword
+	public const int _var = 4; // TOKEN var INHERITS ident
+	public const int _var1 = 5; // TOKEN var1 INHERITS ident
+	public const int _var2 = 6; // TOKEN var2 INHERITS ident
+	public const int _var3 = 7; // TOKEN var3 INHERITS ident
+	public const int _var4 = 8; // TOKEN var4 INHERITS ident
+	public const int _var5 = 9; // TOKEN var5 INHERITS ident
+	public const int _var6 = 10; // TOKEN var6 INHERITS ident
+	public const int _as = 11; // TOKEN as INHERITS ident
+	public const int _t = 12; // TOKEN t INHERITS ident
+	public const int _v = 13; // TOKEN v INHERITS ident
+	public const int _colon = 14; // TOKEN colon
+	public const int maxT = 36;
 
 	const bool _T = true;
 	const bool _x = false;
@@ -51,17 +44,12 @@ public class Parser : Parserbase {
 	public Token la;   // lookahead token
 	int errDist = minErrDist;
 
+	public readonly Symboltable variables;
 	public readonly Symboltable types;
-	public readonly Symboltable enumtypes;
 	public Symboltable symbols(string name) {
+		if (name == "variables") return variables;
 		if (name == "types") return types;
-		if (name == "enumtypes") return enumtypes;
 		return null;
-	}
-
-public override void Prime(Token t) { 
-		if (t.kind == _string || t.kind == _braced || t.kind == _bracketed) 
-		t.val = t.val.Substring(1, t.val.Length - 2);
 	}
 
 
@@ -69,8 +57,11 @@ public override void Prime(Token t) {
 	public Parser(Scanner scanner) {
 		this.scanner = scanner;
 		errors = new Errors();		
-		types = new Symboltable("types", true, false, tokens);
-		enumtypes = new Symboltable("enumtypes", true, false, tokens);
+		variables = new Symboltable("variables", false, false, tokens);
+		types = new Symboltable("types", false, true, tokens);
+		types.Add("string");
+		types.Add("int");
+		types.Add("double");
 		astbuilder = new AST.Builder(this);
 	}
 
@@ -176,260 +167,86 @@ public override void Prime(Token t) {
 	}
 
 	
-	void WFModel‿NT() {
+	void Inheritance‿NT() {
 		using(astbuilder.createBarrier())
+		using(types.createUsageCheck(false, errors, la)) // 0..1
+		using(types.createUsageCheck(true, errors, la)) // 1..N
 		{
-		Version‿NT();
-		Namespace‿NT();
-		addAlt(23); // OPT
-		if (isKind(la, 23)) {
-			ReaderWriterPrefix‿NT();
+		TDBs‿NT();
+		addAlt(15); // ITER start
+		while (isKind(la, 15)) {
+			Get();
+			addAlt(16); // T
+			Expect(16); // "("
+			NumberIdent‿NT();
+			addAlt(17); // T
+			Expect(17); // ")"
+			addAlt(18); // T
+			Expect(18); // ";"
+			addAlt(15); // ITER end
 		}
-		using(astbuilder.createMarker(null, "rootclass", false, false, false))  RootClass‿NT();
+		addAlt(22); // ITER start
+		while (isKind(la, 22)) {
+			using(astbuilder.createMarker(null, "call", true, false, false))  Call‿NT();
+			addAlt(22); // ITER end
+		}
+		addAlt(19); // ITER start
+		while (isKind(la, 19)) {
+			Get();
+			addAlt(12); // ALT
+			addAlt(13); // ALT
+			if (isKind(la, 12)) {
+				Get();
+				if (!types.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "ident", la.val, types.name));
+				addAlt(2); // T
+				addAlt(2, types); // T ident uses symbol table 'types'
+				Expect(2); // ident
+			} else if (isKind(la, 13)) {
+				Get();
+				if (!variables.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "ident", la.val, variables.name));
+				addAlt(2); // T
+				addAlt(2, variables); // T ident uses symbol table 'variables'
+				Expect(2); // ident
+			} else SynErr(37);
+			addAlt(18); // T
+			Expect(18); // ";"
+			addAlt(19); // ITER end
+		}
 		addAlt(set0, 1); // ITER start
 		while (StartOf(1)) {
-			addAlt(26); // ALT
-			addAlt(62); // ALT
-			addAlt(70); // ALT
-			addAlt(69); // ALT
-			if (isKind(la, 26)) {
-				using(astbuilder.createMarker(null, "class", true, false, false))  Class‿NT();
-			} else if (isKind(la, 62)) {
-				using(astbuilder.createMarker(null, "subsystem", true, false, false))  SubSystem‿NT();
-			} else if (isKind(la, 70)) {
-				using(astbuilder.createMarker(null, "enum", true, false, false))  Enum‿NT();
-			} else {
-				using(astbuilder.createMarker(null, "flags", true, false, false))  Flags‿NT();
-			}
+			IdentOrNumber‿NT();
 			addAlt(set0, 1); // ITER end
 		}
-		EndNamespace‿NT();
 	}}
 
-	void Version‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(13); // T
-		Expect(13); // version
-		addAlt(12); // T
-		Expect(12); // versionnumber
-	}}
-
-	void Namespace‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		while (!(isKind(la, 0) || isKind(la, 22))) {SynErr(73); Get();}
-		addAlt(22); // T
-		Expect(22); // "namespace"
-		DottedIdent‿NT();
-	}}
-
-	void ReaderWriterPrefix‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		while (!(isKind(la, 0) || isKind(la, 23))) {SynErr(74); Get();}
-		addAlt(23); // T
-		Expect(23); // "readerwriterprefix"
-		addAlt(1); // T
-		Expect(1); // ident
-	}}
-
-	void RootClass‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		while (!(isKind(la, 0) || isKind(la, 24))) {SynErr(75); Get();}
-		addAlt(24); // T
-		using(astbuilder.createMarker(null, "typ", false, true, false))  Expect(24); // "rootclass"
-		addAlt(25); // T
-		using(astbuilder.createMarker(null, "name", false, true, false))  Expect(25); // "data"
-		using(astbuilder.createMarker(null, "properties", true, false, false))  Properties‿NT();
-		addAlt(8); // T
-		Expect(8); // end
-		addAlt(26); // T
-		Expect(26); // "class"
-	}}
-
-	void Class‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		while (!(isKind(la, 0) || isKind(la, 26))) {SynErr(76); Get();}
-		addAlt(26); // T
-		using(astbuilder.createMarker(null, "typ", false, true, false))  Expect(26); // "class"
-		if (!types.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
-		alternatives.tdeclares = types;
-		addAlt(1); // T
-		using(astbuilder.createMarker(null, "name", false, true, false))  Expect(1); // ident
-		addAlt(6); // OPT
-		if (isKind(la, 6)) {
-			Title‿NT();
-		}
-		addAlt(28); // OPT
-		if (isKind(la, 28)) {
-			Inherits‿NT();
-		}
-		addAlt(27); // OPT
-		if (isKind(la, 27)) {
-			Via‿NT();
-		}
-		using(astbuilder.createMarker(null, "properties", true, false, false))  Properties‿NT();
-		addAlt(8); // T
-		Expect(8); // end
-		addAlt(26); // T
-		Expect(26); // "class"
-	}}
-
-	void SubSystem‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		while (!(isKind(la, 0) || isKind(la, 62))) {SynErr(77); Get();}
-		addAlt(62); // T
-		Expect(62); // "subsystem"
-		if (!types.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
-		alternatives.tdeclares = types;
-		addAlt(1); // T
-		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
-		addAlt(63); // T
-		Expect(63); // "ssname"
-		addAlt(1); // T
-		Expect(1); // ident
-		addAlt(64); // T
-		Expect(64); // "ssconfig"
-		addAlt(1); // T
-		Expect(1); // ident
-		addAlt(65); // T
-		Expect(65); // "sstyp"
-		addAlt(1); // T
-		Expect(1); // ident
-		addAlt(66); // T
-		Expect(66); // "sscommands"
-		SSCommands‿NT();
-		addAlt(67); // OPT
-		if (isKind(la, 67)) {
-			Get();
-			addAlt(5); // T
-			Expect(5); // string
-		}
-		addAlt(68); // OPT
-		if (isKind(la, 68)) {
-			Get();
-			addAlt(5); // T
-			Expect(5); // string
-		}
-		addAlt(30); // ITER start
-		while (isKind(la, 30)) {
-			InfoProperty‿NT();
-			addAlt(30); // ITER end
-		}
-		addAlt(8); // T
-		Expect(8); // end
-		addAlt(62); // T
-		Expect(62); // "subsystem"
-	}}
-
-	void Enum‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		while (!(isKind(la, 0) || isKind(la, 70))) {SynErr(78); Get();}
-		addAlt(70); // T
-		Expect(70); // "enum"
-		if (!enumtypes.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, enumtypes.name));
-		alternatives.tdeclares = enumtypes;
-		addAlt(1); // T
-		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
-		EnumValues‿NT();
-		addAlt(8); // T
-		Expect(8); // end
-		addAlt(70); // T
-		Expect(70); // "enum"
-	}}
-
-	void Flags‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		while (!(isKind(la, 0) || isKind(la, 69))) {SynErr(79); Get();}
-		addAlt(69); // T
-		Expect(69); // "flags"
-		if (!types.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
-		alternatives.tdeclares = types;
-		addAlt(1); // T
-		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
-		addAlt(1); // ITER start
-		while (isKind(la, 1)) {
-			EnumValue‿NT();
-			addAlt(1); // ITER end
-		}
-		addAlt(8); // T
-		Expect(8); // end
-		addAlt(69); // T
-		Expect(69); // "flags"
-	}}
-
-	void EndNamespace‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(8); // T
-		Expect(8); // end
-		addAlt(22); // T
-		Expect(22); // "namespace"
-	}}
-
-	void DottedIdent‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(2); // OPT
-		if (isKind(la, 2)) {
-			Get();
-			addAlt(9); // T
-			Expect(9); // dot
-			addAlt(2); // ITER start
-			while (isKind(la, 2)) {
-				Get();
-				addAlt(9); // T
-				Expect(9); // dot
-				addAlt(2); // ITER end
-			}
-		}
-		addAlt(1); // T
-		Expect(1); // ident
-	}}
-
-	void Properties‿NT() {
+	void TDBs‿NT() {
 		using(astbuilder.createBarrier())
 		{
 		addAlt(set0, 2); // ITER start
 		while (StartOf(2)) {
-			Prop‿NT();
+			addAlt(24); // ALT
+			addAlt(set0, 3); // ALT
+			addAlt(20); // ALT
+			addAlt(22); // ALT
+			if (isKind(la, 24)) {
+				Type‿NT();
+			} else if (StartOf(3)) {
+				Declaration‿NT();
+			} else if (isKind(la, 20)) {
+				Block‿NT();
+			} else {
+				using(astbuilder.createMarker(null, "tbdcall", true, false, false))  Call‿NT();
+			}
 			addAlt(set0, 2); // ITER end
 		}
 	}}
 
-	void Title‿NT() {
+	void NumberIdent‿NT() {
 		using(astbuilder.createBarrier())
 		{
-		addAlt(6); // T
-		Expect(6); // braced
-	}}
-
-	void Inherits‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(28); // T
-		Expect(28); // "inherits"
-		DottedIdent‿NT();
-	}}
-
-	void Via‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(27); // T
-		Expect(27); // "via"
-		DottedIdent‿NT();
-	}}
-
-	void Prop‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		while (!(StartOf(3))) {SynErr(80); Get();}
+		addAlt(26); // ALT
+		addAlt(27); // ALT
+		addAlt(28); // ALT
 		addAlt(29); // ALT
 		addAlt(30); // ALT
 		addAlt(31); // ALT
@@ -437,546 +254,325 @@ public override void Prime(Token t) {
 		addAlt(33); // ALT
 		addAlt(34); // ALT
 		addAlt(35); // ALT
-		addAlt(36); // ALT
+		addAlt(2); // ALT
+		addAlt(2, variables); // ALT ident uses symbol table 'variables'
 		switch (la.kind) {
-		case 29: // "property"
+		case 26: // "0"
 		{
-			Property‿NT();
+			Get();
 			break;
 		}
-		case 30: // "infoproperty"
+		case 27: // "1"
 		{
-			InfoProperty‿NT();
+			Get();
 			break;
 		}
-		case 31: // "approperty"
+		case 28: // "2"
 		{
-			APProperty‿NT();
+			Get();
 			break;
 		}
-		case 32: // "list"
+		case 29: // "3"
 		{
-			List‿NT();
+			Get();
 			break;
 		}
-		case 33: // "selectlist"
+		case 30: // "4"
 		{
-			SelectList‿NT();
+			Get();
 			break;
 		}
-		case 34: // "flagslist"
+		case 31: // "5"
 		{
-			FlagsList‿NT();
+			Get();
 			break;
 		}
-		case 35: // "longproperty"
+		case 32: // "6"
 		{
-			LongProperty‿NT();
+			Get();
 			break;
 		}
-		case 36: // "infolongproperty"
+		case 33: // "7"
 		{
-			InfoLongProperty‿NT();
+			Get();
 			break;
 		}
-		default: SynErr(81); break;
+		case 34: // "8"
+		{
+			Get();
+			break;
+		}
+		case 35: // "9"
+		{
+			Get();
+			break;
+		}
+		case 2: // ident
+		case 4: // var
+		case 5: // var1
+		case 6: // var2
+		case 7: // var3
+		case 8: // var4
+		case 9: // var5
+		case 10: // var6
+		case 11: // as
+		case 12: // t
+		case 13: // v
+		{
+			if (!variables.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "ident", la.val, variables.name));
+			Get();
+			break;
+		}
+		default: SynErr(38); break;
 		}
 	}}
 
-	void Property‿NT() {
+	void Call‿NT() {
 		using(astbuilder.createBarrier())
 		{
-		addAlt(29); // T
-		Expect(29); // "property"
-		addAlt(1); // T
-		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
-		Type‿NT();
-	}}
-
-	void InfoProperty‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(30); // T
-		Expect(30); // "infoproperty"
-		addAlt(1); // T
-		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
-		Type‿NT();
-	}}
-
-	void APProperty‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(31); // T
-		Expect(31); // "approperty"
-		addAlt(1); // T
-		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
-		Type‿NT();
-	}}
-
-	void List‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(32); // T
-		Expect(32); // "list"
-		addAlt(1); // T
-		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
-		addAlt(41); // OPT
-		if (isKind(la, 41)) {
-			As‿NT();
+		addAlt(22); // T
+		Expect(22); // "call"
+		addAlt(16); // T
+		Expect(16); // "("
+		using(astbuilder.createMarker(null, "p", true, true, false))  Param‿NT();
+		addAlt(23); // ITER start
+		while (isKind(la, 23)) {
+			Get();
+			using(astbuilder.createMarker(null, "p", true, true, false))  Param‿NT();
+			addAlt(23); // ITER end
 		}
+		addAlt(17); // T
+		Expect(17); // ")"
+		addAlt(18); // T
+		Expect(18); // ";"
 	}}
 
-	void SelectList‿NT() {
+	void IdentOrNumber‿NT() {
 		using(astbuilder.createBarrier())
 		{
-		addAlt(33); // T
-		Expect(33); // "selectlist"
-		addAlt(1); // T
-		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
-		As‿NT();
-	}}
-
-	void FlagsList‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(34); // T
-		Expect(34); // "flagslist"
-		addAlt(1); // T
-		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
-		Mimics‿NT();
-	}}
-
-	void LongProperty‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(35); // T
-		Expect(35); // "longproperty"
-		addAlt(1); // T
-		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
-	}}
-
-	void InfoLongProperty‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(36); // T
-		Expect(36); // "infolongproperty"
-		addAlt(1); // T
-		using(astbuilder.createMarker(null, null, false, true, false))  Expect(1); // ident
+		addAlt(2); // ALT
+		addAlt(set0, 4); // ALT
+		if (isKind(la, 2)) {
+			Get();
+		} else if (StartOf(4)) {
+			NumberVar‿NT();
+		} else SynErr(39);
 	}}
 
 	void Type‿NT() {
 		using(astbuilder.createBarrier())
 		{
-		addAlt(set0, 4); // ALT
-		addAlt(41); // ALT
-		addAlt(57); // ALT
-		if (StartOf(4)) {
-			EmptyType‿NT();
-		} else if (isKind(la, 41)) {
-			As‿NT();
-		} else if (isKind(la, 57)) {
-			Mimics‿NT();
-		} else SynErr(82);
-		addAlt(37); // OPT
-		if (isKind(la, 37)) {
-			Get();
-			InitValue‿NT();
-		}
-		addAlt(6); // OPT
-		if (isKind(la, 6)) {
-			SampleValue‿NT();
-		}
+		addAlt(24); // T
+		Expect(24); // "type"
+		if (!types.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
+		alternatives.tdeclares = types;
+		addAlt(2); // T
+		Expect(2); // ident
+		addAlt(18); // T
+		Expect(18); // ";"
 	}}
 
-	void As‿NT() {
+	void Declaration‿NT() {
 		using(astbuilder.createBarrier())
 		{
-		addAlt(41); // T
-		Expect(41); // "as"
-		addAlt(set0, 5); // ALT
+		Var‿NT();
+		Ident‿NT();
+		addAlt(new int[] {23, 25}); // ITER start
+		while (isKind(la, 23) || isKind(la, 25)) {
+			Separator‿NT();
+			Ident‿NT();
+			addAlt(new int[] {23, 25}); // ITER end
+		}
+		while (!(isKind(la, 0) || isKind(la, 18))) {SynErr(40); Get();}
+		addAlt(18); // T
+		Expect(18); // ";"
+	}}
+
+	void Block‿NT() {
+		using(astbuilder.createBarrier())
+		using(variables.createScope()) 
+		using(types.createScope()) 
+		{
+		addAlt(20); // T
+		Expect(20); // "{"
+		TDBs‿NT();
+		addAlt(21); // T
+		Expect(21); // "}"
+	}}
+
+	void Param‿NT() {
+		using(astbuilder.createBarrier())
+		{
+		addAlt(2); // ALT
+		addAlt(2, variables); // ALT ident uses symbol table 'variables'
 		addAlt(1); // ALT
-		addAlt(1, types); // ALT ident uses symbol table 'types'
-		addAlt(new int[] {1, 2}); // ALT
-		if (StartOf(5)) {
-			BaseType‿NT();
-		} else if (isKind(la, 1)) {
-			if (!types.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "ident", la.val, types.name));
+		if (isKind(la, 2)) {
+			if (!variables.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "ident", la.val, variables.name));
 			Get();
-		} else if (isKind(la, 1) || isKind(la, 2)) {
-			DottedIdent‿NT();
-		} else SynErr(83);
+		} else if (isKind(la, 1)) {
+			Get();
+		} else SynErr(41);
 	}}
 
-	void Mimics‿NT() {
+	void Var‿NT() {
 		using(astbuilder.createBarrier())
 		{
-		addAlt(57); // T
-		Expect(57); // "mimics"
-		MimicsSpec‿NT();
-	}}
-
-	void EmptyType‿NT() {
-		using(astbuilder.createBarrier())
-		{
-	}}
-
-	void InitValue‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(3); // ALT
 		addAlt(4); // ALT
 		addAlt(5); // ALT
-		addAlt(38); // ALT
-		addAlt(39); // ALT
-		addAlt(40); // ALT
-		addAlt(new int[] {1, 2}); // ALT
+		addAlt(6); // ALT
+		addAlt(7); // ALT
+		addAlt(8); // ALT
+		addAlt(9); // ALT
+		addAlt(10); // ALT
 		switch (la.kind) {
-		case 3: // number
+		case 4: // var
 		{
 			Get();
 			break;
 		}
-		case 4: // int
+		case 5: // var1
 		{
 			Get();
 			break;
 		}
-		case 5: // string
+		case 6: // var2
 		{
 			Get();
 			break;
 		}
-		case 38: // "true"
+		case 7: // var3
 		{
 			Get();
 			break;
 		}
-		case 39: // "false"
+		case 8: // var4
 		{
 			Get();
 			break;
 		}
-		case 40: // "#"
+		case 9: // var5
 		{
 			Get();
-			addAlt(set0, 6); // ITER start
-			while (StartOf(6)) {
+			break;
+		}
+		case 10: // var6
+		{
+			Get();
+			break;
+		}
+		default: SynErr(42); break;
+		}
+	}}
+
+	void Ident‿NT() {
+		using(astbuilder.createBarrier())
+		{
+		if (!variables.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, variables.name));
+		alternatives.tdeclares = variables;
+		addAlt(2); // T
+		Expect(2); // ident
+		addAlt(new int[] {11, 14}); // OPT
+		if (isKind(la, 11) || isKind(la, 14)) {
+			addAlt(11); // ALT
+			addAlt(14); // ALT
+			if (isKind(la, 11)) {
 				Get();
-				addAlt(set0, 6); // ITER end
+			} else {
+				Get();
 			}
-			addAlt(40); // T
-			Expect(40); // "#"
-			break;
-		}
-		case 1: // ident
-		case 2: // dottedident
-		case 13: // version
-		case 14: // search
-		case 15: // select
-		case 16: // details
-		case 17: // edit
-		case 18: // clear
-		case 19: // keys
-		case 20: // displayname
-		case 21: // vbident
-		{
-			FunctionCall‿NT();
-			break;
-		}
-		default: SynErr(84); break;
+			if (!types.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "ident", la.val, types.name));
+			addAlt(2); // T
+			addAlt(2, types); // T ident uses symbol table 'types'
+			Expect(2); // ident
 		}
 	}}
 
-	void SampleValue‿NT() {
+	void Separator‿NT() {
 		using(astbuilder.createBarrier())
 		{
-		addAlt(6); // T
-		Expect(6); // braced
+		addAlt(23); // ALT
+		addAlt(25); // ALT
+		if (isKind(la, 23)) {
+			addAlt(23); // WT
+			ExpectWeak(23, 5); // "," followed by var1
+		} else if (isKind(la, 25)) {
+			addAlt(25); // WT
+			ExpectWeak(25, 5); // "|" followed by var1
+		} else SynErr(43);
 	}}
 
-	void FunctionCall‿NT() {
+	void NumberVar‿NT() {
 		using(astbuilder.createBarrier())
 		{
-		DottedIdent‿NT();
-		addAlt(7); // T
-		Expect(7); // bracketed
-	}}
-
-	void BaseType‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(42); // ALT
-		addAlt(43); // ALT
-		addAlt(44); // ALT
-		addAlt(45); // ALT
-		addAlt(46); // ALT
-		addAlt(47); // ALT
-		addAlt(48); // ALT
-		addAlt(49); // ALT
-		addAlt(50); // ALT
-		addAlt(51); // ALT
-		addAlt(52); // ALT
-		addAlt(53); // ALT
-		addAlt(54); // ALT
-		addAlt(55); // ALT
-		addAlt(56); // ALT
+		addAlt(26); // ALT
+		addAlt(27); // ALT
+		addAlt(28); // ALT
+		addAlt(29); // ALT
+		addAlt(30); // ALT
+		addAlt(31); // ALT
+		addAlt(32); // ALT
+		addAlt(33); // ALT
+		addAlt(34); // ALT
+		addAlt(35); // ALT
+		addAlt(4); // ALT
 		switch (la.kind) {
-		case 42: // "double"
+		case 26: // "0"
 		{
 			Get();
 			break;
 		}
-		case 43: // "date"
+		case 27: // "1"
 		{
 			Get();
 			break;
 		}
-		case 44: // "datetime"
+		case 28: // "2"
 		{
 			Get();
 			break;
 		}
-		case 45: // "integer"
+		case 29: // "3"
 		{
 			Get();
 			break;
 		}
-		case 46: // "percent"
+		case 30: // "4"
 		{
 			Get();
 			break;
 		}
-		case 47: // "percentwithdefault"
+		case 31: // "5"
 		{
 			Get();
 			break;
 		}
-		case 48: // "doublewithdefault"
+		case 32: // "6"
 		{
 			Get();
 			break;
 		}
-		case 49: // "integerwithdefault"
+		case 33: // "7"
 		{
 			Get();
 			break;
 		}
-		case 50: // "n2"
+		case 34: // "8"
 		{
 			Get();
 			break;
 		}
-		case 51: // "n0"
+		case 35: // "9"
 		{
 			Get();
 			break;
 		}
-		case 52: // "string"
+		case 4: // var
 		{
 			Get();
 			break;
 		}
-		case 53: // "boolean"
-		{
-			Get();
-			break;
+		default: SynErr(44); break;
 		}
-		case 54: // "guid"
-		{
-			Get();
-			break;
-		}
-		case 55: // "string()"
-		{
-			Get();
-			break;
-		}
-		case 56: // "xml"
-		{
-			Get();
-			break;
-		}
-		default: SynErr(85); break;
-		}
-	}}
-
-	void MimicsSpec‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(58); // ALT
-		addAlt(59); // ALT
-		addAlt(60); // ALT
-		addAlt(61); // ALT
-		addAlt(1); // ALT
-		addAlt(1, enumtypes); // ALT ident uses symbol table 'enumtypes'
-		if (isKind(la, 58)) {
-			Query‿NT();
-		} else if (isKind(la, 59)) {
-			Txt‿NT();
-		} else if (isKind(la, 60)) {
-			XL‿NT();
-		} else if (isKind(la, 61)) {
-			Ref‿NT();
-		} else if (isKind(la, 1)) {
-			if (!enumtypes.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, "ident", la.val, enumtypes.name));
-			Get();
-		} else SynErr(86);
-	}}
-
-	void Query‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(58); // T
-		Expect(58); // "query"
-		addAlt(11); // T
-		Expect(11); // colon
-		addAlt(2); // T
-		Expect(2); // dottedident
-		addAlt(9); // T
-		Expect(9); // dot
-		addAlt(1); // T
-		Expect(1); // ident
-		addAlt(11); // T
-		Expect(11); // colon
-		StringOrIdent‿NT();
-	}}
-
-	void Txt‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(59); // T
-		Expect(59); // "txt"
-		addAlt(11); // T
-		Expect(11); // colon
-		addAlt(2); // T
-		Expect(2); // dottedident
-		addAlt(9); // T
-		Expect(9); // dot
-		addAlt(1); // T
-		Expect(1); // ident
-		addAlt(11); // T
-		Expect(11); // colon
-		StringOrIdent‿NT();
-	}}
-
-	void XL‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(60); // T
-		Expect(60); // "xl"
-		addAlt(11); // T
-		Expect(11); // colon
-		addAlt(2); // T
-		Expect(2); // dottedident
-		addAlt(9); // T
-		Expect(9); // dot
-		addAlt(1); // T
-		Expect(1); // ident
-		addAlt(11); // T
-		Expect(11); // colon
-		StringOrIdent‿NT();
-	}}
-
-	void Ref‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(61); // T
-		Expect(61); // "ref"
-		addAlt(11); // T
-		Expect(11); // colon
-		addAlt(19); // ALT
-		addAlt(20); // ALT
-		if (isKind(la, 19)) {
-			Get();
-		} else if (isKind(la, 20)) {
-			Get();
-		} else SynErr(87);
-		addAlt(11); // T
-		Expect(11); // colon
-		StringOrIdent‿NT();
-	}}
-
-	void StringOrIdent‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(5); // ALT
-		addAlt(new int[] {1, 2}); // ALT
-		if (isKind(la, 5)) {
-			Get();
-		} else if (isKind(la, 1) || isKind(la, 2)) {
-			DottedIdent‿NT();
-		} else SynErr(88);
-	}}
-
-	void SSCommands‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		SSCommand‿NT();
-		addAlt(10); // ITER start
-		while (isKind(la, 10)) {
-			Get();
-			SSCommand‿NT();
-			addAlt(10); // ITER end
-		}
-	}}
-
-	void SSCommand‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(14); // ALT
-		addAlt(15); // ALT
-		addAlt(16); // ALT
-		addAlt(17); // ALT
-		addAlt(18); // ALT
-		if (isKind(la, 14)) {
-			Get();
-		} else if (isKind(la, 15)) {
-			Get();
-		} else if (isKind(la, 16)) {
-			Get();
-		} else if (isKind(la, 17)) {
-			Get();
-		} else if (isKind(la, 18)) {
-			Get();
-		} else SynErr(89);
-	}}
-
-	void EnumValue‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(1); // T
-		Expect(1); // ident
-		addAlt(37); // OPT
-		if (isKind(la, 37)) {
-			EnumIntValue‿NT();
-		}
-	}}
-
-	void EnumValues‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(1); // ITER start
-		while (isKind(la, 1)) {
-			EnumValue‿NT();
-			addAlt(1); // ITER end
-		}
-		addAlt(71); // T
-		Expect(71); // "default"
-		EnumValue‿NT();
-		addAlt(1); // ITER start
-		while (isKind(la, 1)) {
-			EnumValue‿NT();
-			addAlt(1); // ITER end
-		}
-	}}
-
-	void EnumIntValue‿NT() {
-		using(astbuilder.createBarrier())
-		{
-		addAlt(37); // T
-		Expect(37); // "="
-		addAlt(4); // T
-		Expect(4); // int
 	}}
 
 
@@ -985,50 +581,44 @@ public override void Prime(Token t) {
 		la = new Token();
 		la.val = "";
 		Get();
-		WFModel‿NT();
+		Inheritance‿NT();
 		Expect(0);
+		variables.CheckDeclared(errors);
 		types.CheckDeclared(errors);
-		enumtypes.CheckDeclared(errors);
 		
 	}
 	
 	// a token's base type
 	public static readonly int[] tBase = {
-		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1, 1, 1, 1,  1, 1, 1, 1,
-		 1, 1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
-		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
-		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1
+		-1,-1,-1,-1,  2, 2, 2, 2,  2, 2, 2, 2,  2, 2,-1,-1, -1,-1,-1,-1,
+		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1
 	};
 
 	// a token's name
 	public static readonly string[] tName = {
-		"EOF","ident","dottedident","number", "int","string","braced","bracketed", "\"end\"","\".\"","\"|\"","\":\"", "versionnumber","\"version\"","\"search\"","\"select\"", "\"details\"","\"edit\"","\"clear\"","\"keys\"",
-		"\"displayname\"","vbident","\"namespace\"","\"readerwriterprefix\"", "\"rootclass\"","\"data\"","\"class\"","\"via\"", "\"inherits\"","\"property\"","\"infoproperty\"","\"approperty\"", "\"list\"","\"selectlist\"","\"flagslist\"","\"longproperty\"", "\"infolongproperty\"","\"=\"","\"true\"","\"false\"",
-		"\"#\"","\"as\"","\"double\"","\"date\"", "\"datetime\"","\"integer\"","\"percent\"","\"percentwithdefault\"", "\"doublewithdefault\"","\"integerwithdefault\"","\"n2\"","\"n0\"", "\"string\"","\"boolean\"","\"guid\"","\"string()\"", "\"xml\"","\"mimics\"","\"query\"","\"txt\"",
-		"\"xl\"","\"ref\"","\"subsystem\"","\"ssname\"", "\"ssconfig\"","\"sstyp\"","\"sscommands\"","\"sskey\"", "\"ssclear\"","\"flags\"","\"enum\"","\"default\"", "???"
+		"EOF","number","ident","\"keyword\"", "\"var\"","\"var1\"","\"var2\"","\"var3\"", "\"var4\"","\"var5\"","\"var6\"","\"as\"", "\"t\"","\"v\"","\":\"","\"NumberIdent\"", "\"(\"","\")\"","\";\"","\"check\"",
+		"\"{\"","\"}\"","\"call\"","\",\"", "\"type\"","\"|\"","\"0\"","\"1\"", "\"2\"","\"3\"","\"4\"","\"5\"", "\"6\"","\"7\"","\"8\"","\"9\"", "???"
 	};
 
 	// states that a particular production (1st index) can start with a particular token (2nd index)
 	static readonly bool[,] set0 = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_x,_T,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_T,_T,_x, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_T,_T,_x, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
-		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x}
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_x},
+		{_T,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x}
 
 	};
 
 	// as set0 but with token inheritance taken into account
 	static readonly bool[,] set = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_x,_T,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_T,_T,_x, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_T,_T,_x, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
-		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
-		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x}
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_x,_T,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_x},
+		{_x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_x},
+		{_T,_x,_T,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x}
 
 	};
 
@@ -1531,95 +1121,50 @@ public class Errors {
 		string s;
 		switch (n) {
 			case 0: s = "EOF expected"; break;
-			case 1: s = "ident expected"; break;
-			case 2: s = "dottedident expected"; break;
-			case 3: s = "number expected"; break;
-			case 4: s = "int expected"; break;
-			case 5: s = "string expected"; break;
-			case 6: s = "braced expected"; break;
-			case 7: s = "bracketed expected"; break;
-			case 8: s = "end expected"; break;
-			case 9: s = "dot expected"; break;
-			case 10: s = "bar expected"; break;
-			case 11: s = "colon expected"; break;
-			case 12: s = "versionnumber expected"; break;
-			case 13: s = "version expected"; break;
-			case 14: s = "search expected"; break;
-			case 15: s = "select expected"; break;
-			case 16: s = "details expected"; break;
-			case 17: s = "edit expected"; break;
-			case 18: s = "clear expected"; break;
-			case 19: s = "keys expected"; break;
-			case 20: s = "displayname expected"; break;
-			case 21: s = "vbident expected"; break;
-			case 22: s = "\"namespace\" expected"; break;
-			case 23: s = "\"readerwriterprefix\" expected"; break;
-			case 24: s = "\"rootclass\" expected"; break;
-			case 25: s = "\"data\" expected"; break;
-			case 26: s = "\"class\" expected"; break;
-			case 27: s = "\"via\" expected"; break;
-			case 28: s = "\"inherits\" expected"; break;
-			case 29: s = "\"property\" expected"; break;
-			case 30: s = "\"infoproperty\" expected"; break;
-			case 31: s = "\"approperty\" expected"; break;
-			case 32: s = "\"list\" expected"; break;
-			case 33: s = "\"selectlist\" expected"; break;
-			case 34: s = "\"flagslist\" expected"; break;
-			case 35: s = "\"longproperty\" expected"; break;
-			case 36: s = "\"infolongproperty\" expected"; break;
-			case 37: s = "\"=\" expected"; break;
-			case 38: s = "\"true\" expected"; break;
-			case 39: s = "\"false\" expected"; break;
-			case 40: s = "\"#\" expected"; break;
-			case 41: s = "\"as\" expected"; break;
-			case 42: s = "\"double\" expected"; break;
-			case 43: s = "\"date\" expected"; break;
-			case 44: s = "\"datetime\" expected"; break;
-			case 45: s = "\"integer\" expected"; break;
-			case 46: s = "\"percent\" expected"; break;
-			case 47: s = "\"percentwithdefault\" expected"; break;
-			case 48: s = "\"doublewithdefault\" expected"; break;
-			case 49: s = "\"integerwithdefault\" expected"; break;
-			case 50: s = "\"n2\" expected"; break;
-			case 51: s = "\"n0\" expected"; break;
-			case 52: s = "\"string\" expected"; break;
-			case 53: s = "\"boolean\" expected"; break;
-			case 54: s = "\"guid\" expected"; break;
-			case 55: s = "\"string()\" expected"; break;
-			case 56: s = "\"xml\" expected"; break;
-			case 57: s = "\"mimics\" expected"; break;
-			case 58: s = "\"query\" expected"; break;
-			case 59: s = "\"txt\" expected"; break;
-			case 60: s = "\"xl\" expected"; break;
-			case 61: s = "\"ref\" expected"; break;
-			case 62: s = "\"subsystem\" expected"; break;
-			case 63: s = "\"ssname\" expected"; break;
-			case 64: s = "\"ssconfig\" expected"; break;
-			case 65: s = "\"sstyp\" expected"; break;
-			case 66: s = "\"sscommands\" expected"; break;
-			case 67: s = "\"sskey\" expected"; break;
-			case 68: s = "\"ssclear\" expected"; break;
-			case 69: s = "\"flags\" expected"; break;
-			case 70: s = "\"enum\" expected"; break;
-			case 71: s = "\"default\" expected"; break;
-			case 72: s = "??? expected"; break;
-			case 73: s = "this symbol not expected in Namespace"; break;
-			case 74: s = "this symbol not expected in ReaderWriterPrefix"; break;
-			case 75: s = "this symbol not expected in RootClass"; break;
-			case 76: s = "this symbol not expected in Class"; break;
-			case 77: s = "this symbol not expected in SubSystem"; break;
-			case 78: s = "this symbol not expected in Enum"; break;
-			case 79: s = "this symbol not expected in Flags"; break;
-			case 80: s = "this symbol not expected in Prop"; break;
-			case 81: s = "invalid Prop"; break;
-			case 82: s = "invalid Type"; break;
-			case 83: s = "invalid As"; break;
-			case 84: s = "invalid InitValue"; break;
-			case 85: s = "invalid BaseType"; break;
-			case 86: s = "invalid MimicsSpec"; break;
-			case 87: s = "invalid Ref"; break;
-			case 88: s = "invalid StringOrIdent"; break;
-			case 89: s = "invalid SSCommand"; break;
+			case 1: s = "number expected"; break;
+			case 2: s = "ident expected"; break;
+			case 3: s = "keyword expected"; break;
+			case 4: s = "var expected"; break;
+			case 5: s = "var1 expected"; break;
+			case 6: s = "var2 expected"; break;
+			case 7: s = "var3 expected"; break;
+			case 8: s = "var4 expected"; break;
+			case 9: s = "var5 expected"; break;
+			case 10: s = "var6 expected"; break;
+			case 11: s = "as expected"; break;
+			case 12: s = "t expected"; break;
+			case 13: s = "v expected"; break;
+			case 14: s = "colon expected"; break;
+			case 15: s = "\"NumberIdent\" expected"; break;
+			case 16: s = "\"(\" expected"; break;
+			case 17: s = "\")\" expected"; break;
+			case 18: s = "\";\" expected"; break;
+			case 19: s = "\"check\" expected"; break;
+			case 20: s = "\"{\" expected"; break;
+			case 21: s = "\"}\" expected"; break;
+			case 22: s = "\"call\" expected"; break;
+			case 23: s = "\",\" expected"; break;
+			case 24: s = "\"type\" expected"; break;
+			case 25: s = "\"|\" expected"; break;
+			case 26: s = "\"0\" expected"; break;
+			case 27: s = "\"1\" expected"; break;
+			case 28: s = "\"2\" expected"; break;
+			case 29: s = "\"3\" expected"; break;
+			case 30: s = "\"4\" expected"; break;
+			case 31: s = "\"5\" expected"; break;
+			case 32: s = "\"6\" expected"; break;
+			case 33: s = "\"7\" expected"; break;
+			case 34: s = "\"8\" expected"; break;
+			case 35: s = "\"9\" expected"; break;
+			case 36: s = "??? expected"; break;
+			case 37: s = "invalid Inheritance"; break;
+			case 38: s = "invalid NumberIdent"; break;
+			case 39: s = "invalid IdentOrNumber"; break;
+			case 40: s = "this symbol not expected in Declaration"; break;
+			case 41: s = "invalid Param"; break;
+			case 42: s = "invalid Var"; break;
+			case 43: s = "invalid Separator"; break;
+			case 44: s = "invalid NumberVar"; break;
 
 			default: s = "error " + n; break;
 		}
