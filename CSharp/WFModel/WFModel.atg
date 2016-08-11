@@ -61,9 +61,9 @@ SYMBOLTABLES
 PRODUCTIONS
 
 WFModel =
-	Version
-	Namespace
-	[ ReaderWriterPrefix ]
+	Version^
+	Namespace^
+	[ ReaderWriterPrefix^ ]
 	RootClass^
 	{
 	Class^^
@@ -76,13 +76,13 @@ WFModel =
 
 Version =
 	version
-	versionnumber
+	versionnumber #
 	.
 
 Namespace = 
 	SYNC
 	"Namespace" 
-	DottedIdent ^:namespace
+	DottedIdent
 	.
 	
 EndNamespace =
@@ -94,28 +94,32 @@ DottedIdent +"." =
 	[ dottedident # dot { dottedident # dot } ] ident # 
 	.
 
+DottedIdentBare = 
+	[ dottedident dot { dottedident dot } ] ident 
+	.
+
 ReaderWriterPrefix = 
 	SYNC
 	"ReaderWriterPrefix"
-	ident
+	ident #
 	.
 
 RootClass =
 	SYNC
-	"RootClass"		      #:typ
-	"Data"                #:name
-	Properties            ^^
+	"RootClass" #:typ
+	"Data" #:name
+	Properties^^
 	end "Class"
 	.
 	
 Class =
 	SYNC
-	"Class"               #:typ
-	ident>types           #:name
+	"Class" #:typ
+	ident>types #:name
 	[ Title^ ]
 	[ Inherits^]
 	[ Via^ ]
-	Properties            ^^
+	Properties^^
 	end "Class"
 	.
 
@@ -154,62 +158,62 @@ Prop =
 	.
 
 Property =
-	"Property"  #:typ
-	ident       #:name
+	"Property"      #:writeable=t
+	ident           #:name
 	Type^
 	.
 
 InfoProperty =
-	"InfoProperty" #:typ 
-	ident   #:name
+	"InfoProperty"   #:writeable=f 
+	ident            #:name
 	Type^
 	.
 
 APProperty =
-	"APProperty" #:typ 
-	ident     #:name
+	"APProperty" 	#:writeable=t, #:autopostback=t 
+	ident           #:name
 	Type^
 	.
 
 List =
-	"List" #:typ 
-	ident #:name
+	"List"          #:list=t
+	ident           #:name
 	[ As^:type ]
 	.
 
 SelectList =
-	"SelectList" #:typ 
-	ident     	 #:name
+	"SelectList"    #:list=t, #:select=t 
+	ident     	    #:name
 	As^:type
 	.
 
 FlagsList =
-	"FlagsList"	#:typ 
-	ident      #:name
+	"FlagsList"		#:list=t, #:flags=t 
+	ident           #:name
 	Mimics^:type
 	.
 
 LongProperty =
-	"LongProperty" #:typ
-	ident   #:name
+	"LongProperty"  #:writeable=t, #:long=t
+	ident           #:name
 	.
 
 InfoLongProperty =
-	"InfoLongProperty" #:typ
-	ident #:name
+	"InfoLongProperty" #:writeable=f, #:long=t
+	ident              #:name
 	.
 
 Type =
 	(
-	EmptyType #="String"
+	EmptyType #:basic=String
 	| As
 	| Mimics
 	)
-	[ "=" InitValue ]
-	[ SampleValue ]
+	[ "=" InitValue^ ]
+	[ SampleValue^ ]
 	.
 
-InitValue =
+InitValue+ =
 	number 
 	| int 
 	| string
@@ -220,22 +224,21 @@ InitValue =
 	.
 
 FunctionCall =
-	DottedIdent bracketed
+	DottedIdentBare bracketed
 	.
 
 SampleValue =
-	braced
+	braced #'
 	.
 
-EmptyType =
-	.
+EmptyType = .
 	
 As =
 	"As"
 	(
-	BaseType 
-	| ident:types #
-	| DottedIdent
+	BaseType      ^:basic
+	| ident:types #:basic
+	| DottedIdent ^:basic
 	)
 	.
 
@@ -258,11 +261,11 @@ BaseType =
 	.
 
 Mimics =
-	"Mimics" #="String"
-	MimicsSpec
+	"Mimics" #:basic=String
+	MimicsSpec^
 	.
 
-MimicsSpec =
+MimicsSpec+ =
 	(
 	Query
 	| Txt
@@ -304,28 +307,28 @@ Ref =
 
 StringOrIdent =
 	string
-	| DottedIdent
+	| DottedIdentBare
 	.
 	
 	
 SubSystem = 
 	SYNC
 	"SubSystem" 
-	ident>types #
-	"SSName" ident
-	"SSConfig" ident
-	"SSTyp" ident
-	"SSCommands" SSCommands
-	[ "SSKey" string ]
-	[ "SSClear" string ] 
-	{ InfoProperty }
+	ident>types #:name
+	"SSName" ident #:ssname
+	"SSConfig" ident #:ssconfig
+	"SSTyp" ident #:sstyp
+	"SSCommands" SSCommands^^
+	[ "SSKey" string #':sskey ]
+	[ "SSClear" string #':ssclear ] 
+	{ InfoProperty^^:properties }
 	end "SubSystem"
 	.
 
 SSCommands = 
-	SSCommand 
+	SSCommand ##
 	{ 
-	bar SSCommand 
+	bar SSCommand ## 
 	}
 	.
 	
