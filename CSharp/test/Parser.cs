@@ -173,26 +173,20 @@ public class Parser : Parserbase {
 		using(types.createUsageCheck(true, errors, la)) // 1..N
 		{
 		TDBs‿NT();
-		addAlt(15); // ITER start
-		while (isKind(la, 15)) {
-			Get();
-			addAlt(16); // T
-			Expect(16); // "("
-			NumberIdent‿NT();
-			addAlt(17); // T
-			Expect(17); // ")"
-			addAlt(18); // T
-			Expect(18); // ";"
-			addAlt(15); // ITER end
-		}
 		addAlt(22); // ITER start
 		while (isKind(la, 22)) {
-			using(astbuilder.createMarker("call", null, true, false, false))
-			Call‿NT();
+			using(astbuilder.createMarker("numberidentcall", null, true, false, false))
+			NumberIdentCall‿NT();
 			addAlt(22); // ITER end
 		}
 		addAlt(19); // ITER start
 		while (isKind(la, 19)) {
+			using(astbuilder.createMarker("call", null, true, false, false))
+			Call‿NT();
+			addAlt(19); // ITER end
+		}
+		addAlt(15); // ITER start
+		while (isKind(la, 15)) {
 			Get();
 			addAlt(12); // ALT
 			addAlt(13); // ALT
@@ -209,9 +203,9 @@ public class Parser : Parserbase {
 				addAlt(2, variables); // T ident uses symbol table 'variables'
 				Expect(2); // ident
 			} else SynErr(37);
-			addAlt(18); // T
-			Expect(18); // ";"
-			addAlt(19); // ITER end
+			addAlt(16); // T
+			Expect(16); // ";"
+			addAlt(15); // ITER end
 		}
 		addAlt(set0, 1); // ITER start
 		while (StartOf(1)) {
@@ -227,19 +221,122 @@ public class Parser : Parserbase {
 		while (StartOf(2)) {
 			addAlt(24); // ALT
 			addAlt(set0, 3); // ALT
-			addAlt(20); // ALT
-			addAlt(22); // ALT
+			addAlt(17); // ALT
+			addAlt(19); // ALT
 			if (isKind(la, 24)) {
 				Type‿NT("new type declared: ");
 			} else if (StartOf(3)) {
 				Declaration‿NT();
-			} else if (isKind(la, 20)) {
+			} else if (isKind(la, 17)) {
 				Block‿NT();
 			} else {
 				using(astbuilder.createMarker("tbdcall", null, true, false, false))
 				Call‿NT();
 			}
 			addAlt(set0, 2); // ITER end
+		}
+	}}
+
+	void NumberIdentCall‿NT() {
+		using(astbuilder.createBarrier(""))
+		{
+		addAlt(22); // T
+		Expect(22); // "NumberIdent"
+		addAlt(20); // T
+		Expect(20); // "("
+		NumberIdent‿NT();
+		addAlt(21); // T
+		Expect(21); // ")"
+		addAlt(16); // T
+		Expect(16); // ";"
+	}}
+
+	void Call‿NT() {
+		using(astbuilder.createBarrier(null))
+		{
+		addAlt(19); // T
+		using(astbuilder.createMarker("typ", null, false, true, false))
+		using(astbuilder.createMarker("call1", "call1", false, true, false))
+		using(astbuilder.createMarker("call2", "calla", true, true, false))
+		using(astbuilder.createMarker("call2", "callb", true, true, false))
+		using(astbuilder.createMarker("call2", "callc", true, true, false))
+		Expect(19); // "call"
+		Console.Write("[call"); 
+		addAlt(20); // T
+		Expect(20); // "("
+		Params‿NT();
+		addAlt(21); // T
+		Expect(21); // ")"
+		Console.Write("] "); 
+		addAlt(16); // T
+		Expect(16); // ";"
+	}}
+
+	void IdentOrNumber‿NT() {
+		using(astbuilder.createBarrier(null))
+		{
+		addAlt(2); // ALT
+		addAlt(set0, 4); // ALT
+		if (isKind(la, 2)) {
+			Get();
+		} else if (StartOf(4)) {
+			NumberVar‿NT();
+		} else SynErr(38);
+	}}
+
+	void Type‿NT(string fmt) {
+		using(astbuilder.createBarrier(null))
+		{
+		addAlt(24); // T
+		Expect(24); // "type"
+		if (!types.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
+		alternatives.tdeclares = types;
+		addAlt(2); // T
+		Expect(2); // ident
+		Console.WriteLine("{0}{1}", fmt, t.val); 
+		addAlt(16); // T
+		Expect(16); // ";"
+	}}
+
+	void Declaration‿NT() {
+		using(astbuilder.createBarrier(null))
+		{
+		Var‿NT();
+		Ident‿NT();
+		addAlt(new int[] {23, 25}); // ITER start
+		while (isKind(la, 23) || isKind(la, 25)) {
+			Separator‿NT();
+			Ident‿NT();
+			addAlt(new int[] {23, 25}); // ITER end
+		}
+		while (!(isKind(la, 0) || isKind(la, 16))) {SynErr(39); Get();}
+		addAlt(16); // T
+		Expect(16); // ";"
+	}}
+
+	void Block‿NT() {
+		using(astbuilder.createBarrier(null))
+		using(variables.createScope()) 
+		using(types.createScope()) 
+		{
+		addAlt(17); // T
+		Expect(17); // "{"
+		TDBs‿NT();
+		addAlt(18); // T
+		Expect(18); // "}"
+	}}
+
+	void Params‿NT() {
+		using(astbuilder.createBarrier(", "))
+		{
+		using(astbuilder.createMarker("p", null, true, true, false))
+		Param‿NT();
+		addAlt(23); // ITER start
+		while (isKind(la, 23)) {
+			Get();
+			using(astbuilder.createMarker("p", null, true, true, false))
+			Param‿NT();
+			addAlt(23); // ITER end
 		}
 	}}
 
@@ -325,96 +422,7 @@ public class Parser : Parserbase {
 			Get();
 			break;
 		}
-		default: SynErr(38); break;
-		}
-	}}
-
-	void Call‿NT() {
-		using(astbuilder.createBarrier(null))
-		{
-		addAlt(22); // T
-		using(astbuilder.createMarker("typ", null, false, true, false))
-		using(astbuilder.createMarker("call1", "call1", false, true, false))
-		using(astbuilder.createMarker("call2", "calla", true, true, false))
-		using(astbuilder.createMarker("call2", "callb", true, true, false))
-		using(astbuilder.createMarker("call2", "callc", true, true, false))
-		Expect(22); // "call"
-		Console.Write("[call"); 
-		addAlt(16); // T
-		Expect(16); // "("
-		Params‿NT();
-		addAlt(17); // T
-		Expect(17); // ")"
-		Console.Write("] "); 
-		addAlt(18); // T
-		Expect(18); // ";"
-	}}
-
-	void IdentOrNumber‿NT() {
-		using(astbuilder.createBarrier(null))
-		{
-		addAlt(2); // ALT
-		addAlt(set0, 4); // ALT
-		if (isKind(la, 2)) {
-			Get();
-		} else if (StartOf(4)) {
-			NumberVar‿NT();
-		} else SynErr(39);
-	}}
-
-	void Type‿NT(string fmt) {
-		using(astbuilder.createBarrier(null))
-		{
-		addAlt(24); // T
-		Expect(24); // "type"
-		if (!types.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, types.name));
-		alternatives.tdeclares = types;
-		addAlt(2); // T
-		Expect(2); // ident
-		Console.WriteLine("{0}{1}", fmt, t.val); 
-		addAlt(18); // T
-		Expect(18); // ";"
-	}}
-
-	void Declaration‿NT() {
-		using(astbuilder.createBarrier(null))
-		{
-		Var‿NT();
-		Ident‿NT();
-		addAlt(new int[] {23, 25}); // ITER start
-		while (isKind(la, 23) || isKind(la, 25)) {
-			Separator‿NT();
-			Ident‿NT();
-			addAlt(new int[] {23, 25}); // ITER end
-		}
-		while (!(isKind(la, 0) || isKind(la, 18))) {SynErr(40); Get();}
-		addAlt(18); // T
-		Expect(18); // ";"
-	}}
-
-	void Block‿NT() {
-		using(astbuilder.createBarrier(null))
-		using(variables.createScope()) 
-		using(types.createScope()) 
-		{
-		addAlt(20); // T
-		Expect(20); // "{"
-		TDBs‿NT();
-		addAlt(21); // T
-		Expect(21); // "}"
-	}}
-
-	void Params‿NT() {
-		using(astbuilder.createBarrier(", "))
-		{
-		using(astbuilder.createMarker("p", null, true, true, false))
-		Param‿NT();
-		addAlt(23); // ITER start
-		while (isKind(la, 23)) {
-			Get();
-			using(astbuilder.createMarker("p", null, true, true, false))
-			Param‿NT();
-			addAlt(23); // ITER end
+		default: SynErr(40); break;
 		}
 	}}
 
@@ -614,29 +622,29 @@ public class Parser : Parserbase {
 
 	// a token's name
 	public static readonly string[] tName = {
-		"EOF","number","ident","\"keyword\"", "\"var\"","\"var1\"","\"var2\"","\"var3\"", "\"var4\"","\"var5\"","\"var6\"","\"as\"", "\"t\"","\"v\"","\":\"","\"NumberIdent\"", "\"(\"","\")\"","\";\"","\"check\"",
-		"\"{\"","\"}\"","\"call\"","\",\"", "\"type\"","\"|\"","\"0\"","\"1\"", "\"2\"","\"3\"","\"4\"","\"5\"", "\"6\"","\"7\"","\"8\"","\"9\"", "???"
+		"EOF","number","ident","\"keyword\"", "\"var\"","\"var1\"","\"var2\"","\"var3\"", "\"var4\"","\"var5\"","\"var6\"","\"as\"", "\"t\"","\"v\"","\":\"","\"check\"", "\";\"","\"{\"","\"}\"","\"call\"",
+		"\"(\"","\")\"","\"NumberIdent\"","\",\"", "\"type\"","\"|\"","\"0\"","\"1\"", "\"2\"","\"3\"","\"4\"","\"5\"", "\"6\"","\"7\"","\"8\"","\"9\"", "???"
 	};
 
 	// states that a particular production (1st index) can start with a particular token (2nd index)
 	static readonly bool[,] set0 = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_x},
-		{_T,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x}
+		{_T,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x}
 
 	};
 
 	// as set0 but with token inheritance taken into account
 	static readonly bool[,] set = {
-		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_T,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_x},
-		{_x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_T,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
+		{_x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x,_T,_x,_T, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _T,_T,_T,_T, _T,_T,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x},
 		{_x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x,_x},
-		{_T,_x,_T,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x}
+		{_T,_x,_T,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x}
 
 	};
 
@@ -1027,14 +1035,23 @@ public class Parser : Parserbase {
 					stack.Push(e);
 			}
 
-			private void join(string joinwith) {
+			private void join(string joinwith, Token s, Token t, Token la) {
 				E e = currentE;
-				if (e == null)
-					parser.SemErr("cannot join here: AST stack is empty.");
+				if (e == null) {
+					e = new E();
+					string source = parser.scanner.buffer.GetString(s.pos, la.pos);
+					while (source.EndsWith("\r") || source.EndsWith("\n"))
+						source = source.Substring(0, source.Length - 1);
+					source = source.Trim();
+					e.ast = new ASTLiteral(source);
+					e.ast.startToken = s;
+					e.ast.endToken = t;
+					push(e);
+				}
 				else if (e.ast is ASTList) 
 					e.join(joinwith);
 				else
-					parser.SemErr("cannot join here: AST stack top is not an ASTList.");
+					parser.SemErr("cannot join here: AST stack is neither empty nor stack top is an ASTList.");
 			}
 
 			private void mergeAt(Token t) {
@@ -1087,12 +1104,9 @@ public class Parser : Parserbase {
 				return somethingMerged;
 			}
 
+
 			public IDisposable createMarker(string name, string literal, bool islist, bool ishatch, bool primed) {
 				return new Marker(this, name, literal, islist, ishatch, primed);
-			}
-
-			public IDisposable createBarrier(string joinwith) {
-				return new Barrier(this, joinwith);
 			}
 
 			private class Marker : IDisposable {
@@ -1137,13 +1151,20 @@ public class Parser : Parserbase {
 				}
 			}
 
+
+			public IDisposable createBarrier(string joinwith) {
+				return new Barrier(this, joinwith);
+			}
+
 			private class Barrier : IDisposable {
 				public readonly Builder builder;
+				public readonly Token startToken;
 				public readonly string joinwith;
 
 				public Barrier(Builder builder, string joinwith) {
 					this.builder = builder;     
 					this.joinwith = joinwith;
+					this.startToken = builder.parser.la;
 					builder.stack.Push(null); // push a marker
 				}
 
@@ -1152,7 +1173,7 @@ public class Parser : Parserbase {
 					Token t = builder.parser.t;
 					builder.mergeAt(t);
 					if (joinwith != null)
-						builder.join(joinwith);		
+						builder.join(joinwith, startToken, t, builder.parser.la);		
 				}
 			}
 		}
@@ -1185,14 +1206,14 @@ public class Errors {
 			case 12: s = "t expected"; break;
 			case 13: s = "v expected"; break;
 			case 14: s = "colon expected"; break;
-			case 15: s = "\"NumberIdent\" expected"; break;
-			case 16: s = "\"(\" expected"; break;
-			case 17: s = "\")\" expected"; break;
-			case 18: s = "\";\" expected"; break;
-			case 19: s = "\"check\" expected"; break;
-			case 20: s = "\"{\" expected"; break;
-			case 21: s = "\"}\" expected"; break;
-			case 22: s = "\"call\" expected"; break;
+			case 15: s = "\"check\" expected"; break;
+			case 16: s = "\";\" expected"; break;
+			case 17: s = "\"{\" expected"; break;
+			case 18: s = "\"}\" expected"; break;
+			case 19: s = "\"call\" expected"; break;
+			case 20: s = "\"(\" expected"; break;
+			case 21: s = "\")\" expected"; break;
+			case 22: s = "\"NumberIdent\" expected"; break;
 			case 23: s = "\",\" expected"; break;
 			case 24: s = "\"type\" expected"; break;
 			case 25: s = "\"|\" expected"; break;
@@ -1208,9 +1229,9 @@ public class Errors {
 			case 35: s = "\"9\" expected"; break;
 			case 36: s = "??? expected"; break;
 			case 37: s = "invalid Inheritance"; break;
-			case 38: s = "invalid NumberIdent"; break;
-			case 39: s = "invalid IdentOrNumber"; break;
-			case 40: s = "this symbol not expected in Declaration"; break;
+			case 38: s = "invalid IdentOrNumber"; break;
+			case 39: s = "this symbol not expected in Declaration"; break;
+			case 40: s = "invalid NumberIdent"; break;
 			case 41: s = "invalid Param"; break;
 			case 42: s = "invalid Var"; break;
 			case 43: s = "invalid Separator"; break;
