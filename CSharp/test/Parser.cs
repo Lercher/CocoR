@@ -168,7 +168,7 @@ public class Parser : Parserbase {
 
 	
 	void Inheritance‿NT() {
-		using(astbuilder.createBarrier())
+		using(astbuilder.createBarrier(null))
 		using(types.createUsageCheck(false, errors, la)) // 0..1
 		using(types.createUsageCheck(true, errors, la)) // 1..N
 		{
@@ -187,7 +187,8 @@ public class Parser : Parserbase {
 		}
 		addAlt(22); // ITER start
 		while (isKind(la, 22)) {
-			using(astbuilder.createMarker(null, "call", true, false, false))  Call‿NT();
+			using(astbuilder.createMarker("call", null, true, false, false))
+			Call‿NT();
 			addAlt(22); // ITER end
 		}
 		addAlt(19); // ITER start
@@ -220,7 +221,7 @@ public class Parser : Parserbase {
 	}}
 
 	void TDBs‿NT() {
-		using(astbuilder.createBarrier())
+		using(astbuilder.createBarrier(null))
 		{
 		addAlt(set0, 2); // ITER start
 		while (StartOf(2)) {
@@ -229,20 +230,21 @@ public class Parser : Parserbase {
 			addAlt(20); // ALT
 			addAlt(22); // ALT
 			if (isKind(la, 24)) {
-				Type‿NT();
+				Type‿NT("new type declared: ");
 			} else if (StartOf(3)) {
 				Declaration‿NT();
 			} else if (isKind(la, 20)) {
 				Block‿NT();
 			} else {
-				using(astbuilder.createMarker(null, "tbdcall", true, false, false))  Call‿NT();
+				using(astbuilder.createMarker("tbdcall", null, true, false, false))
+				Call‿NT();
 			}
 			addAlt(set0, 2); // ITER end
 		}
 	}}
 
 	void NumberIdent‿NT() {
-		using(astbuilder.createBarrier())
+		using(astbuilder.createBarrier(null))
 		{
 		addAlt(26); // ALT
 		addAlt(27); // ALT
@@ -328,27 +330,28 @@ public class Parser : Parserbase {
 	}}
 
 	void Call‿NT() {
-		using(astbuilder.createBarrier())
+		using(astbuilder.createBarrier(null))
 		{
 		addAlt(22); // T
+		using(astbuilder.createMarker("typ", null, false, true, false))
+		using(astbuilder.createMarker("call1", "call1", false, true, false))
+		using(astbuilder.createMarker("call2", "calla", true, true, false))
+		using(astbuilder.createMarker("call2", "callb", true, true, false))
+		using(astbuilder.createMarker("call2", "callc", true, true, false))
 		Expect(22); // "call"
+		Console.Write("[call"); 
 		addAlt(16); // T
 		Expect(16); // "("
-		using(astbuilder.createMarker(null, "p", true, true, false))  Param‿NT();
-		addAlt(23); // ITER start
-		while (isKind(la, 23)) {
-			Get();
-			using(astbuilder.createMarker(null, "p", true, true, false))  Param‿NT();
-			addAlt(23); // ITER end
-		}
+		Params‿NT();
 		addAlt(17); // T
 		Expect(17); // ")"
+		Console.Write("] "); 
 		addAlt(18); // T
 		Expect(18); // ";"
 	}}
 
 	void IdentOrNumber‿NT() {
-		using(astbuilder.createBarrier())
+		using(astbuilder.createBarrier(null))
 		{
 		addAlt(2); // ALT
 		addAlt(set0, 4); // ALT
@@ -359,8 +362,8 @@ public class Parser : Parserbase {
 		} else SynErr(39);
 	}}
 
-	void Type‿NT() {
-		using(astbuilder.createBarrier())
+	void Type‿NT(string fmt) {
+		using(astbuilder.createBarrier(null))
 		{
 		addAlt(24); // T
 		Expect(24); // "type"
@@ -368,12 +371,13 @@ public class Parser : Parserbase {
 		alternatives.tdeclares = types;
 		addAlt(2); // T
 		Expect(2); // ident
+		Console.WriteLine("{0}{1}", fmt, t.val); 
 		addAlt(18); // T
 		Expect(18); // ";"
 	}}
 
 	void Declaration‿NT() {
-		using(astbuilder.createBarrier())
+		using(astbuilder.createBarrier(null))
 		{
 		Var‿NT();
 		Ident‿NT();
@@ -389,7 +393,7 @@ public class Parser : Parserbase {
 	}}
 
 	void Block‿NT() {
-		using(astbuilder.createBarrier())
+		using(astbuilder.createBarrier(null))
 		using(variables.createScope()) 
 		using(types.createScope()) 
 		{
@@ -400,8 +404,22 @@ public class Parser : Parserbase {
 		Expect(21); // "}"
 	}}
 
+	void Params‿NT() {
+		using(astbuilder.createBarrier(", "))
+		{
+		using(astbuilder.createMarker("p", null, true, true, false))
+		Param‿NT();
+		addAlt(23); // ITER start
+		while (isKind(la, 23)) {
+			Get();
+			using(astbuilder.createMarker("p", null, true, true, false))
+			Param‿NT();
+			addAlt(23); // ITER end
+		}
+	}}
+
 	void Param‿NT() {
-		using(astbuilder.createBarrier())
+		using(astbuilder.createBarrier(null))
 		{
 		addAlt(2); // ALT
 		addAlt(2, variables); // ALT ident uses symbol table 'variables'
@@ -415,7 +433,7 @@ public class Parser : Parserbase {
 	}}
 
 	void Var‿NT() {
-		using(astbuilder.createBarrier())
+		using(astbuilder.createBarrier(null))
 		{
 		addAlt(4); // ALT
 		addAlt(5); // ALT
@@ -465,7 +483,7 @@ public class Parser : Parserbase {
 	}}
 
 	void Ident‿NT() {
-		using(astbuilder.createBarrier())
+		using(astbuilder.createBarrier(null))
 		{
 		if (!variables.Add(la)) SemErr(la, string.Format(DuplicateSymbol, "ident", la.val, variables.name));
 		alternatives.tdeclares = variables;
@@ -488,7 +506,7 @@ public class Parser : Parserbase {
 	}}
 
 	void Separator‿NT() {
-		using(astbuilder.createBarrier())
+		using(astbuilder.createBarrier(null))
 		{
 		addAlt(23); // ALT
 		addAlt(25); // ALT
@@ -502,7 +520,7 @@ public class Parser : Parserbase {
 	}}
 
 	void NumberVar‿NT() {
-		using(astbuilder.createBarrier())
+		using(astbuilder.createBarrier(null))
 		{
 		addAlt(26); // ALT
 		addAlt(27); // ALT
@@ -635,7 +653,7 @@ public class Parser : Parserbase {
 		protected abstract void serialize(StringBuilder sb, int indent, Token at);
 		public virtual bool merge(E e) { return false; }
 		public Token startToken = null;
-		public Token endToken = null;		
+		public Token endToken = null;
 		
 	#region Formatting
 		public static void newline(int indent, StringBuilder sb) {
@@ -710,11 +728,13 @@ public class Parser : Parserbase {
 
 	#endregion
 
+
 		private abstract class ASTThrows : AST {
-			public override string val { get { throw new ApplicationException("not a literal"); } }
 			public override AST this[int i] { get { throw new ApplicationException("not a list"); } }
 			public override AST this[string s] { get { throw new ApplicationException("not an object"); } }
+			public override string val { get { return count.ToString(); } }
 		}
+
 
 		private class ASTLiteral : ASTThrows {
 			public ASTLiteral(string s) { _val = s; }
@@ -730,6 +750,7 @@ public class Parser : Parserbase {
 				addPos(sb);
 			}
 		}
+
 
 		private class ASTList : ASTThrows {
 			public readonly List<AST> list;
@@ -801,6 +822,7 @@ public class Parser : Parserbase {
 
 		}
 
+
 		private class ASTObject : ASTThrows {
 			private readonly Dictionary<string,AST> ht = new Dictionary<string,AST>();
 
@@ -862,6 +884,7 @@ public class Parser : Parserbase {
 			}
 		}
 
+
 		public class E {
 			public string name = null;
 			public AST ast = null;
@@ -897,6 +920,16 @@ public class Parser : Parserbase {
 				return null;
 			}
 
+			public void join(string joinwith) {
+				if (ast == null || !(ast is ASTList)) return;
+				StringBuilder sb = new StringBuilder(); 
+				for(int i = 0; i < ast.count; i++) {
+					if (i > 0) sb.Append(joinwith);
+					sb.Append(ast[i].val);
+				}
+				ast = new ASTLiteral(sb.ToString());
+			}
+
 			public void wrapinlist(bool merge) {			
 				if (ast == null) { 
 					ast = new ASTList();
@@ -906,6 +939,7 @@ public class Parser : Parserbase {
 				ast = new ASTList(ast, 1);
 			}
 		}
+
 
 		public class Builder {
 			public readonly Parser parser;
@@ -993,6 +1027,16 @@ public class Parser : Parserbase {
 					stack.Push(e);
 			}
 
+			private void join(string joinwith) {
+				E e = currentE;
+				if (e == null)
+					parser.SemErr("cannot join here: AST stack is empty.");
+				else if (e.ast is ASTList) 
+					e.join(joinwith);
+				else
+					parser.SemErr("cannot join here: AST stack top is not an ASTList.");
+			}
+
 			private void mergeAt(Token t) {
 				while(mergeToNull(t))
 					/**/;
@@ -1043,12 +1087,12 @@ public class Parser : Parserbase {
 				return somethingMerged;
 			}
 
-			public IDisposable createMarker(string literal, string name, bool islist, bool ishatch, bool primed) {
-				return new Marker(this, literal, name, islist, ishatch, primed);
+			public IDisposable createMarker(string name, string literal, bool islist, bool ishatch, bool primed) {
+				return new Marker(this, name, literal, islist, ishatch, primed);
 			}
 
-			public IDisposable createBarrier() {
-				return new Barrier(this);
+			public IDisposable createBarrier(string joinwith) {
+				return new Barrier(this, joinwith);
 			}
 
 			private class Marker : IDisposable {
@@ -1060,21 +1104,15 @@ public class Parser : Parserbase {
 				public readonly bool primed;
 				public readonly Token startToken;
 
-				public Marker(Builder builder, string literal, string name, bool islist, bool ishatch, bool primed) {
+				public Marker(Builder builder, string name, string literal, bool islist, bool ishatch, bool primed) {
 					this.builder = builder;                
 					this.literal = literal;
 					this.name = name;
 					this.ishatch = ishatch;
 					this.islist = islist;
 					this.primed = primed;
-					this.startToken = builder.parser.la;
-					if (!ishatch)
-						builder.stack.Push(null); // push a marker
-				}
-
-				public void Dispose() {
-					GC.SuppressFinalize(this);
-					Token t = builder.parser.t;				
+					Token t =  builder.parser.la;
+					this.startToken = t;
 					if (ishatch) {
 						if (primed) {
 							try { 
@@ -1083,8 +1121,16 @@ public class Parser : Parserbase {
 								builder.parser.SemErr(string.Format("unexpected error in Prime(t): {0}", ex.Message));
 							} 
 						}
-						builder.hatch(startToken, t, literal, name, islist);
+						builder.hatch(t, t, literal, name, islist);
 					} else {
+						builder.stack.Push(null); // push a marker
+					}
+				}
+
+				public void Dispose() {
+					GC.SuppressFinalize(this);
+					Token t = builder.parser.t;				
+					if (!ishatch) {
 						builder.sendup(startToken, t, literal, name, islist);
 						builder.mergeAt(t);
 					}
@@ -1093,16 +1139,20 @@ public class Parser : Parserbase {
 
 			private class Barrier : IDisposable {
 				public readonly Builder builder;
+				public readonly string joinwith;
 
-				public Barrier(Builder builder) {
-					this.builder = builder;             
+				public Barrier(Builder builder, string joinwith) {
+					this.builder = builder;     
+					this.joinwith = joinwith;
 					builder.stack.Push(null); // push a marker
 				}
 
 				public void Dispose() {
 					GC.SuppressFinalize(this);
 					Token t = builder.parser.t;
-					builder.mergeAt(t);				
+					builder.mergeAt(t);
+					if (joinwith != null)
+						builder.join(joinwith);		
 				}
 			}
 		}

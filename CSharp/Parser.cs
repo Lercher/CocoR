@@ -2,6 +2,8 @@ using System.IO;
 
 
 
+//#define POSITIONS
+
 using System;
 using System.Text;
 using System.Collections;
@@ -236,6 +238,9 @@ const int id = 0;
 			 if (noAttrs != (sym.attrPos == null))
 			   SemErr("attribute mismatch between declaration and use of this symbol");
 			
+			if (isKind(la, 29)) {
+				ASTJoin‿NT(sym);
+			}
 			if (isKind(la, 23)) {
 				ScopesDecl‿NT(sym);
 			}
@@ -406,8 +411,7 @@ const int id = 0;
 		}
 		while (isKind(la, 3)) {
 			Get();
-			string predef = t.val;
-			predef = tab.Unescape(predef.Substring(1, predef.Length-2));
+			string predef = tab.Unstring(t.val);
 			if (dfa.ignoreCase) predef = predef.ToLower();
 			st.Add(predef);
 			
@@ -446,6 +450,13 @@ const int id = 0;
 			if (t.pos > beg)
 			 sym.attrPos = new Position(beg, t.pos, col, line); 
 		} else SynErr(55);
+	}}
+
+	void ASTJoin‿NT(Symbol sym) {
+		{
+		Expect(29); // "+"
+		Expect(3); // string
+		sym.astjoinwith = tab.Unstring(t.val); 
 	}}
 
 	void ScopesDecl‿NT(Symbol sym) {
@@ -540,8 +551,7 @@ const int id = 0;
 			
 		} else if (isKind(la, 3)) {
 			Get();
-			string name = t.val;
-			name = tab.Unescape(name.Substring(1, name.Length-2));
+			string name = tab.Unstring(t.val);
 			foreach (char ch in name)
 			 if (dfa.ignoreCase) s.Set(char.ToLower(ch));
 			 else s.Set(ch); 
@@ -562,8 +572,7 @@ const int id = 0;
 	void Char‿NT(out int n) {
 		{
 		Expect(5); // char
-		string name = t.val; n = 0;
-		name = tab.Unescape(name.Substring(1, name.Length-2));
+		string name = tab.Unstring(t.val); n = 0;
 		if (name.Length == 1) n = name[0];
 		else SemErr("unacceptable character value");
 		if (dfa.ignoreCase && (char)n >= 'A' && (char)n <= 'Z') n += 32;
@@ -783,50 +792,55 @@ const int id = 0;
 
 	void AST‿NT(Node p) {
 		{
-		p.ast = new AstOp(); pgen.needsAST = true; 
+		p.asts = new List<AstOp>(); pgen.needsAST = true; 
 		if (isKind(la, 45)) {
 			ASTSendUp‿NT(p);
 		} else if (isKind(la, 46)) {
 			ASTHatch‿NT(p);
+			while (WeakSeparator(25,21,22) ) {
+				ASTHatch‿NT(p);
+							}
 		} else SynErr(61);
 	}}
 
 	void ASTSendUp‿NT(Node p) {
 		{
+		AstOp ast = p.addAstOp(); 
 		Expect(45); // "^"
-		p.ast.ishatch = false;
+		ast.ishatch = false;
 		string n = p.sym.name;
 		if (n.StartsWith("\"")) n = n.Substring(1, n.Length - 2);
-		p.ast.name = n.ToLower(); 
+		ast.name = n.ToLower(); 
 		
 		if (isKind(la, 45)) {
 			Get();
-			p.ast.isList = true; 
+			ast.isList = true; 
 		}
 		if (isKind(la, 33)) {
 			Get();
-			ASTVal‿NT(out p.ast.name);
+			ASTVal‿NT(out ast.name);
 		}
 	}}
 
 	void ASTHatch‿NT(Node p) {
 		{
+		AstOp ast = p.addAstOp(); 
 		Expect(46); // "#"
-		p.ast.ishatch = true; 
+		ast.ishatch = true; 
 		if (isKind(la, 46)) {
 			Get();
-			p.ast.isList = true; 
+			ast.isList = true; 
 		}
 		if (isKind(la, 6)) {
-			ASTPrime‿NT(p);
+			ASTPrime‿NT(p, ast);
 		}
 		if (isKind(la, 33)) {
 			Get();
-			ASTVal‿NT(out p.ast.name);
+			ASTVal‿NT(out ast.name);
 		}
 		if (isKind(la, 19)) {
 			Get();
-			ASTConst‿NT(p);
+			ASTConst‿NT(ast);
 		}
 	}}
 
@@ -838,14 +852,14 @@ const int id = 0;
 			val = t.val; 
 		} else if (isKind(la, 3)) {
 			Get();
-			val = t.val.Substring(1, t.val.Length - 2); 
+			val = tab.Unstring(t.val); 
 		} else SynErr(62);
 	}}
 
-	void ASTPrime‿NT(Node p) {
+	void ASTPrime‿NT(Node p, AstOp ast) {
 		{
 		Expect(6); // prime
-		p.ast.primed = true;
+		ast.primed = true;
 		if (p.typ != Node.t && p.typ != Node.wt)
 		 SemErr("can only prime terminals");
 		if (pgen.IgnoreSemanticActions)
@@ -854,14 +868,14 @@ const int id = 0;
 		
 	}}
 
-	void ASTConst‿NT(Node p) {
+	void ASTConst‿NT(AstOp ast) {
 		{
-		ASTVal‿NT(out p.ast.literal);
+		ASTVal‿NT(out ast.literal);
 	}}
 
 	void Condition‿NT() {
 		{
-		while (StartOf(21)) {
+		while (StartOf(23)) {
 			if (isKind(la, 24)) {
 				Get();
 				Condition‿NT();
@@ -978,6 +992,8 @@ const int id = 0;
 		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_T, _T,_x,_T,_x, _T,_x,_x,_x, _x,_T,_x,_x, _x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x},
+		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _T,_x,_T,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_T,_x,_x, _x},
 		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}
 
 	};
@@ -1005,6 +1021,8 @@ const int id = 0;
 		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_x,_T, _T,_x,_T,_x, _T,_x,_x,_x, _x,_T,_x,_x, _x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_T,_x,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x},
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_T,_T, _T,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x},
+		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_T,_x, _x,_x,_x,_x, _x},
+		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _T,_x,_T,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_T,_x,_x, _x},
 		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}
 
 	};

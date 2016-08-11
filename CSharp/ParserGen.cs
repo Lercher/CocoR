@@ -265,8 +265,11 @@ public class ParserGen {
 	}
 
 	void GenAstBuilder(Node p, int indent) {
-		if (needsAST && p.ast != null) {
-			gen.Write("using(astbuilder.createMarker({0}, {1}, {2}, {3}, {4}))  ", tab.Quoted(p.ast.literal), tab.Quoted(p.ast.name), toTF(p.ast.isList), toTF(p.ast.ishatch), toTF(p.ast.primed));
+		if (needsAST && p.asts != null) {
+			foreach(AstOp ast in p.asts) {
+				gen.WriteLine("using(astbuilder.createMarker({0}, {1}, {2}, {3}, {4}))", tab.Quoted(ast.name), tab.Quoted(ast.literal), toTF(ast.isList), toTF(ast.ishatch), toTF(ast.primed));
+				Indent(indent);
+			}
 		}
 	}
 	
@@ -505,7 +508,7 @@ public class ParserGen {
 			CopySourcePart(sym.attrPos, 0);			
 			gen.WriteLine(") {");
 			if (needsAST)
-				gen.WriteLine("\t\tusing(astbuilder.createBarrier())"); // intentionally no ; !
+				gen.WriteLine("\t\tusing(astbuilder.createBarrier({0}))", tab.Quoted(sym.astjoinwith)); // intentionally no ; !
 			GenUsingSymtabSomething(sym.scopes,   "createScope", "", "");  // needs to be first
 			GenUsingSymtabSomething(sym.useonces, "createUsageCheck", "false, errors, la", "// 0..1"); // needs to be after createScope 
 			GenUsingSymtabSomething(sym.usealls,  "createUsageCheck", "true, errors, la" , "// 1..N");  // needs to be after createScope

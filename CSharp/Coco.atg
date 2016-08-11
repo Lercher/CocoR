@@ -135,6 +135,7 @@ Coco                            (. Symbol sym; Graph g, g1, g2; string gramName;
                                      if (noAttrs != (sym.attrPos == null))
                                        SemErr("attribute mismatch between declaration and use of this symbol");
                                  .)
+    [ ASTJoin<sym> ]
     [ ScopesDecl<sym> ]
     [ UseOnceDecl<sym> ]
     [ UseAllDecl<sym> ]
@@ -194,8 +195,7 @@ SymboltableDecl                 (. SymTab st; .)
                                  .)
   [ "STRICT"                    (. st.strict = true; .)
   ]
-  { string                      (. string predef = t.val;
-                                   predef = tab.Unescape(predef.Substring(1, predef.Length-2));
+  { string                      (. string predef = tab.Unstring(t.val);
                                    if (dfa.ignoreCase) predef = predef.ToLower();
                                    st.Add(predef);
                                  .)
@@ -266,8 +266,7 @@ SimSet<out CharSet s>           (. int n1, n2; .)
 ( ident                         (. CharClass c = tab.FindCharClass(t.val);
                                    if (c == null) SemErr("undefined name"); else s.Or(c.set);
                                  .)
-| string                        (. string name = t.val;
-                                   name = tab.Unescape(name.Substring(1, name.Length-2));
+| string                        (. string name = tab.Unstring(t.val);
                                    foreach (char ch in name)
                                      if (dfa.ignoreCase) s.Set(char.ToLower(ch));
                                      else s.Set(ch); .)
@@ -282,8 +281,7 @@ SimSet<out CharSet s>           (. int n1, n2; .)
 
 Char<out int n>
 =
-  char                          (. string name = t.val; n = 0;
-                                   name = tab.Unescape(name.Substring(1, name.Length-2));
+  char                          (. string name = tab.Unstring(t.val); n = 0;
                                    if (name.Length == 1) n = name[0];
                                    else SemErr("unacceptable character value");
                                    if (dfa.ignoreCase && (char)n >= 'A' && (char)n <= 'Z') n += 32;
@@ -449,40 +447,45 @@ Factor<out Graph g>             (. string name; int kind; Position pos; bool wea
                                  .)
 .
 
-/*------------------------------------------------------------------------------------*/
+/*--- AST ---------------------------------------------------------------------------------*/
 
-AST<Node p>                     (. p.ast = new AstOp(); pgen.needsAST = true; .)
+ASTJoin<Symbol sym>
+= 
+  '+' string                    (. sym.astjoinwith = tab.Unstring(t.val); .) 
+.
+
+AST<Node p>                     (. p.asts = new List<AstOp>(); pgen.needsAST = true; .)
 =
   ASTSendUp<p>
-  | ASTHatch<p>
+  | ASTHatch<p> { WEAK ',' ASTHatch<p> }
 .
 
-ASTSendUp<Node p>
+ASTSendUp<Node p>                (. AstOp ast = p.addAstOp(); .)
 =
-  '^'                            (. p.ast.ishatch = false;
+  '^'                            (. ast.ishatch = false;
                                     string n = p.sym.name;
                                     if (n.StartsWith("\"")) n = n.Substring(1, n.Length - 2);
-                                    p.ast.name = n.ToLower(); 
+                                    ast.name = n.ToLower(); 
                                   .)
-  [ '^'                          (. p.ast.isList = true; .)
+  [ '^'                          (. ast.isList = true; .)
   ]
-  [ ':' ASTVal<out p.ast.name> ]
+  [ ':' ASTVal<out ast.name> ]
 .
 
-ASTHatch<Node p>
+ASTHatch<Node p>                 (. AstOp ast = p.addAstOp(); .)
 =
-  '#'                            (. p.ast.ishatch = true; .)
-  [ '#'                          (. p.ast.isList = true; .)
+  '#'                            (. ast.ishatch = true; .)
+  [ '#'                          (. ast.isList = true; .)
   ]
-  [ ASTPrime<p> ]
-  [ ':' ASTVal<out p.ast.name> ]
-  [ '=' ASTConst<p> ]
+  [ ASTPrime<p, ast> ]
+  [ ':' ASTVal<out ast.name> ]
+  [ '=' ASTConst<ast> ]
 .
 
 
-ASTPrime<Node p>
+ASTPrime<Node p, AstOp ast>
 =
-  prime                          (. p.ast.primed = true;
+  prime                          (. ast.primed = true;
                                     if (p.typ != Node.t && p.typ != Node.wt)
                                       SemErr("can only prime terminals");
                                     if (pgen.IgnoreSemanticActions)
@@ -491,15 +494,15 @@ ASTPrime<Node p>
                                   .)  
 .
 
-ASTConst<Node p>
+ASTConst<AstOp ast>
 =
-  ASTVal<out p.ast.literal>  
+  ASTVal<out ast.literal>  
 .
 
 ASTVal<out string val>           (. val = "?"; .)
 =
     ident                        (. val = t.val; .)           
-    | string                     (. val = t.val.Substring(1, t.val.Length - 2); .)
+    | string                     (. val = tab.Unstring(t.val); .)
 .
 
 /*------------------------------------------------------------------------------------*/
