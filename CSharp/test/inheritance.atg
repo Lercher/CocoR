@@ -64,11 +64,7 @@ PRODUCTIONS
     // any symbol in types has to be used exactly once, produces currently 16 errors
     Inheritance USEONCE(types) USEALL(types) =
          TDBs 
-         {
-           "NumberIdent" '('
-            NumberIdent
-            ')' ';'
-         } 
+         { NumberIdentCall^^ } 
          { Call^^ }
          { "check" ("t" ident:types | "v" ident:variables) ';' }
          { IdentOrNumber }.
@@ -83,6 +79,8 @@ PRODUCTIONS
         ";"
     .
 
+    NumberIdentCall+ = "NumberIdent" '(' NumberIdent ')' ';' .
+    
     Params +", " = Param##:p { "," Param##:p } .
 
     Type<string fmt> = "type" ident>types (. Console.WriteLine("{0}{1}", fmt, t.val); .) ';'.
@@ -99,7 +97,10 @@ PRODUCTIONS
     Separator = (WEAK ',') | (WEAK '|').
     
     // has an opt node, 1st ident declares a name in variables, 2nd ident uses a name in types   
-    Ident = ident>variables [ (as | colon) ident:types ].
+    Ident 
+    = 
+        ident>variables [ (as | colon) ident:types ]
+    .
 
     // This IdentOrNumber declaration forces a StartOf(2) call at Inheritance()
     // with ident as StartOf(2) in the 'set' array but not var..var6 in it

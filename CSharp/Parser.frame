@@ -581,14 +581,21 @@ public class Parser : Parserbase {
 					stack.Push(e);
 			}
 
-			private void join(string joinwith) {
+			private void join(string joinwith, Token s, Token t, Token la) {
 				E e = currentE;
-				if (e == null)
-					parser.SemErr("cannot join here: AST stack is empty.");
+				if (e == null) {
+					e = new E();
+					string source = parser.scanner.buffer.GetString(s.pos, la.pos);
+					source = source.Trim();
+					e.ast = new ASTLiteral(source);
+					e.ast.startToken = s;
+					e.ast.endToken = t;
+					push(e);
+				}
 				else if (e.ast is ASTList) 
 					e.join(joinwith);
 				else
-					parser.SemErr("cannot join here: AST stack top is not an ASTList.");
+					parser.SemErr("cannot join here: AST stack is neither empty nor stack top is an ASTList.");
 			}
 
 			private void mergeAt(Token t) {
@@ -641,12 +648,9 @@ public class Parser : Parserbase {
 				return somethingMerged;
 			}
 
+
 			public IDisposable createMarker(string name, string literal, bool islist, bool ishatch, bool primed) {
 				return new Marker(this, name, literal, islist, ishatch, primed);
-			}
-
-			public IDisposable createBarrier(string joinwith) {
-				return new Barrier(this, joinwith);
 			}
 
 			private class Marker : IDisposable {
@@ -691,13 +695,20 @@ public class Parser : Parserbase {
 				}
 			}
 
+
+			public IDisposable createBarrier(string joinwith) {
+				return new Barrier(this, joinwith);
+			}
+
 			private class Barrier : IDisposable {
 				public readonly Builder builder;
+				public readonly Token startToken;
 				public readonly string joinwith;
 
 				public Barrier(Builder builder, string joinwith) {
 					this.builder = builder;     
 					this.joinwith = joinwith;
+					this.startToken = builder.parser.la;
 					builder.stack.Push(null); // push a marker
 				}
 
@@ -706,7 +717,7 @@ public class Parser : Parserbase {
 					Token t = builder.parser.t;
 					builder.mergeAt(t);
 					if (joinwith != null)
-						builder.join(joinwith);		
+						builder.join(joinwith, startToken, t, builder.parser.la);		
 				}
 			}
 		}

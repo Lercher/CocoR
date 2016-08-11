@@ -515,7 +515,11 @@ Some special actions:
 * Join list to literal with `+"."` - take the list on top of the stack and form
   a literal by concatenation with the string after the `+`. Only valid at the
   production level, i.e. between the production declaration symbol and the `=`
-  mark.
+  mark. The string can be missing, in this case join without a separator.
+
+* Take the source with `+` - when the AST stack is empty, then take the trimmed 
+  source of the production up to the start of the lookahead token `la` including 
+  comments and whitespace.
 
 
 ## Token Positions

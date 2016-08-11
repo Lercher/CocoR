@@ -451,7 +451,9 @@ Factor<out Graph g>             (. string name; int kind; Position pos; bool wea
 
 ASTJoin<Symbol sym>
 = 
-  '+' string                    (. sym.astjoinwith = tab.Unstring(t.val); .) 
+  '+'                        (. sym.astjoinwith = ""; pgen.needsAST = true; .)
+  [string                    (. sym.astjoinwith = tab.Unstring(t.val);.)
+  ] 
 .
 
 AST<Node p>                     (. p.asts = new List<AstOp>(); pgen.needsAST = true; .)

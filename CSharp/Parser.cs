@@ -455,8 +455,11 @@ const int id = 0;
 	void ASTJoin‿NT(Symbol sym) {
 		{
 		Expect(29); // "+"
-		Expect(3); // string
-		sym.astjoinwith = tab.Unstring(t.val); 
+		sym.astjoinwith = ""; pgen.needsAST = true; 
+		if (isKind(la, 3)) {
+			Get();
+			sym.astjoinwith = tab.Unstring(t.val);
+		}
 	}}
 
 	void ScopesDecl‿NT(Symbol sym) {
