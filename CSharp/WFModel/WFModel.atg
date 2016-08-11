@@ -236,33 +236,35 @@ EmptyType = .
 As =
 	"As"
 	(
-	BaseType      ^:basic
+	BaseType
 	| ident:types #:basic
 	| DottedIdent ^:basic
 	)
 	.
 
 BaseType =
-	"double" #
-	| "date" #
-	| "datetime" #
-	| "integer" #
-	| "percent" #=double
-	| "percentwithdefault" #
-	| "doublewithdefault" #
-	| "integerwithdefault" #
-	| "n2" #=double
-	| "n0" #=integer
-	| "String" #
-	| "boolean" #
-	| "Guid" #
-	| "String()" #
-	| "XML" #
+	"double" 				#:basic, 			#:format=c
+	| "date" 				#:basic, 			#:format=d
+	| "datetime"        	#:basic, 			#:format="{0:d} {0:t}"
+	| "integer" 			#:basic, 			#:format=n0
+	| "percent"         	#:basic=double, 	#:format=p
+	| "percentwithdefault" 	#:basic, 			#:format=p
+	| "doublewithdefault"  	#:basic, 			#:format=c
+	| "integerwithdefault" 	#:basic, 			#:format=n0
+	| "n2" 					#:basic=double, 	#:format=n2
+	| "n0" 					#:basic=integer, 	#:format=n0
+	| "String" 				#:basic
+	| "boolean" 			#:basic
+	| "Guid" 				#:basic
+	| "String()" 			#:basic
+	| "XML" 				#:basic
 	.
 
 Mimics =
 	"Mimics" #:basic=String
-	MimicsSpec^
+	( MimicsSpec^
+	| ident:enumtypes #:mimicsspec, #:enum=t
+	)
 	.
 
 MimicsSpec+ =
@@ -271,7 +273,6 @@ MimicsSpec+ =
 	| Txt
 	| XL
 	| Ref
-	| ident:enumtypes
 	).
 
 Query =

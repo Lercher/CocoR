@@ -57,6 +57,14 @@ angular.module("dsl").filter("active", function() {
         DSL AST projection
     </header>
 
+    <section class="column">
+        <div ng-repeat="c in AST.class | active track by name">
+            <div ng-repeat="p in c.properties | active track by p.name">
+                <h2>Active JSON</h2>
+                <pre ng-bind="p | json"></pre>
+            </div>
+        </div>
+    </section>
 
     <section class="column">
         <div ng-repeat="c in AST.class | active track by name">
