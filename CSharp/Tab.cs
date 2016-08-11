@@ -75,7 +75,8 @@ public class Symbol {
 	public Symbol 	inherits;    // optional, token from which this token derives
 	public List<SymTab> scopes;  // nt: optional, list of SymTabs that this NT starts a new scope of
 	public List<SymTab> usealls;  // nt: optional, list of SymTabs that all symbols must be used within
-	public List<SymTab> useonces;  // nt: optional, list of SymTabs that all symbols must be used at most once within
+	public List<SymTab> useonces; // nt: optional, list of SymTabs that all symbols must be used at most once within
+	public string   astjoinwith;  // nt: optional, join a stack top list of ASTLiterals to a single ASTLiteral (+".")
 
 	public Symbol(int typ, string name, int line) {
 		this.typ = typ; this.name = name; this.line = line;
@@ -457,7 +458,7 @@ public class Tab {
 	}
 	
 	public Graph StrToGraph(string str) {
-		string s = Unescape(str.Substring(1, str.Length-2));
+		string s = Unstring(str);
 		if (s.Length == 0) parser.SemErr("empty token not allowed");
 		Graph g = new Graph();
 		g.r = dummyNode;
@@ -884,6 +885,11 @@ public class Tab {
 		StringWriter w = new StringWriter();
 		w.Write("\\u{0:x4}", (int)ch);
 		return w.ToString();
+	}
+
+	public string Unstring(string s) {
+		if (s == null || s.Length < 2) return s;
+		return Unescape(s.Substring(1, s.Length - 2));
 	}
 
 	public string Unescape (string s) {

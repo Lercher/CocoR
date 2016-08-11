@@ -135,6 +135,7 @@ Coco                            (. Symbol sym; Graph g, g1, g2; string gramName;
                                      if (noAttrs != (sym.attrPos == null))
                                        SemErr("attribute mismatch between declaration and use of this symbol");
                                  .)
+    [ ASTJoin<sym> ]
     [ ScopesDecl<sym> ]
     [ UseOnceDecl<sym> ]
     [ UseAllDecl<sym> ]
@@ -194,8 +195,7 @@ SymboltableDecl                 (. SymTab st; .)
                                  .)
   [ "STRICT"                    (. st.strict = true; .)
   ]
-  { string                      (. string predef = t.val;
-                                   predef = tab.Unescape(predef.Substring(1, predef.Length-2));
+  { string                      (. string predef = tab.Unstring(t.val);
                                    if (dfa.ignoreCase) predef = predef.ToLower();
                                    st.Add(predef);
                                  .)
@@ -266,8 +266,7 @@ SimSet<out CharSet s>           (. int n1, n2; .)
 ( ident                         (. CharClass c = tab.FindCharClass(t.val);
                                    if (c == null) SemErr("undefined name"); else s.Or(c.set);
                                  .)
-| string                        (. string name = t.val;
-                                   name = tab.Unescape(name.Substring(1, name.Length-2));
+| string                        (. string name = tab.Unstring(t.val);
                                    foreach (char ch in name)
                                      if (dfa.ignoreCase) s.Set(char.ToLower(ch));
                                      else s.Set(ch); .)
@@ -282,8 +281,7 @@ SimSet<out CharSet s>           (. int n1, n2; .)
 
 Char<out int n>
 =
-  char                          (. string name = t.val; n = 0;
-                                   name = tab.Unescape(name.Substring(1, name.Length-2));
+  char                          (. string name = tab.Unstring(t.val); n = 0;
                                    if (name.Length == 1) n = name[0];
                                    else SemErr("unacceptable character value");
                                    if (dfa.ignoreCase && (char)n >= 'A' && (char)n <= 'Z') n += 32;
@@ -449,7 +447,12 @@ Factor<out Graph g>             (. string name; int kind; Position pos; bool wea
                                  .)
 .
 
-/*------------------------------------------------------------------------------------*/
+/*--- AST ---------------------------------------------------------------------------------*/
+
+ASTJoin<Symbol sym>
+= 
+  '+' string                    (. sym.astjoinwith = tab.Unstring(t.val); .) 
+.
 
 AST<Node p>                     (. p.asts = new List<AstOp>(); pgen.needsAST = true; .)
 =
@@ -499,7 +502,7 @@ ASTConst<AstOp ast>
 ASTVal<out string val>           (. val = "?"; .)
 =
     ident                        (. val = t.val; .)           
-    | string                     (. val = t.val.Substring(1, t.val.Length - 2); .)
+    | string                     (. val = tab.Unstring(t.val); .)
 .
 
 /*------------------------------------------------------------------------------------*/

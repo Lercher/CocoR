@@ -238,6 +238,9 @@ const int id = 0;
 			 if (noAttrs != (sym.attrPos == null))
 			   SemErr("attribute mismatch between declaration and use of this symbol");
 			
+			if (isKind(la, 29)) {
+				ASTJoin‿NT(sym);
+			}
 			if (isKind(la, 23)) {
 				ScopesDecl‿NT(sym);
 			}
@@ -408,8 +411,7 @@ const int id = 0;
 		}
 		while (isKind(la, 3)) {
 			Get();
-			string predef = t.val;
-			predef = tab.Unescape(predef.Substring(1, predef.Length-2));
+			string predef = tab.Unstring(t.val);
 			if (dfa.ignoreCase) predef = predef.ToLower();
 			st.Add(predef);
 			
@@ -448,6 +450,13 @@ const int id = 0;
 			if (t.pos > beg)
 			 sym.attrPos = new Position(beg, t.pos, col, line); 
 		} else SynErr(55);
+	}}
+
+	void ASTJoin‿NT(Symbol sym) {
+		{
+		Expect(29); // "+"
+		Expect(3); // string
+		sym.astjoinwith = tab.Unstring(t.val); 
 	}}
 
 	void ScopesDecl‿NT(Symbol sym) {
@@ -542,8 +551,7 @@ const int id = 0;
 			
 		} else if (isKind(la, 3)) {
 			Get();
-			string name = t.val;
-			name = tab.Unescape(name.Substring(1, name.Length-2));
+			string name = tab.Unstring(t.val);
 			foreach (char ch in name)
 			 if (dfa.ignoreCase) s.Set(char.ToLower(ch));
 			 else s.Set(ch); 
@@ -564,8 +572,7 @@ const int id = 0;
 	void Char‿NT(out int n) {
 		{
 		Expect(5); // char
-		string name = t.val; n = 0;
-		name = tab.Unescape(name.Substring(1, name.Length-2));
+		string name = tab.Unstring(t.val); n = 0;
 		if (name.Length == 1) n = name[0];
 		else SemErr("unacceptable character value");
 		if (dfa.ignoreCase && (char)n >= 'A' && (char)n <= 'Z') n += 32;
@@ -845,7 +852,7 @@ const int id = 0;
 			val = t.val; 
 		} else if (isKind(la, 3)) {
 			Get();
-			val = t.val.Substring(1, t.val.Length - 2); 
+			val = tab.Unstring(t.val); 
 		} else SynErr(62);
 	}}
 

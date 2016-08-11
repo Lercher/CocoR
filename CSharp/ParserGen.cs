@@ -508,7 +508,7 @@ public class ParserGen {
 			CopySourcePart(sym.attrPos, 0);			
 			gen.WriteLine(") {");
 			if (needsAST)
-				gen.WriteLine("\t\tusing(astbuilder.createBarrier())"); // intentionally no ; !
+				gen.WriteLine("\t\tusing(astbuilder.createBarrier({0}))", tab.Quoted(sym.astjoinwith)); // intentionally no ; !
 			GenUsingSymtabSomething(sym.scopes,   "createScope", "", "");  // needs to be first
 			GenUsingSymtabSomething(sym.useonces, "createUsageCheck", "false, errors, la", "// 0..1"); // needs to be after createScope 
 			GenUsingSymtabSomething(sym.usealls,  "createUsageCheck", "true, errors, la" , "// 1..N");  // needs to be after createScope
