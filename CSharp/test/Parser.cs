@@ -670,11 +670,10 @@ public class Parser : Parserbase {
 				sb.Append("  ");
 		}
 
-		public static void escape(string s, StringBuilder sb) {
+		public static void escapeJSON(string s, StringBuilder sb) {
 			foreach (char ch in s) {
 				switch(ch) {
 					case '\\': sb.Append("\\\\"); break;
-					case '\'': sb.Append("\\'"); break;
 					case '\"': sb.Append("\\\""); break;
 					case '\t': sb.Append("\\t"); break;
 					case '\r': sb.Append("\\r"); break;
@@ -753,7 +752,7 @@ public class Parser : Parserbase {
 			protected override void serialize(StringBuilder sb, int indent, Token at)
 			{
 				sb.Append('\"');
-				AST.escape(val, sb);
+				AST.escapeJSON(val, sb);
 				sb.Append('\"');
 				addPos(sb);
 			}
@@ -878,7 +877,7 @@ public class Parser : Parserbase {
 				foreach(string name in ht.Keys) {
 					AST ast = ht[name];
 					sb.Append('\"');
-					AST.escape(name, sb);
+					AST.escapeJSON(name, sb);
 					sb.Append("\": ");
 					ast.serialize(sb, indent + 1, at);
 					n++;
@@ -1040,8 +1039,6 @@ public class Parser : Parserbase {
 				if (e == null) {
 					e = new E();
 					string source = parser.scanner.buffer.GetString(s.pos, la.pos);
-					/*while (source.EndsWith("\r") || source.EndsWith("\n"))
-						source = source.Substring(0, source.Length - 1);*/
 					source = source.Trim();
 					e.ast = new ASTLiteral(source);
 					e.ast.startToken = s;
