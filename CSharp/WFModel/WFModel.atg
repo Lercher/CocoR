@@ -90,7 +90,7 @@ EndNamespace =
 	"Namespace"
 	.
 
-DottedIdent = 
+DottedIdent +"." = 
 	[ dottedident # dot { dottedident # dot } ] ident # 
 	.
 
@@ -235,7 +235,7 @@ As =
 	(
 	BaseType 
 	| ident:types #
-	| DottedIdent //^+"." Join with "."
+	| DottedIdent
 	)
 	.
 
