@@ -491,6 +491,12 @@ public class Parser : Parserbase {
 				if (merge && (ast is ASTList)) return;
 				ast = new ASTList(ast, 1);
 			}
+
+			public void wrapinobject() {
+				ASTObject o = new ASTObject();
+				o.add(this);
+				ast = o;
+			}
 		}
 
 
@@ -555,7 +561,7 @@ public class Parser : Parserbase {
 						bool merge = (e.name == null);
 						e.wrapinlist(merge);
 					} else if (e.name != null)
-						parser.errors.Warning(t.line, t.col, string.Format("overwriting AST objectname '{0}' with '{1}'", e.name, name));
+						e.wrapinobject();
 				}
 				e.name = name;
 				//System.Console.WriteLine("-------------> top {0}", e);
