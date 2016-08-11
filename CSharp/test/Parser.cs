@@ -1040,8 +1040,8 @@ public class Parser : Parserbase {
 				if (e == null) {
 					e = new E();
 					string source = parser.scanner.buffer.GetString(s.pos, la.pos);
-					while (source.EndsWith("\r") || source.EndsWith("\n"))
-						source = source.Substring(0, source.Length - 1);
+					/*while (source.EndsWith("\r") || source.EndsWith("\n"))
+						source = source.Substring(0, source.Length - 1);*/
 					source = source.Trim();
 					e.ast = new ASTLiteral(source);
 					e.ast.startToken = s;
