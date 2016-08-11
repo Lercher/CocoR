@@ -230,7 +230,7 @@ public class Parser : Parserbase {
 			addAlt(20); // ALT
 			addAlt(22); // ALT
 			if (isKind(la, 24)) {
-				Type‿NT();
+				Type‿NT("new type declared: ");
 			} else if (StartOf(3)) {
 				Declaration‿NT();
 			} else if (isKind(la, 20)) {
@@ -339,6 +339,7 @@ public class Parser : Parserbase {
 		using(astbuilder.createMarker("call2", "callb", true, true, false))
 		using(astbuilder.createMarker("call2", "callc", true, true, false))
 		Expect(22); // "call"
+		Console.Write("[call"); 
 		addAlt(16); // T
 		Expect(16); // "("
 		using(astbuilder.createMarker("p", null, true, true, false))
@@ -352,6 +353,7 @@ public class Parser : Parserbase {
 		}
 		addAlt(17); // T
 		Expect(17); // ")"
+		Console.Write("] "); 
 		addAlt(18); // T
 		Expect(18); // ";"
 	}}
@@ -368,7 +370,7 @@ public class Parser : Parserbase {
 		} else SynErr(39);
 	}}
 
-	void Type‿NT() {
+	void Type‿NT(string fmt) {
 		using(astbuilder.createBarrier())
 		{
 		addAlt(24); // T
@@ -377,6 +379,7 @@ public class Parser : Parserbase {
 		alternatives.tdeclares = types;
 		addAlt(2); // T
 		Expect(2); // ident
+		Console.WriteLine("{0}{1}", fmt, t.val); 
 		addAlt(18); // T
 		Expect(18); // ";"
 	}}
