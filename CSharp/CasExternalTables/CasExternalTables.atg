@@ -1,0 +1,48 @@
+// note that we don't have a byte order mark here (visual studio code), 
+// so we need to use Coco's command line switch -utf8:
+// ..\coco CasExternalTables.ATG -frames .. -utf8
+// cls & cd .. & build.bat & cd CasExternalTables & cocbuild
+
+COMPILER CasExternalTables
+
+IGNORECASE
+
+
+CHARACTERS
+    ucletter  = 'A'..'Z'.
+    lcletter  = 'a'..'z'.
+    umlaut    = "ÄÖÜäöüß".  // intentionally no ß (szlig)
+	letter    = ucletter + lcletter + umlaut + '_'.
+    digit     = '0'..'9'. 
+	cr        = '\r'.
+	lf        = '\n'.
+	tab       = '\t'.
+
+TOKENS
+    number = ['-'] digit { digit }.
+	ident = letter { letter }.
+    keyword = "keyword".
+    var  : ident = "var".
+    
+
+COMMENTS FROM "/*" TO "*/" NESTED
+COMMENTS FROM "//" TO lf
+
+IGNORE cr + lf + tab
+
+SYMBOLTABLES
+    // an empty symbol table named 'variables', declarations anywheres
+   variables. 
+
+   // a symbol table named types with three prefilled entries, new declaration upfront
+   types STRICT "string" "int" "double". 
+   
+   // variables.  // symbol table name declared twice
+
+PRODUCTIONS
+
+    // any symbol in types has to be used exactly once, produces currently 16 errors
+    CasExternalTables USEONCE(types) USEALL(types) =
+         { ident | number }.
+
+END CasExternalTables.
