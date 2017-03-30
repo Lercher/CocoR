@@ -20,19 +20,27 @@ public class Inheritance {
         Console.WriteLine();
     }
 
+    static void Line() {
+        Console.WriteLine("----------------------------------------------------------------- ");
+    }
+
 	public static int Main (string[] arg) {
-		Console.WriteLine("Parse update_externaltable.sq syntax");
+        Line();
+		Console.WriteLine("--- Parsing 'update_externaltable.sql syntax'");
+        Line();
         if (arg.Length >= 1)
         {
-            Console.WriteLine("scanning {0} ...", arg[0]);
+            Console.WriteLine("--- scanning {0} ...", arg[0]);
             Scanner scanner = new Scanner(arg[0], true); // is UTF8 source
 			Parser parser = new Parser(scanner);
             parser.Parse();
-            Console.WriteLine("{0} error(s) detected", parser.errors.count);
+            Console.WriteLine("--- {0} error(s) detected", parser.errors.count);
+            Line();
 
-            // list all symbol table values
-            printST(parser.types);
-            printST(parser.variables);
+            // list all known symbol table values (see section SYMBOLTABLES in the *.atg file)
+            printST(parser.languages);
+            printST(parser.deletabletables);
+            printST(parser.columns);
 
             // System.Console.WriteLine("----------------------- AST builder stack ----------------------------");
             // System.Console.WriteLine(parser.astbuilder);

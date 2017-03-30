@@ -11,38 +11,262 @@ IGNORECASE
 CHARACTERS
     ucletter  = 'A'..'Z'.
     lcletter  = 'a'..'z'.
-    umlaut    = "ÄÖÜäöüß".  // intentionally no ß (szlig)
+    umlaut    = "ÄÖÜäöüß".
 	letter    = ucletter + lcletter + umlaut + '_'.
     digit     = '0'..'9'. 
 	cr        = '\r'.
 	lf        = '\n'.
 	tab       = '\t'.
+    quote     = '\''.
+    star      = '*'.
+	stringCh  = ANY - quote - cr - lf.
 
 TOKENS
     number = ['-'] digit { digit }.
 	ident = letter { letter }.
-    keyword = "keyword".
-    var  : ident = "var".
+    set : ident = "set".
+    serveroutput : ident = "serveroutput".
+    on : ident = "on".
+    size : ident = "size".
+    insert : ident = "insert".
+    into : ident = "into".
+    values: ident = "values".    
+    prompt : ident = "prompt". 
+    null : ident = "null".
+    lantusparam : ident = "LANTUSPARAM".
+    tusparam : ident = "TUSPARAM".
+    tusnom : ident = "TUSNOM".    
+    sc = ";".
+    openparen = "(".
+    closeparen = ")".
+    nextblock = "/".
+    dot = ".".
+    comma = ",".
+	string = quote { stringCh | quote quote } quote.
+    stars = star { star }.
     
 
 COMMENTS FROM "/*" TO "*/" NESTED
-COMMENTS FROM "//" TO lf
+COMMENTS FROM "--" TO lf
 
 IGNORE cr + lf + tab
 
-SYMBOLTABLES
-    // an empty symbol table named 'variables', declarations anywheres
-   variables. 
 
-   // a symbol table named types with three prefilled entries, new declaration upfront
-   types STRICT "string" "int" "double". 
-   
-   // variables.  // symbol table name declared twice
+SYMBOLTABLES
+   languages STRICT "'EN'" "'FR'". 
+   deletabletables STRICT "LANTUSPARAM" "TUSPARAM".
+   columns STRICT "TUSNOM".
+
 
 PRODUCTIONS
 
-    // any symbol in types has to be used exactly once, produces currently 16 errors
-    CasExternalTables USEONCE(types) USEALL(types) =
-         { ident | number }.
+    CasExternalTables =
+        SetServeroutput
+        nextblock
+        { Block }
+        .
+
+    Block =
+        ( ExceptionHandledBlock
+        | StarPrompt
+        | DeclareBlock
+        )
+        { nextblock }
+        .
+
+    DeclareBlock = 
+        "declare"       (. SemErr("Mysterious DECLARE block detected"); .)
+        { ANY }
+        nextblock
+        .
+
+    ExceptionHandledBlock =
+        "begin"
+            InsertDelete { InsertDelete }
+            ( "commit" sc
+            | (. SemErr("COMMIT in ExceptionHandledBlock missing"); .)
+            )
+            PutLine
+        "exception" "when" "others" "then"
+            [ PutLine ]
+            ( "rollback"
+            | null
+            ) 
+            sc            
+        "end" sc
+        nextblock
+        .
+    
+    InsertDelete = 
+        ( Insert
+        | Delete
+        )
+        .
+
+    // DELETE FROM LANTUSPARAM WHERE TUSNOM = 'DEFAULTBVE';
+    Delete =
+        "delete" "from"
+        ident:deletabletables
+        "where"
+        ident:columns
+        "="
+        string
+        sc
+        .
+
+    Insert =
+        "insert" "into"
+        ( TUSER
+        | LANTUSER
+        | TUSPARAM
+        | LANTUSPARAM
+        )
+        .
+
+    TUSER = 
+        "TUSER" 
+        openparen 
+            tusnom comma 
+            "TUSLONGUEUR"
+        closeparen
+        values
+        openparen
+            string comma
+            number
+        closeparen
+        sc
+        .
+
+    LANTUSER = 
+        "LANTUSER"
+        (
+            openparen 
+                tusnom comma 
+                ( LANTUSER_LANCODE
+                | LANTUSER_TUSLIBELLE
+                )
+        | 
+            values 
+            openparen
+                string         (. SemErr("INSERT INTO LANTUSER without column list: " + t.val); .) 
+                comma string
+                comma string 
+            closeparen
+            sc
+        ) 
+        .
+
+    LANTUSER_LANCODE =
+            "LANCODE" comma
+            "TUSLIBELLE"
+        closeparen
+        values
+        openparen
+            string comma
+            string:languages comma
+            string
+        closeparen
+        sc
+        .
+
+    LANTUSER_TUSLIBELLE =
+            "TUSLIBELLE" comma
+            "LANCODE"
+        closeparen
+        values
+        openparen
+            string comma
+            string comma
+            string:languages
+        closeparen
+        sc
+        .
+
+
+    TUSPARAM = 
+        tusparam 
+        (
+        openparen 
+            tusnom 
+            comma "TUPCODE"
+            [ comma "TUPFLAGORFI" ]
+        closeparen
+        |  (. SemErr("INSERT INTO TUSPARAM without column list"); .)
+        )
+        values
+        openparen
+            string 
+              comma string 
+            [ comma ( number | null ) ]
+        closeparen
+        sc
+        .
+
+    LANTUSPARAM = 
+        lantusparam
+        (        
+            openparen 
+                tusnom comma 
+                "TUPCODE" comma
+                ( LANTUSPARAM_LANCODE
+                | LANTUSPARAM_TUPLIBELLE
+                )
+        |
+            values
+            openparen
+                string          (. SemErr("INSERT INTO LANTUSPARAM without column list: " + t.val); .) 
+                comma string
+                comma string:languages 
+                comma string 
+                comma (string | null)
+            closeparen
+            sc
+        )
+        .
+
+    LANTUSPARAM_LANCODE =
+            "LANCODE" comma
+            "TUPLIBELLE"
+            [ comma "TUPHELPTEXT" ]
+        closeparen
+        values
+        openparen
+            string comma
+            string comma
+            string:languages comma
+            string
+            [ comma (string | null) ]
+        closeparen
+        sc
+        .
+
+    LANTUSPARAM_TUPLIBELLE =
+            "TUPLIBELLE" comma
+            "LANCODE"
+        closeparen
+        values
+        openparen
+            string comma
+            string comma
+            string comma
+            string:languages
+        closeparen
+        sc
+        .
+
+    PutLine =
+        "dbms_output" dot "PUT_LINE"
+        openparen string closeparen
+        sc
+        .
+
+    SetServeroutput =
+        set serveroutput on size number
+        sc
+        .
+
+    StarPrompt =
+        prompt stars { ANY } stars
+        .
 
 END CasExternalTables.
