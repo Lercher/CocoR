@@ -70,6 +70,7 @@ SYMBOLTABLES
 PRODUCTIONS
 
     CasExternalTables =
+        [ StarPrompt slash ]
         SetServeroutput
         slash
         { Block }
@@ -174,21 +175,15 @@ PRODUCTIONS
     // 	INSERT INTO LANTTRPARAM ( TTRNOM, TTPCODE, LANCODE, TTPLIBELLE )
 	//  VALUES ('IMPUTANAFILTRE','REVPLAN', 'EN','Revolving instalment plan');
     // 	INSERT INTO LANTTRPARAM (TTRNOM,TTPCODE,LANCODE,TTPLIBELLE,TTPHELPTEXT) VALUES ('GENDERTYPE','M','EN','Male',NULL);
+    //  INSERT INTO LANTTRPARAM (TTRNOM, TTPCODE, TTPLIBELLE, LANCODE) VALUES ('SCENARIO', 'EVBAIL_RENOUV', 'Renouvellement', 'FR') ;
+
     LANTTRPARAM =
         "LANTTRPARAM"   (. SemErr("Suspicious insert into LANTTRPARAM"); .)
         openparen
             "TTRNOM"
             comma "TTPCODE"
-            comma "LANCODE"
-            comma "TTPLIBELLE"
-            [ comma "TTPHELPTEXT" ]
-        closeparen
-        values
-        openparen
-            String
-            comma String
-            comma string:languages
-            comma String
+            comma 
+            ( LANTTRPARAM_LANCODE | LANTTRPARAM_TTPLIBELLE )
             ( comma 
                 (String
                 | null (. SemErr("LANTTRPARAM without Helptext (null)"); .)
@@ -199,6 +194,32 @@ PRODUCTIONS
         sc
         .
     
+    LANTTRPARAM_LANCODE = 
+            "LANCODE"
+            comma "TTPLIBELLE"
+            [ comma "TTPHELPTEXT" ]
+        closeparen
+        values
+        openparen
+            String
+            comma String
+            comma string:languages
+            comma String
+        .
+
+    LANTTRPARAM_TTPLIBELLE = 
+            "TTPLIBELLE"
+            comma "LANCODE"
+            [ comma "TTPHELPTEXT" ]
+        closeparen
+        values
+        openparen
+            String
+            comma String
+            comma String
+            comma string:languages
+        .
+
     //	INSERT INTO TTRAITEMENT ( TTRNOM, TTRFLAGPREF ) VALUES ('REVTRANSDEST',1);
     TTRAITEMENT =
         "TTRAITEMENT"   (. SemErr("Suspicious insert into TTRAITEMENT"); .)
@@ -217,11 +238,22 @@ PRODUCTIONS
 
 	// INSERT INTO LANTTRAITEMENT ( TTRNOM, LANCODE, TTRLIBELLE, TTRCONTEXT )
 	// VALUES ('REVTRANSDEST', 'EN', 'Revolving transfer destination', 'Revolving');
+    // INSERT INTO LANTTRAITEMENT (TTRNOM, TTRLIBELLE, TTRCONTEXT, LANCODE) VALUES
+    // ('SCENARIO', 'Scénario de lot', 'Bail', 'FR') ;
+
     LANTTRAITEMENT =
         "LANTTRAITEMENT"   (. SemErr("Suspicious insert into LANTTRAITEMENT"); .)
         openparen
             "TTRNOM"
-            comma "LANCODE"
+            comma
+            ( LANTTRAITEMENT_LANCODE
+            | LANTTRAITEMENT_TTRLIBELLE
+            )
+        sc
+        .
+
+    LANTTRAITEMENT_LANCODE =
+            "LANCODE"
             comma "TTRLIBELLE"
             comma "TTRCONTEXT"
         closeparen
@@ -232,7 +264,20 @@ PRODUCTIONS
             comma String
             comma String
         closeparen
-        sc
+        .
+
+    LANTTRAITEMENT_TTRLIBELLE =
+            "TTRLIBELLE"
+            comma "TTRCONTEXT"
+            comma "LANCODE"
+        closeparen
+        values
+        openparen
+            String
+            comma String
+            comma String
+            comma string:languages
+        closeparen
         .
 
 
@@ -377,6 +422,8 @@ PRODUCTIONS
         closeparen
         sc
         .
+
+// ---------------------------------------------------------
 
     PutLine =
         "dbms_output" dot "PUT_LINE"
