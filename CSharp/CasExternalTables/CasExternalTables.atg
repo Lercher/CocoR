@@ -39,15 +39,17 @@ TOKENS
     tusparam : ident = "TUSPARAM".
     tusnom : ident = "TUSNOM".    
     tupcode : ident = "TUPCODE".
+    tupflagorfi : ident = "TUPFLAGORFI".
+    tuplibelle : ident = "TUPLIBELLE".
     sc = ";".
     openparen = "(".
     closeparen = ")".
-    nextblock = "/".
+    slash = "/".
     dot = ".".
     comma = ",".
     equals = "=".
     doublebar = "||".
-	string = quote { stringCh | lf | quote quote } quote.
+	string = quote { stringCh | [cr] lf | quote quote } quote.
     stars = star { star }.
     
 
@@ -59,9 +61,9 @@ IGNORE cr + lf + tab
 
 SYMBOLTABLES
    languages STRICT "'EN'" "'FR'". 
-   deletabletables STRICT "LANTUSPARAM" "TUSPARAM".
-   updatetables STRICT "TUSPARAM".
-   columns STRICT "TUSNOM" "TUPCODE".
+   deletabletables STRICT "LANTUSPARAM" "TUSPARAM" "LKTUPTACTPG".
+   updatetables STRICT "TUSPARAM" "LANTUSPARAM".
+   columns STRICT "TUSNOM" "TUPCODE" "TUPFLAGORFI".
    chrarguments STRICT "38".
 
 
@@ -69,7 +71,7 @@ PRODUCTIONS
 
     CasExternalTables =
         SetServeroutput
-        nextblock
+        slash
         { Block }
         EOF
         .
@@ -79,32 +81,34 @@ PRODUCTIONS
         | StarPrompt
         | DeclareBlock
         )
-        { nextblock }
+        { slash }
         .
 
     DeclareBlock = 
         "declare"       (. SemErr("Mysterious DECLARE block detected"); .)
         { ANY }
-        nextblock
+        slash
         .
 
     ExceptionHandledBlock =
+        [ "set" "serveroutput" "on" sc]
         "begin"
             InsertDeleteUpdate { InsertDeleteUpdate }
             ( "commit" sc
             | (. SemErr("COMMIT in ExceptionHandledBlock missing"); .)
             )
             ( PutLine 
-            | (. SemErr("INSERT without protocol line"); .)
+            | (. SemErr("COMMIT without dbms_output.PUT_LINE"); .)
             )
         "exception" "when" "others" "then"
             [ PutLine ]
             ( "rollback"
             | null
             ) 
-            sc            
+            sc
+            [ PutLine ]   
         "end" sc
-        nextblock
+        slash
         .
     
     InsertDeleteUpdate = 
@@ -115,19 +119,23 @@ PRODUCTIONS
         .
 
     // UPDATE TUSPARAM SET TUPFLAGORFI = 1 WHERE TUSNOM = 'GENREHABSTATUS'AND TUPCODE = '05';
+    // UPDATE TUSPARAM SET TUPFLAGORFI = TUPCODE WHERE TUSNOM = 'APTSTATUS';
+    // UPDATE LANTUSPARAM SET TUPCODE = 'NEW' WHERE TUSNOM='INUPDMODE' AND TUPCODE = 'NEW ';
     Update =
         update
         ident:updatetables
-        "set"
-        "TUPFLAGORFI" equals number
+        "set" ident:columns equals (number | string | ident:columns )
         "where"
         ident:columns equals String
-        "and"
-        ident:columns equals String
+        { "and" ANY { ANY } }
         sc
         .
 
     // DELETE FROM LANTUSPARAM WHERE TUSNOM = 'DEFAULTBVE';
+    // DELETE FROM LKTUPTACTPG WHERE TUSNOM = 'PENALITE_RACHAT'
+    //    AND TUPCODE NOT IN('REFINOMINAL', 'FORFAIT')
+    //    AND TUPCODE NOT LIKE('ACT%')
+    //    AND TUPCODE NOT LIKE('PCT%') ;
     Delete =
         delete "from"
         ident:deletabletables
@@ -135,28 +143,114 @@ PRODUCTIONS
         ident:columns
         "="
         String
+        { "and" ANY { ANY }}
         sc
         .
 
     Insert =
         "insert" "into"
-        ( TUSER
-        | LANTUSER
-        | TUSPARAM
-        | LANTUSPARAM
+        ( TUSER       | LANTUSER
+        | TUSPARAM    | LANTUSPARAM
+        | TTRPARAM    | LANTTRPARAM
+        | TTRAITEMENT | LANTTRAITEMENT
         )
         .
 
-    TUSER = 
-        "TUSER" 
-        openparen 
-            tusnom comma 
-            "TUSLONGUEUR"
+    // 	INSERT INTO TTRPARAM ( TTRNOM, TTPCODE ) VALUES ('IMPUTANAFILTRE','REVPLAN');
+    TTRPARAM =
+        "TTRPARAM"   (. SemErr("Suspicious insert into TTRPARAM"); .)
+        openparen
+            "TTRNOM"
+            comma "TTPCODE"
         closeparen
         values
         openparen
+            String
+            comma String
+        closeparen
+        sc
+        .
+
+    // 	INSERT INTO LANTTRPARAM ( TTRNOM, TTPCODE, LANCODE, TTPLIBELLE )
+	//  VALUES ('IMPUTANAFILTRE','REVPLAN', 'EN','Revolving instalment plan');
+    // 	INSERT INTO LANTTRPARAM (TTRNOM,TTPCODE,LANCODE,TTPLIBELLE,TTPHELPTEXT) VALUES ('GENDERTYPE','M','EN','Male',NULL);
+    LANTTRPARAM =
+        "LANTTRPARAM"   (. SemErr("Suspicious insert into LANTTRPARAM"); .)
+        openparen
+            "TTRNOM"
+            comma "TTPCODE"
+            comma "LANCODE"
+            comma "TTPLIBELLE"
+            [ comma "TTPHELPTEXT" ]
+        closeparen
+        values
+        openparen
+            String
+            comma String
+            comma string:languages
+            comma String
+            ( comma 
+                (String
+                | null (. SemErr("LANTTRPARAM without Helptext (null)"); .)
+                )
+            | (. SemErr("LANTTRPARAM without Helptext (column missing)"); .)
+            )
+        closeparen
+        sc
+        .
+    
+    //	INSERT INTO TTRAITEMENT ( TTRNOM, TTRFLAGPREF ) VALUES ('REVTRANSDEST',1);
+    TTRAITEMENT =
+        "TTRAITEMENT"   (. SemErr("Suspicious insert into TTRAITEMENT"); .)
+        openparen
+            "TTRNOM"
+            comma "TTRFLAGPREF"
+        closeparen
+        values
+        openparen
+            String
+            comma number
+        closeparen
+        sc
+        .
+
+
+	// INSERT INTO LANTTRAITEMENT ( TTRNOM, LANCODE, TTRLIBELLE, TTRCONTEXT )
+	// VALUES ('REVTRANSDEST', 'EN', 'Revolving transfer destination', 'Revolving');
+    LANTTRAITEMENT =
+        "LANTTRAITEMENT"   (. SemErr("Suspicious insert into LANTTRAITEMENT"); .)
+        openparen
+            "TTRNOM"
+            comma "LANCODE"
+            comma "TTRLIBELLE"
+            comma "TTRCONTEXT"
+        closeparen
+        values
+        openparen
+            String
+            comma string:languages
+            comma String
+            comma String
+        closeparen
+        sc
+        .
+
+
+    TUSER = 
+        "TUSER" 
+        (openparen 
+            tusnom comma 
+            "TUSLONGUEUR"
+        closeparen
+        |  (. SemErr("Insert into TUSER without column list");  .)
+        )
+        values
+        openparen
             String comma
-            number
+            ( number // OK
+            | null      (. SemErr(t.val + " as TUSLONGUEUR (a length) is invalid"); .)
+            | string    (. SemErr(t.val + " (string) as TUSLONGUEUR (a length) is invalid"); .)
+            )
         closeparen
         sc
         .
@@ -213,7 +307,7 @@ PRODUCTIONS
         openparen 
             tusnom 
             comma tupcode
-            [ comma "TUPFLAGORFI" ]
+            [ comma tupflagorfi ]
         closeparen
         |  (. SemErr("INSERT INTO TUSPARAM without column list"); .)
         )
@@ -225,7 +319,7 @@ PRODUCTIONS
             comma 
             ( number 
             | null 
-            | string  (. SemErr("TUPFLAGORFI value " + t.val); .)
+            | string  (. SemErr("TUPFLAGORFI (a number) is assigned the string " + t.val); .)
             ) 
             ]
         closeparen
@@ -256,7 +350,7 @@ PRODUCTIONS
 
     LANTUSPARAM_LANCODE =
             "LANCODE" comma
-            "TUPLIBELLE"
+            tuplibelle
             [ comma "TUPHELPTEXT" ]
         closeparen
         values
@@ -312,10 +406,14 @@ PRODUCTIONS
         { doublebar StringFactor }
         .
 
-    StringFactor (. Console.WriteLine("SF:" + la.val); .)
+    StringFactor
     =
         string        
+            (.  if (t.val.Contains("\n"))
+                    SemErr("Illegal line break in string literal");
+            .)
         | "chr" openparen number:chrarguments closeparen
+        | "SQLERRM"
         .
 
     SetServeroutput =

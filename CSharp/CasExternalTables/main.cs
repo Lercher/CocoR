@@ -8,11 +8,11 @@ using System.Collections.Generic;
 public class Inheritance {
 
     static void printST(Symboltable st) {
-        Console.WriteLine("--- symbol-table{2} ------------------------------------------------------------------- {0}({1})", st.name, st.CountScopes, st.ignoreCase ? " IGNORECASE" : "");
+        Console.WriteLine("--- {0,-12} ------------------------------------------------------------------- ", st.name, st.CountScopes, st.ignoreCase ? " IGNORECASE" : "");
         int n = 0;
         foreach (Token t in st.currentScope) {
             n++;
-            string s = string.Format("{0}({1},{2})", t.val, t.line, t.col);
+            string s = string.Format("{0}", t.val, t.line, t.col);
             Console.Write("{0,-20}  ", s);
             if (n%4 == 0) Console.WriteLine(); 
         }
@@ -43,12 +43,6 @@ public class Inheritance {
             printST(parser.updatetables);
             printST(parser.columns);
             printST(parser.chrarguments);
-
-            // System.Console.WriteLine("----------------------- AST builder stack ----------------------------");
-            // System.Console.WriteLine(parser.astbuilder);
-
-            // System.Console.WriteLine("----------------------- AST ----------------------------");
-            // System.Console.WriteLine(parser.ast);
 
             if (parser.errors.count > 0)
                 return 1;
