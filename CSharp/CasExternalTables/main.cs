@@ -40,7 +40,9 @@ public class Inheritance {
             // list all known symbol table values (see section SYMBOLTABLES in the *.atg file)
             printST(parser.languages);
             printST(parser.deletabletables);
+            printST(parser.updatetables);
             printST(parser.columns);
+            printST(parser.chrarguments);
 
             // System.Console.WriteLine("----------------------- AST builder stack ----------------------------");
             // System.Console.WriteLine(parser.astbuilder);

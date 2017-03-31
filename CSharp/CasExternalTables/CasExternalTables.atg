@@ -29,6 +29,8 @@ TOKENS
     on : ident = "on".
     size : ident = "size".
     insert : ident = "insert".
+    update : ident = "update".
+    delete : ident = "delete".
     into : ident = "into".
     values: ident = "values".    
     prompt : ident = "prompt". 
@@ -36,13 +38,16 @@ TOKENS
     lantusparam : ident = "LANTUSPARAM".
     tusparam : ident = "TUSPARAM".
     tusnom : ident = "TUSNOM".    
+    tupcode : ident = "TUPCODE".
     sc = ";".
     openparen = "(".
     closeparen = ")".
     nextblock = "/".
     dot = ".".
     comma = ",".
-	string = quote { stringCh | quote quote } quote.
+    equals = "=".
+    doublebar = "||".
+	string = quote { stringCh | lf | quote quote } quote.
     stars = star { star }.
     
 
@@ -55,7 +60,9 @@ IGNORE cr + lf + tab
 SYMBOLTABLES
    languages STRICT "'EN'" "'FR'". 
    deletabletables STRICT "LANTUSPARAM" "TUSPARAM".
-   columns STRICT "TUSNOM".
+   updatetables STRICT "TUSPARAM".
+   columns STRICT "TUSNOM" "TUPCODE".
+   chrarguments STRICT "38".
 
 
 PRODUCTIONS
@@ -64,6 +71,7 @@ PRODUCTIONS
         SetServeroutput
         nextblock
         { Block }
+        EOF
         .
 
     Block =
@@ -82,11 +90,13 @@ PRODUCTIONS
 
     ExceptionHandledBlock =
         "begin"
-            InsertDelete { InsertDelete }
+            InsertDeleteUpdate { InsertDeleteUpdate }
             ( "commit" sc
             | (. SemErr("COMMIT in ExceptionHandledBlock missing"); .)
             )
-            PutLine
+            ( PutLine 
+            | (. SemErr("INSERT without protocol line"); .)
+            )
         "exception" "when" "others" "then"
             [ PutLine ]
             ( "rollback"
@@ -97,20 +107,34 @@ PRODUCTIONS
         nextblock
         .
     
-    InsertDelete = 
+    InsertDeleteUpdate = 
         ( Insert
         | Delete
+        | Update
         )
+        .
+
+    // UPDATE TUSPARAM SET TUPFLAGORFI = 1 WHERE TUSNOM = 'GENREHABSTATUS'AND TUPCODE = '05';
+    Update =
+        update
+        ident:updatetables
+        "set"
+        "TUPFLAGORFI" equals number
+        "where"
+        ident:columns equals String
+        "and"
+        ident:columns equals String
+        sc
         .
 
     // DELETE FROM LANTUSPARAM WHERE TUSNOM = 'DEFAULTBVE';
     Delete =
-        "delete" "from"
+        delete "from"
         ident:deletabletables
         "where"
         ident:columns
         "="
-        string
+        String
         sc
         .
 
@@ -131,7 +155,7 @@ PRODUCTIONS
         closeparen
         values
         openparen
-            string comma
+            String comma
             number
         closeparen
         sc
@@ -148,9 +172,9 @@ PRODUCTIONS
         | 
             values 
             openparen
-                string         (. SemErr("INSERT INTO LANTUSER without column list: " + t.val); .) 
-                comma string
-                comma string 
+                String         (. SemErr("INSERT INTO LANTUSER without column list: " + t.val); .) 
+                comma String
+                comma String 
             closeparen
             sc
         ) 
@@ -162,9 +186,9 @@ PRODUCTIONS
         closeparen
         values
         openparen
-            string comma
+            String comma
             string:languages comma
-            string
+            String
         closeparen
         sc
         .
@@ -175,8 +199,8 @@ PRODUCTIONS
         closeparen
         values
         openparen
-            string comma
-            string comma
+            String comma
+            String comma
             string:languages
         closeparen
         sc
@@ -188,16 +212,22 @@ PRODUCTIONS
         (
         openparen 
             tusnom 
-            comma "TUPCODE"
+            comma tupcode
             [ comma "TUPFLAGORFI" ]
         closeparen
         |  (. SemErr("INSERT INTO TUSPARAM without column list"); .)
         )
         values
         openparen
-            string 
-              comma string 
-            [ comma ( number | null ) ]
+            String 
+            comma String 
+            [ 
+            comma 
+            ( number 
+            | null 
+            | string  (. SemErr("TUPFLAGORFI value " + t.val); .)
+            ) 
+            ]
         closeparen
         sc
         .
@@ -207,18 +237,18 @@ PRODUCTIONS
         (        
             openparen 
                 tusnom comma 
-                "TUPCODE" comma
+                tupcode comma
                 ( LANTUSPARAM_LANCODE
                 | LANTUSPARAM_TUPLIBELLE
                 )
         |
             values
             openparen
-                string          (. SemErr("INSERT INTO LANTUSPARAM without column list: " + t.val); .) 
-                comma string
+                String          (. SemErr("INSERT INTO LANTUSPARAM without column list: " + t.val); .) 
+                comma String
                 comma string:languages 
-                comma string 
-                comma (string | null)
+                comma String 
+                comma (String | null)
             closeparen
             sc
         )
@@ -231,11 +261,11 @@ PRODUCTIONS
         closeparen
         values
         openparen
-            string comma
-            string comma
+            String comma
+            String comma
             string:languages comma
-            string
-            [ comma (string | null) ]
+            String
+            [ comma (String | null) ]
         closeparen
         sc
         .
@@ -246,9 +276,9 @@ PRODUCTIONS
         closeparen
         values
         openparen
-            string comma
-            string comma
-            string comma
+            String comma
+            String comma
+            String comma
             string:languages
         closeparen
         sc
@@ -256,8 +286,36 @@ PRODUCTIONS
 
     PutLine =
         "dbms_output" dot "PUT_LINE"
-        openparen string closeparen
+        openparen 
+            UncheckedString
+        closeparen
         sc
+        .
+
+    String =
+        StringFactor 
+        (. 
+            if (t.kind == _string && t.val.StartsWith("' ")) {
+                SemErr("First string literal starts with a space: " + t.val);
+            }
+        .)
+        { doublebar StringFactor }
+        (. 
+            if (t.kind == _string && t.val.EndsWith(" '")) {
+                SemErr("Last string literal ends with a space: " + t.val);
+            }
+        .)
+        .
+
+    UncheckedString =
+        StringFactor 
+        { doublebar StringFactor }
+        .
+
+    StringFactor (. Console.WriteLine("SF:" + la.val); .)
+    =
+        string        
+        | "chr" openparen number:chrarguments closeparen
         .
 
     SetServeroutput =
