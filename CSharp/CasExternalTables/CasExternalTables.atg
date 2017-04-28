@@ -477,13 +477,19 @@ PRODUCTIONS
         StringFactor 
         (. 
             if (t.kind == _string && t.val.StartsWith("' ")) {
-                SemErr(17, "First string literal starts with a space: " + t.val, "WARN");
+                if (t.val.ToUpper() == t.val && t.val.Replace(" ", "").Length + 1 == t.val.Length)
+                    SemErr(24, "Key-kind string literal starts with a space: " + t.val, "CRIT");
+                else
+                    SemErr(17, "First string literal starts with a space: " + t.val, "WARN");
             }
         .)
         { doublebar StringFactor }
         (. 
             if (t.kind == _string && t.val.EndsWith(" '")) {
-                SemErr(18, "Last string literal ends with a space: " + t.val, "WARN");
+                if (t.val.ToUpper() == t.val && t.val.Replace(" ", "").Length + 1 == t.val.Length)
+                    SemErr(25, "Key-kind string literal ends with a space: " + t.val, "CRIT");
+                else
+                    SemErr(18, "Last string literal ends with a space: " + t.val, "WARN");
             }
         .)
         .
