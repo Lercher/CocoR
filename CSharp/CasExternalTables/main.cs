@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Collections;
 using System.Collections.Generic;
@@ -33,9 +34,19 @@ public class Inheritance {
             Console.WriteLine("--- scanning {0} ...", arg[0]);
             Scanner scanner = new Scanner(arg[0], true); // is UTF8 source
 			Parser parser = new Parser(scanner);
+            for (var i = 1; i < arg.Length; i++) {
+                int minus = 0;
+                if (int.TryParse(arg[i], out minus) && minus < 0) {
+                    parser.suppressed.Add(-minus);
+                    Console.WriteLine("---   suppressing diagnostic #{0}", -minus);
+                }
+            }
             parser.Parse();
-            Console.WriteLine("--- {0} error(s) detected", parser.errors.count);
+            var qy = from kv in parser.diagnostics orderby kv.Key select kv; 
             Line();
+            foreach (var kv in qy)
+                Console.WriteLine("--- #{0,2}: {1,5:n0}", kv.Key, kv.Value);
+            Console.WriteLine("--- {0} error(s) detected", parser.errors.count);
 
             // list all known symbol table values (see section SYMBOLTABLES in the *.atg file)
             printST(parser.languages);
@@ -47,7 +58,8 @@ public class Inheritance {
             if (parser.errors.count > 0)
                 return 1;
         } else {
-            Console.WriteLine("usage: CasExternalTables.exe file");
+            Console.WriteLine("usage: CasExternalTables.exe file-path [-# ...]");
+            Console.WriteLine("       -# where # is an int: switch off diagnostic message #");
             return 99;
         }
         return 0;

@@ -20,18 +20,19 @@ TTRAITEMENT	LANTTRAITEMENT
 TTRPARAM	LANTTRPARAM
 */
 
-
-
-using System.Collections.Generic;
-
 COMPILER CasExternalTables
 
 // C# methods of Parser -- begin
 
 public HashSet<int> suppressed = new HashSet<int>();
+public Dictionary<int, int> diagnostics = new Dictionary<int, int>();
 
 void SemErr(int n, string s, string kind) {
-    string msg = string.Format("{2}-{0} {1}", n, s, kind);
+    if (suppressed.Contains(n)) return;
+    int count = 0;
+    diagnostics.TryGetValue(n, out count);
+    diagnostics[n] = count + 1;
+    var msg = string.Format("{2}-#{0} {1}", n, s, kind);
     SemErr(msg);
 }
 
