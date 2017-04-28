@@ -3,7 +3,39 @@
 // ..\coco CasExternalTables.ATG -frames .. -utf8
 // cls & cd .. & build.bat & cd CasExternalTables & cocbuild
 
+/*
+http://confluence.cassiopae.com/pages/viewpage.action?pageId=314474525
+
+Only allowed:
+
+UPDATE_EXTERNALTABLES.SQL
+TUSER	LANTUSER
+
+TUSPARAM and LANTUSPARAM entries must not be part of the standard scripts as the values are valid only for specific site. If DEV has to provide a script those tables, it must be committed into UPDATE_CUSTOM_<customer>.SQL only, (see the dedicated section)
+It's stricly forbidden to test any TUPCODE entry in Cassiopae core code, only TUSNOM ( user table name ) can be tested.UPDATE_INTERNALTABLES.SQL
+One exception, entries with TUPFLAGORFI = 1 are Cassiopae entries - so they can be tested in application code.
+
+UPDATE_INTERNALTABLES.SQL
+TTRAITEMENT	LANTTRAITEMENT
+TTRPARAM	LANTTRPARAM
+*/
+
+
+
+using System.Collections.Generic;
+
 COMPILER CasExternalTables
+
+// C# methods of Parser -- begin
+
+public HashSet<int> suppressed = new HashSet<int>();
+
+void SemErr(int n, string s, string kind) {
+    string msg = string.Format("{2}-{0} {1}", n, s, kind);
+    SemErr(msg);
+}
+
+// C# methods of Parser -- end
 
 IGNORECASE
 
@@ -86,7 +118,7 @@ PRODUCTIONS
         .
 
     DeclareBlock = 
-        "declare"       (. SemErr("Mysterious DECLARE block detected"); .)
+        "declare"       (. SemErr(1, "Mysterious DECLARE block detected", "TBD"); .)
         { ANY }
         slash
         .
@@ -96,15 +128,15 @@ PRODUCTIONS
         "begin"
             InsertDeleteUpdate { InsertDeleteUpdate }
             ( "commit" sc
-            | (. SemErr("COMMIT in ExceptionHandledBlock missing"); .)
+            | (. SemErr(2, "COMMIT in ExceptionHandledBlock missing", "CRIT"); .)
             )
             ( PutLine 
-            | (. SemErr("COMMIT without dbms_output.PUT_LINE"); .)
+            | (. SemErr(3, "COMMIT without dbms_output.PUT_LINE", "WARN"); .)
             )
         "exception" "when" "others" "then"
             [ PutLine ]
             ( "rollback"
-            | null
+            | null (. SemErr(20, "Null instead of ROLLBACK in exception block", "WARN"); .)
             ) 
             sc
             [ PutLine ]   
@@ -159,7 +191,7 @@ PRODUCTIONS
 
     // 	INSERT INTO TTRPARAM ( TTRNOM, TTPCODE ) VALUES ('IMPUTANAFILTRE','REVPLAN');
     TTRPARAM =
-        "TTRPARAM"   (. SemErr("Suspicious insert into TTRPARAM"); .)
+        "TTRPARAM"   (. SemErr(4, "Forbidden insert into TTRPARAM in externaltables", "CRIT"); .)
         openparen
             "TTRNOM"
             comma "TTPCODE"
@@ -178,7 +210,7 @@ PRODUCTIONS
     //  INSERT INTO LANTTRPARAM (TTRNOM, TTPCODE, TTPLIBELLE, LANCODE) VALUES ('SCENARIO', 'EVBAIL_RENOUV', 'Renouvellement', 'FR') ;
 
     LANTTRPARAM =
-        "LANTTRPARAM"   (. SemErr("Suspicious insert into LANTTRPARAM"); .)
+        "LANTTRPARAM"   (. SemErr(5, "Forbidden insert into LANTTRPARAM in externaltables", "CRIT"); .)
         openparen
             "TTRNOM"
             comma "TTPCODE"
@@ -186,9 +218,9 @@ PRODUCTIONS
             ( LANTTRPARAM_LANCODE | LANTTRPARAM_TTPLIBELLE )
             ( comma 
                 (String
-                | null (. SemErr("LANTTRPARAM without Helptext (null)"); .)
+                | null (. SemErr(6, "LANTTRPARAM without Helptext (null)", "WARN"); .)
                 )
-            | (. SemErr("LANTTRPARAM without Helptext (column missing)"); .)
+            | (. SemErr(7, "LANTTRPARAM without Helptext (column missing)", "WARN"); .)
             )
         closeparen
         sc
@@ -222,7 +254,7 @@ PRODUCTIONS
 
     //	INSERT INTO TTRAITEMENT ( TTRNOM, TTRFLAGPREF ) VALUES ('REVTRANSDEST',1);
     TTRAITEMENT =
-        "TTRAITEMENT"   (. SemErr("Suspicious insert into TTRAITEMENT"); .)
+        "TTRAITEMENT"   (. SemErr(8, "Forbidden insert into TTRAITEMENT in externaltables", "CRIT"); .)
         openparen
             "TTRNOM"
             comma "TTRFLAGPREF"
@@ -242,7 +274,7 @@ PRODUCTIONS
     // ('SCENARIO', 'Scénario de lot', 'Bail', 'FR') ;
 
     LANTTRAITEMENT =
-        "LANTTRAITEMENT"   (. SemErr("Suspicious insert into LANTTRAITEMENT"); .)
+        "LANTTRAITEMENT"   (. SemErr(9, "Forbidden insert into LANTTRAITEMENT in externaltables", "CRIT"); .)
         openparen
             "TTRNOM"
             comma
@@ -287,14 +319,14 @@ PRODUCTIONS
             tusnom comma 
             "TUSLONGUEUR"
         closeparen
-        |  (. SemErr("Insert into TUSER without column list");  .)
+        |  (. SemErr(10, "Insert into TUSER without column list", "WARN"); .)
         )
         values
         openparen
             String comma
             ( number // OK
-            | null      (. SemErr(t.val + " as TUSLONGUEUR (a length) is invalid"); .)
-            | string    (. SemErr(t.val + " (string) as TUSLONGUEUR (a length) is invalid"); .)
+            | null      (. SemErr(11, t.val + " as TUSLONGUEUR (a length) is invalid", "TBD"); .)
+            | string    (. SemErr(12, t.val + " (string) as TUSLONGUEUR (a length) is invalid", "TBD"); .)
             )
         closeparen
         sc
@@ -311,7 +343,7 @@ PRODUCTIONS
         | 
             values 
             openparen
-                String         (. SemErr("INSERT INTO LANTUSER without column list: " + t.val); .) 
+                String         (. SemErr(13, "INSERT INTO LANTUSER without column list: " + t.val, "WARN"); .) 
                 comma String
                 comma String 
             closeparen
@@ -347,6 +379,7 @@ PRODUCTIONS
 
 
     TUSPARAM = 
+        (. bool isOrfi = false; .)
         tusparam 
         (
         openparen 
@@ -354,7 +387,7 @@ PRODUCTIONS
             comma tupcode
             [ comma tupflagorfi ]
         closeparen
-        |  (. SemErr("INSERT INTO TUSPARAM without column list"); .)
+        |  (. SemErr(14, "INSERT INTO TUSPARAM without column list", "WARN"); .)
         )
         values
         openparen
@@ -362,13 +395,19 @@ PRODUCTIONS
             comma String 
             [ 
             comma 
-            ( number 
+            ( number  (. isOrfi = true; .)
             | null 
-            | string  (. SemErr("TUPFLAGORFI (a number) is assigned the string " + t.val); .)
+            | string  (. SemErr(15, "TUPFLAGORFI (a number) is assigned the string " + t.val, "CRIT"); .)
             ) 
             ]
         closeparen
         sc
+        (. 
+            if (isOrfi)
+                SemErr(21, "Suspicious INSERT to table TUSPARAM in externaltables with ORFI set", "WARN");
+            else
+                SemErr(22, "Forbidden INSERT to table TUSPARAM in externaltables", "CRIT");
+        .)
         .
 
     LANTUSPARAM = 
@@ -383,7 +422,7 @@ PRODUCTIONS
         |
             values
             openparen
-                String          (. SemErr("INSERT INTO LANTUSPARAM without column list: " + t.val); .) 
+                String          (. SemErr(16, "INSERT INTO LANTUSPARAM without column list: " + t.val, "WARN"); .) 
                 comma String
                 comma string:languages 
                 comma String 
@@ -437,13 +476,13 @@ PRODUCTIONS
         StringFactor 
         (. 
             if (t.kind == _string && t.val.StartsWith("' ")) {
-                SemErr("First string literal starts with a space: " + t.val);
+                SemErr(17, "First string literal starts with a space: " + t.val, "WARN");
             }
         .)
         { doublebar StringFactor }
         (. 
             if (t.kind == _string && t.val.EndsWith(" '")) {
-                SemErr("Last string literal ends with a space: " + t.val);
+                SemErr(18, "Last string literal ends with a space: " + t.val, "WARN");
             }
         .)
         .
@@ -457,7 +496,9 @@ PRODUCTIONS
     =
         string        
             (.  if (t.val.Contains("\n"))
-                    SemErr("Illegal line break in string literal");
+                    SemErr(19, "Illegal line break in string literal", "CRIT");
+                if (t.val.Contains("Ã"))
+                    SemErr(23, "Suspicious UTF-8/ANSI char in string literal: " + t.val, "WARN");
             .)
         | "chr" openparen number:chrarguments closeparen
         | "SQLERRM"
