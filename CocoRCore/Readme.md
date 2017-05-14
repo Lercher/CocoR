@@ -7,6 +7,22 @@ within this repository. If you are stuck with the .Net Framework 2 CLR
 and it's compilers, please use e.g. the version contained in the `CSharp`
 folder.
 
+## Planned changes to the standard version
+
+The main intention is, to enable Coco/R to play well in a .Net core ecosystem and to allow
+multiple different parsers to live efficently in the same compile unit, 
+scanning strings *and* streams. And maybe even have a way to dynamicly produce the 
+code for a parser and compile it on the fly within the Roslyn compiler architecture.
+
+* Getting rid of non-generic collections such as ArrayList
+* Putting common *.frame classes in a seperate source file
+* Refactoring the scanner to accept `IEnumerable<char>` in addition to `Stream`
+* Factoring out Scanner code to a common base class
+* Factoring out Parser code to a common base class
+* Getting rid of huge *.frame files without loosing the flexibility, they provide
+* Getting the compiler compiler itself as a linkable component instead of an executable alone 
+
+
 ## Build on the command line
 
 Change to this directory and then:
