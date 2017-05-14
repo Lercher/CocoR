@@ -66,3 +66,9 @@ We recommend to use Visual Studio Code to build this version. First open this di
 * If asked to restore packages, answer "Yes". However, there are currently no packages to restore.
 * `F5` to run.
 
+## Status: incubating
+
+* compiles to be run as a process
+* generates V2 code
+* uses standard frames
+* no test cases
