@@ -3,10 +3,15 @@
 *.pdb
 /CSharp/*.dll
 /VisualBasic/*.dll
+/CocoRCore/bin
+/CocoRCore/obj
 
 Parser.*
 !/CSharp/Parser.cs
 !/VisualBasic/Parser.vb
+!/CocoRCore/Parser.vb
+
 Scanner.*
 !/CSharp/Scanner.cs
 !/VisualBasic/Scanner.vb
+!/CocoRCore/Scanner.vb
