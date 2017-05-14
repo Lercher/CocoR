@@ -1180,7 +1180,7 @@ public class Symboltable {
 	public readonly string name;
 	public readonly bool ignoreCase;
 	public readonly bool strict;
-	public readonly List<Alternative> fixuplist;
+	private readonly List<Alternative> fixuplist;
 	private Symboltable clone = null;
 	public event TokenEventHandler TokenUsed;
 

@@ -670,17 +670,18 @@ public class Parser : Parserbase {
 				sb.Append("  ");
 		}
 
-		public static void escape(string s, StringBuilder sb) {
+		public static void escapeJSON(string s, StringBuilder sb) {
+			// see Mark Amery's comment in
+			// http://stackoverflow.com/questions/19176024/how-to-escape-special-characters-in-building-a-json-string
 			foreach (char ch in s) {
 				switch(ch) {
 					case '\\': sb.Append("\\\\"); break;
-					case '\'': sb.Append("\\'"); break;
 					case '\"': sb.Append("\\\""); break;
 					case '\t': sb.Append("\\t"); break;
 					case '\r': sb.Append("\\r"); break;
 					case '\n': sb.Append("\\n"); break;
 					default:
-						if (ch < ' ' || ch > '\u007f') sb.AppendFormat("{0:x4}",ch);
+						if (ch < ' ' || ch > '\u007f') sb.AppendFormat("\\u{0:x4}",ch);
 						else sb.Append(ch);
 						break;
 				}
@@ -753,7 +754,7 @@ public class Parser : Parserbase {
 			protected override void serialize(StringBuilder sb, int indent, Token at)
 			{
 				sb.Append('\"');
-				AST.escape(val, sb);
+				AST.escapeJSON(val, sb);
 				sb.Append('\"');
 				addPos(sb);
 			}
@@ -878,7 +879,7 @@ public class Parser : Parserbase {
 				foreach(string name in ht.Keys) {
 					AST ast = ht[name];
 					sb.Append('\"');
-					AST.escape(name, sb);
+					AST.escapeJSON(name, sb);
 					sb.Append("\": ");
 					ast.serialize(sb, indent + 1, at);
 					n++;
@@ -946,6 +947,12 @@ public class Parser : Parserbase {
 				if (merge && (ast is ASTList)) return;
 				ast = new ASTList(ast, 1);
 			}
+
+			public void wrapinobject() {
+				ASTObject o = new ASTObject();
+				o.add(this);
+				ast = o;
+			}
 		}
 
 
@@ -1010,7 +1017,7 @@ public class Parser : Parserbase {
 						bool merge = (e.name == null);
 						e.wrapinlist(merge);
 					} else if (e.name != null)
-						parser.errors.Warning(t.line, t.col, string.Format("overwriting AST objectname '{0}' with '{1}'", e.name, name));
+						e.wrapinobject();
 				}
 				e.name = name;
 				//System.Console.WriteLine("-------------> top {0}", e);
@@ -1040,8 +1047,6 @@ public class Parser : Parserbase {
 				if (e == null) {
 					e = new E();
 					string source = parser.scanner.buffer.GetString(s.pos, la.pos);
-					/*while (source.EndsWith("\r") || source.EndsWith("\n"))
-						source = source.Substring(0, source.Length - 1);*/
 					source = source.Trim();
 					e.ast = new ASTLiteral(source);
 					e.ast.startToken = s;
@@ -1309,7 +1314,7 @@ public class Symboltable {
 	public readonly string name;
 	public readonly bool ignoreCase;
 	public readonly bool strict;
-	public readonly List<Alternative> fixuplist;
+	private readonly List<Alternative> fixuplist;
 	private Symboltable clone = null;
 	public event TokenEventHandler TokenUsed;
 
