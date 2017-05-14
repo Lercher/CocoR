@@ -180,7 +180,7 @@ public class Graph {
 public class Sets {
 	
 	public static int Elements(BitArray s) {
-		int max = s.Count;
+		int max = s.Length;
 		int n = 0;
 		for (int i=0; i<max; i++)
 			if (s[i]) n++;
@@ -188,21 +188,21 @@ public class Sets {
 	}
 	
 	public static bool Equals(BitArray a, BitArray b) {
-		int max = a.Count;
+		int max = a.Length;
 		for (int i=0; i<max; i++)
 			if (a[i] != b[i]) return false;
 		return true;
 	}
 	
 	public static bool Intersect(BitArray a, BitArray b) { // a * b != {}
-		int max = a.Count;
+		int max = a.Length;
 		for (int i=0; i<max; i++)
 			if (a[i] && b[i]) return true;
 		return false;
 	}
 	
 	public static void Subtract(BitArray a, BitArray b) { // a = a - b
-		BitArray c = (BitArray) b.Clone();
+		var c = new BitArray(b);
 		a.And(c.Not());
 	}
 	
@@ -250,7 +250,7 @@ public class Tab {
 	public Symbol eofSy;              // end of file symbol
 	public Symbol noSym;              // used in case of an error
 	public BitArray allSyncSets;      // union of all synchronisation sets
-	public Hashtable literals;        // symbols that are used as literals
+	public IDictionary<string, Symbol> literals;        // symbols that are used as literals
 	public List<SymTab> symtabs = new List<SymTab>();
 	
 	public string srcName;            // name of the atg file (including path)
@@ -276,16 +276,16 @@ public class Tab {
 		errors = parser.errors;
 		eofSy = NewSym(Node.t, "EOF", 0);
 		dummyNode = NewNode(Node.eps, null, 0);
-		literals = new Hashtable();
+		literals = new Dictionary<string, Symbol>();
 	}
 
 	//---------------------------------------------------------------------
 	//  Symbol list management
 	//---------------------------------------------------------------------
 	
-	public ArrayList terminals = new ArrayList();
-	public ArrayList pragmas = new ArrayList();
-	public ArrayList nonterminals = new ArrayList();
+	public List<Symbol> terminals = new List<Symbol>();
+	public List<Symbol> pragmas = new List<Symbol>();
+	public List<Symbol> nonterminals = new List<Symbol>();
 	
 	string[] tKind = {"fixedToken", "classToken", "litToken", "classLitToken"};
 	
@@ -342,8 +342,8 @@ public class Tab {
 		trace.WriteLine();
 		trace.WriteLine("Literal Tokens:");
 		trace.WriteLine("--------------");
-		foreach (DictionaryEntry e in literals) {
-			trace.WriteLine("_" + ((Symbol)e.Value).name + " = " + e.Key + ".");
+		foreach (var e in literals) {
+			trace.WriteLine("_" + e.Value.name + " = " + e.Key + ".");
 		}
 		trace.WriteLine();
 	}
@@ -370,7 +370,7 @@ public class Tab {
 	//  Syntax graph management
 	//---------------------------------------------------------------------
 	
-	public ArrayList nodes = new ArrayList();
+	public List<Node> nodes = new List<Node>();
 	public string[] nTyp =
 		{"    ", "t   ", "pr  ", "nt  ", "clas", "chr ", "wt  ", "any ", "eps ",
 		 "sync", "sem ", "alt ", "iter", "opt ", "rslv"};
@@ -453,7 +453,7 @@ public class Tab {
 	}
 	
 	public void DeleteNodes() {
-		nodes = new ArrayList();
+		nodes.Clear();
 		dummyNode = NewNode(Node.eps, null, 0);
 	}
 	
@@ -557,7 +557,7 @@ public class Tab {
 	//  Character class management
 	//---------------------------------------------------------------------
 	
-	public ArrayList classes = new ArrayList();
+	public List<CharClass> classes = new List<CharClass>();
 	public int dummyName = 'A';
 
 	public CharClass NewCharClass(string name, CharSet s) {
@@ -973,7 +973,7 @@ public class Tab {
 		}
 	}
 
-	void GetSingles(Node p, ArrayList singles) {
+	void GetSingles(Node p, List<Symbol> singles) {
 		if (p == null) return;  // end of graph
 		if (p.typ == Node.nt) {
 			if (p.up || DelGraph(p.next)) singles.Add(p.sym);
@@ -988,9 +988,9 @@ public class Tab {
 	
 	public bool NoCircularProductions() {
 		bool ok, changed, onLeftSide, onRightSide;
-		ArrayList list = new ArrayList();
+		var list = new List<CNode>();
 		foreach (Symbol sym in nonterminals) {
-			ArrayList singles = new ArrayList();
+			var singles = new List<Symbol>();
 			GetSingles(sym.graph, singles); // get nonterminals s such that sym-->s
 			foreach (Symbol s in singles) list.Add(new CNode(sym, s));
 		}
@@ -1204,30 +1204,43 @@ public class Tab {
 	//---------------------------------------------------------------------
 	//  Cross reference list
 	//---------------------------------------------------------------------
+
+	private class SymbolComp : IComparer<Symbol> {
+		public int Compare(Symbol x, Symbol y)  {
+			return x.name.CompareTo(y.name);
+		}
+	}
 	
 	public void XRef() {
-		SortedList xref = new SortedList(new SymbolComp());
+		var xref = new SortedList<Symbol, List<int>>(new SymbolComp());
 		// collect lines where symbols have been defined
 		foreach (Symbol sym in nonterminals) {
-			ArrayList list = (ArrayList)xref[sym];
-			if (list == null) {list = new ArrayList(); xref[sym] = list;}
-			list.Add(- sym.line);
+			if (!xref.TryGetValue(sym, out var list))
+			{
+				list = new List<int>(); 
+				xref[sym] = list;
+			}
+			list.Add(-sym.line);
 		}
 		// collect lines where symbols have been referenced
 		foreach (Node n in nodes) {
 			if (n.typ == Node.t || n.typ == Node.wt || n.typ == Node.nt) {
-				ArrayList list = (ArrayList)xref[n.sym];
-				if (list == null) {list = new ArrayList(); xref[n.sym] = list;}
+				if (!xref.TryGetValue(n.sym, out var list))
+				{
+					list = new List<int>(); 
+					xref[n.sym] = list;
+				}
 				list.Add(n.line);
 			}
 		}
 		// print cross reference list
 		trace.WriteLine();
 		trace.WriteLine("Cross reference list:");
-		trace.WriteLine("--------------------"); trace.WriteLine();
+		trace.WriteLine("---------------------"); 
+		trace.WriteLine();
 		foreach (Symbol sym in xref.Keys) {
 			trace.Write("  {0,-12}", Name(sym.name));
-			ArrayList list = (ArrayList)xref[sym];
+			var list = xref[sym];
 			int col = 14;
 			foreach (int line in list) {
 				if (col + 5 > 80) {
@@ -1238,7 +1251,8 @@ public class Tab {
 			}
 			trace.WriteLine();
 		}
-		trace.WriteLine(); trace.WriteLine();
+		trace.WriteLine(); 
+		trace.WriteLine();
 	}
 	
 	public void SetDDT(string s) {
@@ -1269,11 +1283,6 @@ public class Tab {
 		}
 	}
 
-	class SymbolComp : IComparer {
-		public int Compare(Object x, Object y)  {
-			return ((Symbol) x).name.CompareTo(((Symbol) y).name);
-		}
-	}
 
 } // end Tab
 

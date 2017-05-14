@@ -56,7 +56,7 @@ public class ParserGen {
 	FileStream fram;  // parser frame file
 	StreamWriter gen; // generated parser source file
 	StringWriter err; // generated parser error messages
-	ArrayList symSet = new ArrayList();
+	List<BitArray> symSet = new List<BitArray>();
 	
 	Tab tab;          // other Coco objects
 	TextWriter trace;
@@ -69,7 +69,7 @@ public class ParserGen {
 	
 	
 	bool Overlaps(BitArray s1, BitArray s2) {
-		int len = s1.Count;
+		int len = s1.Length;
 		for (int i = 0; i < len; ++i) {
 			if (s1[i] && s2[i]) {
 				return true;
@@ -152,8 +152,13 @@ public class ParserGen {
 	int NewCondSet (BitArray s) {
 		for (int i = 1; i < symSet.Count; i++) // skip symSet[0] (reserved for union of SYNC sets)
 			if (Sets.Equals(s, (BitArray)symSet[i])) return i;
-		symSet.Add(s.Clone());
+		symSet.Add(Clone(s));
 		return symSet.Count - 1;
+	}
+
+	private static BitArray Clone(BitArray arr) {
+		if (arr == null) return null;
+		return new BitArray(arr);
 	}
 
 	// for autocomplete/intellisense
@@ -226,8 +231,8 @@ public class ParserGen {
 	}
 
 	BitArray DerivationsOf(BitArray s0) {
-		BitArray s = (BitArray) s0.Clone();
-		bool done = false;
+		var s = Clone(s0);
+		var done = false;
 		while (!done) {
 			done = true;
 			foreach (Symbol sym in tab.terminals) {
@@ -339,7 +344,7 @@ public class ParserGen {
 				case Node.sync: {
 					Indent(indent);
 					GenErrorMsg(syncErr, curSy);
-					s1 = (BitArray)p.set.Clone();
+					s1 = Clone(p.set);
 					gen.Write("while (!("); GenCond(s1, p); gen.Write(")) {");
 					gen.Write("SynErr({0}); Get();", errorNr); gen.WriteLine("}");
 					break;
@@ -628,7 +633,7 @@ public class ParserGen {
 		g.CopyFramePart(null);
 		/* AW 2002-12-20 close namespace, if it exists */
 		if (tab.nsName != null && tab.nsName.Length > 0) gen.Write("}");
-		gen.Close();
+		gen.Dispose();
 		buffer.Pos = oldPos;
 	}
 	

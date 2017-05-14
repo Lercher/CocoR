@@ -919,8 +919,8 @@ public class DFA {
 	
 	string SymName(Symbol sym) {
 		if (Char.IsLetter(sym.name[0])) { // real name value is stored in Tab.literals
-			foreach (DictionaryEntry e in tab.literals)
-				if ((Symbol)e.Value == sym) return (string)e.Key;
+			foreach (var e in tab.literals)
+				if (e.Value == sym) return e.Key;
 		}
 		return sym.name;
 	}
@@ -1063,7 +1063,7 @@ public class DFA {
 			WriteState(state);
 		g.CopyFramePart(null);
 		if (tab.nsName != null && tab.nsName.Length > 0) gen.Write("}");
-		gen.Close();
+		gen.Dispose();
 	}
 	
 	public DFA (Parser parser) {

@@ -96,7 +96,7 @@ public class Coco {
 				parser.Parse();
 
 				Console.WriteLine("grammar scanned by using {0}", scanner.buffer.GetType().Name);
-				parser.trace.Close();
+				parser.trace.Dispose();
 				FileInfo f = new FileInfo(traceFileName);
 				if (f.Length == 0) f.Delete();
 				else Console.WriteLine("trace output is in " + traceFileName);
