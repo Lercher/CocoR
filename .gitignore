@@ -7,11 +7,11 @@
 /CocoRCore/obj
 
 Parser.*
+!/CocoRCore/Parser.cs
 !/CSharp/Parser.cs
 !/VisualBasic/Parser.vb
-!/CocoRCore/Parser.vb
 
 Scanner.*
+!/CocoRCore/Scanner.cs
 !/CSharp/Scanner.cs
 !/VisualBasic/Scanner.vb
-!/CocoRCore/Scanner.vb
