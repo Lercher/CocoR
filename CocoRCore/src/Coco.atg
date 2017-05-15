@@ -316,7 +316,7 @@ TokenDecl<int typ>              (. string name; int kind; Symbol sym; Graph g;
                                    if (tokenString == null || tokenString.Equals(noString))
                                      dfa.ConvertToStates(g.l, sym);
                                    else { // TokenExpr is a single string
-                                     if (tab.literals[tokenString] != null)
+                                     if (tab.literals.ContainsKey(tokenString))
                                        SemErr("token string declared twice");
                                      tab.literals[tokenString] = sym;
                                      dfa.MatchLiteral(tokenString, sym);
@@ -390,7 +390,7 @@ Factor<out Graph g>             (. string name; int kind; Position pos; bool wea
   ]
   Sym<out name, out kind>       (. Symbol sym = tab.FindSym(name);
                                    if (sym == null && kind == str)
-                                     sym = tab.literals[name] as Symbol;
+                                     tab.literals.TryGetValue(name, out sym);
                                    bool undef = sym == null;
                                    if (undef) {
                                      if (kind == id)

@@ -403,7 +403,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         dfa.ConvertToStates(g.l, sym);
                     else
                     { // TokenExpr is a single string
-                        if (tab.literals[tokenString] != null)
+                        if (tab.literals.ContainsKey(tokenString))
                             SemErr("token string declared twice");
                         tab.literals[tokenString] = sym;
                         dfa.MatchLiteral(tokenString, sym);
@@ -803,7 +803,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                             Sym‿NT(out name, out kind);
                             Symbol sym = tab.FindSym(name);
                             if (sym == null && kind == str)
-                                sym = tab.literals[name] as Symbol;
+                                tab.literals.TryGetValue(name, out sym);
                             bool undef = sym == null;
                             if (undef)
                             {
