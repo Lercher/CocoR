@@ -1,9 +1,9 @@
 {
-   // Use IntelliSense to find out which attributes exist for C# debugging
-   // Use hover for the description of the existing attributes
-   // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
-   "version": "0.2.0",
-   "configurations": [
+    // Use IntelliSense to find out which attributes exist for C# debugging
+    // Use hover for the description of the existing attributes
+    // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
+    "version": "0.2.0",
+    "configurations": [
         {
             "name": ".NET Core Launch (console)",
             "type": "coreclr",
@@ -12,11 +12,15 @@
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
             "args": [
-                "${workspaceRoot}/sample-grammars/Taste/Taste.ATG", "-utf8", "-is", 
-                "-o", "${workspaceRoot}/sample-grammars/Taste",
-                "-frames", "${workspaceRoot}/src"
-            ]
-            ,
+                "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
+                "${workspaceRoot}/sample-grammars/Coco/Coco.ATG",
+                "-utf8",
+                "-is",
+                "-o",
+                "${workspaceRoot}/sample-grammars/Coco",
+                "-frames",
+                "${workspaceRoot}/src"
+            ],
             "cwd": "${workspaceRoot}",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
             "console": "internalConsole",
