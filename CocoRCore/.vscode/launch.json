@@ -13,9 +13,8 @@
             "program": "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
             "args": [
                 "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
-                "${workspaceRoot}/sample-grammars/Coco/Coco.ATG",
+                "${workspaceRoot}/src/Coco.ATG",
                 "-utf8",
-                "-is",
                 "-o",
                 "${workspaceRoot}/sample-grammars/Coco",
                 "-frames",

@@ -14,8 +14,8 @@
   </ItemGroup>
 
   <Target Name="Build-Grammars" AfterTargets="build">
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -is -frames src src/Coco.ATG -o src" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -is -frames src sample-grammars/Taste/Taste.ATG -o sample-grammars/Taste" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -is -frames src sample-grammars/Coco/Coco.ATG -o sample-grammars/Coco" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames src src/Coco.ATG -o src" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames src sample-grammars/Taste/Taste.ATG -o sample-grammars/Taste" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames src sample-grammars/Coco/Coco.ATG -o sample-grammars/Coco" />
   </Target>
 </Project>
