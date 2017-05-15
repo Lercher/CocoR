@@ -205,7 +205,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     Get();
                     while (isKind(la, 1) || isKind(la, 3) || isKind(la, 5))
                     {
-                        TokenDecl‿NT(Node.t);
+                        TokenDecl‿NT(NodeKind.t);
                     }
                 }
                 if (isKind(la, 11))
@@ -213,7 +213,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     Get();
                     while (isKind(la, 1) || isKind(la, 3) || isKind(la, 5))
                     {
-                        TokenDecl‿NT(Node.pr);
+                        TokenDecl‿NT(NodeKind.pr);
                     }
                 }
                 while (isKind(la, 12))
@@ -255,10 +255,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     Get();
                     sym = tab.FindSym(t.val);
                     bool undef = sym == null;
-                    if (undef) sym = tab.NewSym(Node.nt, t.val, t.line);
+                    if (undef) sym = tab.NewSym(NodeKind.nt, t.val, t.line);
                     else
                     {
-                        if (sym.typ == Node.nt)
+                        if (sym.typ == NodeKind.nt)
                         {
                             if (sym.graph != null) SemErr("name declared twice");
                         }
@@ -316,7 +316,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     if (sym.attrPos != null)
                         SemErr("grammar symbol must not have attributes");
                 }
-                tab.noSym = tab.NewSym(Node.t, "???", 0); // noSym gets highest number
+                tab.noSym = tab.NewSym(NodeKind.t, "???", 0); // noSym gets highest number
                 tab.SetupAnys();
                 tab.RenumberPragmas();
                 if (tab.ddt[2]) tab.PrintNodes();
@@ -363,7 +363,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             }
         }
 
-        void TokenDecl‿NT(int typ)
+        void TokenDecl‿NT(NodeKind typ)
         {
             {
                 string name; int kind; Symbol sym; Graph g;
@@ -420,7 +420,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 if (isKind(la, 49))
                 {
                     SemText‿NT(out sym.semPos);
-                    if (typ != Node.pr) SemErr("semantic action not allowed in a pragma context");
+                    if (typ != NodeKind.pr) SemErr("semantic action not allowed in a pragma context");
                 }
             }
         }
@@ -745,7 +745,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 {
                     if (isKind(la, 47))
                     {
-                        rslv = tab.NewNode(Node.rslv, null, la.line);
+                        rslv = tab.NewNode(NodeKind.rslv, null, la.line);
                         Resolver‿NT(out rslv.pos);
                         g = new Graph(rslv);
                     }
@@ -761,11 +761,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 }
                 else if (StartOf(19))
                 {
-                    g = new Graph(tab.NewNode(Node.eps, null, 0));
+                    g = new Graph(tab.NewNode(NodeKind.eps, null, 0));
                 }
                 else SynErr(58);
                 if (g == null) // invalid start of Term
-                    g = new Graph(tab.NewNode(Node.eps, null, 0));
+                    g = new Graph(tab.NewNode(NodeKind.eps, null, 0));
 
             }
         }
@@ -807,10 +807,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                             if (undef)
                             {
                                 if (kind == id)
-                                    sym = tab.NewSym(Node.nt, name, 0);  // forward nt
+                                    sym = tab.NewSym(NodeKind.nt, name, 0);  // forward nt
                                 else if (genScanner)
                                 {
-                                    sym = tab.NewSym(Node.t, name, t.line);
+                                    sym = tab.NewSym(NodeKind.t, name, t.line);
                                     dfa.MatchLiteral(sym.name, sym);
                                 }
                                 else
@@ -819,11 +819,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                                     sym = tab.eofSy;  // dummy
                                 }
                             }
-                            int typ = sym.typ;
-                            if (typ != Node.t && typ != Node.nt)
+                            var typ = sym.typ;
+                            if (typ != NodeKind.t && typ != NodeKind.nt)
                                 SemErr("this symbol kind is not allowed in a production");
                             if (weak)
-                                if (typ == Node.t) typ = Node.wt;
+                                if (typ == NodeKind.t) typ = NodeKind.wt;
                                 else SemErr("only terminals may be weak");
                             Node p = tab.NewNode(typ, sym, t.line);
                             g = new Graph(p);
@@ -839,7 +839,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                                 {
                                     Get();
                                     Expect(1); // ident
-                                    if (typ != Node.t && typ != Node.wt) SemErr("only terminals or weak terminals can declare a name in a symbol table");
+                                    if (typ != NodeKind.t && typ != NodeKind.wt) SemErr("only terminals or weak terminals can declare a name in a symbol table");
                                     p.declares = t.val.ToLower();
                                     if (null == tab.FindSymtab(p.declares)) SemErr(string.Format("undeclared symbol table '{0}'", p.declares));
 
@@ -848,7 +848,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                                 {
                                     Get();
                                     Expect(1); // ident
-                                    if (typ != Node.t && typ != Node.wt) SemErr("only terminals or weak terminals can lookup a name in a symbol table");
+                                    if (typ != NodeKind.t && typ != NodeKind.wt) SemErr("only terminals or weak terminals can lookup a name in a symbol table");
                                     p.declared = t.val.ToLower();
                                     if (null == tab.FindSymtab(p.declared)) SemErr(string.Format("undeclared symbol table '{0}'", p.declared));
 
@@ -891,7 +891,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     case 49: // "(."
                         {
                             SemText‿NT(out pos);
-                            Node p = tab.NewNode(Node.sem, null, 0);
+                            Node p = tab.NewNode(NodeKind.sem, null, 0);
                             p.pos = pos;
                             g = new Graph(p);
 
@@ -900,7 +900,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     case 32: // "ANY"
                         {
                             Get();
-                            Node p = tab.NewNode(Node.any, null, 0);  // p.set is set in tab.SetupAnys
+                            Node p = tab.NewNode(NodeKind.any, null, 0);  // p.set is set in tab.SetupAnys
                             g = new Graph(p);
 
                             break;
@@ -908,7 +908,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     case 44: // "SYNC"
                         {
                             Get();
-                            Node p = tab.NewNode(Node.sync, null, 0);
+                            Node p = tab.NewNode(NodeKind.sync, null, 0);
                             g = new Graph(p);
 
                             break;
@@ -916,7 +916,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     default: SynErr(59); break;
                 }
                 if (g == null) // invalid start of Factor
-                    g = new Graph(tab.NewNode(Node.eps, null, 0));
+                    g = new Graph(tab.NewNode(NodeKind.eps, null, 0));
 
             }
         }
@@ -1060,7 +1060,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             {
                 Expect(6); // prime
                 ast.primed = true;
-                if (p.typ != Node.t && p.typ != Node.wt)
+                if (p.typ != NodeKind.t && p.typ != NodeKind.wt)
                     SemErr("can only prime terminals");
                 if (pgen.IgnoreSemanticActions)
                     errors.Warning(t.line, t.col, "token priming is ignored when ignoring semantic actions (-is switch).");
@@ -1133,7 +1133,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                             SemErr("undefined name");
                             c = tab.NewCharClass(name, new CharSet());
                         }
-                        Node p = tab.NewNode(Node.clas, null, 0); p.val = c.n;
+                        Node p = tab.NewNode(NodeKind.clas, null, 0); p.val = c.n;
                         g = new Graph(p);
                         tokenString = noString;
                     }
@@ -1167,7 +1167,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 }
                 else SynErr(63);
                 if (g == null) // invalid start of TokenFactor
-                    g = new Graph(tab.NewNode(Node.eps, null, 0));
+                    g = new Graph(tab.NewNode(NodeKind.eps, null, 0));
             }
         }
 

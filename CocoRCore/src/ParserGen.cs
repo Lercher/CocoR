@@ -63,7 +63,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         bool UseSwitch(Node p)
         {
             BitArray s1, s2;
-            if (p.typ != Node.alt) return false;
+            if (p.typ != NodeKind.alt) return false;
             int nAlts = 0;
             s1 = new BitArray(tab.terminals.Count);
             while (p != null)
@@ -74,7 +74,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 s1.Or(s2);
                 ++nAlts;
                 // must not optimize with switch-statement, if alt uses a resolver expression
-                if (p.sub.typ == Node.rslv) return false;
+                if (p.sub.typ == NodeKind.rslv) return false;
                 p = p.down;
             }
             return nAlts > 5;
@@ -159,7 +159,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void GenAutocomplete(BitArray s, Node p, int indent, string comment)
         {
             if (!GenerateAutocompleteInformation) return; // we don't want autocomplete information in the parser
-            if (p.typ == Node.rslv) return; // if we have a resolver, we don't know what to do (yet), so we do nothing
+            if (p.typ == NodeKind.rslv) return; // if we have a resolver, we don't know what to do (yet), so we do nothing
             int c = Sets.Elements(s);
             if (c == 0) return;
             if (c > maxTerm)
@@ -200,7 +200,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void GenCond(BitArray s, Node p)
         {
-            if (p.typ == Node.rslv)
+            if (p.typ == NodeKind.rslv)
                 CopySourcePart(p.pos, 0);
             else
             {
@@ -309,193 +309,179 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             {
                 switch (p.typ)
                 {
-                    case Node.nt:
+                    case NodeKind.nt:
+                        // generate a production method call ...
+                        Indent(indent);
+                        GenAstBuilder(p, indent);
+                        gen.Write("{0}{1}(", p.sym.name, PROD_SUFFIX);
+                        CopySourcePart(p.pos, 0); // ... with actual arguments
+                        gen.WriteLine(");");
+                        break;
+                    case NodeKind.t:
+                        GenSymboltableCheck(p, indent);
+                        Indent(indent);
+                        // assert: if isChecked[p.sym.n] is true, then isChecked contains only p.sym.n
+                        if (isChecked[p.sym.n])
                         {
-                            // generate a production method call ...
-                            Indent(indent);
                             GenAstBuilder(p, indent);
-                            gen.Write("{0}{1}(", p.sym.name, PROD_SUFFIX);
-                            CopySourcePart(p.pos, 0); // ... with actual arguments
-                            gen.WriteLine(");");
-                            break;
+                            gen.WriteLine("Get();");
                         }
-                    case Node.t:
+                        else
                         {
-                            GenSymboltableCheck(p, indent);
-                            Indent(indent);
-                            // assert: if isChecked[p.sym.n] is true, then isChecked contains only p.sym.n
-                            if (isChecked[p.sym.n])
-                            {
-                                GenAstBuilder(p, indent);
-                                gen.WriteLine("Get();");
-                            }
-                            else
-                            {
-                                GenAutocomplete(p.sym.n, indent, "T");
-                                GenAutocompleteSymboltable(p, indent, "T");
-                                GenAstBuilder(p, indent);
-                                gen.WriteLine("Expect({0}); // {1}", p.sym.n, p.sym.name);
-                            }
-                            break;
-                        }
-                    case Node.wt:
-                        {
-                            GenSymboltableCheck(p, indent);
-                            Indent(indent);
-                            s1 = tab.Expected(p.next, curSy);
-                            s1.Or(tab.allSyncSets);
-                            int ncs1 = NewCondSet(s1);
-                            Symbol ncs1sym = (Symbol)tab.terminals[ncs1];
-                            GenAutocomplete(p.sym.n, indent, "WT");
-                            GenAutocompleteSymboltable(p, indent, "WT");
+                            GenAutocomplete(p.sym.n, indent, "T");
+                            GenAutocompleteSymboltable(p, indent, "T");
                             GenAstBuilder(p, indent);
-                            gen.WriteLine("ExpectWeak({0}, {1}); // {2} followed by {3}", p.sym.n, ncs1, p.sym.name, ncs1sym.name);
-                            break;
+                            gen.WriteLine("Expect({0}); // {1}", p.sym.n, p.sym.name);
                         }
-                    case Node.any:
+                        break;
+                    case NodeKind.wt:
+                        GenSymboltableCheck(p, indent);
+                        Indent(indent);
+                        s1 = tab.Expected(p.next, curSy);
+                        s1.Or(tab.allSyncSets);
+                        int ncs1 = NewCondSet(s1);
+                        Symbol ncs1sym = (Symbol)tab.terminals[ncs1];
+                        GenAutocomplete(p.sym.n, indent, "WT");
+                        GenAutocompleteSymboltable(p, indent, "WT");
+                        GenAstBuilder(p, indent);
+                        gen.WriteLine("ExpectWeak({0}, {1}); // {2} followed by {3}", p.sym.n, ncs1, p.sym.name, ncs1sym.name);
+                        break;
+                    case NodeKind.any:
+                        Indent(indent);
+                        int acc = Sets.Elements(p.set);
+                        if (tab.terminals.Count == (acc + 1) || (acc > 0 && Sets.Equals(p.set, isChecked)))
                         {
-                            Indent(indent);
-                            int acc = Sets.Elements(p.set);
-                            if (tab.terminals.Count == (acc + 1) || (acc > 0 && Sets.Equals(p.set, isChecked)))
+                            // either this ANY accepts any terminal (the + 1 = end of file), or exactly what's allowed here
+                            gen.WriteLine("Get();");
+                        }
+                        else
+                        {
+                            GenErrorMsg(altErr, curSy);
+                            if (acc > 0)
                             {
-                                // either this ANY accepts any terminal (the + 1 = end of file), or exactly what's allowed here
-                                gen.WriteLine("Get();");
+                                GenAutocomplete(p.set, p, indent, "ANY");
+                                gen.Write("if ("); GenCond(p.set, p); gen.WriteLine(") Get(); else SynErr({0});", errorNr);
                             }
-                            else
-                            {
-                                GenErrorMsg(altErr, curSy);
-                                if (acc > 0)
-                                {
-                                    GenAutocomplete(p.set, p, indent, "ANY");
-                                    gen.Write("if ("); GenCond(p.set, p); gen.WriteLine(") Get(); else SynErr({0});", errorNr);
-                                }
-                                else gen.WriteLine("SynErr({0}); // ANY node that matches no symbol", errorNr);
-                            }
-                            break;
+                            else gen.WriteLine("SynErr({0}); // ANY node that matches no symbol", errorNr);
                         }
-                    case Node.eps: break; // nothing
-                    case Node.rslv: break; // nothing
-                    case Node.sem:
-                        {
-                            CopySourcePart(p.pos, indent);
-                            break;
-                        }
-                    case Node.sync:
-                        {
-                            Indent(indent);
-                            GenErrorMsg(syncErr, curSy);
-                            s1 = Clone(p.set);
-                            gen.Write("while (!("); GenCond(s1, p); gen.Write(")) {");
-                            gen.Write("SynErr({0}); Get();", errorNr); gen.WriteLine("}");
-                            break;
-                        }
-                    case Node.alt:
-                        {
-                            s1 = tab.First(p);
-                            bool equal = Sets.Equals(s1, isChecked);
+                        break;
+                    case NodeKind.eps:
+                        break; // nothing
+                    case NodeKind.rslv:
+                        break; // nothing
+                    case NodeKind.sem:
+                        CopySourcePart(p.pos, indent);
+                        break;
+                    case NodeKind.sync:
+                        Indent(indent);
+                        GenErrorMsg(syncErr, curSy);
+                        s1 = Clone(p.set);
+                        gen.Write("while (!("); GenCond(s1, p); gen.Write(")) {");
+                        gen.Write("SynErr({0}); Get();", errorNr); gen.WriteLine("}");
+                        break;
+                    case NodeKind.alt:
+                        s1 = tab.First(p);
+                        bool equal = Sets.Equals(s1, isChecked);
 
-                            // intellisense
-                            p2 = p;
-                            Indent(indent);
-                            while (p2 != null)
-                            {
-                                s1 = tab.Expected(p2.sub, curSy);
-                                GenAutocomplete(s1, p2.sub, indent, "ALT");
-                                GenAutocompleteSymboltable(p2.sub, indent, "ALT");
-                                p2 = p2.down;
-                            }
-                            // end intellisense
+                        // intellisense
+                        p2 = p;
+                        Indent(indent);
+                        while (p2 != null)
+                        {
+                            s1 = tab.Expected(p2.sub, curSy);
+                            GenAutocomplete(s1, p2.sub, indent, "ALT");
+                            GenAutocompleteSymboltable(p2.sub, indent, "ALT");
+                            p2 = p2.down;
+                        }
+                        // end intellisense
 
-                            bool useSwitch = UseSwitch(p);
+                        bool useSwitch = UseSwitch(p);
+                        if (useSwitch)
+                        {
+                            gen.WriteLine("switch (la.kind) {");
+                        }
+                        p2 = p;
+                        while (p2 != null)
+                        {
+                            s1 = tab.Expected(p2.sub, curSy);
                             if (useSwitch)
                             {
-                                gen.WriteLine("switch (la.kind) {");
+                                PutCaseLabels(s1, indent);
+                                gen.WriteLine("{");
                             }
-                            p2 = p;
-                            while (p2 != null)
+                            else if (p2 == p)
                             {
-                                s1 = tab.Expected(p2.sub, curSy);
-                                if (useSwitch)
-                                {
-                                    PutCaseLabels(s1, indent);
-                                    gen.WriteLine("{");
-                                }
-                                else if (p2 == p)
-                                {
-                                    gen.Write("if ("); GenCond(s1, p2.sub); gen.WriteLine(") {");
-                                }
-                                else if (p2.down == null && equal)
-                                {
-                                    Indent(indent);
-                                    gen.WriteLine("} else {");
-                                }
-                                else
-                                {
-                                    Indent(indent);
-                                    gen.Write("} else if ("); GenCond(s1, p2.sub); gen.WriteLine(") {");
-                                }
-                                GenCode(p2.sub, indent + 1, s1);
-                                if (useSwitch)
-                                {
-                                    Indent(indent); gen.WriteLine("\tbreak;");
-                                    Indent(indent); gen.WriteLine("}");
-                                }
-                                p2 = p2.down;
+                                gen.Write("if ("); GenCond(s1, p2.sub); gen.WriteLine(") {");
                             }
-                            Indent(indent);
-                            if (equal)
+                            else if (p2.down == null && equal)
                             {
-                                gen.WriteLine("}");
+                                Indent(indent);
+                                gen.WriteLine("} else {");
                             }
                             else
                             {
-                                GenErrorMsg(altErr, curSy);
-                                if (useSwitch)
-                                {
-                                    gen.WriteLine("default: SynErr({0}); break;", errorNr);
-                                    Indent(indent); gen.WriteLine("}");
-                                }
-                                else
-                                {
-                                    gen.Write("} "); gen.WriteLine("else SynErr({0});", errorNr);
-                                }
+                                Indent(indent);
+                                gen.Write("} else if ("); GenCond(s1, p2.sub); gen.WriteLine(") {");
                             }
-                            break;
+                            GenCode(p2.sub, indent + 1, s1);
+                            if (useSwitch)
+                            {
+                                Indent(indent); gen.WriteLine("\tbreak;");
+                                Indent(indent); gen.WriteLine("}");
+                            }
+                            p2 = p2.down;
                         }
-                    case Node.iter:
+                        Indent(indent);
+                        if (equal)
                         {
-                            Indent(indent);
-                            p2 = p.sub;
-                            Node pac = p2;
-                            BitArray sac = (BitArray)tab.First(pac);
-                            GenAutocomplete(sac, pac, indent, "ITER start");
-                            GenAutocompleteSymboltable(pac, indent, "ITER start");
-                            gen.Write("while (");
-                            if (p2.typ == Node.wt)
+                            gen.WriteLine("}");
+                        }
+                        else
+                        {
+                            GenErrorMsg(altErr, curSy);
+                            if (useSwitch)
                             {
-                                s1 = tab.Expected(p2.next, curSy);
-                                s2 = tab.Expected(p.next, curSy);
-                                gen.Write("WeakSeparator({0},{1},{2}) ", p2.sym.n, NewCondSet(s1), NewCondSet(s2));
-                                s1 = new BitArray(tab.terminals.Count);  // for inner structure
-                                if (p2.up || p2.next == null)
-                                    p2 = null;
-                                else
-                                    p2 = p2.next;
+                                gen.WriteLine("default: SynErr({0}); break;", errorNr);
+                                Indent(indent); gen.WriteLine("}");
                             }
                             else
                             {
-                                s1 = tab.First(p2);
-                                GenCond(s1, p2);
+                                gen.Write("} "); gen.WriteLine("else SynErr({0});", errorNr);
                             }
-                            gen.WriteLine(") {");
-                            GenCode(p2, indent + 1, s1);
-                            Indent(indent + 1);
-                            GenAutocomplete(sac, pac, 0, "ITER end");
-                            GenAutocompleteSymboltable(pac, indent, "ITER end");
-                            Indent(indent); gen.WriteLine("}");
-                            break;
                         }
-                    case Node.opt:
+                        break;
+                    case NodeKind.iter:
+                        Indent(indent);
+                        p2 = p.sub;
+                        Node pac = p2;
+                        BitArray sac = (BitArray)tab.First(pac);
+                        GenAutocomplete(sac, pac, indent, "ITER start");
+                        GenAutocompleteSymboltable(pac, indent, "ITER start");
+                        gen.Write("while (");
+                        if (p2.typ == NodeKind.wt)
+                        {
+                            s1 = tab.Expected(p2.next, curSy);
+                            s2 = tab.Expected(p.next, curSy);
+                            gen.Write("WeakSeparator({0},{1},{2}) ", p2.sym.n, NewCondSet(s1), NewCondSet(s2));
+                            s1 = new BitArray(tab.terminals.Count);  // for inner structure
+                            if (p2.up || p2.next == null)
+                                p2 = null;
+                            else
+                                p2 = p2.next;
+                        }
+                        else
+                        {
+                            s1 = tab.First(p2);
+                            GenCond(s1, p2);
+                        }
+                        gen.WriteLine(") {");
+                        GenCode(p2, indent + 1, s1);
+                        Indent(indent + 1);
+                        GenAutocomplete(sac, pac, 0, "ITER end");
+                        GenAutocompleteSymboltable(pac, indent, "ITER end");
+                        Indent(indent); gen.WriteLine("}");
+                        break;
+                    case NodeKind.opt:
                         s1 = tab.First(p.sub);
                         Indent(indent);
                         GenAutocomplete(s1, p.sub, indent, "OPT");
@@ -504,7 +490,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         Indent(indent); gen.WriteLine("}");
                         break;
                 }
-                if (p.typ != Node.eps && p.typ != Node.sem && p.typ != Node.sync)
+                if (p.typ != NodeKind.eps && p.typ != NodeKind.sem && p.typ != NodeKind.sync)
                     isChecked.SetAll(false);  // = new BitArray(tab.terminals.Count);
                 if (p.up) break;
                 p = p.next;

@@ -64,12 +64,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             return s;
         }
 
-        void NewTransition(State from, State to, int typ, int sym, int tc)
+        void NewTransition(State from, State to, NodeKind typ, int sym, int tc)
         {
             Target t = new Target(to);
             Action a = new Action(typ, sym, tc); a.target = t;
             from.AddAction(a);
-            if (typ == Node.clas) curSy.tokenKind = Symbol.classToken;
+            if (typ == NodeKind.clas) curSy.tokenKind = Symbol.classToken;
         }
 
         void CombineShifts()
@@ -141,18 +141,18 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             stepped[p.n] = true;
             switch (p.typ)
             {
-                case Node.clas:
-                case Node.chr:
+                case NodeKind.clas:
+                case NodeKind.chr:
                     {
                         NewTransition(from, TheState(p.next), p.typ, p.val, p.code);
                         break;
                     }
-                case Node.alt:
+                case NodeKind.alt:
                     {
                         Step(from, p.sub, stepped); Step(from, p.down, stepped);
                         break;
                     }
-                case Node.iter:
+                case NodeKind.iter:
                     {
                         if (Tab.DelSubGraph(p.sub))
                         {
@@ -167,7 +167,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         }
                         break;
                     }
-                case Node.opt:
+                case NodeKind.opt:
                     {
                         if (p.next != null && !stepped[p.next.n]) Step(from, p.next, stepped);
                         Step(from, p.sub, stepped);
@@ -187,30 +187,30 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             if (p == null) return;
             if (p.state != null) return; // already visited;
-            if (state == null || (p.typ == Node.iter && renumIter)) state = NewState();
+            if (state == null || (p.typ == NodeKind.iter && renumIter)) state = NewState();
             p.state = state;
             if (Tab.DelGraph(p)) state.endOf = curSy;
             switch (p.typ)
             {
-                case Node.clas:
-                case Node.chr:
+                case NodeKind.clas:
+                case NodeKind.chr:
                     {
                         NumberNodes(p.next, null, false);
                         break;
                     }
-                case Node.opt:
+                case NodeKind.opt:
                     {
                         NumberNodes(p.next, null, false);
                         NumberNodes(p.sub, state, true);
                         break;
                     }
-                case Node.iter:
+                case NodeKind.iter:
                     {
                         NumberNodes(p.next, state, true);
                         NumberNodes(p.sub, state, true);
                         break;
                     }
-                case Node.alt:
+                case NodeKind.alt:
                     {
                         NumberNodes(p.next, null, false);
                         NumberNodes(p.sub, state, true);
@@ -227,23 +227,23 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (start) Step(p.state, p, new BitArray(tab.nodes.Count)); // start of group of equally numbered nodes
             switch (p.typ)
             {
-                case Node.clas:
-                case Node.chr:
+                case NodeKind.clas:
+                case NodeKind.chr:
                     {
                         FindTrans(p.next, true, marked);
                         break;
                     }
-                case Node.opt:
+                case NodeKind.opt:
                     {
                         FindTrans(p.next, true, marked); FindTrans(p.sub, false, marked);
                         break;
                     }
-                case Node.iter:
+                case NodeKind.iter:
                     {
                         FindTrans(p.next, false, marked); FindTrans(p.sub, false, marked);
                         break;
                     }
-                case Node.alt:
+                case NodeKind.alt:
                     {
                         FindTrans(p.sub, false, marked); FindTrans(p.down, false, marked);
                         break;
@@ -261,7 +261,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             }
             NumberNodes(p, firstState, true);
             FindTrans(p, true, new BitArray(tab.nodes.Count));
-            if (p.typ == Node.iter)
+            if (p.typ == NodeKind.iter)
             {
                 Step(firstState, p, new BitArray(tab.nodes.Count));
             }
@@ -289,7 +289,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             for (; i < len; i++)
             { // make new DFA for s[i..len-1], ML: i is either 0 or len
                 State to = NewState();
-                NewTransition(state, to, Node.chr, s[i], Node.normalTrans);
+                NewTransition(state, to, NodeKind.chr, s[i], Node.normalTrans);
                 state = to;
             }
             Symbol matchedSym = state.endOf;
@@ -348,13 +348,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         bool Overlap(Action a, Action b)
         {
             CharSet seta, setb;
-            if (a.typ == Node.chr)
-                if (b.typ == Node.chr) return a.sym == b.sym;
+            if (a.typ == NodeKind.chr)
+                if (b.typ == NodeKind.chr) return a.sym == b.sym;
                 else { setb = tab.CharClassSet(b.sym); return setb[a.sym]; }
             else
             {
                 seta = tab.CharClassSet(a.sym);
-                if (b.typ == Node.chr) return seta[b.sym];
+                if (b.typ == NodeKind.chr) return seta[b.sym];
                 else { setb = tab.CharClassSet(b.sym); return seta.Intersects(setb); }
             }
         }
@@ -431,7 +431,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 for (Action action = state.firstAction; action != null; action = action.next)
                 {
                     if (first) { trace.Write(" "); first = false; } else trace.Write("                    ");
-                    if (action.typ == Node.clas) trace.Write(((CharClass)tab.classes[action.sym]).name);
+                    if (action.typ == NodeKind.clas) trace.Write(((CharClass)tab.classes[action.sym]).name);
                     else trace.Write("{0, 3}", Ch(action.sym));
                     for (Target targ = action.target; targ != null; targ = targ.next)
                         trace.Write(" {0, 3}", targ.state.nr);
@@ -448,8 +448,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public Action FindAction(State state, char ch)
         {
             for (Action a = state.firstAction; a != null; a = a.next)
-                if (a.typ == Node.chr && ch == a.sym) return a;
-                else if (a.typ == Node.clas)
+                if (a.typ == NodeKind.chr && ch == a.sym) return a;
+                else if (a.typ == NodeKind.clas)
                 {
                     CharSet s = tab.CharClassSet(a.sym);
                     if (s[ch]) return a;
@@ -525,11 +525,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             StringBuilder s = new StringBuilder();
             while (p != null)
             {
-                if (p.typ == Node.chr)
+                if (p.typ == NodeKind.chr)
                 {
                     s.Append((char)p.val);
                 }
-                else if (p.typ == Node.clas)
+                else if (p.typ == NodeKind.clas)
                 {
                     CharSet set = tab.CharClassSet(p.val);
                     if (set.Elements() != 1) parser.SemErr("character set contains more than 1 character");
@@ -666,7 +666,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             {
                 if (action == state.firstAction) gen.Write("\t\t\t\tif (");
                 else gen.Write("\t\t\t\telse if (");
-                if (action.typ == Node.chr) gen.Write(ChCond((char)action.sym));
+                if (action.typ == NodeKind.chr) gen.Write(ChCond((char)action.sym));
                 else PutRange(tab.CharClassSet(action.sym));
                 gen.Write(") {");
                 if (action.tc == Node.contextTrans)
@@ -712,7 +712,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             for (Action action = firstState.firstAction; action != null; action = action.next)
             {
                 int targetState = action.target.state.nr;
-                if (action.typ == Node.chr)
+                if (action.typ == NodeKind.chr)
                 {
                     gen.WriteLine("\t\tstart[" + action.sym + "] = " + targetState + "; ");
                 }

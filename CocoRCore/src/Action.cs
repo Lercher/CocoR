@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 {
     //-----------------------------------------------------------------------------
@@ -5,29 +7,36 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
     //-----------------------------------------------------------------------------
 
     public class Action
-    {           // action of finite automaton
-        public int typ;                 // type of action symbol: clas, chr
+    {           
+        // action of finite automaton
+
+        public NodeKind typ;                 // type of action symbol: clas, chr
         public int sym;                 // action symbol
         public int tc;                  // transition code: normalTrans, contextTrans
         public Target target;       // states reached from this action
         public Action next;
 
-        public Action(int typ, int sym, int tc)
+        public Action(NodeKind typ, int sym, int tc)
         {
-            this.typ = typ; this.sym = sym; this.tc = tc;
+            this.typ = typ; 
+            this.sym = sym; 
+            this.tc = tc;
         }
 
         public void AddTarget(Target t)
         { // add t to the action.targets
             Target last = null;
-            Target p = target;
+            var p = target;
             while (p != null && t.state.nr >= p.state.nr)
             {
                 if (t.state == p.state) return;
                 last = p; p = p.next;
             }
             t.next = p;
-            if (p == target) target = t; else last.next = t;
+            if (p == target)
+                target = t;
+            else
+                last.next = t;
         }
 
         public void AddTargets(Action a)
@@ -43,7 +52,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public CharSet Symbols(Tab tab)
         {
             CharSet s;
-            if (typ == Node.clas)
+            if (typ == NodeKind.clas)
                 s = tab.CharClassSet(sym).Clone();
             else
             {
@@ -56,13 +65,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             if (s.Elements() == 1)
             {
-                typ = Node.chr; sym = s.First();
+                typ = NodeKind.chr; sym = s.First();
             }
             else
             {
                 CharClass c = tab.FindCharClass(s);
                 if (c == null) c = tab.NewCharClass("#", s); // class with dummy name
-                typ = Node.clas; sym = c.n;
+                typ = NodeKind.clas; sym = c.n;
             }
         }
 

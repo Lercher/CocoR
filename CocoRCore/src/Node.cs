@@ -6,30 +6,31 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
     //=====================================================================
     // Node
     //=====================================================================
+    public enum NodeKind // constants for node kinds
+    {
+        t = 1,  // terminal symbol
+        pr = 2,  // pragma
+        nt = 3,  // nonterminal symbol
+        clas = 4,  // character class
+        chr = 5,  // character
+        wt = 6,  // weak terminal symbol
+        any = 7,  // any 
+        eps = 8,  // empty
+        sync = 9,  // synchronization symbol
+        sem = 10,  // semantic action: (. .)
+        alt = 11,  // alternative: |
+        iter = 12,  // iteration: { }
+        opt = 13,  // option: [ ]
+        rslv = 14  // resolver expr
+    }
 
     public class Node
     {
-        // constants for node kinds
-        public const int t = 1;  // terminal symbol
-        public const int pr = 2;  // pragma
-        public const int nt = 3;  // nonterminal symbol
-        public const int clas = 4;  // character class
-        public const int chr = 5;  // character
-        public const int wt = 6;  // weak terminal symbol
-        public const int any = 7;  // 
-        public const int eps = 8;  // empty
-        public const int sync = 9;  // synchronization symbol
-        public const int sem = 10;  // semantic action: (. .)
-        public const int alt = 11;  // alternative: |
-        public const int iter = 12;  // iteration: { }
-        public const int opt = 13;  // option: [ ]
-        public const int rslv = 14;  // resolver expr
-
         public const int normalTrans = 0;       // transition codes
         public const int contextTrans = 1;
 
         public int n;           // node number
-        public int typ;     // t, nt, wt, chr, clas, any, eps, sem, sync, alt, iter, opt, rslv
+        public NodeKind typ;     // t, nt, wt, chr, clas, any, eps, sem, sync, alt, iter, opt, rslv
         public Node next;       // to successor node
         public Node down;       // alt: to next alternative
         public Node sub;        // alt, iter, opt: to first node of substructure
@@ -49,9 +50,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public string declared;    // t, wt: the symbol has to be declared in the symboltable with this name
         public List<AstOp> asts;         // nt, t, wt: AST Operations, # ## ^ ^^ +
 
-        public Node(int typ, Symbol sym, int line)
+        public Node(NodeKind typ, Symbol sym, int line)
         {
-            this.typ = typ; this.sym = sym; this.line = line;
+            this.typ = typ;
+            this.sym = sym;
+            this.line = line;
         }
 
         public AstOp addAstOp()

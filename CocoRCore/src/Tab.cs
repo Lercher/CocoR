@@ -45,8 +45,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             this.parser = parser;
             trace = parser.trace;
             errors = parser.errors;
-            eofSy = NewSym(Node.t, "EOF", 0);
-            dummyNode = NewNode(Node.eps, null, 0);
+            eofSy = NewSym(NodeKind.t, "EOF", 0);
+            dummyNode = NewNode(NodeKind.eps, null, 0);
             literals = new Dictionary<string, Symbol>();
         }
 
@@ -60,7 +60,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         string[] tKind = { "fixedToken", "classToken", "litToken", "classLitToken" };
 
-        public Symbol NewSym(int typ, string name, int line)
+        public Symbol NewSym(NodeKind typ, string name, int line)
         {
             if (name.Length == 2 && name[0] == '"')
             {
@@ -70,9 +70,17 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             sym.definedAs = name;
             switch (typ)
             {
-                case Node.t: sym.n = terminals.Count; terminals.Add(sym); break;
-                case Node.pr: pragmas.Add(sym); break;
-                case Node.nt: sym.n = nonterminals.Count; nonterminals.Add(sym); break;
+                case NodeKind.t:
+                    sym.n = terminals.Count;
+                    terminals.Add(sym);
+                    break;
+                case NodeKind.pr:
+                    pragmas.Add(sym);
+                    break;
+                case NodeKind.nt:
+                    sym.n = nonterminals.Count;
+                    nonterminals.Add(sym);
+                    break;
             }
             return sym;
         }
@@ -100,9 +108,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void PrintSym(Symbol sym)
         {
-            trace.Write("{0,3} {1,-14} {2}", sym.n, Name(sym.name), nTyp[sym.typ]);
+            trace.Write("{0,3} {1,-14} {2,-4}", sym.n, Name(sym.name), sym.typ);
             if (sym.attrPos == null) trace.Write(" false "); else trace.Write(" true  ");
-            if (sym.typ == Node.nt)
+            if (sym.typ == NodeKind.nt)
             {
                 trace.Write("{0,5}", Num(sym.graph));
                 if (sym.deletable) trace.Write(" true  "); else trace.Write(" false ");
@@ -157,12 +165,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         //---------------------------------------------------------------------
 
         public List<Node> nodes = new List<Node>();
-        public string[] nTyp =
-            {"    ", "t   ", "pr  ", "nt  ", "clas", "chr ", "wt  ", "any ", "eps ",
-         "sync", "sem ", "alt ", "iter", "opt ", "rslv"};
         Node dummyNode;
 
-        public Node NewNode(int typ, Symbol sym, int line)
+        public Node NewNode(NodeKind typ, Symbol sym, int line)
         {
             Node node = new Node(typ, sym, line);
             node.n = nodes.Count;
@@ -170,14 +175,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             return node;
         }
 
-        public Node NewNode(int typ, Node sub)
+        public Node NewNode(NodeKind typ, Node sub)
         {
             Node node = NewNode(typ, null, 0);
             node.sub = sub;
             return node;
         }
 
-        public Node NewNode(int typ, int val, int line)
+        public Node NewNode(NodeKind typ, int val, int line)
         {
             Node node = NewNode(typ, null, line);
             node.val = val;
@@ -186,7 +191,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public void MakeFirstAlt(Graph g)
         {
-            g.l = NewNode(Node.alt, g.l); g.l.line = g.l.sub.line;
+            g.l = NewNode(NodeKind.alt, g.l); g.l.line = g.l.sub.line;
             g.r.up = true;
             g.l.next = g.r;
             g.r = g.l;
@@ -195,7 +200,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         // The result will be in g1
         public void MakeAlternative(Graph g1, Graph g2)
         {
-            g2.l = NewNode(Node.alt, g2.l); g2.l.line = g2.l.sub.line;
+            g2.l = NewNode(NodeKind.alt, g2.l); g2.l.line = g2.l.sub.line;
             g2.l.up = true;
             g2.r.up = true;
             Node p = g1.l; while (p.down != null) p = p.down;
@@ -221,7 +226,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public void MakeIteration(Graph g)
         {
-            g.l = NewNode(Node.iter, g.l);
+            g.l = NewNode(NodeKind.iter, g.l);
             g.r.up = true;
             Node p = g.r;
             g.r = g.l;
@@ -234,7 +239,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public void MakeOption(Graph g)
         {
-            g.l = NewNode(Node.opt, g.l);
+            g.l = NewNode(NodeKind.opt, g.l);
             g.r.up = true;
             g.l.next = g.r;
             g.r = g.l;
@@ -253,7 +258,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public void DeleteNodes()
         {
             nodes.Clear();
-            dummyNode = NewNode(Node.eps, null, 0);
+            dummyNode = NewNode(NodeKind.eps, null, 0);
         }
 
         public Graph StrToGraph(string str)
@@ -264,7 +269,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             g.r = dummyNode;
             for (int i = 0; i < s.Length; i++)
             {
-                Node p = NewNode(Node.chr, (int)s[i], 0);
+                Node p = NewNode(NodeKind.chr, (int)s[i], 0);
                 g.r.next = p; g.r = p;
             }
             g.l = dummyNode.next; dummyNode.next = null;
@@ -275,15 +280,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         { // set transition code in the graph rooted at p
             while (p != null)
             {
-                if (p.typ == Node.chr || p.typ == Node.clas)
+                if (p.typ == NodeKind.chr || p.typ == NodeKind.clas)
                 {
                     p.code = Node.contextTrans;
                 }
-                else if (p.typ == Node.opt || p.typ == Node.iter)
+                else if (p.typ == NodeKind.opt || p.typ == NodeKind.iter)
                 {
                     SetContextTrans(p.sub);
                 }
-                else if (p.typ == Node.alt)
+                else if (p.typ == NodeKind.alt)
                 {
                     SetContextTrans(p.sub); SetContextTrans(p.down);
                 }
@@ -306,10 +311,18 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public static bool DelNode(Node p)
         {
-            if (p.typ == Node.nt) return p.sym.deletable;
-            else if (p.typ == Node.alt) return DelSubGraph(p.sub) || p.down != null && DelSubGraph(p.down);
-            else return p.typ == Node.iter || p.typ == Node.opt || p.typ == Node.sem
-                || p.typ == Node.eps || p.typ == Node.rslv || p.typ == Node.sync;
+            if (p.typ == NodeKind.nt)
+                return p.sym.deletable;
+            else if (p.typ == NodeKind.alt)
+                return DelSubGraph(p.sub)
+                    || p.down != null && DelSubGraph(p.down);
+            else
+                return p.typ == NodeKind.iter
+                    || p.typ == NodeKind.opt
+                    || p.typ == NodeKind.sem
+                    || p.typ == NodeKind.eps
+                    || p.typ == NodeKind.rslv
+                    || p.typ == NodeKind.sync;
         }
 
         //----------------- graph printing ----------------------
@@ -322,7 +335,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         string Pos(Position pos)
         {
-            if (pos == null) return "     "; else return String.Format("{0,5}", pos.beg);
+            if (pos == null)
+                return "     ";
+            else
+                return String.Format("{0,5}", pos.beg);
         }
 
         public string Name(string name)
@@ -331,6 +347,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             // found no simpler way to get the first 12 characters of the name
             // padded with blanks on the right
         }
+
 
         public void PrintNodes()
         {
@@ -341,10 +358,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             trace.WriteLine("----------------------------------------------------");
             foreach (Node p in nodes)
             {
-                trace.Write("{0,4} {1} ", p.n, nTyp[p.typ]);
+                trace.Write("{0,4} {1,-4} ", p.n, p.typ);
                 if (p.sym != null)
                     trace.Write("{0,12} ", Name(p.sym.name));
-                else if (p.typ == Node.clas)
+                else if (p.typ == NodeKind.clas)
                 {
                     CharClass c = (CharClass)classes[p.val];
                     trace.Write("{0,12} ", Name(c.name));
@@ -353,23 +370,23 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 trace.Write("{0,5} ", Ptr(p.next, p.up));
                 switch (p.typ)
                 {
-                    case Node.t:
-                    case Node.nt:
-                    case Node.wt:
+                    case NodeKind.t:
+                    case NodeKind.nt:
+                    case NodeKind.wt:
                         trace.Write("             {0,5}", Pos(p.pos)); break;
-                    case Node.chr:
+                    case NodeKind.chr:
                         trace.Write("{0,5} {1,5}       ", p.val, p.code); break;
-                    case Node.clas:
+                    case NodeKind.clas:
                         trace.Write("      {0,5}       ", p.code); break;
-                    case Node.alt:
-                    case Node.iter:
-                    case Node.opt:
+                    case NodeKind.alt:
+                    case NodeKind.iter:
+                    case NodeKind.opt:
                         trace.Write("{0,5} {1,5}       ", Ptr(p.down, false), Ptr(p.sub, false)); break;
-                    case Node.sem:
+                    case NodeKind.sem:
                         trace.Write("             {0,5}", Pos(p.pos)); break;
-                    case Node.eps:
-                    case Node.any:
-                    case Node.sync:
+                    case NodeKind.eps:
+                    case NodeKind.any:
+                    case NodeKind.sync:
                         trace.Write("                  "); break;
                 }
                 trace.WriteLine("{0,5}", p.line);
@@ -454,35 +471,28 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 mark[p.n] = true;
                 switch (p.typ)
                 {
-                    case Node.nt:
-                        {
-                            if (p.sym.firstReady) fs.Or(p.sym.first);
-                            else fs.Or(First0(p.sym.graph, mark));
-                            break;
-                        }
-                    case Node.t:
-                    case Node.wt:
-                        {
-                            fs[p.sym.n] = true; break;
-                        }
-                    case Node.any:
-                        {
-                            fs.Or(p.set); break;
-                        }
-                    case Node.alt:
-                        {
-                            fs.Or(First0(p.sub, mark));
-                            fs.Or(First0(p.down, mark));
-                            break;
-                        }
-                    case Node.iter:
-                    case Node.opt:
-                        {
-                            fs.Or(First0(p.sub, mark));
-                            break;
-                        }
+                    case NodeKind.nt:
+                        if (p.sym.firstReady) fs.Or(p.sym.first);
+                        else fs.Or(First0(p.sym.graph, mark));
+                        break;
+                    case NodeKind.t:
+                    case NodeKind.wt:
+                        fs[p.sym.n] = true;
+                        break;
+                    case NodeKind.any:
+                        fs.Or(p.set);
+                        break;
+                    case NodeKind.alt:
+                        fs.Or(First0(p.sub, mark));
+                        fs.Or(First0(p.down, mark));
+                        break;
+                    case NodeKind.iter:
+                    case NodeKind.opt:
+                        fs.Or(First0(p.sub, mark));
+                        break;
                 }
-                if (!DelNode(p)) break;
+                if (!DelNode(p))
+                    break;
                 p = p.next;
             }
             return fs;
@@ -520,18 +530,18 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             while (p != null && !visited[p.n])
             {
                 visited[p.n] = true;
-                if (p.typ == Node.nt)
+                if (p.typ == NodeKind.nt)
                 {
                     BitArray s = First(p.next);
                     p.sym.follow.Or(s);
                     if (DelGraph(p.next))
                         p.sym.nts[curSy.n] = true;
                 }
-                else if (p.typ == Node.opt || p.typ == Node.iter)
+                else if (p.typ == NodeKind.opt || p.typ == NodeKind.iter)
                 {
                     CompFollow(p.sub);
                 }
-                else if (p.typ == Node.alt)
+                else if (p.typ == NodeKind.alt)
                 {
                     CompFollow(p.sub); CompFollow(p.down);
                 }
@@ -582,13 +592,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             if (p == null) return null;
             Node a = null;
-            if (p.typ == Node.any) a = p;
-            else if (p.typ == Node.alt)
+            if (p.typ == NodeKind.any) a = p;
+            else if (p.typ == NodeKind.alt)
             {
                 a = LeadingAny(p.sub);
                 if (a == null) a = LeadingAny(p.down);
             }
-            else if (p.typ == Node.opt || p.typ == Node.iter) a = LeadingAny(p.sub);
+            else if (p.typ == NodeKind.opt || p.typ == NodeKind.iter) a = LeadingAny(p.sub);
             if (a == null && DelNode(p) && !p.up) a = LeadingAny(p.next);
             return a;
         }
@@ -598,13 +608,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             Node a;
             while (p != null)
             {
-                if (p.typ == Node.opt || p.typ == Node.iter)
+                if (p.typ == NodeKind.opt || p.typ == NodeKind.iter)
                 {
                     FindAS(p.sub);
                     a = LeadingAny(p.sub);
                     if (a != null) Sets.Subtract(a.set, First(p.next));
                 }
-                else if (p.typ == Node.alt)
+                else if (p.typ == NodeKind.alt)
                 {
                     BitArray s1 = new BitArray(terminals.Count);
                     Node q = p;
@@ -629,7 +639,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     a = LeadingAny(p.next);
                     if (a != null)
                     {
-                        Node q = (p.typ == Node.nt) ? p.sym.graph : p.sub;
+                        Node q = (p.typ == NodeKind.nt) ? p.sym.graph : p.sub;
                         Sets.Subtract(a.set, First(q));
                     }
                 }
@@ -654,7 +664,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         // does not look behind resolvers; only called during LL(1) test and in CheckRes
         public BitArray Expected0(Node p, Symbol curSy)
         {
-            if (p.typ == Node.rslv) return new BitArray(terminals.Count);
+            if (p.typ == NodeKind.rslv) return new BitArray(terminals.Count);
             else return Expected(p, curSy);
         }
 
@@ -663,18 +673,18 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             while (p != null && !visited[p.n])
             {
                 visited[p.n] = true;
-                if (p.typ == Node.sync)
+                if (p.typ == NodeKind.sync)
                 {
                     BitArray s = Expected(p.next, curSy);
                     s[eofSy.n] = true;
                     allSyncSets.Or(s);
                     p.set = s;
                 }
-                else if (p.typ == Node.alt)
+                else if (p.typ == NodeKind.alt)
                 {
                     CompSync(p.sub); CompSync(p.down);
                 }
-                else if (p.typ == Node.opt || p.typ == Node.iter)
+                else if (p.typ == NodeKind.opt || p.typ == NodeKind.iter)
                     CompSync(p.sub);
                 p = p.next;
             }
@@ -695,7 +705,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public void SetupAnys()
         {
             foreach (Node p in nodes)
-                if (p.typ == Node.any)
+                if (p.typ == NodeKind.any)
                 {
                     p.set = new BitArray(terminals.Count, true);
                     p.set[eofSy.n] = false;
@@ -750,9 +760,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 trace.WriteLine("ANY and SYNC sets:");
                 trace.WriteLine("-----------------");
                 foreach (Node p in nodes)
-                    if (p.typ == Node.any || p.typ == Node.sync)
+                    if (p.typ == NodeKind.any || p.typ == NodeKind.sync)
                     {
-                        trace.Write("{0,4} {1,4}: ", p.n, nTyp[p.typ]);
+                        trace.Write("{0,4} {1,-4}: ", p.n, p.typ);
                         PrintSet(p.set, 11);
                     }
             }
@@ -892,16 +902,16 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void GetSingles(Node p, List<Symbol> singles)
         {
             if (p == null) return;  // end of graph
-            if (p.typ == Node.nt)
+            if (p.typ == NodeKind.nt)
             {
                 if (p.up || DelGraph(p.next)) singles.Add(p.sym);
             }
-            else if (p.typ == Node.alt || p.typ == Node.iter || p.typ == Node.opt)
+            else if (p.typ == NodeKind.alt || p.typ == NodeKind.iter || p.typ == NodeKind.opt)
             {
                 if (p.up || DelGraph(p.next))
                 {
                     GetSingles(p.sub, singles);
-                    if (p.typ == Node.alt) GetSingles(p.down, singles);
+                    if (p.typ == NodeKind.alt) GetSingles(p.down, singles);
                 }
             }
             if (!p.up && DelNode(p)) GetSingles(p.next, singles);
@@ -973,7 +983,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             BitArray s1, s2;
             while (p != null)
             {
-                if (p.typ == Node.alt)
+                if (p.typ == NodeKind.alt)
                 {
                     Node q = p;
                     s1 = new BitArray(terminals.Count);
@@ -986,7 +996,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         q = q.down;
                     }
                 }
-                else if (p.typ == Node.opt || p.typ == Node.iter)
+                else if (p.typ == NodeKind.opt || p.typ == NodeKind.iter)
                 {
                     if (DelSubGraph(p.sub)) LL1Error(4, null); // e.g. [[...]]
                     else
@@ -997,7 +1007,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     }
                     CheckAlts(p.sub);
                 }
-                else if (p.typ == Node.any)
+                else if (p.typ == NodeKind.any)
                 {
                     if (Sets.Elements(p.set) == 0) LL1Error(3, null);
                     // e.g. {ANY} ANY or [ANY] ANY or ( ANY | ANY )
@@ -1029,14 +1039,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             {
                 switch (p.typ)
                 {
-                    case Node.alt:
+                    case NodeKind.alt:
                         BitArray expected = new BitArray(terminals.Count);
                         for (Node q = p; q != null; q = q.down)
                             expected.Or(Expected0(q.sub, curSy));
                         BitArray soFar = new BitArray(terminals.Count);
                         for (Node q = p; q != null; q = q.down)
                         {
-                            if (q.sub.typ == Node.rslv)
+                            if (q.sub.typ == NodeKind.rslv)
                             {
                                 BitArray fs = Expected(q.sub.next, curSy);
                                 if (Sets.Intersect(fs, soFar))
@@ -1049,9 +1059,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                             CheckRes(q.sub, true);
                         }
                         break;
-                    case Node.iter:
-                    case Node.opt:
-                        if (p.sub.typ == Node.rslv)
+                    case NodeKind.iter:
+                    case NodeKind.opt:
+                        if (p.sub.typ == NodeKind.rslv)
                         {
                             BitArray fs = First(p.sub.next);
                             BitArray fsNext = Expected(p.next, curSy);
@@ -1060,7 +1070,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         }
                         CheckRes(p.sub, true);
                         break;
-                    case Node.rslv:
+                    case NodeKind.rslv:
                         if (!rslvAllowed)
                             ResErr(p, "Warning: Misplaced resolver: no alternative.");
                         break;
@@ -1102,15 +1112,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             while (p != null)
             {
-                if (p.typ == Node.nt && !visited[p.sym.n])
+                if (p.typ == NodeKind.nt && !visited[p.sym.n])
                 { // new nt reached
                     visited[p.sym.n] = true;
                     MarkReachedNts(p.sym.graph);
                 }
-                else if (p.typ == Node.alt || p.typ == Node.iter || p.typ == Node.opt)
+                else if (p.typ == NodeKind.alt || p.typ == NodeKind.iter || p.typ == NodeKind.opt)
                 {
                     MarkReachedNts(p.sub);
-                    if (p.typ == Node.alt) MarkReachedNts(p.down);
+                    if (p.typ == NodeKind.alt) MarkReachedNts(p.down);
                 }
                 if (p.up) break;
                 p = p.next;
@@ -1140,9 +1150,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         { // true if graph can be derived to terminals
             while (p != null)
             {
-                if (p.typ == Node.nt && !mark[p.sym.n]) return false;
-                if (p.typ == Node.alt && !IsTerm(p.sub, mark)
-                && (p.down == null || !IsTerm(p.down, mark))) return false;
+                if (p.typ == NodeKind.nt && !mark[p.sym.n]) 
+                    return false;
+                if (p.typ == NodeKind.alt 
+                    && !IsTerm(p.sub, mark)
+                    && (p.down == null || !IsTerm(p.down, mark))
+                    ) return false;
                 if (p.up) break;
                 p = p.next;
             }
@@ -1200,7 +1213,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             // collect lines where symbols have been referenced
             foreach (Node n in nodes)
             {
-                if (n.typ == Node.t || n.typ == Node.wt || n.typ == Node.nt)
+                if (n.typ == NodeKind.t || n.typ == NodeKind.wt || n.typ == NodeKind.nt)
                 {
                     if (!xref.TryGetValue(n.sym, out var list))
                     {

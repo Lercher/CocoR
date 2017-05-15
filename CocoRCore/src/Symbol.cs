@@ -17,7 +17,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public const int classLitToken = 3; // e.g. letter {letter} but without literals that have the same structure
 
         public int n;           // symbol number
-        public int typ;         // t, nt, pr, unknown, rslv /* ML 29_11_2002 slv added */ /* AW slv --> rslv */
+        public NodeKind typ;         // t, nt, pr, unknown, rslv /* ML 29_11_2002 slv added */ /* AW slv --> rslv */
         public string name;        // symbol name
         public string definedAs;     // t:  the definition of this terminal or its name
         public Node graph;       // nt: to first node of syntax graph
@@ -37,9 +37,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public List<SymTab> useonces; // nt: optional, list of SymTabs that all symbols must be used at most once within
         public string astjoinwith;  // nt: optional, join a stack top list of ASTLiterals to a single ASTLiteral (+".")
 
-        public Symbol(int typ, string name, int line)
+        public Symbol(NodeKind typ, string name, int line)
         {
-            this.typ = typ; this.name = name; this.line = line;
+            this.typ = typ; 
+            this.name = name; 
+            this.line = line;
         }
     }
 
