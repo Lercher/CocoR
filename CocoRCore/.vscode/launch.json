@@ -12,7 +12,9 @@
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
             "args": [
-                "${workspaceRoot}/sample-grammars/Taste/Taste.ATG", "-utf8", "-is", "-o", "${workspaceRoot}/sample-grammars/Taste"
+                "${workspaceRoot}/sample-grammars/Taste/Taste.ATG", "-utf8", "-is", 
+                "-o", "${workspaceRoot}/sample-grammars/Taste",
+                "-frames", "${workspaceRoot}/src"
             ]
             ,
             "cwd": "${workspaceRoot}",

@@ -10,17 +10,39 @@
     "tasks": [
         {
             "taskName": "build",
-            "args": [ ],
+            "args": [],
             "isBuildCommand": true,
             "showOutput": "silent",
             "problemMatcher": "$msCompile"
         },
         {
-            "taskName": "compile-taste",
+            "taskName": "compile-sample-taste",
             "isShellCommand": true,
             "command": "dotnet",
-            "args": ["${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
-                "${workspaceRoot}/sample-grammars/Taste/Taste.ATG", "-utf8", "-is", "-o", "${workspaceRoot}/sample-grammars/Taste"
+            "args": [
+                "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
+                "${workspaceRoot}/sample-grammars/Taste/Taste.ATG",
+                "-utf8",
+                "-is",
+                "-o",
+                "${workspaceRoot}/sample-grammars/Taste",
+                "-frames",
+                "${workspaceRoot}/src"
+            ]
+        },
+        {
+            "taskName": "compile-sample-coco",
+            "isShellCommand": true,
+            "command": "dotnet",
+            "args": [
+                "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
+                "${workspaceRoot}/sample-grammars/Coco/Coco.ATG",
+                "-utf8",
+                "-is",
+                "-o",
+                "${workspaceRoot}/sample-grammars/Coco",
+                "-frames",
+                "${workspaceRoot}/src"
             ]
         }
     ]
