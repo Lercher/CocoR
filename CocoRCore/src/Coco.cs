@@ -74,6 +74,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (ignoreSemanticActions) Console.Write(" [ignore semantic actions]");
             if (isUTF8) Console.Write(" [forced UTF8 processing]");
             Console.WriteLine();
+            Console.WriteLine(srcName);
             if (arg.Length > 0 && srcName != null)
             {
                 try
