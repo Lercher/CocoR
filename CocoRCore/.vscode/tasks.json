@@ -14,6 +14,14 @@
             "isBuildCommand": true,
             "showOutput": "silent",
             "problemMatcher": "$msCompile"
+        },
+        {
+            "taskName": "compile-taste",
+            "isShellCommand": true,
+            "command": "dotnet",
+            "args": ["${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
+                "${workspaceRoot}/sample-grammars/Taste/Taste.ATG", "-utf8", "-is", "-o", "${workspaceRoot}/sample-grammars/Taste"
+            ]
         }
     ]
 }

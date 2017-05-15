@@ -11,7 +11,10 @@
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
-            "args": [],
+            "args": [
+                "${workspaceRoot}/sample-grammars/Taste/Taste.ATG", "-utf8", "-is", "-o", "${workspaceRoot}/sample-grammars/Taste"
+            ]
+            ,
             "cwd": "${workspaceRoot}",
             // For more information about the 'console' field, see https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md#console-terminal-window
             "console": "internalConsole",
