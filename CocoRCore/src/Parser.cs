@@ -1,4 +1,3 @@
-// touch
 using System.IO;
 
 //#define POSITIONS
