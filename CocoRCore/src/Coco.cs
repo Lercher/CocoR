@@ -43,7 +43,7 @@ Coco/R itself) does not fall under the GNU General Public License.
 using System;
 using System.IO;
 
-namespace at.jku.ssw.Coco
+namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 {
 
     public class Coco
