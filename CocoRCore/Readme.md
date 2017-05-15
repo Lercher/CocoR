@@ -18,12 +18,14 @@ code for a parser and compile it on the fly within the Roslyn compiler architect
 
 In particular:
 
-* Getting rid of non-generic collections such as ArrayList
-* Putting common *.frame classes in a seperate source file
+* Getting rid of non-generic collections such as `ArrayList` and `Hashtable`
+* Getting rid of enum kind `int`s
+* One class per file for Coco/R
+* Putting some common `Scanner.frame` and `Parser.frame` classes in a seperate source file each, bute these will contain many classes per file
 * Refactoring the scanner to accept `IEnumerable<char>` in addition to `Stream`
-* Factoring out Scanner code to a common base class
-* Factoring out Parser code to a common base class
-* Getting rid of huge *.frame files, without loosing the flexibility they provide
+* Factoring out `Scanner` code to a common base class
+* Factoring out `Parser` code to a common base class
+* Getting rid of huge *.frame files, without loosing the flexibility they provide. Maybe become linked resources.
 * Getting the compiler compiler itself as a linkable component instead of an executable alone 
 
 
@@ -31,7 +33,7 @@ In particular:
 
 Change to this directory and then:
 * `dotnet restore` to restore packages. However, there are currently no packages to restore.
-* `dotnet build` to build
+* `dotnet build` to build Coco/R itself and the sample grammars
 * `dotnet run` to run Coco/R
 
 Running should print something like that
@@ -66,13 +68,14 @@ or in a directory specified in the -frames option.
 We recommend to use Visual Studio Code to build this version. First open this direcory with vscode or open a command prompt, change to this directory and then:
 * `code .` or `code <this-directory>` to open vscode.
 * have a look at the C# sources, if you coose to do so.
-* `Ctrl-Shift-B` to build. 
+* `Ctrl-Shift-B` to build Coco/R itself and the sample grammars.
 * If asked to restore packages, answer "Yes". However, there are currently no packages to restore.
 * `F5` to run.
 
 ## Status: incubating
 
 * compiles to be run as a process
-* generates V2 code
+* generates mixed V2 and core code
 * uses standard frames
 * no test cases
+* Coco/R core can successfully compile itself now
