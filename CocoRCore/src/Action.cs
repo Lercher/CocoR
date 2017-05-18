@@ -43,7 +43,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         { // add copy of a.targets to action.targets
             for (Target p = a.target; p != null; p = p.next)
             {
-                Target t = new Target(p.state);
+                Target t = new Target() { state = p.state };
                 AddTarget(t);
             }
             if (a.tc == NodeTransition.contextTrans) tc = NodeTransition.contextTrans;

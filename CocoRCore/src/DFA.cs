@@ -66,8 +66,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void NewTransition(State from, State to, NodeKind typ, int sym, NodeTransition tc)
         {
-            Target t = new Target(to);
-            Action a = new Action(typ, sym, tc); a.target = t;
+            Target t = new Target() { state = to };
+            Action a = new Action(typ, sym, tc) { target = t };
             from.AddAction(a);
             if (typ == NodeKind.clas) curSy.tokenKind = Symbol.classToken;
         }
