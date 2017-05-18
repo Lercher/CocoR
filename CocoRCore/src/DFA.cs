@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Collections;
+using CocoRCore;
 
 namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 {
@@ -28,7 +29,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         // other Coco objects
         private Parser parser;
         private Tab tab;
-        private Errors errors;
+        private ErrorsBase errors;
         private TextWriter trace;
 
         //---------- Output primitives

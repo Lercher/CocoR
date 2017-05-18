@@ -38,9 +38,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         Parser parser;                    // other Coco objects
         TextWriter trace;
-        Errors errors;
+        ErrorsBase errors;
 
-        public Tab(Parser parser)
+        public Tab(CocoRCore.CSharp.Parser parser)
         {
             this.parser = parser;
             trace = parser.trace;

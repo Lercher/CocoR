@@ -14,13 +14,8 @@ namespace CocoRCore.CSharp {
 
 
 
-public class Parserbase 
-{
-	public virtual void Prime(Token t) { /* hook */ }
-}
-
-public class Parser : Parserbase 
-{
+	public class Parser : ParserBase 
+	{
 	public const int _EOF = 0; // TOKEN EOF
 	public const int _ident = 1; // TOKEN ident
 	public const int _number = 2; // TOKEN number
@@ -28,24 +23,12 @@ public class Parser : Parserbase
 	public const int _badString = 4; // TOKEN badString
 	public const int _char = 5; // TOKEN char
 	public const int _prime = 6; // TOKEN prime
-	public const int maxT = 51;
+	private const int __maxT = 51;
 	public const int _ddtSym = 52;
 	public const int _optionSym = 53;
 
-	const bool _T = true;
-	const bool _x = false;
-	public const string DuplicateSymbol = "{0} '{1}' declared twice in '{2}'";
-	public const string MissingSymbol ="{0} '{1}' not declared in '{2}'";
-	const int minErrDist = 2;
-	
-	public Scanner scanner;
-	public Errors  errors;
-	public readonly List<Alternative> tokens = new List<Alternative>();
-	
-	public Token t;    // last recognized token
-	public Token la;   // lookahead token
-	int errDist = minErrDist;
-
+		private const bool _T = true;
+		private const bool _x = false;
 	public Symboltable symbols(string name) {
 		return null;
 	}
@@ -66,38 +49,21 @@ string noString = "-none-"; // used in declarations of literal tokens
 
 
 
-	public Parser(Scanner scanner) 
-	{
-		this.scanner = scanner;
-		errors = new Errors();		
-
-	}
-
-	void SynErr (int n) 
-	{
-		if (errDist >= minErrDist) errors.SynErr(la.line, la.col, n);
-		errDist = 0;
-	}
-
-	public void SemErr (string msg) 
-	{
-		SemErr(t, msg);
-	}
-	
-	public void SemErr (Token t, string msg) 
-	{
-		if (errDist >= minErrDist) errors.SemErr(t.line, t.col, msg);
-		errDist = 0;
-	}
-
-	void Get () 
-	{
-		for (;;) 
+		public Parser(Scanner scanner) : base(scanner, new Errors())
 		{
-			t = la;
 
-			la = scanner.Scan();
-			if (la.kind <= maxT) { ++errDist; break; }
+		}
+
+		public override int maxT => __maxT;
+
+		protected override void Get() 
+		{
+			for (;;) 
+			{
+				t = la;
+
+				la = scanner.Scan();
+				if (la.kind <= maxT) { ++errDist; break; }
 				if (la.kind == 52) {
 				tab.SetDDT(la.val); 
 				}
@@ -105,60 +71,61 @@ string noString = "-none-"; // used in declarations of literal tokens
 				tab.SetOption(la.val); 
 				}
 
-			la = t;
-		}
-	}
-
-
-
-	bool isKind(Token t, int n) 
-	{
-		int k = t.kind;
-		while (k >= 0) 
-		{
-			if (k == n) return true;
-			k = tBase[k];
-		}
-		return false;
-	}
-	
-	void Expect (int n) 
-	{
-		if (isKind(la, n)) Get(); else { SynErr(n); }
-	}
-	
-	// is the lookahead token la a start of the production s?
-	bool StartOf (int s) 
-	{
-		return set[s, la.kind];
-	}
-	
-	void ExpectWeak (int n, int follow) 
-	{
-		if (isKind(la, n)) Get();
-		else {
-			SynErr(n);
-			while (!StartOf(follow)) Get();
-		}
-	}
-
-
-	bool WeakSeparator(int n, int syFol, int repFol) 
-	{
-		int kind = la.kind;
-		if (isKind(la, n)) {Get(); return true;}
-		else if (StartOf(repFol)) {return false;}
-		else {
-			SynErr(n);
-			while (!(set[syFol, kind] || set[repFol, kind] || set[0, kind])) {
-				Get();
-				kind = la.kind;
+				la = t;
 			}
-			return StartOf(syFol);
 		}
-	}
 
-	
+        private bool isKind(Token t, int n)
+        {
+            int k = t.kind;
+            while (k >= 0)
+            {
+                if (k == n) return true;
+                k = tBase[k];
+            }
+            return false;
+        }
+
+        // is the lookahead token la a start of the production s?
+        private bool StartOf(int s)
+        {
+            return set[s, la.kind];
+        }
+
+        private bool WeakSeparator(int n, int syFol, int repFol)
+        {
+            int kind = la.kind;
+            if (isKind(la, n)) { Get(); return true; }
+            else if (StartOf(repFol)) { return false; }
+            else
+            {
+                SynErr(n);
+                while (!(set[syFol, kind] || set[repFol, kind] || set[0, kind]))
+                {
+                    Get();
+                    kind = la.kind;
+                }
+                return StartOf(syFol);
+            }
+        }
+
+        protected void Expect(int n)
+        {
+            if (isKind(la, n)) Get(); else { SynErr(n); }
+        }
+
+
+        protected void ExpectWeak(int n, int follow)
+        {
+            if (isKind(la, n)) Get();
+            else
+            {
+                SynErr(n);
+                while (!StartOf(follow)) Get();
+            }
+        }
+
+
 	void Coco‿NT() {
 		{
 		Symbol sym; Graph g, g1, g2; string gramName; CharSet s; 
@@ -959,32 +926,33 @@ string noString = "-none-"; // used in declarations of literal tokens
 
 
 
-	public void Parse() 
-	{
-		la = new Token();
-		la.val = "";
-		Get();
+		public override void Parse() 
+		{
+			la = new Token();
+			la.val = "";
+			Get();
 		Coco‿NT();
 		Expect(0);
 		
-	}
+		}
 	
-	// a token's base type
-	public static readonly int[] tBase = {
+		// a token's base type
+		public static readonly int[] tBase = {
 		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
 		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
 		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1
-	};
+		};
 
-	// a token's name
-	public static readonly string[] tName = {
+		// a token's name
+		public static readonly string[] tName = {
 		"EOF","ident","number","string", "badString","char","\"\\\'\"","\"COMPILER\"", "\"IGNORECASE\"","\"CHARACTERS\"","\"TOKENS\"","\"PRAGMAS\"", "\"COMMENTS\"","\"FROM\"","\"TO\"","\"NESTED\"", "\"IGNORE\"","\"SYMBOLTABLES\"","\"PRODUCTIONS\"","\"=\"",
 		"\".\"","\"END\"","\"STRICT\"","\"SCOPES\"", "\"(\"","\",\"","\")\"","\"USEONCE\"", "\"USEALL\"","\"+\"","\"-\"","\"..\"", "\"ANY\"","\":\"","\"<\"","\">\"", "\"<.\"","\".>\"","\"|\"","\"WEAK\"",
 		"\"[\"","\"]\"","\"{\"","\"}\"", "\"SYNC\"","\"^\"","\"#\"","\"IF\"", "\"CONTEXT\"","\"(.\"","\".)\"","???"
-	};
+		};
+		public override string NameOf(int tokenKind) => tName[tokenKind];
 
-	// states that a particular production (1st index) can start with a particular token (2nd index)
-	static readonly bool[,] set0 = {
+		// states that a particular production (1st index) can start with a particular token (2nd index)
+		static readonly bool[,] set0 = {
 		{_T,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_T, _T,_x,_x,_x, _T,_T,_T,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x},
 		{_x,_T,_T,_T, _T,_T,_T,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x},
 		{_x,_T,_T,_T, _T,_T,_T,_T, _x,_x,_x,_x, _x,_T,_T,_T, _x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x},
@@ -1010,10 +978,10 @@ string noString = "-none-"; // used in declarations of literal tokens
 		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _T,_x,_T,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_T,_x,_x, _x},
 		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}
 
-	};
+		};
 
-	// as set0 but with token inheritance taken into account
-	static readonly bool[,] set = {
+		// as set0 but with token inheritance taken into account
+		static readonly bool[,] set = {
 		{_T,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_T, _T,_x,_x,_x, _T,_T,_T,_T, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_T,_x,_x, _x},
 		{_x,_T,_T,_T, _T,_T,_T,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x},
 		{_x,_T,_T,_T, _T,_T,_T,_T, _x,_x,_x,_x, _x,_T,_T,_T, _x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x},
@@ -1039,24 +1007,20 @@ string noString = "-none-"; // used in declarations of literal tokens
 		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _T,_x,_T,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_x,_T,_T, _T,_T,_T,_T, _T,_x,_x,_x, _x,_T,_x,_x, _x},
 		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_x,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _x}
 
-	};
+		};
 
 
 
-} // end Parser
+	} // end Parser
 
 
-public class Errors 
-{
-	public int count = 0;                                    // number of errors detected
-	public System.IO.TextWriter errorStream = Console.Out;   // error messages go to this stream
-	public string errMsgFormat = "-- line {0} col {1}: {2}"; // 0=line, 1=column, 2=text
-
-	public virtual void SynErr (int line, int col, int n) 
+	public class Errors : ErrorsBase
 	{
-		string s;
-		switch (n) 
+		public override void SynErr(int line, int col, int n) 
 		{
+			string s;
+			switch (n) 
+			{
 			case 0: s = "EOF expected"; break;
 			case 1: s = "ident expected"; break;
 			case 2: s = "number expected"; break;
@@ -1122,358 +1086,11 @@ public class Errors
 			case 62: s = "invalid ASTVal"; break;
 			case 63: s = "invalid TokenFactor"; break;
 
-			default: s = "error " + n; break;
+				default: s = "error " + n; break;
+			}
+			errorStream.WriteLine(errMsgFormat, line, col, s);
+			count++;
 		}
-		errorStream.WriteLine(errMsgFormat, line, col, s);
-		count++;
-	}
+	} // Errors
 
-	public virtual void SemErr (int line, int col, string s) 
-	{
-		errorStream.WriteLine(errMsgFormat, line, col, s);
-		count++;
-	}
-	
-	public virtual void SemErr (string s) 
-	{
-		errorStream.WriteLine(s);
-		count++;
-	}
-	
-	public virtual void Warning (int line, int col, string s) 
-	{
-		errorStream.WriteLine(errMsgFormat, line, col, s);
-	}
-	
-	public virtual void Warning(string s) 
-	{
-		errorStream.WriteLine(s);
-	}
-} // Errors
-
-
-public class FatalError: Exception 
-{
-	public FatalError(string m): base(m) {}
-}
-
-// mutatable alternatives
-public class Alt 
-{
-	public BitArray alt = null;
-	public Symboltable[] altst = null;
-	public Symboltable tdeclares = null;
-	public Symboltable tdeclared = null;
-	public Token declaration = null;
-
-	public Alt(int size) {
-		alt = new BitArray(size);
-		altst = new Symboltable[size];
-	}
-}
-
-// non mutatable
-public class Alternative 
-{
-	public readonly Token t;
-	public readonly string declares = null;
-	public readonly string declared = null;
-	public readonly BitArray alt;
-	public readonly Symboltable[] st;
-	public Token declaration = null;
-
-	public Alternative(Token t, Alt alternatives) {
-		this.t = t;
-		if (alternatives.tdeclares != null)
-			this.declares = alternatives.tdeclares.name;
-		if (alternatives.tdeclared != null)
-			this.declared = alternatives.tdeclared.name;
-		this.alt = alternatives.alt;
-		this.st = alternatives.altst;
-		this.declaration = alternatives.declaration;		
-	}
-}
-
-public delegate void TokenEventHandler(Token t);
-public class Symboltable 
-{
-	private Stack<List<Token>> scopes;
-	private Stack<List<Token>> undeclaredTokens = new Stack<List<Token>>();
-	public readonly string name;
-	public readonly bool ignoreCase;
-	public readonly bool strict;
-	private readonly List<Alternative> fixuplist;
-	private Symboltable clone = null;
-	public event TokenEventHandler TokenUsed;
-
-	public Symboltable(string name, bool ignoreCase, bool strict, List<Alternative> alternatives) 
-	{
-		this.name = name;
-		this.ignoreCase = ignoreCase;
-		this.strict = strict;
-		this.scopes = new Stack<List<Token>>();
-		this.fixuplist = alternatives;
-		pushNewScope();
-	}
-
-	private Symboltable(Symboltable st) 
-	{
-		this.name = st.name;
-		this.ignoreCase = st.ignoreCase;
-		this.strict = st.strict;
-		this.fixuplist = st.fixuplist;
-
-		// now copy the scopes and its lists
-		this.scopes = new Stack<List<Token>>();				 		
-		Stack<List<Token>> reverse = new Stack<List<Token>>(st.scopes);
-		foreach(List<Token> list in reverse) {
-			if (strict)
-				this.scopes.Push(new List<Token>(list)); // strict: copy the list values
-			else
-				this.scopes.Push(list); // non strict: copy the list reference
-		}
-	}
-
-	// We can keep the clone until we push/pop of the stack, or add a new item. 
-	public Symboltable CloneScopes() 
-	{
-		if (clone != null) return clone;
-		clone = new Symboltable(this); // i.e. copy scopes
-		return clone;
-	}
-
-	private StringComparer comparer 
-	{
-		get {
-			return ignoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
-		}
-	}
-
-	private Token Find(IEnumerable<Token> list, Token tok) 
-	{
-		StringComparer cmp = comparer;   
-		foreach(Token t in list)
-			if (0 == cmp.Compare(t.val, tok.val))
-				return t;
-		return null;
-	} 
-
-	public Token Find(Token t) 
-	{
-		foreach(List<Token> list in scopes) {
-			Token tok = Find(list, t);
-			if (tok != null) return tok;
-		}
-		return null;
-	}
-
-	// ----------------------------------- for Parser use start -------------------- 
-	
-	public bool Use(Token t, Alt a) 
-	{
-		if (TokenUsed != null) TokenUsed(t);
-		a.tdeclared = this;
-		if (strict) {
-			a.declaration = Find(t);
-			if (a.declaration != null) return true; // it's ok, if we know the symbol
-			return false; // in strict mode we report an illegal symbol
-		} 
-		else 
-		{
-			// in non-strict mode we can only use declarations
-			// known in the top scope, so that we dont't find a declaration 
-			// in a parent scope and redefine a symbol in this topmost scope 
-			a.declaration = Find(currentScope, t);
-			if (a.declaration != null) return true; // it's ok, if we know the symbol in this scope
-		}
-		// in non strict mode we need to store the token for future checking
-		undeclaredTokens.Peek().Add(t); 
-		return true; // we can't report an invalid symbol yet, so report "all ok".
-	}
-
-	public bool Add(Token t) 
-	{
-		if (Find(currentScope, t) != null)
-			return false;
-		if (strict) clone = null; // if non strict, we have to keep the clone
-		currentScope.Add(t);
-		RemoveFromAndFixupList(undeclaredTokens.Peek(), t);
-		return true;
-	}
-
-	public void Add(string s) 
-	{
-		Token t = new Token();
-		t.kind = -1;
-		t.pos = -1;
-		t.charPos = -1;
-		t.val = s;
-		t.line = -1;
-		currentScope.Add(t);
-	}
-
-	// ----------------------------------- for Parser use end --------------------	
-
-	public bool Contains(Token t) 
-	{
-		return (Find(t) != null);
-	}
-
-	void RemoveFromAndFixupList(List<Token> undeclared, Token declaration) 
-	{
-		StringComparer cmp = comparer;
-		List<Token> found = new List<Token>();
-		foreach(Token t in undeclared)
-			if (0 == cmp.Compare(t.val, declaration.val))
-				found.Add(t);
-		foreach(Token t in found) {
-			undeclared.Remove(t);
-			foreach(Alternative a in fixuplist)
-				if (a.t == t)
-					a.declaration = declaration;
-		}
-	}
-
-	void pushNewScope() 
-	{
-		clone = null;
-		scopes.Push(new List<Token>());
-		undeclaredTokens.Push(new List<Token>());
-	}
-
-	void popScope() 
-	{
-		clone = null;
-		scopes.Pop();
-		PromoteUndeclaredToParent();
-	}
-
-	public void CheckDeclared(Errors errors) 
-	{
-		List<Token> list = undeclaredTokens.Peek();
-		foreach(Token t in list) {
-			string msg = string.Format(Parser.MissingSymbol, Parser.tName[t.kind], t.val, this.name);
-			errors.SemErr(t.line, t.col, msg);
-		}
-	}
-
-	void PromoteUndeclaredToParent() 
-	{
-		List<Token> list = undeclaredTokens.Pop();
-		// now that the lexical scope is about to terminate, we know that there cannot be more declarations in this scope
-		// so we can take the existing declarations of the parent scope to resolve these unresolved tokens in 'list'.
-		foreach(Token decl in currentScope)
-			RemoveFromAndFixupList(list, decl);
-		// now list contains all tokens that were not delared in the popped scope
-		// and not yet declared in the now current scope
-		undeclaredTokens.Peek().AddRange(list);
-	} 
-
-	public IDisposable createScope() 
-	{
-		pushNewScope();
-		return new Popper(this);
-	} 
-
-	public IDisposable createUsageCheck(bool oneOrMore, Errors errors, Token scopeToken) 
-	{
-		return new UseCounter(this, oneOrMore, errors, scopeToken);
-	}
-
-	public List<Token> currentScope 
-	{
-		get { return scopes.Peek(); } 
-	}
-
-	public IEnumerable<Token> items 
-	{
-		get {
-		    if (scopes.Count == 1) return currentScope;
-
-			Symboltable all = new Symboltable(name, ignoreCase, true, fixuplist);
-			foreach(List<Token> list in scopes)
-				foreach(Token t in list)
-					all.Add(t);
-			return all.currentScope; 
-		}
-	}
-
-	public int CountScopes 
-	{
-		get { return scopes.Count; }
-	}
-
-	private class Popper : IDisposable 
-	{
-		private readonly Symboltable st;
-
-		public Popper(Symboltable st) 
-		{
-			this.st = st;
-		}
-
-		public void Dispose() 
-		{
-			GC.SuppressFinalize(this);
-			st.popScope();
-		}
-	}
-
-	private class UseCounter : IDisposable 
-	{
-		private readonly Symboltable st;
-		public readonly bool oneOrMore; // t - 1..N, f - 0..1
-		public readonly List<Token> uses;
-		public readonly Errors errors;
-		public readonly Token scopeToken;
-
-		public UseCounter(Symboltable st, bool oneOrMore, Errors errors, Token scopeToken) 
-		{
-			this.st = st;
-			this.oneOrMore = oneOrMore;
-			this.errors = errors;
-			this.scopeToken = scopeToken;
-			this.uses = new List<Token>();
-			st.TokenUsed += uses.Add;
-		}
-
-		private bool isValid(List<Token> list) 
-		{
-			int cnt = list.Count;
-			if (oneOrMore) return (cnt >= 1);
-			return (cnt <= 1);
-		}
-
-		public void Dispose() 
-		{
-			GC.SuppressFinalize(this);
-			st.TokenUsed -= uses.Add;
-			Dictionary<string, List<Token>> counter = new Dictionary<string, List<Token>>(st.comparer);
-			foreach(Token t in st.items)
-				counter[t.val] = new List<Token>();
-			foreach(Token t in uses)
-				if (counter.ContainsKey(t.val)) // we ignore undeclared Tokens:
-					counter[t.val].Add(t);
-			// now check for validity
-			foreach(string s in counter.Keys) 
-			{
-				List<Token> list = counter[s];
-				if (!isValid(list)) {
-					if (oneOrMore) 
-					{
-						string msg = string.Format("token '{0}' has to be used in this scope.", s); 
-						errors.SemErr(scopeToken.line, scopeToken.col, msg);
-					} 
-					else 
-					{
-						string msg = string.Format("token '{0}' is used {1:n0} time(s) instead of at most once in this scope, see following errors for locations.", s, list.Count); 
-						errors.SemErr(scopeToken.line, scopeToken.col, msg);
-						foreach(Token t in list)
-							errors.SemErr(t.line, t.col, "... here");
-					}
-				}
-			} 
-		}
-	}
-}
 }

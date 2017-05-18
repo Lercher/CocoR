@@ -34,7 +34,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         Tab tab;          // other Coco objects
         TextWriter trace;
-        Errors errors;
+        ErrorsBase errors;
         Buffer buffer;
 
         void Indent(int n)
@@ -680,7 +680,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             }
             g.CopyFramePart("-->constants");
             GenTokens(); /* ML 2002/09/07 write the token kinds */
-            gen.WriteLine("\tpublic const int maxT = {0};", tab.terminals.Count - 1);
+            gen.WriteLine("\tprivate const int __maxT = {0};", tab.terminals.Count - 1);
             GenPragmas(); /* ML 2005/09/23 write the pragma kinds */
             g.CopyFramePart("-->declarations");
             GenSymbolTables(true);
@@ -721,7 +721,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             trace.WriteLine("{0} sets", symSet.Count);
         }
 
-        public ParserGen(Parser parser)
+        public ParserGen(CocoRCore.CSharp.Parser parser)
         {
             tab = parser.tab;
             errors = parser.errors;
