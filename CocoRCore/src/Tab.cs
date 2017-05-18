@@ -606,7 +606,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 {
                     FindAS(p.sub);
                     a = LeadingAny(p.sub);
-                    if (a != null) Sets.Subtract(a.set, First(p.next));
+                    if (a != null) a.set.Subtract(First(p.next));
                 }
                 else if (p.typ == NodeKind.alt)
                 {
@@ -617,7 +617,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         FindAS(q.sub);
                         a = LeadingAny(q.sub);
                         if (a != null)
-                            Sets.Subtract(a.set, First(q.down).Or(s1));
+                            a.set.Subtract(First(q.down).Or(s1));
                         else
                             s1.Or(First(q.sub));
                         q = q.down;
@@ -634,7 +634,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     if (a != null)
                     {
                         Node q = (p.typ == NodeKind.nt) ? p.sym.graph : p.sub;
-                        Sets.Subtract(a.set, First(q));
+                        a.set.Subtract(First(q));
                     }
                 }
 
@@ -1003,7 +1003,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 }
                 else if (p.typ == NodeKind.any)
                 {
-                    if (Sets.Elements(p.set) == 0) LL1Error(3, null);
+                    if (!p.set.Any()) LL1Error(3, null);
                     // e.g. {ANY} ANY or [ANY] ANY or ( ANY | ANY )
                 }
                 if (p.up) break;
@@ -1043,10 +1043,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                             if (q.sub.typ == NodeKind.rslv)
                             {
                                 BitArray fs = Expected(q.sub.next, curSy);
-                                if (Sets.Intersect(fs, soFar))
-                                    ResErr(q.sub, "Warning: Resolver will never be evaluated. " +
-                                    "Place it at previous conflicting alternative.");
-                                if (!Sets.Intersect(fs, expected))
+                                if (fs.Intersects(soFar))
+                                    ResErr(q.sub, "Warning: Resolver will never be evaluated. Place it at previous conflicting alternative.");
+                                if (!fs.Intersects(expected))
                                     ResErr(q.sub, "Warning: Misplaced resolver: no LL(1) conflict.");
                             }
                             else soFar.Or(Expected(q.sub, curSy));
@@ -1059,7 +1058,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         {
                             BitArray fs = First(p.sub.next);
                             BitArray fsNext = Expected(p.next, curSy);
-                            if (!Sets.Intersect(fs, fsNext))
+                            if (!fs.Intersects(fsNext))
                                 ResErr(p.sub, "Warning: Misplaced resolver: no LL(1) conflict.");
                         }
                         CheckRes(p.sub, true);

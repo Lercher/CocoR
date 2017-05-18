@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 {
@@ -6,40 +8,25 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
     // Sets 
     //=====================================================================
 
-    public class Sets
+    public static class Sets
     {
+        public static IEnumerable<bool> Seq(this BitArray s) 
+            => s.Cast<bool>();
 
-        public static int Elements(BitArray s)
-        {
-            int max = s.Length;
-            int n = 0;
-            for (int i = 0; i < max; i++)
-                if (s[i]) n++;
-            return n;
-        }
+        public static bool Any(this BitArray s) 
+            => s.Seq().Any(b => b);
 
-        public static bool Equals(BitArray a, BitArray b)
-        {
-            int max = a.Length;
-            for (int i = 0; i < max; i++)
-                if (a[i] != b[i]) return false;
-            return true;
-        }
+        public static int ElementCount(this BitArray s) 
+            => s.Seq().Count(b => b);
 
-        public static bool Intersect(BitArray a, BitArray b)
-        { // a * b != {}
-            int max = a.Length;
-            for (int i = 0; i < max; i++)
-                if (a[i] && b[i]) return true;
-            return false;
-        }
+        public static bool Equals(this BitArray a, BitArray b) 
+            => a.Seq().SequenceEqual(b.Seq());
 
-        public static void Subtract(BitArray a, BitArray b)
-        { // a = a - b
-            var c = new BitArray(b);
-            a.And(c.Not());
-        }
+        public static bool Intersects(this BitArray a, BitArray b) 
+            => Enumerable.Zip(a.Seq(), b.Seq(), (x, y) => x == y).Any(z => z);
 
-    }
+        public static void Subtract(this BitArray a, BitArray b)
+            => a.And(new BitArray(b).Not());
 
+   }
 } // end namespace

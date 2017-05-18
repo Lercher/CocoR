@@ -160,7 +160,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             if (!GenerateAutocompleteInformation) return; // we don't want autocomplete information in the parser
             if (p.typ == NodeKind.rslv) return; // if we have a resolver, we don't know what to do (yet), so we do nothing
-            int c = Sets.Elements(s);
+            int c = s.ElementCount();
             if (c == 0) return;
             if (c > maxTerm)
             {
@@ -204,7 +204,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 CopySourcePart(p.pos, 0);
             else
             {
-                int n = Sets.Elements(s);
+                int n = s.ElementCount();
                 if (n == 0)
                     gen.Write("false"); // happens if an ANY set matches no symbol
                 else if (n <= maxTerm)
@@ -348,7 +348,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         break;
                     case NodeKind.any:
                         Indent(indent);
-                        int acc = Sets.Elements(p.set);
+                        int acc = p.set.ElementCount();
                         if (tab.terminals.Count == (acc + 1) || (acc > 0 && Sets.Equals(p.set, isChecked)))
                         {
                             // either this ANY accepts any terminal (the + 1 = end of file), or exactly what's allowed here
