@@ -24,11 +24,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         rslv = 14  // resolver expr
     }
 
+    public enum NodeTransition 
+    {
+        normalTrans = 0,       // transition codes
+        contextTrans = 1
+    }
+
     public class Node
     {
-        public const int normalTrans = 0;       // transition codes
-        public const int contextTrans = 1;
-
         public int n;           // node number
         public NodeKind typ;     // t, nt, wt, chr, clas, any, eps, sem, sync, alt, iter, opt, rslv
         public Node next;       // to successor node
@@ -38,7 +41,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public Symbol sym;      // nt, t, wt: symbol represented by this node
         public int val;     // chr:  ordinal character value
                             // clas: index of character class
-        public int code;        // chr, clas: transition code
+        public NodeTransition code;        // chr, clas: transition code
         public BitArray set;        // any, sync: the set represented by this node
         public Position pos;        // nt, t, wt: pos of actual attributes
                                     // sem:       pos of semantic action in source text

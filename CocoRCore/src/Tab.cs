@@ -282,7 +282,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             {
                 if (p.typ == NodeKind.chr || p.typ == NodeKind.clas)
                 {
-                    p.code = Node.contextTrans;
+                    p.code = NodeTransition.contextTrans;
                 }
                 else if (p.typ == NodeKind.opt || p.typ == NodeKind.iter)
                 {

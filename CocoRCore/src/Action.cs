@@ -12,11 +12,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public NodeKind typ;                 // type of action symbol: clas, chr
         public int sym;                 // action symbol
-        public int tc;                  // transition code: normalTrans, contextTrans
+        public NodeTransition tc;                  // transition code: normalTrans, contextTrans
         public Target target;       // states reached from this action
         public Action next;
 
-        public Action(NodeKind typ, int sym, int tc)
+        public Action(NodeKind typ, int sym, NodeTransition tc)
         {
             this.typ = typ; 
             this.sym = sym; 
@@ -46,7 +46,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 Target t = new Target(p.state);
                 AddTarget(t);
             }
-            if (a.tc == Node.contextTrans) tc = Node.contextTrans;
+            if (a.tc == NodeTransition.contextTrans) tc = NodeTransition.contextTrans;
         }
 
         public CharSet Symbols(Tab tab)

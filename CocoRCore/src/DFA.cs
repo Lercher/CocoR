@@ -64,7 +64,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             return s;
         }
 
-        void NewTransition(State from, State to, NodeKind typ, int sym, int tc)
+        void NewTransition(State from, State to, NodeKind typ, int sym, NodeTransition tc)
         {
             Target t = new Target(to);
             Action a = new Action(typ, sym, tc); a.target = t;
@@ -289,7 +289,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             for (; i < len; i++)
             { // make new DFA for s[i..len-1], ML: i is either 0 or len
                 State to = NewState();
-                NewTransition(state, to, NodeKind.chr, s[i], Node.normalTrans);
+                NewTransition(state, to, NodeKind.chr, s[i], NodeTransition.normalTrans);
                 state = to;
             }
             Symbol matchedSym = state.endOf;
@@ -297,7 +297,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             {
                 state.endOf = sym;
             }
-            else if (matchedSym.tokenKind == Symbol.fixedToken || (a != null && a.tc == Node.contextTrans))
+            else if (matchedSym.tokenKind == Symbol.fixedToken || (a != null && a.tc == NodeTransition.contextTrans))
             {
                 // s matched a token with a fixed definition or a token with an appendix that will be cut off
                 parser.SemErr("tokens " + sym.name + " and " + matchedSym.name + " cannot be distinguished");
@@ -337,7 +337,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 setb.Subtract(setc);
                 a.ShiftWith(seta, tab);
                 b.ShiftWith(setb, tab);
-                c = new Action(0, 0, Node.normalTrans);  // typ and sym are set in ShiftWith
+                c = new Action(0, 0, NodeTransition.normalTrans);  // typ and sym are set in ShiftWith
                 c.AddTargets(a);
                 c.AddTargets(b);
                 c.ShiftWith(setc, tab);
@@ -400,7 +400,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             for (State state = firstState; state != null; state = state.next)
                 for (Action a = state.firstAction; a != null; a = a.next)
-                    if (a.tc == Node.contextTrans) a.target.state.ctx = true;
+                    if (a.tc == NodeTransition.contextTrans) a.target.state.ctx = true;
         }
 
         public void MakeDeterministic()
@@ -435,7 +435,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     else trace.Write("{0, 3}", Ch(action.sym));
                     for (Target targ = action.target; targ != null; targ = targ.next)
                         trace.Write(" {0, 3}", targ.state.nr);
-                    if (action.tc == Node.contextTrans) trace.WriteLine(" context"); else trace.WriteLine();
+                    if (action.tc == NodeTransition.contextTrans) trace.WriteLine(" context"); else trace.WriteLine();
                 }
             }
             trace.WriteLine();
@@ -669,7 +669,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 if (action.typ == NodeKind.chr) gen.Write(ChCond((char)action.sym));
                 else PutRange(tab.CharClassSet(action.sym));
                 gen.Write(") {");
-                if (action.tc == Node.contextTrans)
+                if (action.tc == NodeTransition.contextTrans)
                 {
                     gen.Write("apx++; "); ctxEnd = false;
                 }
