@@ -23,7 +23,6 @@
                 "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
                 "${workspaceRoot}/sample-grammars/Taste/Taste.ATG",
                 "-utf8",
-                "-is",
                 "-o",
                 "${workspaceRoot}/sample-grammars/Taste",
                 "-frames",
@@ -38,9 +37,22 @@
                 "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
                 "${workspaceRoot}/sample-grammars/Coco/Coco.ATG",
                 "-utf8",
-                "-is",
                 "-o",
                 "${workspaceRoot}/sample-grammars/Coco",
+                "-frames",
+                "${workspaceRoot}/src"
+            ]
+        },
+        {
+            "taskName": "compile-sample-inheritance",
+            "isShellCommand": true,
+            "command": "dotnet",
+            "args": [
+                "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
+                "${workspaceRoot}/sample-grammars/Inheritance/Inheritance.ATG",
+                "-utf8",
+                "-o",
+                "${workspaceRoot}/sample-grammars/Inheritance",
                 "-frames",
                 "${workspaceRoot}/src"
             ]

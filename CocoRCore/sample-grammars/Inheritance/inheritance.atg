@@ -1,0 +1,73 @@
+COMPILER Inheritance
+
+IGNORECASE
+
+CHARACTERS
+    ucletter  = 'A'..'Z'.
+    lcletter  = 'a'..'z'.
+    umlaut    = "ÄÖÜäöü".  // intentionally no ß (szlig)
+	letter    = ucletter + lcletter + umlaut + '_'.
+    digit     = '0'..'9'. 
+	cr        = '\r'.
+	lf        = '\n'.
+	tab       = '\t'.
+
+TOKENS
+    number = ['-'] digit { digit }.
+	ident = letter { letter }.
+    keyword = "KeywordCamelCase".
+    var  : ident = "VAR".
+    var1 : ident = "Var1".  // note that we can now use 1 in an ident!
+    var2 : ident = "var2".
+    var3 : ident = "var3".
+    var4 : ident = "var4".
+    var5 : ident = "var5".
+    var6 : ident = "var6".  
+    colon = ':'.    
+
+COMMENTS FROM "/*" TO "*/" NESTED
+COMMENTS FROM "//" TO lf
+
+IGNORE cr + lf + tab
+
+SYMBOLTABLES    
+   variables. // an empty symbol table named 'variables', declarations anywheres   
+   types STRICT "string" "int" "double". // a symbol table named types with three prefilled entries, new declaration upfront
+   
+PRODUCTIONS
+
+    // any symbol in types has to be used exactly once
+    Inheritance USEONCE(types) USEALL(types) =
+         Seq.
+
+    Block SCOPES(variables, types) 
+    = 
+        "{" 
+        Seq
+        "}"
+    . 
+
+    Seq = 
+        { Ident 
+        | Block 
+        | Type
+        }
+    .
+    
+    Type =
+        "type"
+        ident>types
+    .
+
+    Ident 
+    = 
+        Var
+        ident>variables 
+        [ ("as" | colon) ident:types ]
+        SYNC ";"
+    .
+
+    // we need more than 5 alt nodes to test the switch optimization code of coco's new c# version:
+    Var = var | var1 | var2 | var3 | var4 | var5 | var6. 
+
+END Inheritance.
