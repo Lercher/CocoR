@@ -47,43 +47,6 @@ using CocoRCore;
 		
 		protected override int maxT => _maxT;
 		
-		protected override void NextCh()
-		{
-			if (oldEols > 0) { ch = EOL; oldEols--; } 
-			else 
-			{
-				pos = buffer.Pos;
-				// buffer reads unicode chars, if UTF8 has been detected
-				ch = buffer.Read(); col++; charPos++;
-				// replace isolated '\r' by '\n' in order to make
-				// eol handling uniform across Windows, Unix and Mac
-				if (ch == '\r' && buffer.Peek() != '\n') ch = EOL;
-				if (ch == EOL) { line++; col = 0; }
-			}
-			//if (pos <= 10) Console.Write("{0:X} ", ch);
-			//casing1 start
-	-->casing1
-			//casing1 end
-		}
-
-		protected override void AddCh() 
-		{
-			if (tlen >= tval.Length) 
-			{
-				char[] newBuf = new char[2 * tval.Length];
-				Array.Copy(tval, 0, newBuf, 0, tval.Length);
-				tval = newBuf;
-			}
-			if (ch != Buffer.EOF) 
-			{
-				//casing2 start
-	-->casing2
-				//casing2 end
-				NextCh();
-			}
-		}
-
-
 	-->comments
 
 		protected override void CheckLiteral() 
@@ -103,7 +66,7 @@ using CocoRCore;
 			t.pos = pos; t.col = col; t.line = line; t.charPos = charPos;
 			int state;
 			state = start.ContainsKey(ch) ? start[ch] : 0;
-			tlen = 0; AddCh();
+			tval.Clear(); AddCh();
 			
 			switch (state) 
 			{
@@ -112,14 +75,15 @@ using CocoRCore;
 					{
 						if (recKind != noSym) 
 						{
-							tlen = recEnd - t.pos;
+							tval.Length = recEnd - t.pos;
 							SetScannerBehindT();
 						}
 						t.kind = recKind; break;
 					} // NextCh already done
 	-->scan3
 			}
-			t.val = new String(tval, 0, tlen);
+			t.valScanned = tval.ToString();
+-->casing
 			return t;
 		}
 		

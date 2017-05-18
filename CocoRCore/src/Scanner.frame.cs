@@ -3,8 +3,9 @@
 // that includes this classes in a compiled form.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Text;
+using System.Collections.Generic;
 
 namespace CocoRCore
 {
@@ -27,9 +28,7 @@ namespace CocoRCore
         protected int oldEols;      // EOLs that appeared in a comment;
         protected Token tokens;     // list of tokens already peeked (first token is a dummy)
         protected Token peekToken;         // current peek token
-
-        protected char[] tval = new char[128]; // text of current token
-        protected int tlen;         // length of current token
+        protected StringBuilder tval = new StringBuilder(capacity: 64); // text of current token
 
         protected abstract int maxT { get; }
 
@@ -83,9 +82,30 @@ namespace CocoRCore
             peekToken = tokens = new Token();  // first token is a dummy
         }
 
-        protected abstract void NextCh();
+		protected void NextCh()
+		{
+			if (oldEols > 0) { ch = EOL; oldEols--; } 
+			else 
+			{
+				pos = buffer.Pos;
+				// buffer reads unicode chars, if UTF8 has been detected
+				ch = buffer.Read(); col++; charPos++;
+				// replace isolated '\r' by '\n' in order to make
+				// eol handling uniform across Windows, Unix and Mac
+				if (ch == '\r' && buffer.Peek() != '\n') ch = EOL;
+				if (ch == EOL) { line++; col = 0; }
+			}
+			//if (pos <= 10) Console.Write("{0:X} ", ch);
+		}
 
-        protected abstract void AddCh();
+		protected void AddCh() 
+		{
+			if (ch != Buffer.EOF)
+            {
+                tval.Append((char) ch);
+				NextCh();
+            }
+		}
 
         protected abstract void CheckLiteral();
 
@@ -96,7 +116,8 @@ namespace CocoRCore
             buffer.Pos = t.pos;
             NextCh();
             line = t.line; col = t.col; charPos = t.charPos;
-            for (int i = 0; i < tlen; i++) NextCh();
+            for (int i = 0; i < tval.Length; i++) 
+                NextCh();
         }
 
         // get the next token (possibly a token already seen during peeking)
@@ -144,7 +165,8 @@ namespace CocoRCore
         public int charPos;  // token position in characters in the source text (starting at 0)
         public int col;     // token column (starting at 1)
         public int line;    // token line (starting at 1)
-        public string val;  // token value
+        public string val;  // token value, lowercase if case insensitive parser
+        public string valScanned; // token value as scanned (always case sensitive)
         public Token next;  // ML 2005-03-11 Tokens are kept in linked list
 
         public Token Copy() { return (Token)(this.MemberwiseClone()); }

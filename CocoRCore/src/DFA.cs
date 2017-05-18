@@ -685,7 +685,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (ctxEnd)
             { // final context state: cut appendix
                 gen.WriteLine();
-                gen.WriteLine("\t\t\t\t\ttlen -= apx;");
+                gen.WriteLine("\t\t\t\t\ttval.Length -= apx;");
                 gen.WriteLine("\t\t\t\t\tSetScannerBehindT();");
                 gen.Write("\t\t\t\t\t");
             }
@@ -698,7 +698,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 gen.Write("t.kind = {0}; ", endOf.n);
                 if (endOf.tokenKind == Symbol.classLitToken)
                 {
-                    gen.WriteLine("t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}");
+                    gen.WriteLine("t.val = tval.ToString(); CheckLiteral(); return t;}");
                 }
                 else
                 {
@@ -752,17 +752,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 gen.Write("\tchar valCh;       // current input character (for token.val)");
             g.CopyFramePart("-->initialization");
             WriteStartTab();
-            g.CopyFramePart("-->casing1");
-            if (ignoreCase)
-            {
-                gen.WriteLine("\t\tif (ch != Buffer.EOF) {");
-                gen.WriteLine("\t\t\tvalCh = (char) ch;");
-                gen.WriteLine("\t\t\tch = char.ToLower((char) ch);");
-                gen.WriteLine("\t\t}");
-            }
-            g.CopyFramePart("-->casing2");
-            gen.Write("\t\t\ttval[tlen++] = ");
-            if (ignoreCase) gen.Write("valCh;"); else gen.Write("(char) ch;");
             g.CopyFramePart("-->comments");
             Comment com = firstComment;
             int comIdx = 0;
@@ -793,6 +782,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             g.CopyFramePart("-->scan3");
             for (State state = firstState.next; state != null; state = state.next)
                 WriteState(state);
+            g.CopyFramePart("-->casing");
+            gen.WriteLine("\t\t\tt.val = t.valScanned{0};", ignoreCase ? ".toLowerInvariant()" : string.Empty);        
+            // -->end   copy frame up to it's end
             g.CopyFramePart(null);
             if (tab.nsName != null && tab.nsName.Length > 0) gen.Write("}");
             gen.Dispose();

@@ -74,43 +74,6 @@ namespace CocoRCore.CSharp {
 		
 		protected override int maxT => _maxT;
 		
-		protected override void NextCh()
-		{
-			if (oldEols > 0) { ch = EOL; oldEols--; } 
-			else 
-			{
-				pos = buffer.Pos;
-				// buffer reads unicode chars, if UTF8 has been detected
-				ch = buffer.Read(); col++; charPos++;
-				// replace isolated '\r' by '\n' in order to make
-				// eol handling uniform across Windows, Unix and Mac
-				if (ch == '\r' && buffer.Peek() != '\n') ch = EOL;
-				if (ch == EOL) { line++; col = 0; }
-			}
-			//if (pos <= 10) Console.Write("{0:X} ", ch);
-			//casing1 start
-	
-			//casing1 end
-		}
-
-		protected override void AddCh() 
-		{
-			if (tlen >= tval.Length) 
-			{
-				char[] newBuf = new char[2 * tval.Length];
-				Array.Copy(tval, 0, newBuf, 0, tval.Length);
-				tval = newBuf;
-			}
-			if (ch != Buffer.EOF) 
-			{
-				//casing2 start
-				tval[tlen++] = (char) ch;
-				//casing2 end
-				NextCh();
-			}
-		}
-
-
 	
 	bool Comment0() {
 		int level = 1, pos0 = pos, line0 = line, col0 = col, charPos0 = charPos;
@@ -200,7 +163,7 @@ namespace CocoRCore.CSharp {
 			t.pos = pos; t.col = col; t.line = line; t.charPos = charPos;
 			int state;
 			state = start.ContainsKey(ch) ? start[ch] : 0;
-			tlen = 0; AddCh();
+			tval.Clear(); AddCh();
 			
 			switch (state) 
 			{
@@ -209,7 +172,7 @@ namespace CocoRCore.CSharp {
 					{
 						if (recKind != noSym) 
 						{
-							tlen = recEnd - t.pos;
+							tval.Length = recEnd - t.pos;
 							SetScannerBehindT();
 						}
 						t.kind = recKind; break;
@@ -217,7 +180,7 @@ namespace CocoRCore.CSharp {
 				case 1:
 				recEnd = pos; recKind = 1;
 				if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 1;}
-				else {t.kind = 1; t.val = new String(tval, 0, tlen); CheckLiteral(); return t;}
+				else {t.kind = 1; t.val = tval.ToString(); CheckLiteral(); return t;}
 			case 2:
 				recEnd = pos; recKind = 2;
 				if (ch >= '0' && ch <= '9') {AddCh(); goto case 2;}
@@ -325,7 +288,9 @@ namespace CocoRCore.CSharp {
 				else {t.kind = 34; break;}
 
 			}
-			t.val = new String(tval, 0, tlen);
+			t.valScanned = tval.ToString();
+			t.val = t.valScanned;
+
 			return t;
 		}
 		
