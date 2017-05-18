@@ -55,7 +55,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 {
                     string srcDir = Path.GetDirectoryName(srcName);
 
-                    Scanner scanner = new Scanner(srcName, isUTF8);
+                    Scanner scanner = Scanner.Create(srcName, isUTF8);
                     Parser parser = new Parser(scanner);
 
                     traceFileName = Path.Combine(srcDir, "trace.txt");

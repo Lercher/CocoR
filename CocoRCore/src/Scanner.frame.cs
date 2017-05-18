@@ -25,24 +25,15 @@ namespace CocoRCore
         protected int col;          // column number of current character
         protected int line;         // line number of current character
         protected int oldEols;      // EOLs that appeared in a comment;
-        protected readonly Dictionary<int, int> start; // maps first token character to start state
-
         protected Token tokens;     // list of tokens already peeked (first token is a dummy)
-        protected Token pt;         // current peek token
+        protected Token peekToken;         // current peek token
 
         protected char[] tval = new char[128]; // text of current token
         protected int tlen;         // length of current token
 
-        protected ScannerBase() {
-            start = new Dictionary<int, int>(128);
-            InitStart();
-        }
-
-        protected abstract void InitStart(); 
-
         protected abstract int maxT { get; }
 
-        protected ScannerBase(string fileName, bool isBOMFreeUTF8) : this()
+        protected void Initialize(string fileName, bool isBOMFreeUTF8)
         {
             try
             {
@@ -56,13 +47,13 @@ namespace CocoRCore
             }
         }
 
-        protected ScannerBase(Stream s, bool isBOMFreeUTF8) : this()
+        protected void Initialize(Stream s, bool isBOMFreeUTF8)
         {
             buffer = new Buffer(s, true);
             Init(isBOMFreeUTF8);
         }
 
-        void Init(bool isBOMFreeUTF8)
+        private void Init(bool isBOMFreeUTF8)
         {
             // Console.Write("First bytes: ");
             pos = -1; line = 1; col = 0; charPos = -1;
@@ -89,7 +80,7 @@ namespace CocoRCore
                 col = 0; charPos = -1; // reset the locgical position to zero and ...
                 NextCh(); // ... ignore the BOM, updating col and charPos
             }
-            pt = tokens = new Token();  // first token is a dummy
+            peekToken = tokens = new Token();  // first token is a dummy
         }
 
         protected abstract void NextCh();
@@ -117,7 +108,7 @@ namespace CocoRCore
             }
             else
             {
-                pt = tokens = tokens.next;
+                peekToken = tokens = tokens.next;
                 return tokens;
             }
         }
@@ -127,18 +118,18 @@ namespace CocoRCore
         {
             do
             {
-                if (pt.next == null)
+                if (peekToken.next == null)
                 {
-                    pt.next = NextToken();
+                    peekToken.next = NextToken();
                 }
-                pt = pt.next;
-            } while (pt.kind > maxT); // skip pragmas
+                peekToken = peekToken.next;
+            } while (peekToken.kind > maxT); // skip pragmas
 
-            return pt;
+            return peekToken;
         }
 
         // make sure that peeking starts at the current scan position
-        public void ResetPeek() { pt = tokens; }
+        public void ResetPeek() { peekToken = tokens; }
 
     } // end Scanner
 

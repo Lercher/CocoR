@@ -16,25 +16,9 @@ namespace CocoRCore.CSharp {
 		private const int _maxT = 51;
 	const int noSym = 51;
 
-		
-	
-		public Scanner(string fileName) : base(fileName, false) 
-		{
-		}
 
-		public Scanner(string fileName, bool isBOMFreeUTF8)  : base(fileName, isBOMFreeUTF8)
-		{
-		}
-
-		public Scanner(Stream s) : base(s, false) 
-		{
-		}
-
-		public Scanner(Stream s, bool isBOMFreeUTF8) : base(s, isBOMFreeUTF8)
-		{
-		}
-		
-		protected override void InitStart() 
+		private static readonly Dictionary<int, int> start = new Dictionary<int, int>(); // maps first token character to start state
+		static Scanner() 
 		{
 			for (int i = 65; i <= 90; ++i) start[i] = 1;
 		for (int i = 95; i <= 95; ++i) start[i] = 1;
@@ -63,7 +47,31 @@ namespace CocoRCore.CSharp {
 		start[Buffer.EOF] = -1;
 
 		}
+	
+		public static Scanner Create(string fileName)
+		{
+			return Create(fileName, false);
+		}
 
+		public static Scanner Create(string fileName, bool isBOMFreeUTF8)
+		{
+			var s = new Scanner();
+			s.Initialize(fileName, isBOMFreeUTF8);
+			return s;
+		}
+
+		public static Scanner Create(Stream st)
+		{
+			return Create(st, false);
+		}
+
+		public static Scanner Create(Stream st, bool isBOMFreeUTF8)
+		{
+			var s = new Scanner();
+			s.Initialize(st, isBOMFreeUTF8);
+			return s;
+		}
+		
 		protected override int maxT => _maxT;
 		
 		protected override void NextCh()
