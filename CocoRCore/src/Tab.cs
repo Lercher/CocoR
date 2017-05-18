@@ -13,7 +13,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
     public class Tab
     {
-        public Position semDeclPos;       // position of global semantic declarations
+        public Range semDeclPos;       // position of global semantic declarations
         public CharSet ignored;           // characters ignored by the scanner
         public bool[] ddt = new bool[10]; // debug and test switches
         public Symbol gramSy;             // root nonterminal; filled by ATG
@@ -333,13 +333,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             return (up) ? ("-" + ptr) : ptr;
         }
 
-        string Pos(Position pos)
-        {
-            if (pos == null)
-                return "     ";
-            else
-                return String.Format("{0,5}", pos.beg);
-        }
+        string Pos(Range pos) => string.Format("{0,5}", pos?.start?.ToString() ?? string.Empty);
 
         public string Name(string name)
         {
@@ -1030,7 +1024,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void ResErr(Node p, string msg)
         {
-            errors.Warning(p.line, p.pos.col, msg);
+            errors.Warning(p.line, p.pos.start.col, msg);
         }
 
         void CheckRes(Node p, bool rslvAllowed)

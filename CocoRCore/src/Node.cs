@@ -43,9 +43,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                             // if typ==clas: index of character class
         public NodeTransition code;        // if typ==chr, clas: transition code
         public BitArray set;        // if typ==any, sync: the set represented by this node
-        public Position pos;        // if typ==nt, t, wt: pos of actual attributes
+        public Range pos;           // if typ==nt, t, wt: pos of actual attributes
                                     // if typ==sem:       pos of semantic action in source text
-                                    // if typ==rslv:       pos of resolver in source text
+                                    // if typ==rslv:      pos of resolver in source text
         public int line;        // source text line number of item in this node
         public State state; // DFA state corresponding to this node
                             // (only used in DFA.ConvertToStates)

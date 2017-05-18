@@ -63,16 +63,16 @@ PRODUCTIONS
 Coco                            (. Symbol sym; Graph g, g1, g2; string gramName; CharSet s; int beg, line; .)
 =
   [ // using statements
-    ANY                          (. beg = t.pos; line = t.line; .)
-    { ANY }                      (. pgen.usingPos = new Position(beg, la.pos, 0, line); .)
+    ANY                          (. var usingPos = t.Position(); .)
+    { ANY }                      (. pgen.usingPos = usingPos.Range(la); .)
   ]
 
   "COMPILER"                    (. genScanner = true; 
                                    tab.ignored = new CharSet(); .) 
   ident                         (. gramName = t.val;
-                                   beg = la.pos; line = la.line;
+                                   var semDeclPos = la.Position();
                                  .)
-  { ANY }                       (. tab.semDeclPos = new Position(beg, la.pos, 0, line); .)
+  { ANY }                       (. tab.semDeclPos = semDeclPos.Range(la); .)
   [ "IGNORECASE"                (. dfa.ignoreCase = true; .) ]   /* pdt */
   [ "CHARACTERS" { SetDecl }]
   [ "TOKENS"  { TokenDecl<NodeKind.t> }]
@@ -308,18 +308,16 @@ TokenDecl<NodeKind typ>
 
 AttrDecl<Symbol sym>
 =
-  '<'                           (. int beg = la.pos; int col = la.col; int line = la.line; .)
+  '<'                           (. var attrPos = la.Position();; .)
   { ANY
   | badString                   (. SemErr("bad string in attributes"); .)
   }
-  '>'                           (. if (t.pos > beg)
-                                     sym.attrPos = new Position(beg, t.pos, col, line); .)
-| "<."                          (. int beg = la.pos; int col = la.col; int line = la.line; .)
+  '>'                           (. sym.attrPos = attrPos.RangeIfNotEmpty(t); .)
+| "<."                          (. var attrPos = la.Position();; .)
   { ANY
   | badString                   (. SemErr("bad string in attributes"); .)
   }
-  ".>"                          (. if (t.pos > beg)
-                                     sym.attrPos = new Position(beg, t.pos, col, line); .)
+  ".>"                          (. sym.attrPos = attrPos.RangeIfNotEmpty(t); .)
 .
 
 /*------------------------------------------------------------------------------------*/
@@ -355,7 +353,7 @@ Term<out Graph g>               (. Graph g2; Node rslv = null; g = null; .)
 
 /*------------------------------------------------------------------------------------*/
 
-Factor<out Graph g>             (. string name; int kind; Position pos; bool weak = false; 
+Factor<out Graph g>             (. string name; int kind; Range pos; bool weak = false; 
                                    g = null;
                                  .)
 =
@@ -482,10 +480,10 @@ ASTVal<out string val>           (. val = "?"; .)
 
 /*------------------------------------------------------------------------------------*/
 
-Resolver<out Position pos>   
+Resolver<out Range pos>   
 =
-  "IF" "("                       (. int beg = la.pos; int col = la.col; int line = la.line; .)
-  Condition                      (. pos = new Position(beg, t.pos, col, line); .)
+  "IF" "("                       (. var p = la.Position(); .)
+  Condition                      (. pos = p.Range(t); .)
 .
 
 /*------------------------------------------------------------------------------------*/
@@ -564,28 +562,28 @@ Sym<out string name, out int kind>
 
 Attribs<Node p>
 =
-  '<'                           (. int beg = la.pos; int col = la.col; int line = la.line; .)
+  '<'                           (. var pos = la.Position(); .)
   { ANY 
   | badString                   (. SemErr("bad string in attributes"); .)
   }
-  '>'                           (. if (t.pos > beg) p.pos = new Position(beg, t.pos, col, line); .)
-| "<."                          (. int beg = la.pos; int col = la.col; int line = la.line; .)
+  '>'                           (. p.pos = pos.RangeIfNotEmpty(t); .)
+| "<."                          (. var pos = la.Position(); .)
   { ANY 
   | badString                   (. SemErr("bad string in attributes"); .)
   }
-  ".>"                          (. if (t.pos > beg) p.pos = new Position(beg, t.pos, col, line); .)
+  ".>"                          (. p.pos = pos.RangeIfNotEmpty(t); .)
 .
 
 /*------------------------------------------------------------------------------------*/
 
-SemText<out Position pos>
+SemText<out Range pos>
 =
-  "(."                          (. int beg = la.pos; int col = la.col; int line = la.line; .)
+  "(."                          (. var p = la.Position(); .)
   { ANY
   | badString                   (. SemErr("bad string in semantic action"); .)
   | "(."                        (. SemErr("missing end of previous semantic action"); .)
   }
-  ".)"                          (. pos = new Position(beg, t.pos, col, line); .)
+  ".)"                          (. pos = p.Range(t); .)
 .
 
 END Coco.

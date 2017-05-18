@@ -28,8 +28,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public BitArray follow;      // nt: terminal followers
         public BitArray nts;         // nt: nonterminals whose followers have to be added to this sym
         public int line;        // source text line number of item in this node
-        public Position attrPos;     // nt: position of attributes in source text (or null)
-        public Position semPos;      // pr: pos of semantic action in source text (or null)
+        public Range attrPos;     // nt: position of attributes in source text (or null)
+        public Range semPos;      // pr: pos of semantic action in source text (or null)
                                      // nt: pos of local declarations in source text (or null)
         public Symbol inherits;    // optional, token from which this token derives
         public List<SymTab> scopes;  // nt: optional, list of SymTabs that this NT starts a new scope of

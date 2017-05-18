@@ -161,26 +161,26 @@ const int id = 0;
 	
 	void Coco‿NT() {
 		{
-		Symbol sym; Graph g, g1, g2; string gramName; CharSet s; int beg, line; 
+		Symbol sym; Graph g, g1, g2; string gramName; CharSet s;
 		if (StartOf(1)) {
 			Get();
-			beg = t.pos; line = t.line; 
+			var anyp = t.Position(); 
 			while (StartOf(1)) {
 				Get();
 							}
-			pgen.usingPos = new Position(beg, la.pos, 0, line); 
+			pgen.usingPos = anyp.Range(la);
 		}
 		Expect(7); // "COMPILER"
 		genScanner = true; 
 		tab.ignored = new CharSet(); 
 		Expect(1); // ident
 		gramName = t.val;
-		beg = la.pos; line = la.line;
+		var semDeclPos = la.Position();
 		
 		while (StartOf(2)) {
 			Get();
 					}
-		tab.semDeclPos = new Position(beg, la.pos, 0, line); 
+		tab.semDeclPos = semDeclPos.Range(la); 
 		if (isKind(la, 8)) {
 			Get();
 			dfa.ignoreCase = true; 
@@ -435,7 +435,7 @@ const int id = 0;
 		{
 		if (isKind(la, 34)) {
 			Get();
-			int beg = la.pos; int col = la.col; int line = la.line; 
+			var attrPos = la.Position();
 			while (StartOf(9)) {
 				if (StartOf(10)) {
 					Get();
@@ -443,13 +443,12 @@ const int id = 0;
 					Get();
 					SemErr("bad string in attributes"); 
 				}
-							}
+			}
 			Expect(35); // ">"
-			if (t.pos > beg)
-			 sym.attrPos = new Position(beg, t.pos, col, line); 
+			sym.attrPos = attrPos.RangeIfNotEmpty(t);
 		} else if (isKind(la, 36)) {
 			Get();
-			int beg = la.pos; int col = la.col; int line = la.line; 
+			var attrPos = la.Position();
 			while (StartOf(11)) {
 				if (StartOf(12)) {
 					Get();
@@ -459,8 +458,7 @@ const int id = 0;
 				}
 							}
 			Expect(37); // ".>"
-			if (t.pos > beg)
-			 sym.attrPos = new Position(beg, t.pos, col, line); 
+			sym.attrPos = attrPos.RangeIfNotEmpty(t);
 		} else SynErr(55);
 	}}
 
@@ -513,10 +511,10 @@ const int id = 0;
 		Expect(26); // ")"
 	}}
 
-	void SemText‿NT(out Position pos) {
+	void SemText‿NT(out Range pos) {
 		{
 		Expect(49); // "(."
-		int beg = la.pos; int col = la.col; int line = la.line; 
+		var p = la.Position(); 
 		while (StartOf(13)) {
 			if (StartOf(14)) {
 				Get();
@@ -529,7 +527,7 @@ const int id = 0;
 			}
 					}
 		Expect(50); // ".)"
-		pos = new Position(beg, t.pos, col, line); 
+		pos = p.Range(t);
 	}}
 
 	void Expression‿NT(out Graph g) {
@@ -640,18 +638,18 @@ const int id = 0;
 		
 	}}
 
-	void Resolver‿NT(out Position pos) {
+	void Resolver‿NT(out Range pos) {
 		{
 		Expect(47); // "IF"
 		Expect(24); // "("
-		int beg = la.pos; int col = la.col; int line = la.line; 
+		var p = la.Position();
 		Condition‿NT();
-		pos = new Position(beg, t.pos, col, line); 
+		pos = p.Range(t); 
 	}}
 
 	void Factor‿NT(out Graph g) {
 		{
-		string name; int kind; Position pos; bool weak = false; 
+		string name; int kind; Range pos; bool weak = false; 
 		g = null;
 		
 		switch (la.kind) {
@@ -778,7 +776,7 @@ const int id = 0;
 		{
 		if (isKind(la, 34)) {
 			Get();
-			int beg = la.pos; int col = la.col; int line = la.line; 
+			var pos = la.Position();			 
 			while (StartOf(9)) {
 				if (StartOf(10)) {
 					Get();
@@ -788,10 +786,11 @@ const int id = 0;
 				}
 							}
 			Expect(35); // ">"
-			if (t.pos > beg) p.pos = new Position(beg, t.pos, col, line); 
+			p.pos = pos.RangeIfNotEmpty(t);
+			 
 		} else if (isKind(la, 36)) {
 			Get();
-			int beg = la.pos; int col = la.col; int line = la.line; 
+			var pos = la.Position();
 			while (StartOf(11)) {
 				if (StartOf(12)) {
 					Get();
@@ -801,7 +800,7 @@ const int id = 0;
 				}
 							}
 			Expect(37); // ".>"
-			if (t.pos > beg) p.pos = new Position(beg, t.pos, col, line); 
+			p.pos = pos.RangeIfNotEmpty(t); 
 		} else SynErr(60);
 	}}
 

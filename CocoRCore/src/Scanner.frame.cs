@@ -82,30 +82,30 @@ namespace CocoRCore
             peekToken = tokens = new Token();  // first token is a dummy
         }
 
-		protected void NextCh()
-		{
-			if (oldEols > 0) { ch = EOL; oldEols--; } 
-			else 
-			{
-				pos = buffer.Pos;
-				// buffer reads unicode chars, if UTF8 has been detected
-				ch = buffer.Read(); col++; charPos++;
-				// replace isolated '\r' by '\n' in order to make
-				// eol handling uniform across Windows, Unix and Mac
-				if (ch == '\r' && buffer.Peek() != '\n') ch = EOL;
-				if (ch == EOL) { line++; col = 0; }
-			}
-			//if (pos <= 10) Console.Write("{0:X} ", ch);
-		}
-
-		protected void AddCh() 
-		{
-			if (ch != Buffer.EOF)
+        protected void NextCh()
+        {
+            if (oldEols > 0) { ch = EOL; oldEols--; }
+            else
             {
-                tval.Append((char) ch);
-				NextCh();
+                pos = buffer.Pos;
+                // buffer reads unicode chars, if UTF8 has been detected
+                ch = buffer.Read(); col++; charPos++;
+                // replace isolated '\r' by '\n' in order to make
+                // eol handling uniform across Windows, Unix and Mac
+                if (ch == '\r' && buffer.Peek() != '\n') ch = EOL;
+                if (ch == EOL) { line++; col = 0; }
             }
-		}
+            //if (pos <= 10) Console.Write("{0:X} ", ch);
+        }
+
+        protected void AddCh()
+        {
+            if (ch != Buffer.EOF)
+            {
+                tval.Append((char)ch);
+                NextCh();
+            }
+        }
 
         protected abstract void CheckLiteral();
 
@@ -116,7 +116,7 @@ namespace CocoRCore
             buffer.Pos = t.pos;
             NextCh();
             line = t.line; col = t.col; charPos = t.charPos;
-            for (int i = 0; i < tval.Length; i++) 
+            for (int i = 0; i < tval.Length; i++)
                 NextCh();
         }
 
@@ -169,7 +169,35 @@ namespace CocoRCore
         public string valScanned; // token value as scanned (always case sensitive)
         public Token next;  // ML 2005-03-11 Tokens are kept in linked list
 
-        public Token Copy() { return (Token)(this.MemberwiseClone()); }
+        public Token Copy() => (Token)(this.MemberwiseClone());
+        public Position Position() => new Position(this);
+    }
+
+    //-----------------------------------------------------------------------------------
+    // Position
+    //-----------------------------------------------------------------------------------
+    public class Position
+    {  // position of source code stretch (e.g. semantic action, resolver expressions)
+
+        public readonly Token t;
+        public Position(Token t) => this.t = t.Copy();
+        public Range Range(Token t) => new Range(this.t, t);
+        public Range RangeIfNotEmpty(Token t) => t.pos > this.t.pos ? Range(t) : null;
+    }
+
+    //-----------------------------------------------------------------------------------
+    // Range
+    //-----------------------------------------------------------------------------------
+    public class Range
+    {
+        public readonly Token start;
+        public readonly Token end;
+
+        public Range(Token start, Token end)
+        {
+            this.start = start;
+            this.end = end.Copy();
+        }
     }
 
     //-----------------------------------------------------------------------------------

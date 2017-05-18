@@ -19,7 +19,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         const int altErr = 1;
         const int syncErr = 2;
 
-        public Position usingPos; // "using" definitions from the attributed grammar
+        public Range usingPos; // "using" definitions from the attributed grammar
         public bool GenerateAutocompleteInformation = false;  // generate addAlt() calls to fill the "alt" set with alternatives to the next to Get() token.
         public bool IgnoreSemanticActions = false;
         public bool needsAST = false;
@@ -80,7 +80,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             return nAlts > 5;
         }
 
-        void CopySourcePart(Position pos, int indent)
+        void CopySourcePart(Range range, int indent)
         {
             StreamWriter orig = gen;
             if (IgnoreSemanticActions) gen = StreamWriter.Null;
@@ -88,28 +88,28 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             {
                 // Copy text described by pos from atg to gen
                 int ch, i;
-                if (pos != null)
+                if (range != null)
                 {
-                    buffer.Pos = pos.beg; ch = buffer.Read();
+                    buffer.Pos = range.start.pos; ch = buffer.Read();
                     if (tab.emitLines)
                     {
                         gen.WriteLine();
-                        gen.WriteLine("#line {0} \"{1}\"", pos.line, tab.srcName);
+                        gen.WriteLine("#line {0} \"{1}\"", range.start.line, tab.srcName);
                     }
                     Indent(indent);
-                    while (buffer.Pos <= pos.end)
+                    while (buffer.Pos <= range.end.pos)
                     {
                         while (ch == CR || ch == LF)
                         {  // eol is either CR or CRLF or LF
                             gen.WriteLine(); Indent(indent);
                             if (ch == CR) ch = buffer.Read(); // skip CR
                             if (ch == LF) ch = buffer.Read(); // skip LF
-                            for (i = 1; i <= pos.col && (ch == ' ' || ch == '\t'); i++)
+                            for (i = 1; i <= range.start.col && (ch == ' ' || ch == '\t'); i++)
                             {
                                 // skip blanks at beginning of line
                                 ch = buffer.Read();
                             }
-                            if (buffer.Pos > pos.end) goto done;
+                            if (buffer.Pos > range.end.pos) goto done;
                         }
                         gen.Write((char)ch);
                         ch = buffer.Read();
