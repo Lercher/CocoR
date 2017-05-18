@@ -51,16 +51,16 @@ public class Parser : Parserbase
 	}
 
 const int id = 0;
-	const int str = 1;
-	
-	public TextWriter trace;    // other Coco objects referenced in this ATG
-	public Tab tab;
-	public DFA dfa;
-	public ParserGen pgen;
+const int str = 1;
 
-	bool   genScanner;
-	string tokenString;         // used in declarations of literal tokens
-	string noString = "-none-"; // used in declarations of literal tokens
+public TextWriter trace;    // other Coco objects referenced in this ATG
+public Tab tab;
+public DFA dfa;
+public ParserGen pgen;
+
+bool   genScanner;
+string tokenString;         // used in declarations of literal tokens
+string noString = "-none-"; // used in declarations of literal tokens
 
 /*-------------------------------------------------------------------------*/
 
@@ -161,14 +161,14 @@ const int id = 0;
 	
 	void Coco‿NT() {
 		{
-		Symbol sym; Graph g, g1, g2; string gramName; CharSet s;
+		Symbol sym; Graph g, g1, g2; string gramName; CharSet s; 
 		if (StartOf(1)) {
 			Get();
-			var anyp = t.Position(); 
+			var usingPos = t.Position(); 
 			while (StartOf(1)) {
 				Get();
 							}
-			pgen.usingPos = anyp.Range(la);
+			pgen.usingPos = usingPos.Range(la); 
 		}
 		Expect(7); // "COMPILER"
 		genScanner = true; 
@@ -435,7 +435,7 @@ const int id = 0;
 		{
 		if (isKind(la, 34)) {
 			Get();
-			var attrPos = la.Position();
+			var attrPos = la.Position(); 
 			while (StartOf(9)) {
 				if (StartOf(10)) {
 					Get();
@@ -443,12 +443,12 @@ const int id = 0;
 					Get();
 					SemErr("bad string in attributes"); 
 				}
-			}
+							}
 			Expect(35); // ">"
-			sym.attrPos = attrPos.RangeIfNotEmpty(t);
+			sym.attrPos = attrPos.RangeIfNotEmpty(t); 
 		} else if (isKind(la, 36)) {
 			Get();
-			var attrPos = la.Position();
+			var attrPos = la.Position(); 
 			while (StartOf(11)) {
 				if (StartOf(12)) {
 					Get();
@@ -458,7 +458,7 @@ const int id = 0;
 				}
 							}
 			Expect(37); // ".>"
-			sym.attrPos = attrPos.RangeIfNotEmpty(t);
+			sym.attrPos = attrPos.RangeIfNotEmpty(t); 
 		} else SynErr(55);
 	}}
 
@@ -527,7 +527,7 @@ const int id = 0;
 			}
 					}
 		Expect(50); // ".)"
-		pos = p.Range(t);
+		pos = p.Range(t); 
 	}}
 
 	void Expression‿NT(out Graph g) {
@@ -642,7 +642,7 @@ const int id = 0;
 		{
 		Expect(47); // "IF"
 		Expect(24); // "("
-		var p = la.Position();
+		var p = la.Position(); 
 		Condition‿NT();
 		pos = p.Range(t); 
 	}}
@@ -776,7 +776,7 @@ const int id = 0;
 		{
 		if (isKind(la, 34)) {
 			Get();
-			var pos = la.Position();			 
+			var pos = la.Position(); 
 			while (StartOf(9)) {
 				if (StartOf(10)) {
 					Get();
@@ -786,11 +786,10 @@ const int id = 0;
 				}
 							}
 			Expect(35); // ">"
-			p.pos = pos.RangeIfNotEmpty(t);
-			 
+			p.pos = pos.RangeIfNotEmpty(t); 
 		} else if (isKind(la, 36)) {
 			Get();
-			var pos = la.Position();
+			var pos = la.Position(); 
 			while (StartOf(11)) {
 				if (StartOf(12)) {
 					Get();

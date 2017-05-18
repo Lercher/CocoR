@@ -60,7 +60,7 @@ IGNORE cr + lf + tab
 
 PRODUCTIONS
 
-Coco                            (. Symbol sym; Graph g, g1, g2; string gramName; CharSet s; int beg, line; .)
+Coco                            (. Symbol sym; Graph g, g1, g2; string gramName; CharSet s; .)
 =
   [ // using statements
     ANY                          (. var usingPos = t.Position(); .)
@@ -308,12 +308,12 @@ TokenDecl<NodeKind typ>
 
 AttrDecl<Symbol sym>
 =
-  '<'                           (. var attrPos = la.Position();; .)
+  '<'                           (. var attrPos = la.Position(); .)
   { ANY
   | badString                   (. SemErr("bad string in attributes"); .)
   }
   '>'                           (. sym.attrPos = attrPos.RangeIfNotEmpty(t); .)
-| "<."                          (. var attrPos = la.Position();; .)
+| "<."                          (. var attrPos = la.Position(); .)
   { ANY
   | badString                   (. SemErr("bad string in attributes"); .)
   }
