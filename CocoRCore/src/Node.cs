@@ -39,19 +39,19 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public Node sub;        // alt, iter, opt: to first node of substructure
         public bool up;         // true: "next" leads to successor in enclosing structure
         public Symbol sym;      // nt, t, wt: symbol represented by this node
-        public int val;     // chr:  ordinal character value
-                            // clas: index of character class
-        public NodeTransition code;        // chr, clas: transition code
-        public BitArray set;        // any, sync: the set represented by this node
-        public Position pos;        // nt, t, wt: pos of actual attributes
-                                    // sem:       pos of semantic action in source text
-                                    // rslv:       pos of resolver in source text
+        public int val;     // if typ==chr:  ordinal character value
+                            // if typ==clas: index of character class
+        public NodeTransition code;        // if typ==chr, clas: transition code
+        public BitArray set;        // if typ==any, sync: the set represented by this node
+        public Position pos;        // if typ==nt, t, wt: pos of actual attributes
+                                    // if typ==sem:       pos of semantic action in source text
+                                    // if typ==rslv:       pos of resolver in source text
         public int line;        // source text line number of item in this node
         public State state; // DFA state corresponding to this node
                             // (only used in DFA.ConvertToStates)
-        public string declares;    // t, wt: the symbol declares a new entry to the symboltable with this name
-        public string declared;    // t, wt: the symbol has to be declared in the symboltable with this name
-        public List<AstOp> asts;         // nt, t, wt: AST Operations, # ## ^ ^^ +
+        public string declares;    // if typ==t, wt: the symbol declares a new entry to the symboltable with this name
+        public string declared;    // if typ==t, wt: the symbol has to be declared in the symboltable with this name
+        public List<AstOp> asts;         // if typ==nt, t, wt: AST Operations, # ## ^ ^^ +
 
         public Node(NodeKind typ, Symbol sym, int line)
         {
