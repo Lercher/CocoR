@@ -630,7 +630,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             if (ignoreCase)
             {
-                gen.WriteLine("\t\tswitch (t.val.ToLower()) {");
+                gen.WriteLine("\t\tswitch (t.val.ToLowerInvariant()) {");
             }
             else
             {
@@ -643,7 +643,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     if (sym.tokenKind == Symbol.litToken)
                     {
                         string name = SymName(sym);
-                        if (ignoreCase) name = name.ToLower();
+                        if (ignoreCase) name = name.ToLowerInvariant();
                         // sym.name stores literals with quotes, e.g. "\"Literal\""
                         gen.WriteLine("\t\t\tcase {0}: t.kind = {1}; break;", name, sym.n);
                     }

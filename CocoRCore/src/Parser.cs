@@ -411,7 +411,7 @@ const int id = 0;
 		{
 		SymTab st; 
 		Expect(1); // ident
-		string name = t.val.ToLower();                                    
+		string name = t.val.ToLowerInvariant();                                    
 		if (tab.FindSymtab(name) != null) 
 		 SemErr("symbol table name declared twice");
 		st = new SymTab(name);
@@ -424,7 +424,7 @@ const int id = 0;
 		while (isKind(la, 3)) {
 			Get();
 			string predef = tab.Unstring(t.val);
-			if (dfa.ignoreCase) predef = predef.ToLower();
+			if (dfa.ignoreCase) predef = predef.ToLowerInvariant();
 			st.Add(predef);
 			
 					}
@@ -548,7 +548,7 @@ const int id = 0;
 	void Symboltable‿NT(List<SymTab> sts ) {
 		{
 		Expect(1); // ident
-		string stname = t.val.ToLower();
+		string stname = t.val.ToLowerInvariant();
 		SymTab st = tab.FindSymtab(stname); 
 		if (st == null) SemErr("undeclared symbol table " + t.val);
 		else sts.Add(st);
@@ -568,7 +568,7 @@ const int id = 0;
 			Get();
 			string name = tab.Unstring(t.val);
 			foreach (char ch in name)
-			 if (dfa.ignoreCase) s.Set(char.ToLower(ch));
+			 if (dfa.ignoreCase) s.Set(char.ToLowerInvariant(ch));
 			 else s.Set(ch); 
 		} else if (isKind(la, 5)) {
 			Char‿NT(out n1);
@@ -609,7 +609,7 @@ const int id = 0;
 				name = "\"" + t.val.Substring(1, t.val.Length-2) + "\""; 
 			}
 			kind = str;
-			if (dfa.ignoreCase) name = name.ToLower();
+			if (dfa.ignoreCase) name = name.ToLowerInvariant();
 			if (name.IndexOf(' ') >= 0)
 			 SemErr("literal tokens must not contain blanks"); 
 		} else SynErr(57);
@@ -697,14 +697,14 @@ const int id = 0;
 					Get();
 					Expect(1); // ident
 					if (typ != NodeKind.t && typ != NodeKind.wt) SemErr("only terminals or weak terminals can declare a name in a symbol table"); 
-					p.declares = t.val.ToLower();
+					p.declares = t.val.ToLowerInvariant();
 					if (null == tab.FindSymtab(p.declares)) SemErr(string.Format("undeclared symbol table '{0}'", p.declares));
 					
 				} else {
 					Get();
 					Expect(1); // ident
 					if (typ != NodeKind.t && typ != NodeKind.wt) SemErr("only terminals or weak terminals can lookup a name in a symbol table"); 
-					p.declared = t.val.ToLower(); 
+					p.declared = t.val.ToLowerInvariant(); 
 					if (null == tab.FindSymtab(p.declared)) SemErr(string.Format("undeclared symbol table '{0}'", p.declared));
 					
 				}
@@ -825,7 +825,7 @@ const int id = 0;
 		ast.ishatch = false;
 		string n = p.sym.name;
 		if (n.StartsWith("\"")) n = n.Substring(1, n.Length - 2);
-		ast.name = n.ToLower(); 
+		ast.name = n.ToLowerInvariant(); 
 		
 		if (isKind(la, 45)) {
 			Get();

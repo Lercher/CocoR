@@ -524,7 +524,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void GenTokenBase()
         {
-            ForAllTerminals(delegate (Symbol sym)
+            ForAllTerminals(sym =>
             {
                 if (sym.inherits == null)
                     gen.Write("{0,2}", -1); // not inherited
@@ -535,10 +535,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void GenTokenNames()
         {
-            ForAllTerminals(delegate (Symbol sym)
-            {
-                gen.Write("{0}", tab.Quoted(sym.definedAs));
-            });
+            ForAllTerminals(sym =>            
+                gen.Write("{0}", tab.Quoted(sym.definedAs))
+            );
         }
 
         void GenPragmas()

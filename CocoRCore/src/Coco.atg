@@ -160,7 +160,7 @@ Coco                            (. Symbol sym; Graph g, g1, g2; string gramName;
 
 SymboltableDecl                 (. SymTab st; .)
 =
-  ident                         (. string name = t.val.ToLower();                                    
+  ident                         (. string name = t.val.ToLowerInvariant();                                    
                                    if (tab.FindSymtab(name) != null) 
                                      SemErr("symbol table name declared twice");
                                    st = new SymTab(name);
@@ -169,7 +169,7 @@ SymboltableDecl                 (. SymTab st; .)
   [ "STRICT"                    (. st.strict = true; .)
   ]
   { string                      (. string predef = tab.Unstring(t.val);
-                                   if (dfa.ignoreCase) predef = predef.ToLower();
+                                   if (dfa.ignoreCase) predef = predef.ToLowerInvariant();
                                    st.Add(predef);
                                  .)
   }
@@ -201,7 +201,7 @@ UseAllDecl<Symbol sym>          (. sym.usealls = new List<SymTab>(); .)
 
 Symboltable<. List<SymTab> sts .>
 =
-  ident                         (. string stname = t.val.ToLower();
+  ident                         (. string stname = t.val.ToLowerInvariant();
                                    SymTab st = tab.FindSymtab(stname); 
                                    if (st == null) SemErr("undeclared symbol table " + t.val);
                                    else sts.Add(st);
@@ -241,7 +241,7 @@ SimSet<out CharSet s>           (. int n1, n2; .)
                                  .)
 | string                        (. string name = tab.Unstring(t.val);
                                    foreach (char ch in name)
-                                     if (dfa.ignoreCase) s.Set(char.ToLower(ch));
+                                     if (dfa.ignoreCase) s.Set(char.ToLowerInvariant(ch));
                                      else s.Set(ch); .)
 | Char<out n1>                  (. s.Set(n1); .)
   [ ".." Char<out n2>           (. for (int i = n1; i <= n2; i++) s.Set(i); .)
@@ -388,12 +388,12 @@ Factor<out Graph g>             (. string name; int kind; Position pos; bool wea
   [ Attribs<p>                  (. if (kind != id) SemErr("a literal must not have attributes"); .)
   | ">" ident                   (. 
                                    if (typ != NodeKind.t && typ != NodeKind.wt) SemErr("only terminals or weak terminals can declare a name in a symbol table"); 
-                                   p.declares = t.val.ToLower();
+                                   p.declares = t.val.ToLowerInvariant();
                                    if (null == tab.FindSymtab(p.declares)) SemErr(string.Format("undeclared symbol table '{0}'", p.declares));
                                  .)
   | ":" ident                   (. 
                                    if (typ != NodeKind.t && typ != NodeKind.wt) SemErr("only terminals or weak terminals can lookup a name in a symbol table"); 
-                                   p.declared = t.val.ToLower(); 
+                                   p.declared = t.val.ToLowerInvariant(); 
                                    if (null == tab.FindSymtab(p.declared)) SemErr(string.Format("undeclared symbol table '{0}'", p.declared));
                                  .)
   ]                             (. if (undef)
@@ -440,7 +440,7 @@ ASTSendUp<Node p>                (. AstOp ast = p.addAstOp(); .)
   '^'                            (. ast.ishatch = false;
                                     string n = p.sym.name;
                                     if (n.StartsWith("\"")) n = n.Substring(1, n.Length - 2);
-                                    ast.name = n.ToLower(); 
+                                    ast.name = n.ToLowerInvariant(); 
                                   .)
   [ '^'                          (. ast.isList = true; .)
   ]
@@ -554,7 +554,7 @@ Sym<out string name, out int kind>
 | (string                       (. name = t.val; .)
   | char                        (. name = "\"" + t.val.Substring(1, t.val.Length-2) + "\""; .)
   )                             (. kind = str;
-                                   if (dfa.ignoreCase) name = name.ToLower();
+                                   if (dfa.ignoreCase) name = name.ToLowerInvariant();
                                    if (name.IndexOf(' ') >= 0)
                                      SemErr("literal tokens must not contain blanks"); .)
 )
