@@ -16,21 +16,21 @@ namespace CocoRCore.Samples
             };
             foreach (var pgen in all)
             {
+                var parser = pgen();
                 try
                 {
-                    var parser = pgen();
                     parser.Parse();
-                    foreach(var e in parser.errors)
+                    foreach (var e in parser.errors)
                         Console.Write(e.Format("", "")); // this is only to see if it compiles, it doesn't output anything
                     Console.WriteLine("{0}: {1} error(s), {2} warning(s).", parser.scanner.uri, parser.errors.CountError, parser.errors.CountWarning);
                 }
-                catch (FatalError ex) 
+                catch (FatalError ex)
                 {
                     Console.WriteLine("-- {0}", ex.Message);
                 }
                 catch (System.Exception ex)
-                {                    
-                    Console.WriteLine("-- {0}", ex);
+                {
+                    Console.WriteLine("-- {0}: {1}", parser.scanner.uri, ex);
                 }
             }
             return 0;
