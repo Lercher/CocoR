@@ -13,14 +13,19 @@ using CocoRCore;
 	//-----------------------------------------------------------------------------------
 	public class Scanner : ScannerBase
 	{
-	-->declarations
+-->declarations
 
 		private static readonly Dictionary<int, int> start = new Dictionary<int, int>(); // maps first token character to start state
 		static Scanner() 
 		{
-	-->initialization
+-->staticinitialization
 		}
 	
+		private Scanner()
+		{
+-->initialization
+		}
+		
 		public static Scanner Create(string fileName)
 		{
 			return Create(fileName, false);
@@ -47,19 +52,19 @@ using CocoRCore;
 		
 		protected override int maxT => _maxT;
 		
-	-->comments
+-->comments
 
 		protected override void CheckLiteral() 
 		{
-	-->literals
+-->literals
 		}
 
 		protected override Token NextToken() 
 		{
 			while (ch == ' ' ||
-	-->scan1
+-->scan1
 			) NextCh();
-	-->scan2
+-->scan2
 			int recKind = noSym;
 			int recEnd = pos;
 			t = new Token();
@@ -80,7 +85,7 @@ using CocoRCore;
 						}
 						t.kind = recKind; break;
 					} // NextCh already done
-	-->scan3
+-->scan3
 			}
 			t.valScanned = tval.ToString();
 -->casing

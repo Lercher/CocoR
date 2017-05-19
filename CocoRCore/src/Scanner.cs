@@ -13,14 +13,14 @@ namespace CocoRCore.CSharp {
 	//-----------------------------------------------------------------------------------
 	public class Scanner : ScannerBase
 	{
-		private const int _maxT = 51;
+	private const int _maxT = 51;
 	const int noSym = 51;
 
 
 		private static readonly Dictionary<int, int> start = new Dictionary<int, int>(); // maps first token character to start state
 		static Scanner() 
 		{
-			for (int i = 65; i <= 90; ++i) start[i] = 1;
+		for (int i = 65; i <= 90; ++i) start[i] = 1;
 		for (int i = 95; i <= 95; ++i) start[i] = 1;
 		for (int i = 97; i <= 122; ++i) start[i] = 1;
 		for (int i = 48; i <= 57; ++i) start[i] = 2;
@@ -48,6 +48,11 @@ namespace CocoRCore.CSharp {
 
 		}
 	
+		private Scanner()
+		{
+
+		}
+		
 		public static Scanner Create(string fileName)
 		{
 			return Create(fileName, false);
@@ -74,7 +79,7 @@ namespace CocoRCore.CSharp {
 		
 		protected override int maxT => _maxT;
 		
-	
+
 	bool Comment0() {
 		int level = 1, pos0 = pos, line0 = line, col0 = col, charPos0 = charPos;
 		NextCh();
@@ -124,7 +129,7 @@ namespace CocoRCore.CSharp {
 
 		protected override void CheckLiteral() 
 		{
-			switch (t.val) {
+		switch (t.val) {
 			case "COMPILER": t.kind = 7; break;
 			case "IGNORECASE": t.kind = 8; break;
 			case "CHARACTERS": t.kind = 9; break;
@@ -154,9 +159,9 @@ namespace CocoRCore.CSharp {
 		protected override Token NextToken() 
 		{
 			while (ch == ' ' ||
-				ch >= 9 && ch <= 10 || ch == 13
+			ch >= 9 && ch <= 10 || ch == 13
 			) NextCh();
-			if (ch == '/' && Comment0() ||ch == '/' && Comment1()) return NextToken();
+		if (ch == '/' && Comment0() ||ch == '/' && Comment1()) return NextToken();
 			int recKind = noSym;
 			int recEnd = pos;
 			t = new Token();
@@ -177,7 +182,7 @@ namespace CocoRCore.CSharp {
 						}
 						t.kind = recKind; break;
 					} // NextCh already done
-				case 1:
+			case 1:
 				recEnd = pos; recKind = 1;
 				if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 1;}
 				else {t.kind = 1; t.val = tval.ToString(); CheckLiteral(); return t;}

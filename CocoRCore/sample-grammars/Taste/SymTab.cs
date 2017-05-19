@@ -69,7 +69,7 @@ namespace CocoRCore.Samples.Taste
             p = topScope.locals; last = null;
             while (p != null)
             {
-                if (p.name == name) parser.SemErr("name declared twice");
+                if (p.name == name) parser.SemErr(30, "name declared twice");
                 last = p; p = p.next;
             }
             if (last == null) topScope.locals = obj; else last.next = obj;
@@ -93,7 +93,7 @@ namespace CocoRCore.Samples.Taste
                 }
                 scope = scope.next;
             }
-            parser.SemErr(name + " is undeclared");
+            parser.SemErr(31, name + " is undeclared");
             return undefObj;
         }
 

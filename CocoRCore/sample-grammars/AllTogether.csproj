@@ -2,7 +2,8 @@
   <!-- https://docs.microsoft.com/en-us/dotnet/articles/core/tools/project-json-to-csproj -->
   
   <ItemGroup>
-    <ProjectReference Include="..\CocoRCore.csproj" />
+    <!-- <ProjectReference Include="..\CocoRCore.csproj" /> -->
+    <Compile Include="../src/*.frame.cs"/>
   </ItemGroup>
 
   <PropertyGroup>  

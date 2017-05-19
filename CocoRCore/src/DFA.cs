@@ -746,11 +746,18 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 gen.Write(tab.nsName);
                 gen.Write(" {");
             }
+
             g.CopyFramePart("-->declarations");
             gen.WriteLine("\tprivate const int _maxT = {0};", tab.terminals.Count - 1);
             gen.WriteLine("\tconst int noSym = {0};", tab.noSym.n);
-            g.CopyFramePart("-->initialization");
+
+            g.CopyFramePart("-->staticinitialization");
             WriteStartTab();
+
+            g.CopyFramePart("-->initialization");
+            if (ignoreCase)
+                gen.WriteLine("\t\tcasing = char.ToLowerInvariant;");
+
             g.CopyFramePart("-->comments");
             Comment com = firstComment;
             int comIdx = 0;
@@ -759,10 +766,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 GenComment(com, comIdx);
                 com = com.next; comIdx++;
             }
-            g.CopyFramePart("-->literals"); GenLiterals();
+
+            g.CopyFramePart("-->literals"); 
+            GenLiterals();
+
             g.CopyFramePart("-->scan1");
             gen.Write("\t\t\t");
             if (tab.ignored.Elements() > 0) { PutRange(tab.ignored); } else { gen.Write("false"); }
+            
             g.CopyFramePart("-->scan2");
             if (firstComment != null)
             {
@@ -778,9 +789,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 gen.Write(") return NextToken();");
             }
             if (hasCtxMoves) { gen.WriteLine(); gen.Write("\t\tint apx = 0;"); } /* pdt */
+            
             g.CopyFramePart("-->scan3");
             for (State state = firstState.next; state != null; state = state.next)
                 WriteState(state);
+            
             g.CopyFramePart("-->casing");
             gen.WriteLine("\t\t\tt.val = t.valScanned{0};", ignoreCase ? ".ToLowerInvariant()" : string.Empty);        
             // -->end   copy frame up to it's end

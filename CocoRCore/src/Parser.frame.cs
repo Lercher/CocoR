@@ -44,7 +44,9 @@ namespace CocoRCore
             errDist = 0;
         }
 
-        public void SemErr(int n, string msg)
+        public void SemErr(int n, string msg) => SemErr(n, t, msg);
+
+        public void SemErr(int n, Token t, string msg)
         {
             if (errDist >= minErrDist) errors.SemErr(t.line, t.col, msg, n);
             errDist = 0;

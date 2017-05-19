@@ -21,7 +21,8 @@ namespace CocoRCore
         public Buffer buffer; // scanner buffer
 
         protected Token t;          // current token
-        protected int ch;           // current input character
+        protected int ch;           // current input character (probably lowercased)
+        protected char valCh;       // current input character (original version)
         protected int pos;          // byte position of current character
         protected int charPos;      // position by unicode characters starting with 0
         protected int col;          // column number of current character
@@ -30,6 +31,8 @@ namespace CocoRCore
         protected Token tokens;     // list of tokens already peeked (first token is a dummy)
         protected Token peekToken;         // current peek token
         protected StringBuilder tval = new StringBuilder(capacity: 64); // text of current token
+
+        protected Func<char, char> casing = c => c;
 
         protected abstract int maxT { get; }
 
@@ -43,9 +46,9 @@ namespace CocoRCore
                 buffer = new Buffer(stream, false);
                 Init(isBOMFreeUTF8);
             }
-            catch (IOException)
+            catch (IOException ex)
             {
-                throw new FatalError("Cannot open file " + fileName);
+                throw new FatalError(ex.Message);
             }
         }
 
@@ -100,13 +103,18 @@ namespace CocoRCore
                 if (ch == EOL) { line++; col = 0; }
             }
             //if (pos <= 10) Console.Write("{0:X} ", ch);
+            if (ch != Buffer.EOF) 
+            {
+                valCh = (char) ch;
+                ch = casing(valCh);
+            }
         }
 
         protected void AddCh()
         {
             if (ch != Buffer.EOF)
             {
-                tval.Append((char)ch);
+                tval.Append(valCh);
                 NextCh();
             }
         }

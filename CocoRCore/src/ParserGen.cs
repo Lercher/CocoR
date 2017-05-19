@@ -268,14 +268,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (!string.IsNullOrEmpty(p.declares))
             {
                 Indent(indent);
-                gen.WriteLine("if (!{0}.Add(la)) SemErr(la, string.Format(DuplicateSymbol, {1}, la.val, {0}.name));", p.declares, tab.Quoted(p.sym.name));
+                gen.WriteLine("if (!{0}.Add(la)) SemErr(71, la, string.Format(DuplicateSymbol, {1}, la.val, {0}.name));", p.declares, tab.Quoted(p.sym.name));
                 Indent(indent);
                 gen.WriteLine("alternatives.tdeclares = {0};", p.declares);
             }
             else if (!string.IsNullOrEmpty(p.declared))
             {
                 Indent(indent);
-                gen.WriteLine("if (!{0}.Use(la, alternatives)) SemErr(la, string.Format(MissingSymbol, {1}, la.val, {0}.name));", p.declared, tab.Quoted(p.sym.name));
+                gen.WriteLine("if (!{0}.Use(la, alternatives)) SemErr(72, la, string.Format(MissingSymbol, {1}, la.val, {0}.name));", p.declared, tab.Quoted(p.sym.name));
             }
         }
 

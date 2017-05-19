@@ -41,7 +41,7 @@ AddOp<out Op op>
 Expr<out int type>       (. int type1; Op op; .)
 = SimExpr<out type>
   [ RelOp<out op>
-    SimExpr<out type1>   (. if (type != type1) SemErr("incompatible types");
+    SimExpr<out type1>   (. if (type != type1) SemErr(1, "incompatible types");
                             gen.Emit(op); type = boolean; .)
   ].
 /*------------------------------------------------------------------------*/
@@ -51,12 +51,12 @@ Factor<out int type>     (. int n; Obj obj; string name; .)
                             if (obj.kind == var) {
 															if (obj.level == 0) gen.Emit(Op.LOADG, obj.adr);
 															else gen.Emit(Op.LOAD, obj.adr);
-                            } else SemErr("variable expected"); .)
+                            } else SemErr(2, "variable expected"); .)
   | number               (. n = Convert.ToInt32(t.val); 
                             gen.Emit(Op.CONST, n); type = integer; .)
   | '-'
     Factor<out type>     (. if (type != integer) {
-                              SemErr("integer type expected"); type = integer;
+                              SemErr(3, "integer type expected"); type = integer;
                             }
                             gen.Emit(Op.NEG); .)
   | "true"               (. gen.Emit(Op.CONST, 1); type = boolean; .)
@@ -95,24 +95,24 @@ SimExpr<out int type>    (. int type1; Op op; .)
 = Term<out type>
   { AddOp<out op>
     Term<out type1>      (. if (type != integer || type1 != integer) 
-                              SemErr("integer type expected");
+                              SemErr(4, "integer type expected");
                             gen.Emit(op); .)
 	}.
 /*------------------------------------------------------------------------*/
 Stat                     (. int type; string name; Obj obj;
                             int adr, adr2, loopstart; .)
 = Ident<out name>        (. obj = tab.Find(name); .)
-  ( '='                  (. if (obj.kind != var) SemErr("cannot assign to procedure"); .)
+  ( '='                  (. if (obj.kind != var) SemErr(5, "cannot assign to procedure"); .)
 		Expr<out type> ';'
-											   (. if (type != obj.type) SemErr("incompatible types");
+											   (. if (type != obj.type) SemErr(6, "incompatible types");
 													  if (obj.level == 0) gen.Emit(Op.STOG, obj.adr);
 													  else gen.Emit(Op.STO, obj.adr); .)
-	| '(' ')' ';'          (. if (obj.kind != proc) SemErr("object is not a procedure");
+	| '(' ')' ';'          (. if (obj.kind != proc) SemErr(7, "object is not a procedure");
 												  	gen.Emit(Op.CALL, obj.adr); .)
 	)
 
 | "if" 
-	'(' Expr<out type> ')' (. if (type != boolean) SemErr("boolean type expected");
+	'(' Expr<out type> ')' (. if (type != boolean) SemErr(8, "boolean type expected");
 													  gen.Emit(Op.FJMP, 0); adr = gen.pc - 2; .)
 	Stat
 	[ "else"               (. gen.Emit(Op.JMP, 0); adr2 = gen.pc - 2;
@@ -122,19 +122,19 @@ Stat                     (. int type; string name; Obj obj;
 	]                      (. gen.Patch(adr, gen.pc); .)
 
 | "while"                (. loopstart = gen.pc; .)
-	'(' Expr<out type> ')' (. if (type != boolean) SemErr("boolean type expected");
+	'(' Expr<out type> ')' (. if (type != boolean) SemErr(9, "boolean type expected");
 													  gen.Emit(Op.FJMP, 0); adr = gen.pc - 2; .)
 	Stat                   (. gen.Emit(Op.JMP, loopstart); gen.Patch(adr, gen.pc); .)
 
 | "read"
 	Ident<out name> ';'    (. obj = tab.Find(name);
-													  if (obj.type != integer) SemErr("integer type expected");
+													  if (obj.type != integer) SemErr(10, "integer type expected");
 													  gen.Emit(Op.READ);
 													  if (obj.level == 0) gen.Emit(Op.STOG, obj.adr);
 													  else gen.Emit(Op.STO, obj.adr); .)
 
 | "write" 
-	Expr<out type> ';'     (. if (type != integer) SemErr("integer type expected");
+	Expr<out type> ';'     (. if (type != integer) SemErr(11, "integer type expected");
 												    gen.Emit(Op.WRITE); .)
 
 | '{' { Stat | VarDecl } '}' .
@@ -145,14 +145,14 @@ Taste                    (. string name; .)
   '{'
   { VarDecl | ProcDecl }
   '}'                    (. tab.CloseScope();
-                            if (gen.progStart == -1) SemErr("main function never defined");
+                            if (gen.progStart == -1) SemErr(12, "main function never defined");
                             .).
 /*------------------------------------------------------------------------*/
 Term<out int type>       (. int type1; Op op; .)
 = Factor<out type>
   { MulOp<out op>
     Factor<out type1>    (. if (type != integer || type1 != integer) 
-                              SemErr("integer type expected");
+                              SemErr(13, "integer type expected");
                             gen.Emit(op); .)
 	}.
 /*------------------------------------------------------------------------*/
