@@ -48,7 +48,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (ignoreSemanticActions) Console.Write(" [ignore semantic actions]");
             if (isUTF8) Console.Write(" [forced UTF8 processing]");
             Console.WriteLine();
-            Console.WriteLine(srcName);
             if (arg.Length > 0 && srcName != null)
             {
                 try
@@ -56,6 +55,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     string srcDir = Path.GetDirectoryName(srcName);
 
                     var scanner = Scanner.Create(srcName, isUTF8);
+                    Console.WriteLine(scanner.uri);
                     var parser = new Parser(scanner);
 
                     traceFileName = Path.Combine(srcDir, "trace.txt");
@@ -81,8 +81,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     FileInfo f = new FileInfo(traceFileName);
                     if (f.Length == 0) f.Delete();
                     else Console.WriteLine("trace output is in " + traceFileName);
-                    Console.WriteLine("{0} error(s) detected", parser.errors.Count);
-                    if (parser.errors.Count == 0) { retVal = 0; }
+                    Console.WriteLine("{0} error(s) and {1} warning(s) detected", parser.errors.CountError, parser.errors.CountWarning);
+                    if (parser.errors.CountError == 0) { retVal = 0; }
                 }
                 catch (IOException)
                 {

@@ -93,7 +93,7 @@ namespace CocoRCore
     }
 
 
-    public class Error
+    public class Diagnostic
     {
         public readonly int id;
         public readonly int line1;
@@ -101,7 +101,7 @@ namespace CocoRCore
         public readonly string level;
         public readonly string message;
 
-        public Error(int id, string level, int line1, int col1, string message)
+        public Diagnostic(int id, string level, int line1, int col1, string message)
         {
             this.line1 = line1;
             this.col1 = col1;
@@ -113,7 +113,7 @@ namespace CocoRCore
         public string Format(string fmt, string uri) => string.Format(fmt, line1, col1, message, level, id, uri);
     }
 
-    public abstract class ErrorsBase : List<Error>
+    public abstract class ErrorsBase : List<Diagnostic>
     {
         public string uri = null;
         public System.IO.TextWriter errorStream = Console.Out;   // error messages go to this stream
@@ -122,14 +122,21 @@ namespace CocoRCore
         public int WarningOffset = 3000; // Warnings start at 3000, 1 based
         public int SemErrOffset = 2000; // Semantic Errors start at 2000, 1 based
         public int SynErrOffset = 1001; // Syntax Errors start at 1001, 0 based
-        public string FatalLevel = "fatal-error";
         public string ErrorLevel = "error";
         public string WarningLevel = "warning";
         public string InfoLevel = "info";
 
+        public int CountError { get; private set; }
+        public int CountWarning { get; private set; }
+        public int CountInfo { get; private set; }
+
         public virtual void Add(int id, string level, int line, int col, string message)
         {
-            var error = new Error(id, level, line, col, message);
+            if (Object.ReferenceEquals(level, ErrorLevel)) CountError++;
+            if (Object.ReferenceEquals(level, WarningLevel)) CountWarning++;
+            if (Object.ReferenceEquals(level, InfoLevel)) CountInfo++;
+    
+            var error = new Diagnostic(id, level, line, col, message);
             Add(error);
             errorStream.WriteLine(error.Format(errMsgFormat, uri));
         }
