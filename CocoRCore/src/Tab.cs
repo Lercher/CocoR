@@ -45,7 +45,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             this.parser = parser;
             trace = parser.trace;
             errors = parser.errors;
-            eofSy = NewSym(NodeKind.t, "EOF", 0);
+            eofSy = NewSym(NodeKind.t, "EOF", Position.Zero);
             dummyNode = NewNode(NodeKind.eps, null, 0);
             literals = new Dictionary<string, Symbol>();
         }
@@ -60,13 +60,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         string[] tKind = { "fixedToken", "classToken", "litToken", "classLitToken" };
 
-        public Symbol NewSym(NodeKind typ, string name, int line)
+        public Symbol NewSym(NodeKind typ, string name, Position pos)
         {
             if (name.Length == 2 && name[0] == '"')
             {
                 parser.SemErr("empty token not allowed"); name = "???";
             }
-            Symbol sym = new Symbol(typ, name, line);
+            Symbol sym = new Symbol(typ, name, pos);
             sym.definedAs = name;
             switch (typ)
             {
@@ -117,7 +117,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             }
             else
                 trace.Write("            ");
-            trace.WriteLine("{0,5} {1}", sym.line, tKind[sym.tokenKind]);
+            trace.WriteLine("{0,5} {1}", sym.pos, tKind[sym.tokenKind]);
         }
 
         public void PrintSymbolTable()
@@ -719,7 +719,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     }
             } while (changed);
             foreach (Symbol sym in nonterminals)
-                if (sym.deletable) errors.Warning("  " + sym.name + " deletable");
+                if (sym.deletable) 
+                    errors.Warning("NT " + sym.name + " deletable");
         }
 
         public void RenumberPragmas()
@@ -1201,7 +1202,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     list = new List<int>();
                     xref[sym] = list;
                 }
-                list.Add(-sym.line);
+                list.Add(-sym.pos.t.line);
             }
             // collect lines where symbols have been referenced
             foreach (Node n in nodes)

@@ -203,12 +203,12 @@ string noString = "-none-"; // used in declarations of literal tokens
 			Get();
 			sym = tab.FindSym(t.val);
 			bool undef = sym == null;
-			if (undef) sym = tab.NewSym(NodeKind.nt, t.val, t.line);
+			if (undef) sym = tab.NewSym(NodeKind.nt, t.val, t.Position());
 			else {
 			 if (sym.typ == NodeKind.nt) {
 			   if (sym.graph != null) SemErr("name declared twice");
 			 } else SemErr("this symbol kind not allowed on left side of production");
-			 sym.line = t.line;
+			 sym.pos = t.Position();
 			}
 			bool noAttrs = sym.attrPos == null;
 			sym.attrPos = null;
@@ -254,11 +254,11 @@ string noString = "-none-"; // used in declarations of literal tokens
 		 if (sym.attrPos != null)
 		   SemErr("grammar symbol must not have attributes");
 		}
-		tab.noSym = tab.NewSym(NodeKind.t, "???", 0); // noSym gets highest number
+		tab.noSym = tab.NewSym(NodeKind.t, "???", Position.Zero); // noSym gets highest number
 		tab.SetupAnys();
 		tab.RenumberPragmas();
 		if (tab.ddt[2]) tab.PrintNodes();
-		if (errors.count == 0) {
+		if (errors.Count == 0) {
 		 Console.WriteLine("checking");
 		 tab.CompSymbolSets();
 		 if (tab.ddt[7]) tab.XRef();
@@ -301,7 +301,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 		var sym = tab.FindSym(name);
 		if (sym != null) SemErr("name declared twice");
 		else {
-		 sym = tab.NewSym(typ, name, t.line);
+		 sym = tab.NewSym(typ, name, t.Position());
 		 sym.tokenKind = Symbol.fixedToken;
 		}
 		tokenString = null;
@@ -636,9 +636,9 @@ string noString = "-none-"; // used in declarations of literal tokens
 			bool undef = sym == null;
 			if (undef) {
 			 if (kind == id)
-			   sym = tab.NewSym(NodeKind.nt, name, 0);  // forward nt
+			   sym = tab.NewSym(NodeKind.nt, name, Position.Zero);  // forward nt
 			 else if (genScanner) { 
-			   sym = tab.NewSym(NodeKind.t, name, t.line);
+			   sym = tab.NewSym(NodeKind.t, name, t.Position());
 			   dfa.MatchLiteral(sym.name, sym);
 			 } else {  // undefined string in production
 			   SemErr("undefined string in production");
@@ -1088,8 +1088,8 @@ string noString = "-none-"; // used in declarations of literal tokens
 
 				default: s = "error " + n; break;
 			}
-			errorStream.WriteLine(errMsgFormat, line, col, s);
-			count++;
+			// public void Add(int id, int level, int line, int col, string message)
+			Add(SynErrOffset + n, ErrorLevel, line, col, s);
 		}
 	} // Errors
 

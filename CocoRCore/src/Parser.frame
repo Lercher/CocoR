@@ -145,8 +145,8 @@ using CocoRCore;
 -->errors
 				default: s = "error " + n; break;
 			}
-			errorStream.WriteLine(errMsgFormat, line, col, s);
-			count++;
+			// public void Add(int id, int level, int line, int col, string message)
+			Add(SynErrOffset + n, ErrorLevel, line, col, s);
 		}
 	} // Errors
 

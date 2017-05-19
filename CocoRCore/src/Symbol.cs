@@ -27,7 +27,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public BitArray first;       // nt: terminal start symbols
         public BitArray follow;      // nt: terminal followers
         public BitArray nts;         // nt: nonterminals whose followers have to be added to this sym
-        public int line;        // source text line number of item in this node
+        public Position pos;        // source text line number of item in this node
         public Range attrPos;     // nt: position of attributes in source text (or null)
         public Range semPos;      // pr: pos of semantic action in source text (or null)
                                      // nt: pos of local declarations in source text (or null)
@@ -37,11 +37,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public List<SymTab> useonces; // nt: optional, list of SymTabs that all symbols must be used at most once within
         public string astjoinwith;  // nt: optional, join a stack top list of ASTLiterals to a single ASTLiteral (+".")
 
-        public Symbol(NodeKind typ, string name, int line)
+        public Symbol(NodeKind typ, string name, Position pos)
         {
             this.typ = typ; 
             this.name = name; 
-            this.line = line;
+            this.pos = pos;
         }
     }
 

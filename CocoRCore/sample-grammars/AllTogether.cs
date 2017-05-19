@@ -9,7 +9,7 @@ namespace CocoRCore.Samples
         public static int Main(string[] arg)
         {
             Console.WriteLine("Coco/R Core Samples (May 19, 2017)");
-            var all = new Func<BaseParser>[] {
+            var all = new Func<ParserBase>[] {
                 () => new Coco.Parser(Coco.Scanner.Create(@"Coco\Coco.atg", true)),
                 () => new Taste.Parser(Taste.Scanner.Create(@"Taste\SampleTaste.txt", true)),
                 () => new Inheritance.Parser(Inheritance.Scanner.Create(@"Inheritance\SampleInheritance.txt", true)),
@@ -22,7 +22,7 @@ namespace CocoRCore.Samples
                     var parser = pgen();
                     parser.Parse();
                     foreach(var e in parser.errors)
-                    Console.WriteLine(e.message);
+                        Console.WriteLine(e.message);
                 }
                 catch (System.Exception ex)
                 {                    

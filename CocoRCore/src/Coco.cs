@@ -81,8 +81,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     FileInfo f = new FileInfo(traceFileName);
                     if (f.Length == 0) f.Delete();
                     else Console.WriteLine("trace output is in " + traceFileName);
-                    Console.WriteLine("{0} error(s) detected", parser.errors.count);
-                    if (parser.errors.count == 0) { retVal = 0; }
+                    Console.WriteLine("{0} error(s) detected", parser.errors.Count);
+                    if (parser.errors.Count == 0) { retVal = 0; }
                 }
                 catch (IOException)
                 {

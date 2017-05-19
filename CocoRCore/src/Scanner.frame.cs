@@ -14,6 +14,7 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     public abstract class ScannerBase
     {
+        public string uri;
         protected const char EOL = '\n';
         protected const int eofSym = 0; /* pdt */
 
@@ -36,6 +37,8 @@ namespace CocoRCore
         {
             try
             {
+                var f = new System.IO.FileInfo(fileName);
+                uri = f.FullName;
                 Stream stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
                 buffer = new Buffer(stream, false);
                 Init(isBOMFreeUTF8);
@@ -48,6 +51,7 @@ namespace CocoRCore
 
         protected void Initialize(Stream s, bool isBOMFreeUTF8)
         {
+            uri = "about:blank";            
             buffer = new Buffer(s, true);
             Init(isBOMFreeUTF8);
         }
@@ -160,6 +164,7 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     public class Token
     {
+        public static readonly Token Zero = new Token() { val = string.Empty, valScanned = string.Empty };
         public int kind;    // token kind
         public int pos;     // token position in bytes in the source text (starting at 0)
         public int charPos;  // token position in characters in the source text (starting at 0)
@@ -178,11 +183,13 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     public class Position
     {  // position of source code stretch (e.g. semantic action, resolver expressions)
-
+        public static readonly Position Zero = new Position(Token.Zero);
         public readonly Token t;
         public Position(Token t) => this.t = t.Copy();
         public Range Range(Token t) => new Range(this.t, t);
         public Range RangeIfNotEmpty(Token t) => t.pos > this.t.pos ? Range(t) : null;
+
+        public override string ToString() => string.Format("({0},{1})", t.line, t.col);
     }
 
     //-----------------------------------------------------------------------------------
@@ -198,6 +205,8 @@ namespace CocoRCore
             this.start = start;
             this.end = end.Copy();
         }
+
+        public override string ToString() => string.Format("{0}..{1}", start, end);
     }
 
     //-----------------------------------------------------------------------------------
