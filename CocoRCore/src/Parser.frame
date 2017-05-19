@@ -132,21 +132,22 @@ using CocoRCore;
 
 -->endastcode
 
+
+		private class Errors : ErrorsBase
+		{
+			public override void SynErr(int line, int col, int n) 
+			{
+				string s;
+				switch (n) 
+				{
+-->errors
+					default: s = "error " + n; break;
+				}
+				// public void Add(int id, int level, int line, int col, string message)
+				Add(SynErrOffset + n, ErrorLevel, line, col, s);
+			}
+		} // Errors
+
 	} // end Parser
 
-
-	public class Errors : ErrorsBase
-	{
-		public override void SynErr(int line, int col, int n) 
-		{
-			string s;
-			switch (n) 
-			{
--->errors
-				default: s = "error " + n; break;
-			}
-			// public void Add(int id, int level, int line, int col, string message)
-			Add(SynErrOffset + n, ErrorLevel, line, col, s);
-		}
-	} // Errors
-
+// end namespace implicit

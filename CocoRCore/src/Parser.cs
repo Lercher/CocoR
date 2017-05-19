@@ -1011,16 +1011,14 @@ string noString = "-none-"; // used in declarations of literal tokens
 
 
 
-	} // end Parser
 
-
-	public class Errors : ErrorsBase
-	{
-		public override void SynErr(int line, int col, int n) 
+		private class Errors : ErrorsBase
 		{
-			string s;
-			switch (n) 
+			public override void SynErr(int line, int col, int n) 
 			{
+				string s;
+				switch (n) 
+				{
 			case 0: s = "EOF expected"; break;
 			case 1: s = "ident expected"; break;
 			case 2: s = "number expected"; break;
@@ -1086,11 +1084,14 @@ string noString = "-none-"; // used in declarations of literal tokens
 			case 62: s = "invalid ASTVal"; break;
 			case 63: s = "invalid TokenFactor"; break;
 
-				default: s = "error " + n; break;
+					default: s = "error " + n; break;
+				}
+				// public void Add(int id, int level, int line, int col, string message)
+				Add(SynErrOffset + n, ErrorLevel, line, col, s);
 			}
-			// public void Add(int id, int level, int line, int col, string message)
-			Add(SynErrOffset + n, ErrorLevel, line, col, s);
-		}
-	} // Errors
+		} // Errors
 
+	} // end Parser
+
+// end namespace implicit
 }
