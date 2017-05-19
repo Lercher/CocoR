@@ -27,6 +27,7 @@ In particular:
 * Factoring out `Parser` code to a common base class
 * Getting rid of huge *.frame files, without loosing the flexibility they provide. Maybe become linked resources.
 * Getting the compiler compiler itself as a linkable component instead of an executable alone 
+* using `Func<X,Y>` etc. instead of frame files.
 
 
 ## Build on the command line
@@ -76,6 +77,12 @@ We recommend to use Visual Studio Code to build this version. First open this di
 
 * compiles to be run as a process
 * generates mixed V2 and core code
-* uses standard frames
-* no test cases
+* uses shorter frames instead of the long original ones
+* multiple test cases but no unit tests
 * Coco/R core can successfully compile itself now
+* four sample grammars compile, can be linked together
+* four sample grammars parse their samples successfully and without diagnostics
+* problem with a csproj reference, can't find `CocoRCore.ParserBase` then
+* including `src/*.frame.cs` works
+* API unstable
+* switch -ac (autocomplete) unstable: removes initialization but not the calls
