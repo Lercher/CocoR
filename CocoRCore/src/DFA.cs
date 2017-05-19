@@ -784,14 +784,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             for (State state = firstState.next; state != null; state = state.next)
                 WriteState(state);
             g.CopyFramePart("-->casing");
-            gen.WriteLine("\t\t\tt.val = t.valScanned{0};", ignoreCase ? ".toLowerInvariant()" : string.Empty);        
+            gen.WriteLine("\t\t\tt.val = t.valScanned{0};", ignoreCase ? ".ToLowerInvariant()" : string.Empty);        
             // -->end   copy frame up to it's end
             g.CopyFramePart(null);
             if (tab.nsName != null && tab.nsName.Length > 0) gen.Write("}");
             gen.Dispose();
         }
 
-        public DFA(Parser parser)
+        public DFA(CocoRCore.CSharp.Parser parser)
         {
             this.parser = parser;
             tab = parser.tab;
