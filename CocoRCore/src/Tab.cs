@@ -64,7 +64,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             if (name.Length == 2 && name[0] == '"')
             {
-                parser.SemErr("empty token not allowed"); name = "???";
+                parser.SemErr(81, "empty token not allowed"); name = "???";
             }
             Symbol sym = new Symbol(typ, name, pos);
             sym.definedAs = name;
@@ -264,7 +264,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public Graph StrToGraph(string str)
         {
             string s = Unstring(str);
-            if (s.Length == 0) parser.SemErr("empty token not allowed");
+            if (s.Length == 0) parser.SemErr(82, "empty token not allowed");
             Graph g = new Graph();
             g.r = dummyNode;
             for (int i = 0; i < s.Length; i++)
@@ -720,7 +720,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             } while (changed);
             foreach (Symbol sym in nonterminals)
                 if (sym.deletable) 
-                    errors.Warning("NT " + sym.name + " deletable");
+                    errors.Warning(sym.pos, "NT " + sym.name + " deletable", 11);
         }
 
         public void RenumberPragmas()
@@ -776,10 +776,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 if ('0' <= ch && ch <= '9') val = 16 * val + (ch - '0');
                 else if ('a' <= ch && ch <= 'f') val = 16 * val + (10 + ch - 'a');
                 else if ('A' <= ch && ch <= 'F') val = 16 * val + (10 + ch - 'A');
-                else parser.SemErr("bad escape sequence in string or character");
+                else parser.SemErr(83, "bad escape sequence in string or character");
             }
             if (val > char.MaxValue) /* pdt */
-                parser.SemErr("bad escape sequence in string or character");
+                parser.SemErr(84, "bad escape sequence in string or character");
             return (char)val;
         }
 
@@ -826,9 +826,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                             }
                             else
                             {
-                                parser.SemErr("bad escape sequence in string or character"); i = s.Length; break;
+                                parser.SemErr(85, "bad escape sequence in string or character"); i = s.Length; break;
                             }
-                        default: parser.SemErr("bad escape sequence in string or character"); i += 2; break;
+                        default: parser.SemErr(86, "bad escape sequence in string or character"); i += 2; break;
                     }
                 }
                 else
@@ -920,14 +920,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             {
                 var singles = new List<Symbol>();
                 GetSingles(sym.graph, singles); // get nonterminals s such that sym-->s
-                foreach (Symbol s in singles) list.Add(new CNode(sym, s));
+                foreach (Symbol s in singles) 
+                    list.Add(new CNode(sym, s));
             }
             do
             {
                 changed = false;
                 for (int i = 0; i < list.Count; i++)
                 {
-                    CNode n = (CNode)list[i];
+                    CNode n = list[i];
                     onLeftSide = false; onRightSide = false;
                     foreach (CNode m in list)
                     {
@@ -936,7 +937,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     }
                     if (!onLeftSide || !onRightSide)
                     {
-                        list.Remove(n); i--; changed = true;
+                        list.Remove(n); 
+                        i--; 
+                        changed = true;
                     }
                 }
             } while (changed);
@@ -944,7 +947,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             foreach (CNode n in list)
             {
                 ok = false;
-                errors.SemErr("  " + n.left.name + " --> " + n.right.name);
+                errors.SemErr(n.left.pos, n.left.name + " --> " + n.right.name + n.right.pos.ToString(), 87);
             }
             return ok;
         }
@@ -953,8 +956,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void LL1Error(int cond, Symbol sym)
         {
-            string s = "  LL1 warning in " + curSy.name + ": ";
-            if (sym != null) s += sym.name + " is ";
+            string s = "LL1 warning in " + curSy.name + ": ";
+            if (sym != null) s += sym.name + sym.pos.ToString() + " is ";
             switch (cond)
             {
                 case 1: s += "start of several alternatives"; break;
@@ -962,7 +965,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 case 3: s += "an ANY node that matches no symbol"; break;
                 case 4: s += "contents of [...] or {...} must not be deletable"; break;
             }
-            errors.Warning(s);
+            errors.Warning(curSy.pos, s, 20 + cond);
         }
 
         void CheckOverlap(BitArray s1, BitArray s2, int cond)
@@ -1024,8 +1027,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         //------------- check if resolvers are legal  --------------------
 
         void ResErr(Node p, string msg)
-        {
-            errors.Warning(p.line, p.pos.start.col, msg);
+        {            
+            errors.Warning(p.pos.start, msg, 31);
         }
 
         void CheckRes(Node p, bool rslvAllowed)
@@ -1094,7 +1097,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 if (sym.graph == null)
                 {
                     complete = false;
-                    errors.SemErr("  No production for " + sym.name);
+                    errors.SemErr(sym.pos, "No production for " + sym.name, 88);
                 }
             }
             return complete;
@@ -1132,7 +1135,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 if (!visited[sym.n])
                 {
                     ok = false;
-                    errors.Warning("  " + sym.name + " cannot be reached");
+                    errors.Warning(sym.pos, sym.name + " cannot be reached", 41);
                 }
             }
             return ok;
@@ -1174,7 +1177,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 if (!mark[sym.n])
                 {
                     ok = false;
-                    errors.SemErr("  " + sym.name + " cannot be derived to terminals");
+                    errors.SemErr(sym.pos, sym.name + " cannot be derived to terminals", 89);
                 }
             return ok;
         }
@@ -1202,7 +1205,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     list = new List<int>();
                     xref[sym] = list;
                 }
-                list.Add(-sym.pos.t.line);
+                list.Add(-sym.pos.line);
             }
             // collect lines where symbols have been referenced
             foreach (Node n in nodes)

@@ -157,7 +157,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     {
                         if (Tab.DelSubGraph(p.sub))
                         {
-                            parser.SemErr("contents of {...} must not be deletable");
+                            parser.SemErr(61, "contents of {...} must not be deletable");
                             return;
                         }
                         if (p.next != null && !stepped[p.next.n]) Step(from, p.next, stepped);
@@ -257,7 +257,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             curSy = sym;
             if (Tab.DelGraph(p))
             {
-                parser.SemErr("token might be empty");
+                parser.SemErr(62, "token might be empty");
                 return;
             }
             NumberNodes(p, firstState, true);
@@ -301,7 +301,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             else if (matchedSym.tokenKind == Symbol.fixedToken || (a != null && a.tc == NodeTransition.contextTrans))
             {
                 // s matched a token with a fixed definition or a token with an appendix that will be cut off
-                parser.SemErr("tokens " + sym.name + " and " + matchedSym.name + " cannot be distinguished");
+                parser.SemErr(63, "tokens " + sym.name + " and " + matchedSym.name + " cannot be distinguished");
             }
             else
             { // matchedSym == classToken || classLitToken
@@ -472,7 +472,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     if (endOf == null || endOf == t.state.endOf)
                         endOf = t.state.endOf;
                     else
-                        errors.SemErr("Tokens " + endOf.name + " and " + t.state.endOf.name + " cannot be distinguished");
+                        parser.errors.SemErr(endOf.pos, "Tokens " + endOf.name + " and " + t.state.endOf.name + " cannot be distinguished", 67);
                 if (t.state.ctx)
                 {
                     ctx = true;
@@ -533,15 +533,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 else if (p.typ == NodeKind.clas)
                 {
                     CharSet set = tab.CharClassSet(p.val);
-                    if (set.Elements() != 1) parser.SemErr("character set contains more than 1 character");
+                    if (set.Elements() != 1) parser.SemErr(64, "character set contains more than 1 character");
                     s.Append((char)set.First());
                 }
-                else parser.SemErr("comment delimiters may not be structured");
+                else parser.SemErr(65, "comment delimiters may not be structured");
                 p = p.next;
             }
             if (s.Length == 0 || s.Length > 2)
             {
-                parser.SemErr("comment delimiters must be 1 or 2 characters long");
+                parser.SemErr(66, "comment delimiters must be 1 or 2 characters long");
                 s = new StringBuilder("?");
             }
             return s.ToString();

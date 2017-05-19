@@ -184,12 +184,15 @@ namespace CocoRCore
     public class Position
     {  // position of source code stretch (e.g. semantic action, resolver expressions)
         public static readonly Position Zero = new Position(Token.Zero);
-        public readonly Token t;
+        private readonly Token t;
         public Position(Token t) => this.t = t.Copy();
-        public Range Range(Token t) => new Range(this.t, t);
+        public Range Range(Token t) => new Range(this, t.Position());
         public Range RangeIfNotEmpty(Token t) => t.pos > this.t.pos ? Range(t) : null;
+        public int line => t.line;
+        public int col => t.col;
+        internal int pos => t.pos;
 
-        public override string ToString() => string.Format("({0},{1})", t.line, t.col);
+        public override string ToString() => string.Format("({0},{1})", line, col);
     }
 
     //-----------------------------------------------------------------------------------
@@ -197,13 +200,13 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     public class Range
     {
-        public readonly Token start;
-        public readonly Token end;
+        public readonly Position start;
+        public readonly Position end;
 
-        public Range(Token start, Token end)
+        public Range(Position start, Position end)
         {
             this.start = start;
-            this.end = end.Copy();
+            this.end = end;
         }
 
         public override string ToString() => string.Format("{0}..{1}", start, end);

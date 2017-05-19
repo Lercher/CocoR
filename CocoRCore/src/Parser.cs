@@ -206,8 +206,8 @@ string noString = "-none-"; // used in declarations of literal tokens
 			if (undef) sym = tab.NewSym(NodeKind.nt, t.val, t.Position());
 			else {
 			 if (sym.typ == NodeKind.nt) {
-			   if (sym.graph != null) SemErr("name declared twice");
-			 } else SemErr("this symbol kind not allowed on left side of production");
+			   if (sym.graph != null) SemErr(1, "name declared twice");
+			 } else SemErr(2, "this symbol kind not allowed on left side of production");
 			 sym.pos = t.Position();
 			}
 			bool noAttrs = sym.attrPos == null;
@@ -218,7 +218,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 			}
 			if (!undef)
 			 if (noAttrs != (sym.attrPos == null))
-			   SemErr("attribute mismatch between declaration and use of this symbol");
+			   SemErr(3, "attribute mismatch between declaration and use of this symbol");
 			
 			if (isKind(la, 29)) {
 				ASTJoin‿NT(sym);
@@ -245,14 +245,14 @@ string noString = "-none-"; // used in declarations of literal tokens
 		Expect(21); // "END"
 		Expect(1); // ident
 		if (gramName != t.val)
-		 SemErr("name does not match grammar name");
+		 SemErr(4, "name does not match grammar name");
 		tab.gramSy = tab.FindSym(gramName);
 		if (tab.gramSy == null)
-		 SemErr("missing production for grammar name");
+		 SemErr(5, "missing production for grammar name");
 		else {
 		 sym = tab.gramSy;
 		 if (sym.attrPos != null)
-		   SemErr("grammar symbol must not have attributes");
+		   SemErr(6, "grammar symbol must not have attributes");
 		}
 		tab.noSym = tab.NewSym(NodeKind.t, "???", Position.Zero); // noSym gets highest number
 		tab.SetupAnys();
@@ -285,11 +285,11 @@ string noString = "-none-"; // used in declarations of literal tokens
 		Expect(1); // ident
 		string name = t.val;
 		CharClass c = tab.FindCharClass(name);
-		if (c != null) SemErr("name declared twice");
+		if (c != null) SemErr(9, "name declared twice");
 		
 		Expect(19); // "="
 		Set‿NT(out s);
-		if (s.Elements() == 0) SemErr("character set must not be empty");
+		if (s.Elements() == 0) SemErr(10, "character set must not be empty");
 		tab.NewCharClass(name, s);
 		
 		Expect(20); // "."
@@ -299,7 +299,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 		{
 		Sym‿NT(out var name, out var kind);
 		var sym = tab.FindSym(name);
-		if (sym != null) SemErr("name declared twice");
+		if (sym != null) SemErr(13, "name declared twice");
 		else {
 		 sym = tab.NewSym(typ, name, t.Position());
 		 sym.tokenKind = Symbol.fixedToken;
@@ -310,9 +310,9 @@ string noString = "-none-"; // used in declarations of literal tokens
 			Get();
 			Sym‿NT(out var inheritsName, out var inheritsKind);
 			var inheritsSym = tab.FindSym(inheritsName);
-			if (inheritsSym == null) SemErr(string.Format("token '{0}' can't inherit from '{1}', name not declared", sym.name, inheritsName));
-			else if (inheritsSym == sym) SemErr(string.Format("token '{0}' must not inherit from self", sym.name));
-			else if (inheritsSym.typ != typ) SemErr(string.Format("token '{0}' can't inherit from '{1}'", sym.name, inheritsSym.name));
+			if (inheritsSym == null) SemErr(14, string.Format("token '{0}' can't inherit from '{1}', name not declared", sym.name, inheritsName));
+			else if (inheritsSym == sym) SemErr(15, string.Format("token '{0}' must not inherit from self", sym.name));
+			else if (inheritsSym.typ != typ) SemErr(16, string.Format("token '{0}' can't inherit from '{1}'", sym.name, inheritsSym.name));
 			else sym.inherits = inheritsSym;
 			
 		}
@@ -321,13 +321,13 @@ string noString = "-none-"; // used in declarations of literal tokens
 			Get();
 			TokenExpr‿NT(out var g);
 			Expect(20); // "."
-			if (kind == str) SemErr("a literal must not be declared with a structure");
+			if (kind == str) SemErr(17, "a literal must not be declared with a structure");
 			tab.Finish(g);
 			if (tokenString == null || tokenString.Equals(noString))
 			 dfa.ConvertToStates(g.l, sym);
 			else { // TokenExpr is a single string
 			 if (tab.literals.ContainsKey(tokenString))
-			   SemErr("token string declared twice");
+			   SemErr(18, "token string declared twice");
 			 tab.literals[tokenString] = sym;
 			 dfa.MatchLiteral(tokenString, sym);
 			 sym.definedAs = tokenString;
@@ -340,7 +340,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 		} else SynErr(54);
 		if (isKind(la, 49)) {
 			SemText‿NT(out sym.semPos);
-			if (typ != NodeKind.pr) SemErr("semantic action not allowed in a pragma context"); 
+			if (typ != NodeKind.pr) SemErr(19, "semantic action not allowed in a pragma context"); 
 		}
 	}}
 
@@ -380,7 +380,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 		Expect(1); // ident
 		string name = t.val.ToLowerInvariant();                                    
 		if (tab.FindSymtab(name) != null) 
-		 SemErr("symbol table name declared twice");
+		 SemErr(7, "symbol table name declared twice");
 		st = new SymTab(name);
 		tab.symtabs.Add(st);
 		
@@ -408,7 +408,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 					Get();
 				} else {
 					Get();
-					SemErr("bad string in attributes"); 
+					SemErr(20, "bad string in attributes"); 
 				}
 							}
 			Expect(35); // ">"
@@ -421,7 +421,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 					Get();
 				} else {
 					Get();
-					SemErr("bad string in attributes"); 
+					SemErr(21, "bad string in attributes"); 
 				}
 							}
 			Expect(37); // ".>"
@@ -487,10 +487,10 @@ string noString = "-none-"; // used in declarations of literal tokens
 				Get();
 			} else if (isKind(la, 4)) {
 				Get();
-				SemErr("bad string in semantic action"); 
+				SemErr(36, "bad string in semantic action"); 
 			} else {
 				Get();
-				SemErr("missing end of previous semantic action"); 
+				SemErr(37, "missing end of previous semantic action"); 
 			}
 					}
 		Expect(50); // ".)"
@@ -515,7 +515,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 		Expect(1); // ident
 		string stname = t.val.ToLowerInvariant();
 		SymTab st = tab.FindSymtab(stname); 
-		if (st == null) SemErr("undeclared symbol table " + t.val);
+		if (st == null) SemErr(8, "undeclared symbol table " + t.val);
 		else sts.Add(st);
 		
 	}}
@@ -527,7 +527,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 		if (isKind(la, 1)) {
 			Get();
 			CharClass c = tab.FindCharClass(t.val);
-			if (c == null) SemErr("undefined name"); else s.Or(c.set);
+			if (c == null) SemErr(11, "undefined name"); else s.Or(c.set);
 			
 		} else if (isKind(la, 3)) {
 			Get();
@@ -554,7 +554,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 		Expect(5); // char
 		string name = tab.Unstring(t.val); n = 0;
 		if (name.Length == 1) n = name[0];
-		else SemErr("unacceptable character value");
+		else SemErr(12, "unacceptable character value");
 		if (dfa.ignoreCase && (char)n >= 'A' && (char)n <= 'Z') n += 32;
 		
 	}}
@@ -576,7 +576,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 			kind = str;
 			if (dfa.ignoreCase) name = name.ToLowerInvariant();
 			if (name.IndexOf(' ') >= 0)
-			 SemErr("literal tokens must not contain blanks"); 
+			 SemErr(33, "literal tokens must not contain blanks"); 
 		} else SynErr(57);
 	}}
 
@@ -641,43 +641,43 @@ string noString = "-none-"; // used in declarations of literal tokens
 			   sym = tab.NewSym(NodeKind.t, name, t.Position());
 			   dfa.MatchLiteral(sym.name, sym);
 			 } else {  // undefined string in production
-			   SemErr("undefined string in production");
+			   SemErr(22, "undefined string in production");
 			   sym = tab.eofSy;  // dummy
 			 }
 			}
 			var typ = sym.typ;
 			if (typ != NodeKind.t && typ != NodeKind.nt)
-			 SemErr("this symbol kind is not allowed in a production");
+			 SemErr(23, "this symbol kind is not allowed in a production");
 			if (weak)
 			 if (typ == NodeKind.t) typ = NodeKind.wt;
-			 else SemErr("only terminals may be weak");
+			 else SemErr(24, "only terminals may be weak");
 			Node p = tab.NewNode(typ, sym, t.line);
 			g = new Graph(p);
 			
 			if (StartOf(20)) {
 				if (isKind(la, 34) || isKind(la, 36)) {
 					Attribs‿NT(p);
-					if (kind != id) SemErr("a literal must not have attributes"); 
+					if (kind != id) SemErr(25, "a literal must not have attributes"); 
 				} else if (isKind(la, 35)) {
 					Get();
 					Expect(1); // ident
-					if (typ != NodeKind.t && typ != NodeKind.wt) SemErr("only terminals or weak terminals can declare a name in a symbol table"); 
+					if (typ != NodeKind.t && typ != NodeKind.wt) SemErr(26, "only terminals or weak terminals can declare a name in a symbol table"); 
 					p.declares = t.val.ToLowerInvariant();
-					if (null == tab.FindSymtab(p.declares)) SemErr(string.Format("undeclared symbol table '{0}'", p.declares));
+					if (null == tab.FindSymtab(p.declares)) SemErr(27, string.Format("undeclared symbol table '{0}'", p.declares));
 					
 				} else {
 					Get();
 					Expect(1); // ident
-					if (typ != NodeKind.t && typ != NodeKind.wt) SemErr("only terminals or weak terminals can lookup a name in a symbol table"); 
+					if (typ != NodeKind.t && typ != NodeKind.wt) SemErr(28, "only terminals or weak terminals can lookup a name in a symbol table"); 
 					p.declared = t.val.ToLowerInvariant(); 
-					if (null == tab.FindSymtab(p.declared)) SemErr(string.Format("undeclared symbol table '{0}'", p.declared));
+					if (null == tab.FindSymtab(p.declared)) SemErr(29, string.Format("undeclared symbol table '{0}'", p.declared));
 					
 				}
 			}
 			if (undef)
 			 sym.attrPos = p.pos;  // dummy
 			else if ((p.pos == null) != (sym.attrPos == null))
-			 SemErr("attribute mismatch between declaration and use of this symbol");
+			 SemErr(30, "attribute mismatch between declaration and use of this symbol");
 			
 			if (isKind(la, 45) || isKind(la, 46)) {
 				AST‿NT(p);
@@ -749,7 +749,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 					Get();
 				} else {
 					Get();
-					SemErr("bad string in attributes"); 
+					SemErr(34, "bad string in attributes"); 
 				}
 							}
 			Expect(35); // ">"
@@ -762,7 +762,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 					Get();
 				} else {
 					Get();
-					SemErr("bad string in attributes"); 
+					SemErr(35, "bad string in attributes"); 
 				}
 							}
 			Expect(37); // ".>"
@@ -841,9 +841,9 @@ string noString = "-none-"; // used in declarations of literal tokens
 		Expect(6); // prime
 		ast.primed = true;
 		if (p.typ != NodeKind.t && p.typ != NodeKind.wt)
-		 SemErr("can only prime terminals");
+		 SemErr(31, "can only prime terminals");
 		if (pgen.IgnoreSemanticActions)
-		 errors.Warning(t.line, t.col, "token priming is ignored when ignoring semantic actions (-is switch).");
+		 Warning(1, "token priming is ignored when ignoring semantic actions (-is switch).");
 		 // no way do define the Prime:void->Token function.                                        
 		
 	}}
@@ -893,7 +893,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 			if (kind == id) {
 			 CharClass c = tab.FindCharClass(name);
 			 if (c == null) {
-			   SemErr("undefined name");
+			   SemErr(32, "undefined name");
 			   c = tab.NewCharClass(name, new CharSet());
 			 }
 			 Node p = tab.NewNode(NodeKind.clas, null, 0); p.val = c.n;
