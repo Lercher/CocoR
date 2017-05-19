@@ -1,0 +1,379 @@
+﻿// See C:\Daten\GitHub\CocoR\CSharp\WFModel
+// branch: git checkout singhammer-wfmodel
+
+COMPILER WFModel
+
+	public override void Prime(Token t) { 
+		if (t.kind == _string || t.kind == _braced || t.kind == _bracketed) 
+		t.val = t.val.Substring(1, t.val.Length - 2);
+	}
+
+IGNORECASE
+
+CHARACTERS
+  letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".
+  umlaut = "ÄÖÜäöüß".
+  germanletter = letter + umlaut.
+  underscore = '_'.
+  digit     = "0123456789".
+  cr        = '\r'.
+  lf        = '\n'.
+  tab       = '\t'.
+  stringCh  = ANY - '"' - cr - lf.
+  anybutbrace = ANY - '}'.
+  anybutbracket = ANY - ')'.
+  dothash = ".#".
+
+TOKENS
+  ident = germanletter { germanletter | digit | underscore }.
+  dottedident = germanletter { germanletter | digit | underscore } CONTEXT(".") .
+  number = ['-'] digit { digit } '.' digit { digit } ['#' | 'R'].
+  int = ['-'] digit { digit }.
+  string = '"' { stringCh } '"'.
+  braced = '{' { anybutbrace  } '}'.
+  bracketed = '(' { anybutbracket  } ')'.
+  end = "End".
+  dot = '.'.
+  bar = '|'.
+  colon = ':'.
+  versionnumber = digit '.' digit '.' digit '.' digit .
+  // css = dothash letter { letter | digit | underscore }.  // fights with DottedIdent
+  
+  // ident tokens :
+  version : ident = "version".
+  search : ident  = "search".
+  select : ident = "select" .
+  details : ident  = "details" .
+  edit : ident  = "edit" .
+  clear : ident  = "clear" .
+  keys : ident = "Keys".
+  displayname : ident = "Displayname".
+  vbident : ident = '[' germanletter { germanletter | digit | underscore } ']'.
+  
+
+COMMENTS FROM "'" TO lf 
+
+IGNORE cr + lf + tab
+
+
+SYMBOLTABLES
+	types.
+	enumtypes.
+
+
+PRODUCTIONS
+
+WFModel =
+	Version^
+	Namespace^
+	[ ReaderWriterPrefix^ ]
+	RootClass^
+	{
+	Class^^
+	| SubSystem^^
+	| Enum^^
+	| Flags^^
+	} 
+	EndNamespace
+	.	
+
+Version =
+	version
+	versionnumber #
+	.
+
+Namespace = 
+	SYNC
+	"Namespace" 
+	DottedIdent
+	.
+	
+EndNamespace =
+	end
+	"Namespace"
+	.
+
+DottedIdent +"." = 
+	[ dottedident # dot { dottedident # dot } ] ident # 
+	.
+
+DottedIdentBare = 
+	[ dottedident dot { dottedident dot } ] ident 
+	.
+
+ReaderWriterPrefix = 
+	SYNC
+	"ReaderWriterPrefix"
+	ident #
+	.
+
+RootClass =
+	SYNC
+	"RootClass" #:typ
+	"Data" #:name
+	Properties^^
+	end "Class"
+	.
+	
+Class =
+	SYNC
+	"Class" #:typ
+	ident>types #:name
+	[ Title^ ]
+	[ Inherits^]
+	[ Via^ ]
+	Properties^^
+	end "Class"
+	.
+
+Via =
+	"Via"
+	DottedIdent
+	.
+	
+Title =
+	braced	#
+	.
+	
+Inherits =
+	"Inherits"
+	DottedIdent
+	.
+	
+Properties =
+	{
+	Prop
+	}
+	.
+
+Prop =
+	SYNC
+	(
+	Property
+	| InfoProperty
+	| APProperty
+	| List
+	| SelectList
+	| FlagsList
+	| LongProperty
+	| InfoLongProperty
+	)
+	.
+
+Property =
+	"Property"      #:writeable=t
+	ident           #:name
+	Type^
+	.
+
+InfoProperty =
+	"InfoProperty"   #:writeable=f 
+	ident            #:name
+	Type^
+	.
+
+APProperty =
+	"APProperty" 	#:writeable=t, #:autopostback=t 
+	ident           #:name
+	Type^
+	.
+
+List =
+	"List"          #:list=t
+	ident           #:name
+	[ As^:type ]
+	.
+
+SelectList =
+	"SelectList"    #:list=t, #:select=t 
+	ident     	    #:name
+	As^:type
+	.
+
+FlagsList =
+	"FlagsList"		#:list=t, #:flags=t 
+	ident           #:name
+	Mimics^:type
+	.
+
+LongProperty =
+	"LongProperty"  #:writeable=t, #:long=t
+	ident           #:name
+	.
+
+InfoLongProperty =
+	"InfoLongProperty" #:writeable=f, #:long=t
+	ident              #:name
+	.
+
+Type =
+	(
+	EmptyType #:basic=String
+	| As
+	| Mimics
+	)
+	[ "=" InitValue^ ]
+	[ SampleValue^ ]
+	.
+
+InitValue+ =
+	number 
+	| int 
+	| string
+	| "true"
+	| "false"
+	| "#" { ANY } "#"
+	| FunctionCall
+	.
+
+FunctionCall =
+	DottedIdentBare bracketed
+	.
+
+SampleValue =
+	braced #'
+	.
+
+EmptyType = .
+	
+As =
+	"As"
+	(
+	BaseType
+	| ident:types #:basic
+	| DottedIdent ^:basic
+	)
+	.
+
+BaseType =
+	"double" 				#:basic, 			#:format=c
+	| "date" 				#:basic, 			#:format=d
+	| "datetime"        	#:basic, 			#:format="{0:d} {0:t}"
+	| "integer" 			#:basic, 			#:format=n0
+	| "percent"         	#:basic=double, 	#:format=p
+	| "percentwithdefault" 	#:basic, 			#:format=p
+	| "doublewithdefault"  	#:basic, 			#:format=c
+	| "integerwithdefault" 	#:basic, 			#:format=n0
+	| "n2" 					#:basic=double, 	#:format=n2
+	| "n0" 					#:basic=integer, 	#:format=n0
+	| "String" 				#:basic
+	| "boolean" 			#:basic
+	| "Guid" 				#:basic
+	| "String()" 			#:basic
+	| "XML" 				#:basic
+	.
+
+Mimics =
+	"Mimics" #:basic=String
+	( MimicsSpec^
+	| ident:enumtypes #:mimicsspec, #:enum=t
+	)
+	.
+
+MimicsSpec+ =
+	(
+	Query
+	| Txt
+	| XL
+	| Ref
+	).
+
+Query =
+	"query" colon
+	dottedident	dot
+	ident
+	colon
+	StringOrIdent
+	.
+
+Txt =
+	"txt" colon
+	dottedident	dot
+	ident
+	colon
+	StringOrIdent
+	.
+
+XL =
+	"xl" colon
+	dottedident	dot
+	ident
+	colon
+	StringOrIdent
+	.
+
+Ref =
+	"ref" colon
+	( keys | displayname )
+	colon
+	StringOrIdent
+	.
+
+StringOrIdent =
+	string
+	| DottedIdentBare
+	.
+	
+	
+SubSystem = 
+	SYNC
+	"SubSystem" 
+	ident>types #:name
+	"SSName" ident #:ssname
+	"SSConfig" ident #:ssconfig
+	"SSTyp" ident #:sstyp
+	"SSCommands" SSCommands^^
+	[ "SSKey" string #':sskey ]
+	[ "SSClear" string #':ssclear ] 
+	{ InfoProperty^^:properties }
+	end "SubSystem"
+	.
+
+SSCommands = 
+	SSCommand ##
+	{ 
+	bar SSCommand ## 
+	}
+	.
+	
+SSCommand = 
+	"search" 
+	| "select" 
+	| "details" 
+	| "edit" 
+	| "clear"
+	.
+
+Flags =
+	SYNC
+	"Flags"
+	ident>types #
+	{ EnumValue }
+	end "Flags"
+	.
+
+Enum =
+	SYNC
+	"Enum" 
+	ident>enumtypes #
+	EnumValues
+	end "Enum"
+	.
+
+EnumValues =
+	{ EnumValue }
+	"DEFAULT" EnumValue
+	{ EnumValue }
+	.
+
+EnumValue = 
+	ident
+	[ EnumIntValue ]
+	.
+
+EnumIntValue =
+	"="
+	int
+	.
+
+END WFModel .

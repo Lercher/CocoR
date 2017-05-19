@@ -18,5 +18,6 @@
     <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames src sample-grammars/Taste/Taste.ATG -o sample-grammars/Taste" />
     <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames src sample-grammars/Coco/Coco.ATG -o sample-grammars/Coco" />
     <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames src sample-grammars/Inheritance/Inheritance.ATG -o sample-grammars/Inheritance" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames src sample-grammars/WFModel/WFModel.ATG -o sample-grammars/WFModel" />
   </Target>
 </Project>

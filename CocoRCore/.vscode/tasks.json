@@ -56,6 +56,20 @@
                 "-frames",
                 "${workspaceRoot}/src"
             ]
+        },
+        {
+            "taskName": "compile-sample-wfmodel",
+            "isShellCommand": true,
+            "command": "dotnet",
+            "args": [
+                "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
+                "${workspaceRoot}/sample-grammars/wfmodel/wfmodel.ATG",
+                "-utf8",
+                "-o",
+                "${workspaceRoot}/sample-grammars/wfmodel",
+                "-frames",
+                "${workspaceRoot}/src"
+            ]
         }
     ]
 }

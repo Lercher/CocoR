@@ -1,0 +1,646 @@
+﻿' This is a comment, very funny, isn't it?
+' This is a comment, very funny, isn't it?
+' This is a comment, very funny, isn't it?
+' No, no, no more. Please, stop it.
+
+Version 2.0.1.7
+Namespace Cassiopae.Angebot
+ReaderWriterPrefix CAS
+
+RootClass Data
+    Property Vertrag As Vertrag
+    Property KundePrivat as KundePrivat
+    Property VorherigeAnschrift as VorherigeAnschrift
+    Property KundeGewerblich as KundeGewerblich
+    List WeitereGeschäftsführer as KundePrivat
+    Property Zusatzadresse as Zusatzadresse
+    Property Bankverbindung As Bankverbindung
+    Property Selbstauskunft As Selbstauskunft
+    Property VorherigerArbeitgeber as VorherigerArbeitge 'a Typo
+    Property KL As KL
+    List Varianten as KL
+    Property Objekt As Objekt
+    Property Parameter As Parameter
+    Property Profil As Profil
+	Property BetreuerProfil as Profil
+    Property Nachricht as Nachricht
+    Property Mandant = "CAS"
+    Property Lieferant as Lieferant
+    Property Zuordnen as Zuordnen
+    List KundenAdressen as LSAdresse
+    List LieferantenAdressen as LSAdresse
+    List Auflagen as Auflage
+	List Unterlagenanforderungen as Unterlage
+	List Unterlagen as String
+    Property Zusaetze as Zusaetze
+    Property Bonitaet as Bonitaet
+    Property MieleTeil as Miele
+    List Emails as Email
+	Property IdentResponse as XML
+	Property RatingResponse as XML
+	Property RatingNachmeldung as XML
+	Property RatingArchiv as XML
+	Property EuroCommand
+	Property EuroCommandRequest as XML
+	Property EuroCommandResponse as XML
+	Property EuroCommandResponseId
+	List EuroSeriennummernMessages as Singhammer.Pos.Interfaces.Identifier
+	Property EuroStatusResponse as XML
+	List CasObjekte As CasObjekt
+End Class
+
+Class Vertrag
+    Property Kundentyp Mimics PrivatGewerblich
+	Property KundentypCas Mimics PrivatGewerblich
+    Property Vertragsart Mimics Vertragsarten
+	Property Kalkulationsart Mimics Kalkulationsarten
+    Property Betragseingabe Mimics NettoBrutto
+    InfoProperty Referenznummer { "M1234" }
+    InfoProperty Betreuer {"Gaby Düver, 0511/35398016"}
+    InfoProperty BetreuerEMail {"Anfrage@activ-services.de"}
+    InfoProperty ValutaDatum as Date
+    InfoProperty GenehmigtBis as Date
+    InfoProperty Genehmigungsdatum as Date
+    Property GenehmigtVon
+	Property IhrZeichen
+	Property Sonderkondition
+	Property Stornogrund
+	InfoProperty EuroSpontankunde
+	APProperty EuroVersicherungpaket Mimics Versicherungspakete = ""
+	Property EuroVersicherungpaketOK
+End Class
+
+Class KundeGewerblich {Gewerblicher Kunde}
+    Property gFirmenname {"Galactic Garbage"}
+    Property gZusatz {"Inh. G. Setzlich"}
+    Property gLand Mimics Laender = "Deutschland"
+    Property gPostleitzahl {"12345"}
+    Property gOrt {"Hannover"}
+    Property gStrasse {"Wanderweg"}
+    Property gHausnummer {"45"}
+    Property gTelefonnummer {"123456"}
+    Property gMobil {""}
+    Property gFax {""}
+    Property gEMail {"sales@galactic-garbage.com"}
+    Property gGruendung as Date { #12/01/2000# }
+    Property gAnsprechpartner {""}
+    Property gRechtsform Mimics Rechtsformen = "GmbH"
+    Property gBranche Mimics Branchen = "(bitte wählen)"
+    Property gHRNummer {"Hr123456789"}
+    Property gAnsprechpartner2 {"852963741"}
+	InfoProperty gCrefoID
+	InfoProperty gCrefoStatus
+	InfoProperty gCrefoSucheAbgebrochen
+End Class
+
+Class KundePrivat {Privatkunde bzw. Firmeninhaber/Geschäftsführer}
+    Property pAnrede Mimics Anreden = "Herr"
+    Property pName {"Wachtel"}
+    Property pVorname {"Spina T."}
+    Property pGeburtsname
+    Property pGeburtsdatum as Date { #11/11/1974# }
+	Property pGeburtsort
+    Property pLand Mimics Laender = "Deutschland"
+    Property pPostleitzahl {"12345"}
+    Property pOrt {"Hannover"}
+    Property pStrasse {"Trampelpfad"}
+    Property pHausnummer {"15 A"}
+    Property pTelefon_privat {"123456"}
+    Property pTelefon_dienstlich {""}
+    Property pMobil
+    Property pFax
+    Property pEMail {"Spina@Wachtel.de"}
+    Property pWohnhaft_seit as Date { #12/01/2000# }
+    InfoProperty pLaufendeNummer as Integer = 0
+    InfoProperty pHauptansprechpartner as Integer = 0
+End Class
+
+Class Zusatzadresse {Zusatzadresse}
+    Property zName {"Bart Simpson"}
+    Property zLand Mimics Laender = "Deutschland"
+    Property zPostleitzahl {"12345"}
+    Property zOrt {"Springfield"}
+    Property zStrasse {"Evergreen Terrace"}
+    Property zHausnummer {"94"}
+    Property zTelefonnummer {"555-6528"}
+    Property zMobil {""}
+    Property zFax {""}
+    Property zEMail {"sales@galactic-garbage.com"}
+End Class
+
+Class VorherigeAnschrift {Vorherige Anschrift}
+    Property vaLand Mimics Laender = "Deutschland"
+    Property vaPostleitzahl
+    Property vaOrt
+    Property vaStrasse Mimics Auflagenarten
+    Property vaHausnummer as VorherigerArbeitgeber
+End Class
+ 
+Class Bankverbindung
+    Property Kontonummer {"8974562130"}
+    Property BLZ {"70150000"}
+    Property Bankort {"München"}
+    Property Institut {"Stadtsparkasse"}
+    Property Inhaber {"Wachtel"}
+    Property KontoSeit as Date {#07/01/1999#}
+	Property IBAN
+	Property BIC
+	Property IsoCode
+End Class
+ 
+Class Selbstauskunft
+    Property Personalausweisnr {"DE1111111"}
+    Property Familienstand Mimics Familienstände
+    Property Personen_pro_Haushalt as Integer {4}
+    Property Im_Haushalt_lebende_Kinder as Integer {7}
+    Property Berufsbezeichnung Mimics Berufsbezeichnungen
+    Property Beschäftigt_bei {"Selbstständig"}
+    Property Beschäftigt_seit as Date { #01/01/2001# }
+	Property Beschäftigt_befristet Mimics txt:CasAngebot.CasKennzeichen:"Beschaeftigt"
+    Property Beschäftigt_Plz
+    Property Beschäftigt_Ort
+    Property Staatsangehörigkeit Mimics Laender = "Deutschland"
+    Property In_Deutschland_lebend_seit as Date { #12/01/2000# }
+    Property Aufenthaltsdauer_unbegrenzt Mimics NeinJa
+    Property Aufenthaltsdauer_bis as Date
+    Property NeinJa Mimics NeinJa
+    Property Arbeitserlaubnis_bis as Date
+    Property Schufaeinwilligung_erteilt Mimics NeinJa
+    Property Nettoeinkommen_mtl as Double {123456.00}
+    Property Wohneigentum Mimics NeinJa
+    Property MieteHypothek as Double {700.00}
+    Property MonatlicheVerpflichtungen as Double {200.00}
+End Class
+
+Class VorherigerArbeitgeber {Vorheriger Arbeitgeber}
+    Property vaBeschäftigt_bei
+    Property vaBeschäftigungsbeginn as Date
+    Property vaBeschäftigt_Plz
+    Property vaBeschäftigt_Ort
+End Class
+
+Class KL {Gewählte Kondition}
+    InfoProperty Laufzeit As Integer
+    InfoProperty Ratenbetrag As Double
+    InfoProperty Mehrwertsteuer as Double
+    InfoProperty Bruttorate as Double
+    InfoProperty AufschlagEnthaltenNetto as Double = 0
+    InfoProperty ProvisionEnthaltenNetto as Double = 0 
+    InfoProperty VersicherungEnthaltenNetto as Double = 0
+    InfoProperty VersicherungSeparatNetto as Double = 0
+	InfoProperty VersicherungProRate as Double = 0
+	InfoProperty VertriebsgebuehrEnthaltenNetto as Double = 0
+    InfoProperty Leasingfaktor as Percent = 0
+	InfoProperty RestwertAufschlag as Percent = 0
+	InfoProperty ProvisionAufschlag as Percent = 0
+	InfoProperty Grundfaktor as Percent = 0
+End Class
+
+Class Parameter
+    Property Kooperation
+    InfoProperty Rechenmethode Mimics Rechenmethoden
+    InfoProperty Vertragsbeginn Mimics Vertragsbeginne
+    InfoProperty VertragsartFix = "Nein"
+    InfoProperty BeschriftungAnsprechpartner2 = "Nein"
+    InfoProperty NurPrivatkunden Mimics NeinJa = "Nein"
+    InfoProperty Logo = "leer.png"
+    InfoProperty Minimalbetrag as Double = 0.0
+    InfoProperty Maximalbetrag as Double = 15000.0
+    InfoProperty AufschlagProRateNetto as Double = 0.0
+	InfoProperty AufschlagProRateNettoServiceIntervalle as Double = 0.0
+    InfoProperty LFReiter = "P6"
+    InfoProperty LFReiterExpanded = "P6"
+    InfoProperty EMailProvisionsempfänger
+    InfoProperty ProvisionsVorgabe as Percent
+    InfoProperty ZusatzadresseEingabe Mimics JaNein = "Nein"
+    InfoProperty Bearbeitungsgebühr as Double
+    InfoProperty VersicherungssatzEnthalten as Percent = 0
+    InfoProperty VersicherungssatzSeparat as Percent = 0
+	InfoProperty VersicherungProRateProObjekt as Double = 0
+    InfoProperty SonderzahlungEingabe Mimics JaNein = "Ja"
+    InfoProperty StandardProvision as Percent { 0.015 }
+    InfoProperty Suchname {"Wachtl"}
+    InfoProperty MwstSatz As Double = 0.19R
+    InfoProperty Berechnungsgrundlage as Double {1190.00}
+    InfoProperty BerechnungsgrundlageNetto as Double {1000.00}
+	InfoProperty BerechnungsgrundlageNettoOhneVers36m as Double {1000.00}
+    InfoProperty AnschaffungswertNetto as Double {1000.00}
+    InfoProperty PLZBereich1 {"8"}
+    InfoProperty PLZBereich2 {"81"}
+    InfoProperty Provisionsbetrag as Double 
+    InfoProperty Provisionssatz as Percent
+    InfoProperty BerechnungsgrundlageText {"1.190,00€"}
+    InfoProperty AnfragedatumText {"01.15.2008"}
+    InfoProperty Anfragedatum as Date {#1/1/2010#}
+    InfoProperty RatenText {"7 Raten á 100€ netto"}
+    InfoProperty Kommentar {"Nur für Regelkommentare"}
+    InfoProperty AlleObjektgruppen
+    InfoProperty AlleLaufzeiten
+    InfoProperty AllePerioden
+    InfoProperty AlleKLNamen
+    InfoProperty AlleVerkäufernummern
+    InfoProperty AlleErlaubtenAnhänge
+    InfoProperty StandardTextschablone
+    InfoProperty StandardGenehmigungsschablone
+    InfoProperty StandardGenehmigung
+    InfoProperty SchufaBABeiblatt
+    InfoProperty MitServicerate = "Nein"
+    InfoProperty UebernahmeBestaetigungSeparat
+	InfoProperty Temp1
+	InfoProperty Temp2
+	InfoProperty CasGesamtAnz as Integer
+	InfoProperty Versicherung36mNetto as Double
+	InfoProperty Versicherungsvorleistung as Double
+	InfoProperty VersicherungProRateAlleObjekte as Double
+	InfoProperty GesamtVersicherungspraemie36m as Double
+	InfoProperty automEntscheidung
+	InfoProperty MaxBetragGelbPrivat as Double
+	InfoProperty MaxBetragRotPrivat as Double
+	InfoProperty MaxBetragGelbGewerblich as Double
+	InfoProperty MaxBetragRotGewerblich as Double
+	InfoProperty AlleErlaubtenRestwerte
+	InfoProperty AbgelehntBeiIndex as Integer {300}
+	InfoProperty PruefungBeiIndex as Integer {276}
+	InfoProperty PartnerEmail
+	InfoProperty istMF 
+	InfoProperty EuroCallbackUrl
+	InfoProperty EuroReferenz
+	InfoProperty EuroStichtag as Date
+	List KooperationsListe as String
+    List KooperationsListeInnendienst As String
+End Class
+
+Class Bonitaet {Bonitätsprüfung}
+    Property CrefoIndex as Integer { 123 }
+	Property CrefoRatingstufe as integer { 3 }
+    Property CrefoGründung as Date {#1/1/2000#}
+    Property CrefoUmsatz as Double {50000.0}
+    Property CrefoZahlungsweise {"gut"}
+    Property CrefoHöchstkredit as Double {10000.0}
+    Property SchufaScore as Integer { 911 }
+    Property Schufa Mimics SchufaBuchstaben {"E"}
+    Property Bank Mimics Banken {"Bank1"}
+    Property SchädlicherEintrag {"vertragswidriges Verhalten"}
+	InfoProperty Vorentscheidung
+	InfoProperty Agenturentscheidung
+	InfoProperty Entscheidung
+	InfoProperty AutomatischeEntscheidungText
+	InfoProperty CrefoOrder
+	List Gründe
+	InfoProperty CrefoOrderReferencenumber
+	InfoProperty SchufaManuelleWeiterverarbeitung
+	InfoProperty SchufaScoreinfotext
+End Class
+
+Class Miele
+    Property Kurzbezeichnung {"WT 2670 WPM"}
+    Property Farbe {"Lotosweiß"}
+    Property Preis as Double {1799.00}
+    Property Produktgruppe Mimics MieleProduktgruppen = "(alle)" { "WASCHTROCKNER" } 
+    Property Seriennummer {"MW12345678"}
+End Class
+
+Class Lieferant
+	Property liefFirma {"Miele Hausgeräte"}
+	Property liefZusatz {"R. Endlich"}
+	Property liefVorname {"Reinhold"}
+	Property liefNachname {"Endlich"}
+	Property liefStrasseHnr {"Mauernstr. 10"}
+	Property liefPLZ {"29221"}
+	Property liefOrt {"Celle"}
+	Property liefEMail {"endliche@Hausgeraete.de"}
+    Property liefKompetenz {"MieleService"}
+    Property liefTelefon {"123456"}
+    Property liefFax {"654321"}
+	InfoProperty liefLsAdNummer
+    APProperty liefSuchenNach Mimics ref:Keys:"CasLieferant"
+    Property liefSpeichernUnter
+    InfoProperty Eigentümer {"Me"}
+End Class
+
+Class Objekt
+    Property FinanzierungsObjekt Mimics Objektgruppen = "WW Weiße Ware"
+    Property Objektbezeichnung {"WT 2670 WPM"}
+	Property CasObjektbezeichnung2
+    Property KaufpreisObjekt as Double { 1779.00 }
+    Property Sonderzahlung As Double { 90.00 }
+	Property Restwert As Integer
+	InfoProperty RestwertBetrag as Double
+    Property VoraussichtlichesLieferdatum as Date { #04/15/2008# }
+    Property Verkäufernummer as Integer{ 150 }	
+    Property Zubehör { "kein" }
+    Property Servicerate as Double = 0.0
+	Property Servicevertragnummer
+    List MieleTeile as Miele
+    InfoProperty MieleNr as Integer = -1
+	Property abwObjektStandort
+	Property Verwendung Mimics Verwendungen
+	Property AnzahlBikes as Integer = 1
+	Property AnzahlFahrräder as Integer = 0
+	Property imgurl
+	Property AnzahlServiceintervalle as Integer = 0
+	Property Arbeitgeberfinanzierung Mimics NeinJa
+	Property ArbeitnehmerVorname
+	Property ArbeitnehmerNachname
+	InfoProperty ArbeitnehmerVollname
+	Property ArbeitnehmerStrasse
+	Property ArbeitnehmerHausnummer
+	Property ArbeitnehmerPLZ
+	Property ArbeitnehmerWohnort
+	Property ArbeitnehmerEmailPrivat
+	Property ArbeitnehmerEmailGeschäftlich
+	Property ArbeitnehmerTelefonPrivat
+	Property ArbeitnehmerTelefonGeschäftlich
+	InfoProperty ObjektHinweis
+	InfoProperty TravelbikeGesamtrate as Double
+End Class
+
+
+Class CasObjekt
+	Property zoAnzahl as Integer = 1
+	Property zoBezeichnung
+	Property zoProduktart Mimics xl:CAS2EB.Tabelle_Versicherung:"A24M" = "(bitte auswählen)"
+	Property zoEinzelpreis as Double
+	InfoProperty zoEinzelpreisnetto as Double
+	InfoProperty zoGesamtpreis as Double
+	InfoProperty zoGesamtpreisnetto as Double
+	InfoProperty zoVersicherung24 as Double
+	InfoProperty zoVersicherung36 as Double
+	InfoProperty zoVersicherungProRate as Double
+	InfoProperty zoVersicherung as Double
+	InfoProperty zoVersicherungnetto as Double
+	InfoProperty zoVersicherungspraemie36m as Double
+	InfoProperty zoHinweis
+	Property zoListenpreis as Double
+	InfoProperty zoTravelbikeRatenetto as Double
+	InfoProperty zoTravelbikeGesamtratenetto as Double
+	Property zoSeriennummer
+End Class
+
+Class Zuordnen
+	Property Kundennummer
+	Property KundeNeu Mimics NeinJa
+	Property Nutzerdatennummer
+	Property NutzerdatenNeu Mimics NeinJa
+	Property Lieferantennummer
+	Property LieferantNeu Mimics NeinJa
+	Property ProvisionsempfängerEMail
+	Property IstVermittler Mimics NeinJa
+	Property Login
+	Property Uebernahmedatum as Date
+End Class
+
+Class LSAdresse {LeasySOFT.pro Adressen}
+	Property adSuchname
+	Property adNummer
+	Property adName
+	Property adStrasse
+	Property adPostleitzahl
+	Property adOrt
+	Property adMandant
+	Property adBetreuer
+End Class
+
+Class Auflage
+	Property AuflageArt Mimics Auflagenarten 
+	Property Deadline as Date
+	Property ErhaltenAm as Date
+	Property AuflagenText
+End Class
+
+Class Unterlage
+	Property UnterlageArt Mimics Unterlagenarten 
+	Property Deadline as Date
+	Property ErhaltenAm as Date
+	Property UnterlagenText
+End Class
+
+Class Profil
+    Inherits Singhammer.Pos.Interfaces.GenericProfile
+    Property Name
+    Property Vorname
+    Property Adresse1
+    Property Adresse2
+    Property PLZ
+    Property Ort
+    Property Land
+    Property Rechtsform
+    Property Gruendungsdatum
+    Property HandelsregisterNummer
+    Property UIDNummer
+    Property Telefon
+    Property Fax
+    Property Mobil
+	Property IBAN
+	Property BIC
+    Property Kontonummer
+    Property Bankleitzahl
+    Property Kreditinstitut
+    Property Kontoinhaber
+    Property StandardProvisionProzent
+    Property Filialnummer
+    'Für eine Regel zum automatischen Zuteilen von Berechtigungen:
+    Property Code
+    Property EMailWeitere1
+    Property EMailWeitere2 
+	Property LieferantAdressNr
+End Class
+
+Class Nachricht
+	Property Text
+	Property History
+End Class
+
+Class Zusaetze
+	'Für die Anlage einer KL, wird nur über Regeln besetzt.
+	InfoProperty AGebNetto as Double = 0
+	InfoProperty AGebVerrLFNetto as Double = 0
+	InfoProperty SGebNetto as Double = 0
+	InfoProperty SZNetto as Double = 0
+	InfoProperty SZKdueberweistNetto as Double = 0
+	InfoProperty SZVerrLFNetto as Double = 0
+	InfoProperty VorMNetto as Double = 0
+	InfoProperty KautNetto as Double = 0
+	InfoProperty VersNetto as Double = 0 {4.32}
+	InfoProperty RKuendNetto as Double = 0
+	InfoProperty WartungNetto as Double = 0
+	InfoProperty KLVoreinstellung = "monatlich"
+	InfoProperty Ratenperiode as Integer = -1
+	InfoProperty Ratenanzahl as Integer = 0 {39}
+	InfoProperty RateNetto as Double = 0 {25.65}
+	Property ErsteRateAm as Date
+	InfoProperty InkassoWartungNetto as Double = 0
+	 'Zuschusszeilen:
+	InfoProperty TPKZVersicherungNetto as Double = 0  {5.48}
+	InfoProperty TPKZVersicherungsSatz as Percent = 0 {0.00025}
+End Class
+
+Class Email
+	InfoProperty Datum as DateTime
+	InfoProperty Text as System.Xml.Linq.XElement
+	InfoProperty Betreff
+End Class
+
+'--------------------------------------------
+
+Enum Auflagenarten
+	DEFAULT Sonstiges	
+	Sonderzahlung
+	Maximallaufzeit
+	Minimallaufzeit
+	Kaution
+	Persönliche_Bürgschaft
+	Rückkaufvereinbarung
+	Einkommensnachweis
+End Enum
+
+Enum Unterlagenarten 
+	DEFAULT Sonstiges
+	BWA
+	Einkommensnachweis
+	Bankauskunftsermächtigung
+	Angebot_des_Lieferanten
+End Enum
+
+Enum Vertragsarten
+    DEFAULT Leasing
+    Miete
+    Pacht
+End Enum
+
+Enum Kalkulationsarten
+	DEFAULT VA
+	TA
+End Enum
+
+Enum NettoBrutto
+    Brutto
+    DEFAULT Netto
+End Enum
+
+Enum PrivatGewerblich
+    Privat
+    DEFAULT Gewerblich
+End Enum
+
+Enum JaNein
+    DEFAULT Ja = 1
+    Nein = 0
+End Enum
+
+Enum NeinJa
+    Ja = 1
+    DEFAULT Nein = 0
+End Enum
+
+Enum SchufaBuchstaben
+	DEFAULT A
+	B
+	C
+	D
+	E
+	F
+	G
+	H
+	I
+	J
+	K
+	L
+	M
+	unbekannt
+	vertragswidriges_Verhalten
+End Enum
+
+Enum Banken
+	DEFAULT Bank1
+	Bank2
+	Bank3
+End Enum
+
+Enum Rechenmethoden
+	X1
+	B1
+	DEFAULT N
+	K7
+	U2
+End Enum
+
+Enum Vertragsbeginne
+	DEFAULT monatlich
+	Quartalsweise
+End Enum
+
+Enum Zahlweisen
+	DEFAULT monatlich
+	quartalsweise
+End Enum
+
+Enum Verwendungen
+	DEFAULT Ausschließlich_privat
+	Gewerblich
+End Enum
+
+Enum Versicherungspakete
+	DEFAULT Premiere
+	Silber
+    Ultra
+    Normal
+End Enum
+
+Enum Laender
+   DEFAULT DE
+   FR
+   AT
+   CH
+   IT
+End Enum
+
+Enum Rechtsformen
+   DEFAULT Firma
+   Privatperson
+   ÖffentlicheHand
+End Enum
+
+Enum Branchen
+   DEFAULT Sonstige
+   Bau
+   Steine
+   Erden
+End Enum
+
+Enum Anreden
+   DEFAULT Herr
+   Frau
+End Enum
+
+Enum Familienstände
+   DEFAULT ledig
+   verheiratet
+   getrennt_lebend
+End Enum
+
+Enum Berufsbezeichnungen
+   DEFAULT Bauer
+   Arzt
+   Schlosser
+   Fahrer
+   Müller
+   Bäcker
+End Enum
+
+Enum MieleProduktgruppen
+   DEFAULT A
+   B
+   C
+   D
+End Enum
+
+Enum Objektgruppen
+   DEFAULT Autos
+   LKW
+   Machninen
+   Sonstige
+End Enum
+
+
+End Namespace
