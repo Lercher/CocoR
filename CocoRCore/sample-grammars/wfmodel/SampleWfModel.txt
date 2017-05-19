@@ -16,7 +16,7 @@ RootClass Data
     Property Zusatzadresse as Zusatzadresse
     Property Bankverbindung As Bankverbindung
     Property Selbstauskunft As Selbstauskunft
-    Property VorherigerArbeitgeber as VorherigerArbeitge 'a Typo
+    Property VorherigerArbeitgeber as VorherigerArbeitgeber 'a Typo
     Property KL As KL
     List Varianten as KL
     Property Objekt As Objekt

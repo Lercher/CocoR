@@ -1,8 +1,7 @@
 var a as string;
-var b as INT;
 VAR c as DOUBLE;
 {
-    var x : double;
-    var y : integer;
-    var z : string;
+    var a : int;
+    VAR Z;
 }
+var aa;

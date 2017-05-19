@@ -471,8 +471,12 @@ namespace CocoRCore
                         {
                             string msg = string.Format("token '{0}' is used {1:n0} time(s) instead of at most once in this scope, see following errors for locations.", s, list.Count);
                             st.parser.errors.SemErr(scopeToken.Position(), msg, 95);
-                            foreach (Token t in list)
-                                st.parser.errors.SemErr(t.Position(), "... here", 96);
+                            int n = 0;
+                            foreach (Token t in list) {
+                                n++;
+                                var msgN = string.Format("... here #{0}/{1}: {2}", n, list.Count, s);
+                                st.parser.errors.SemErr(t.Position(), msgN, 96);
+                            }
                         }
                     }
                 }
