@@ -749,8 +749,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             g.CopyFramePart("-->declarations");
             gen.WriteLine("\tprivate const int _maxT = {0};", tab.terminals.Count - 1);
             gen.WriteLine("\tconst int noSym = {0};", tab.noSym.n);
-            if (ignoreCase)
-                gen.Write("\tchar valCh;       // current input character (for token.val)");
             g.CopyFramePart("-->initialization");
             WriteStartTab();
             g.CopyFramePart("-->comments");
