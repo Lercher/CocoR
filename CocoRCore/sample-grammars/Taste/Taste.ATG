@@ -1,3 +1,5 @@
+$namespace=CocoRCore.Samples.Taste
+
 COMPILER Taste
 
 	const int // types

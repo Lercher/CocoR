@@ -1,6 +1,8 @@
 ﻿// See C:\Daten\GitHub\CocoR\CSharp\WFModel
 // branch: git checkout singhammer-wfmodel
 
+$namespace=CocoRCore.Samples.WFModel
+
 COMPILER WFModel
 
 	public override void Prime(Token t) { 
