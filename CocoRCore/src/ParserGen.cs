@@ -576,8 +576,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 if (needsAST)
                     gen.WriteLine("\t\tusing(astbuilder.createBarrier({0}))", tab.Quoted(sym.astjoinwith)); // intentionally no ; !
                 GenUsingSymtabSomething(sym.scopes, "createScope", "", "");  // needs to be first
-                GenUsingSymtabSomething(sym.useonces, "createUsageCheck", "false, errors, la", "// 0..1"); // needs to be after createScope 
-                GenUsingSymtabSomething(sym.usealls, "createUsageCheck", "true, errors, la", "// 1..N");  // needs to be after createScope
+                GenUsingSymtabSomething(sym.useonces, "createUsageCheck", "false, la", "// 0..1"); // needs to be after createScope 
+                GenUsingSymtabSomething(sym.usealls, "createUsageCheck", "true, la", "// 1..N");  // needs to be after createScope
                 gen.WriteLine("\t\t{");
                 CopySourcePart(sym.semPos, 2);
                 GenCode(sym.graph, 2, new BitArray(tab.terminals.Count));
@@ -635,7 +635,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     gen.WriteLine("\tpublic readonly Symboltable {0};", st.name);
                 else
                 {
-                    gen.WriteLine("\t\t{0} = new Symboltable(\"{0}\", {1}, {2}, tokens);", st.name, toTF(dfa.ignoreCase), toTF(st.strict));
+                    gen.WriteLine("\t\t{0} = new Symboltable(\"{0}\", {1}, {2}, this);", st.name, toTF(dfa.ignoreCase), toTF(st.strict));
                     foreach (string s in st.predefined)
                         gen.WriteLine("\t\t{0}.Add({1});", st.name, tab.Quoted(s));
                 }
@@ -653,7 +653,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void GenSymbolTablesChecks()
         {
             foreach (SymTab st in tab.symtabs)
-                gen.WriteLine("\t\t{0}.CheckDeclared(errors);", st.name);
+                gen.WriteLine("\t\t{0}.CheckDeclared();", st.name);
         }
 
         public void WriteParser()
