@@ -86,11 +86,13 @@ Coco/R Core Samples (May 19, 2017)
 ## Build in vscode
 
 We recommend to use Visual Studio Code to build this version. First open this direcory with vscode or open a command prompt, change to this directory and then:
-* `code .` or `code <this-directory>` to open vscode.
+* `code src` or `code <this-directory>\src` to open vscode.
+* `code sample-grammars` or `code <this-directory>\sample-grammars` to open vscode.
 * have a look at the C# sources, if you coose to do so.
 * `Ctrl-Shift-B` to build Coco/R itself and the sample grammars.
 * If asked to restore packages, answer "Yes".
 * `F5` to run.
+* If it won't run, try `F1` plus `task restore` first.
 
 Note: OmniSharp detects a lot of problems, if a project reference is used. 
 If you don't like that, open `sample-grammars.csproj` and change
