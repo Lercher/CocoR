@@ -1,12 +1,10 @@
 *.old
 *.exe
 *.pdb
+bin/
+obj/
 /CSharp/*.dll
 /VisualBasic/*.dll
-/CocoRCore/bin
-/CocoRCore/sample-grammars/bin
-/CocoRCore/obj
-/CocoRCore/sample-grammars/obj
 
 Parser.cs
 !/CocoRCore/src/Parser.cs
