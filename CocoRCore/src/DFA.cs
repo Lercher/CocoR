@@ -699,7 +699,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 gen.Write("t.kind = {0}; ", endOf.n);
                 if (endOf.tokenKind == Symbol.classLitToken)
                 {
-                    gen.WriteLine("t.val = tval.ToString(); CheckLiteral(); return t;}");
+                    gen.WriteLine("t.setValue(tval.ToString(), casingString); CheckLiteral(); return t.Freeze();}");
                 }
                 else
                 {
@@ -755,8 +755,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             WriteStartTab();
 
             g.CopyFramePart("-->initialization");
-            if (ignoreCase)
+            if (ignoreCase) 
+            {
+                // defaults to identity if !ignoreCase
                 gen.WriteLine("\t\tcasing = char.ToLowerInvariant;");
+                gen.WriteLine("\t\tcasingString = ScannerBase.ToLower;");
+            }
 
             g.CopyFramePart("-->comments");
             Comment com = firstComment;
@@ -794,8 +798,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             for (State state = firstState.next; state != null; state = state.next)
                 WriteState(state);
             
-            g.CopyFramePart("-->casing");
-            gen.WriteLine("\t\t\tt.val = t.valScanned{0};", ignoreCase ? ".ToLowerInvariant()" : string.Empty);        
             // -->end   copy frame up to it's end
             g.CopyFramePart(null);
             if (tab.nsName != null && tab.nsName.Length > 0) gen.Write("}");

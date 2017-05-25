@@ -13,7 +13,7 @@ namespace CocoRCore
 
     public abstract class ParserBase
     {
-        public virtual void Prime(Token t) { /* hook */ }
+        public virtual void Prime(ref Token t) { /* hook */ }
         public abstract string NameOf(int tokenKind);
         public abstract int maxT { get; }
         protected abstract void Get();
@@ -304,13 +304,13 @@ namespace CocoRCore
 
         public void Add(string s)
         {
-            Token t = new Token();
+            Token.Builder t = new Token.Builder();
             t.kind = -1;
             t.pos = -1;
             t.charPos = -1;
-            t.val = s;
+            t.setValue(s, parser.scanner.casingString);
             t.line = -1;
-            currentScope.Add(t);
+            currentScope.Add(t.Freeze());
         }
 
         // ----------------------------------- for Parser use end --------------------	
@@ -528,8 +528,8 @@ namespace CocoRCore
 
         public override string ToString()
         {
-            Token at0 = new Token(); at0.pos = -1; at0.charPos = -1;
-            return ToString(at0);
+            Token.Builder at0 = new Token.Builder(); at0.pos = -1; at0.charPos = -1;
+            return ToString(at0.Freeze());
         }
 
         public string ToString(Token at)
@@ -1047,7 +1047,7 @@ namespace CocoRCore
                         {
                             try
                             {
-                                t = t.Copy(); builder.parser.Prime(t);
+                                builder.parser.Prime(ref t);
                             }
                             catch (Exception ex)
                             {

@@ -928,8 +928,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 
 		public override void Parse() 
 		{
-			la = new Token();
-			la.val = "";
+			la = Token.Zero;
 			Get();
 		Coco‿NT();
 		Expect(0);

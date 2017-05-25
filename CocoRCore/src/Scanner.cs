@@ -164,7 +164,7 @@ namespace CocoRCore.CSharp {
 		if (ch == '/' && Comment0() ||ch == '/' && Comment1()) return NextToken();
 			int recKind = noSym;
 			int recEnd = pos;
-			t = new Token();
+			t = new Token.Builder();
 			t.pos = pos; t.col = col; t.line = line; t.charPos = charPos;
 			int state;
 			state = start.ContainsKey(ch) ? start[ch] : 0;
@@ -185,7 +185,7 @@ namespace CocoRCore.CSharp {
 			case 1:
 				recEnd = pos; recKind = 1;
 				if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 1;}
-				else {t.kind = 1; t.val = tval.ToString(); CheckLiteral(); return t;}
+				else {t.kind = 1; t.setValue(tval.ToString(), casingString); CheckLiteral(); return t.Freeze();}
 			case 2:
 				recEnd = pos; recKind = 2;
 				if (ch >= '0' && ch <= '9') {AddCh(); goto case 2;}
@@ -293,10 +293,8 @@ namespace CocoRCore.CSharp {
 				else {t.kind = 34; break;}
 
 			}
-			t.valScanned = tval.ToString();
-			t.val = t.valScanned;
-
-			return t;
+			t.setValue(tval.ToString(), casingString);
+			return t.Freeze();
 		}
 		
 	} // end Scanner

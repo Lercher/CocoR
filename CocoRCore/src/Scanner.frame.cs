@@ -20,7 +20,7 @@ namespace CocoRCore
 
         public Buffer buffer; // scanner buffer
 
-        protected Token t;          // current token
+        protected Token.Builder t;          // current token
         protected int ch;           // current input character (probably lowercased)
         protected char valCh;       // current input character (original version)
         protected int pos;          // byte position of current character
@@ -33,6 +33,9 @@ namespace CocoRCore
         protected StringBuilder tval = new StringBuilder(capacity: 64); // text of current token
 
         protected Func<char, char> casing = c => c;
+        public Func<string, string> casingString = c => c;
+
+        protected static string ToLower(string s) => s.ToLowerInvariant();
 
         protected abstract int maxT { get; }
 
@@ -54,7 +57,7 @@ namespace CocoRCore
 
         protected void Initialize(Stream s, bool isBOMFreeUTF8)
         {
-            uri = "about:blank";            
+            uri = "about:blank";
             buffer = new Buffer(s, true);
             Init(isBOMFreeUTF8);
         }
@@ -86,7 +89,7 @@ namespace CocoRCore
                 col = 0; charPos = -1; // reset the locgical position to zero and ...
                 NextCh(); // ... ignore the BOM, updating col and charPos
             }
-            peekToken = tokens = new Token();  // first token is a dummy
+            peekToken = tokens = Token.Zero;  // first token is a dummy
         }
 
         protected void NextCh()
@@ -103,9 +106,9 @@ namespace CocoRCore
                 if (ch == EOL) { line++; col = 0; }
             }
             //if (pos <= 10) Console.Write("{0:X} ", ch);
-            if (ch != Buffer.EOF) 
+            if (ch != Buffer.EOF)
             {
-                valCh = (char) ch;
+                valCh = (char)ch;
                 ch = casing(valCh);
             }
         }
@@ -172,18 +175,73 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     public class Token
     {
-        public static readonly Token Zero = new Token() { val = string.Empty, valScanned = string.Empty };
-        public int kind;    // token kind
-        public int pos;     // token position in bytes in the source text (starting at 0)
-        public int charPos;  // token position in characters in the source text (starting at 0)
-        public int col;     // token column (starting at 1)
-        public int line;    // token line (starting at 1)
-        public string val;  // token value, lowercase if case insensitive parser
-        public string valScanned; // token value as scanned (always case sensitive)
-        public Token next;  // ML 2005-03-11 Tokens are kept in linked list
+        private Token(Builder b)
+        {
+            kind = b.kind;
+            pos = b.pos;
+            charPos = b.charPos;
+            col = b.col;
+            line = b.line;
+            val = b.val;
+            valScanned = b.valScanned;
+        }
 
-        public Token Copy() => (Token)(this.MemberwiseClone());
+        private Token()
+        {
+            val = string.Empty;
+            valScanned = string.Empty;
+        }
+
+        public static readonly Token Zero = new Token();
+        public readonly int kind;    // token kind
+        public readonly int pos;     // token position in bytes in the source text (starting at 0)
+        public readonly int charPos;  // token position in characters in the source text (starting at 0)
+        public readonly int col;     // token column (starting at 1)
+        public readonly int line;    // token line (starting at 1)
+        public readonly string val;  // token value, lowercase if case insensitive parser
+        public readonly string valScanned; // token value as scanned (always case sensitive)
+
+        public Token next;  // ML 2005-03-11 Peeked Tokens are kept in linked list
+
         public Position Position() => new Position(this);
+        public Token.Builder Copy() => new Token.Builder(this); // to modify attributes
+
+        public class Builder
+        {
+            public Builder() 
+            {
+            }
+
+            public Builder(Token t)
+            {
+                kind = t.kind;
+                pos = t.pos;
+                charPos = t.charPos;
+                col = t.col;
+                line = t.line;
+                val = t.val;
+                valScanned = t.valScanned;
+            }
+
+            public int kind;
+            public int pos;
+            public int charPos;
+            public int col;
+            public int line;
+            public string val { get; private set; }
+            public string valScanned { get; private set; }
+
+            public void setValue(string scanned, Func<string, string> casing)
+            {
+                valScanned = scanned;
+                val = casing(scanned);
+            }
+
+            public Token Freeze()
+            {
+                return new Token(this);
+            }
+        }
     }
 
     //-----------------------------------------------------------------------------------
@@ -193,7 +251,7 @@ namespace CocoRCore
     {  // position of source code stretch (e.g. semantic action, resolver expressions)
         public static readonly Position Zero = new Position(Token.Zero);
         private readonly Token t;
-        public Position(Token t) => this.t = t.Copy();
+        public Position(Token t) => this.t = t;
         public Range Range(Token t) => new Range(this, t.Position());
         public Range RangeIfNotEmpty(Token t) => t.pos > this.t.pos ? Range(t) : null;
         public int line => t.line;

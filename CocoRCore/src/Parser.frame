@@ -98,8 +98,7 @@ using CocoRCore;
 
 		public override void Parse() 
 		{
-			la = new Token();
-			la.val = "";
+			la = Token.Zero;
 			Get();
 -->parseRoot		
 		}
