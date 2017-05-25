@@ -63,13 +63,13 @@ using CocoRCore;
 		{
 			while (ch == ' ' ||
 -->scan1
-			) NextCh();
+			) 
+				NextCh();
 -->scan2
-			int recKind = noSym;
-			int recEnd = pos;
+			var recKind = noSym;
+			var recEnd = pos;
 			t = new Token.Builder() { position = CurrentPosition() };
-			int state;
-			state = start.ContainsKey(ch) ? start[ch] : 0;
+			var state = start.ContainsKey(ch) ? start[ch] : 0;
 			tval.Clear(); AddCh();
 			
 			switch (state) 

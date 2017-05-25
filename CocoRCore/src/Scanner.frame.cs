@@ -75,18 +75,22 @@ namespace CocoRCore
             NextCh();
             if (ch == 0xEF)
             { // check optional byte order mark for UTF-8
-                NextCh(); int ch1 = ch;
-                NextCh(); int ch2 = ch;
+                NextCh(); 
+                var ch1 = ch;
+                NextCh(); 
+                var ch2 = ch;
                 if (ch1 != 0xBB || ch2 != 0xBF)
                 {
-                    throw new FatalError(String.Format("illegal byte order mark: EF {0,2:X} {1,2:X}", ch1, ch2));
+                    throw new FatalError(string.Format("illegal byte order mark: EF {0,2:X} {1,2:X}", ch1, ch2));
                 }
                 buffer = new UTF8Buffer(buffer); col = 0; charPos = -1;
                 NextCh();
             }
             else if (ch == 0xFEFF)
-            { // optional byte order mark for UTF-8 using UTF8Buffer
-                col = 0; charPos = -1; // reset the locgical position to zero and ...
+            { 
+                // optional byte order mark for UTF-8 using UTF8Buffer
+                col = 0; 
+                charPos = -1; // reset the locgical position to zero and ...
                 NextCh(); // ... ignore the BOM, updating col and charPos
             }
             peekToken = tokens = Token.Zero;  // first token is a dummy
@@ -135,7 +139,7 @@ namespace CocoRCore
             buffer.Pos = t.position.pos;
             NextCh();
             line = t.position.line; col = t.position.col; charPos = t.position.charPos;
-            for (int i = 0; i < tval.Length; i++)
+            for (var i = 0; i < tval.Length; i++)
                 NextCh();
         }
 
@@ -263,10 +267,10 @@ namespace CocoRCore
 
         public Position(int pos0, int charPos0, int col1, int line1)
         {
-            this.pos = pos0;
-            this.charPos = charPos0;
-            this.col = col1;
-            this.line = line1;
+            pos = pos0;
+            charPos = charPos0;
+            col = col1;
+            line = line1;
         }
 
         public readonly int pos;     // token position in bytes in the source text (starting at 0)
@@ -275,7 +279,7 @@ namespace CocoRCore
         public readonly int line;    // token line (starting at 1)
 
         public Range Range(Token t) => new Range(this, t.position);
-        public Range RangeIfNotEmpty(Token t) => t.pos > this.pos ? Range(t) : null;
+        public Range RangeIfNotEmpty(Token t) => t.pos > pos ? Range(t) : null;
 
         public override string ToString() => string.Format("({0},{1})", line, col);
     }
@@ -327,7 +331,7 @@ namespace CocoRCore
             {
                 fileLen = (int)stream.Length;
                 bufLen = Math.Min(fileLen, MAX_BUFFER_LENGTH);
-                bufStart = Int32.MaxValue; // nothing in the buffer so far
+                bufStart = int.MaxValue; // nothing in the buffer so far
             }
             else
             {
@@ -387,8 +391,8 @@ namespace CocoRCore
 
         public int Peek()
         {
-            int curPos = Pos;
-            int ch = Read();
+            var curPos = Pos;
+            var ch = Read();
             Pos = curPos;
             return ch;
         }
@@ -397,13 +401,13 @@ namespace CocoRCore
         // end .. end, zero-based, exclusive, in byte
         public string GetString(int beg, int end)
         {
-            int len = 0;
-            char[] buf = new char[end - beg];
-            int oldPos = Pos;
+            var len = 0;
+            var buf = new char[end - beg];
+            var oldPos = Pos;
             Pos = beg;
             while (Pos < end) buf[len++] = (char)Read();
             Pos = oldPos;
-            return new String(buf, 0, len);
+            return new string(buf, 0, len);
         }
 
         public int Pos
@@ -448,19 +452,19 @@ namespace CocoRCore
         // Returns the number of bytes read.
         private int ReadNextStreamChunk()
         {
-            int free = buf.Length - bufLen;
+            var free = buf.Length - bufLen;
             if (free == 0)
             {
                 // in the case of a growing input stream
                 // we can neither seek in the stream, nor can we
                 // foresee the maximum length, thus we must adapt
                 // the buffer size on demand.
-                byte[] newBuf = new byte[bufLen * 2];
+                var newBuf = new byte[bufLen * 2];
                 Array.Copy(buf, newBuf, bufLen);
                 buf = newBuf;
                 free = bufLen;
             }
-            int read = stream.Read(buf, bufLen, free);
+            var read = stream.Read(buf, bufLen, free);
             if (read > 0)
             {
                 fileLen = bufLen = (bufLen + read);
@@ -494,25 +498,25 @@ namespace CocoRCore
             else if ((ch & 0xF0) == 0xF0)
             {
                 // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-                int c1 = ch & 0x07; ch = base.Read();
-                int c2 = ch & 0x3F; ch = base.Read();
-                int c3 = ch & 0x3F; ch = base.Read();
-                int c4 = ch & 0x3F;
+                var c1 = ch & 0x07; ch = base.Read();
+                var c2 = ch & 0x3F; ch = base.Read();
+                var c3 = ch & 0x3F; ch = base.Read();
+                var c4 = ch & 0x3F;
                 ch = (((((c1 << 6) | c2) << 6) | c3) << 6) | c4;
             }
             else if ((ch & 0xE0) == 0xE0)
             {
                 // 1110xxxx 10xxxxxx 10xxxxxx
-                int c1 = ch & 0x0F; ch = base.Read();
-                int c2 = ch & 0x3F; ch = base.Read();
-                int c3 = ch & 0x3F;
+                var c1 = ch & 0x0F; ch = base.Read();
+                var c2 = ch & 0x3F; ch = base.Read();
+                var c3 = ch & 0x3F;
                 ch = (((c1 << 6) | c2) << 6) | c3;
             }
             else if ((ch & 0xC0) == 0xC0)
             {
                 // 110xxxxx 10xxxxxx
-                int c1 = ch & 0x1F; ch = base.Read();
-                int c2 = ch & 0x3F;
+                var c1 = ch & 0x1F; ch = base.Read();
+                var c2 = ch & 0x3F;
                 ch = (c1 << 6) | c2;
             }
             return ch;

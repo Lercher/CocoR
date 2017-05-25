@@ -596,8 +596,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void GenComment(Comment com, int i)
         {
             gen.WriteLine();
-            gen.Write("\tbool Comment{0}() ", i); gen.WriteLine("{");
-            gen.WriteLine("\t\tint level = 1, pos0 = pos, line0 = line, col0 = col, charPos0 = charPos;");
+            gen.WriteLine("\tbool Comment{0}() ", i); 
+            gen.WriteLine("\t{");
+            gen.WriteLine("\t\tvar level = 1;");
+            gen.WriteLine("\t\tvar pos0 = pos;");
+            gen.WriteLine("\t\tvar line0 = line;");
+            gen.WriteLine("\t\tvar col0 = col;");
+            gen.WriteLine("\t\tvar charPos0 = charPos;");
             if (com.start.Length == 1)
             {
                 gen.WriteLine("\t\tNextCh();");
@@ -722,7 +727,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     CharSet s = tab.CharClassSet(action.sym);
                     for (CharSet.Range r = s.head; r != null; r = r.next)
                     {
-                        gen.WriteLine("\t\tfor (int i = " + r.from + "; i <= " + r.to + "; ++i) start[i] = " + targetState + ";");
+                        gen.WriteLine("\t\tfor (var i = " + r.from + "; i <= " + r.to + "; ++i) start[i] = " + targetState + ";");
                     }
                 }
             }
@@ -775,24 +780,36 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             GenLiterals();
 
             g.CopyFramePart("-->scan1");
-            gen.Write("\t\t\t");
-            if (tab.ignored.Elements() > 0) { PutRange(tab.ignored); } else { gen.Write("false"); }
+            gen.Write("\t\t\t\t");
+            if (tab.ignored.Elements() > 0) 
+            { 
+                PutRange(tab.ignored); 
+            } 
+            else 
+            { 
+                gen.Write("false"); 
+            }
             
             g.CopyFramePart("-->scan2");
             if (firstComment != null)
             {
-                gen.Write("\t\tif (");
+                gen.Write("\t\t\tif (");
                 com = firstComment; comIdx = 0;
                 while (com != null)
                 {
                     gen.Write(ChCond(com.start[0]));
                     gen.Write(" && Comment{0}()", comIdx);
-                    if (com.next != null) gen.Write(" ||");
+                    if (com.next != null) 
+                        gen.Write(" ||");
                     com = com.next; comIdx++;
                 }
                 gen.Write(") return NextToken();");
             }
-            if (hasCtxMoves) { gen.WriteLine(); gen.Write("\t\tint apx = 0;"); } /* pdt */
+            if (hasCtxMoves) 
+            { 
+                gen.WriteLine(); 
+                gen.Write("\t\tvar apx = 0;"); 
+            } /* pdt */
             
             g.CopyFramePart("-->scan3");
             for (State state = firstState.next; state != null; state = state.next)

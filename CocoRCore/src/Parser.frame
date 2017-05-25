@@ -44,7 +44,7 @@ using CocoRCore;
 
         private bool isKind(Token t, int n)
         {
-            int k = t.kind;
+            var k = t.kind;
             while (k >= 0)
             {
                 if (k == n) return true;
@@ -61,7 +61,7 @@ using CocoRCore;
 
         private bool WeakSeparator(int n, int syFol, int repFol)
         {
-            int kind = la.kind;
+            var kind = la.kind;
             if (isKind(la, n)) { Get(); return true; }
             else if (StartOf(repFol)) { return false; }
             else

@@ -20,10 +20,10 @@ namespace CocoRCore.CSharp {
 		private static readonly Dictionary<int, int> start = new Dictionary<int, int>(); // maps first token character to start state
 		static Scanner() 
 		{
-		for (int i = 65; i <= 90; ++i) start[i] = 1;
-		for (int i = 95; i <= 95; ++i) start[i] = 1;
-		for (int i = 97; i <= 122; ++i) start[i] = 1;
-		for (int i = 48; i <= 57; ++i) start[i] = 2;
+		for (var i = 65; i <= 90; ++i) start[i] = 1;
+		for (var i = 95; i <= 95; ++i) start[i] = 1;
+		for (var i = 97; i <= 122; ++i) start[i] = 1;
+		for (var i = 48; i <= 57; ++i) start[i] = 2;
 		start[34] = 11; 
 		start[39] = 12; 
 		start[36] = 13; 
@@ -80,8 +80,13 @@ namespace CocoRCore.CSharp {
 		protected override int maxT => _maxT;
 		
 
-	bool Comment0() {
-		int level = 1, pos0 = pos, line0 = line, col0 = col, charPos0 = charPos;
+	bool Comment0() 
+	{
+		var level = 1;
+		var pos0 = pos;
+		var line0 = line;
+		var col0 = col;
+		var charPos0 = charPos;
 		NextCh();
 		if (ch == '/') {
 			NextCh();
@@ -99,8 +104,13 @@ namespace CocoRCore.CSharp {
 		return false;
 	}
 
-	bool Comment1() {
-		int level = 1, pos0 = pos, line0 = line, col0 = col, charPos0 = charPos;
+	bool Comment1() 
+	{
+		var level = 1;
+		var pos0 = pos;
+		var line0 = line;
+		var col0 = col;
+		var charPos0 = charPos;
 		NextCh();
 		if (ch == '*') {
 			NextCh();
@@ -159,14 +169,14 @@ namespace CocoRCore.CSharp {
 		protected override Token NextToken() 
 		{
 			while (ch == ' ' ||
-			ch >= 9 && ch <= 10 || ch == 13
-			) NextCh();
-		if (ch == '/' && Comment0() ||ch == '/' && Comment1()) return NextToken();
-			int recKind = noSym;
-			int recEnd = pos;
+				ch >= 9 && ch <= 10 || ch == 13
+			) 
+				NextCh();
+			if (ch == '/' && Comment0() ||ch == '/' && Comment1()) return NextToken();
+			var recKind = noSym;
+			var recEnd = pos;
 			t = new Token.Builder() { position = CurrentPosition() };
-			int state;
-			state = start.ContainsKey(ch) ? start[ch] : 0;
+			var state = start.ContainsKey(ch) ? start[ch] : 0;
 			tval.Clear(); AddCh();
 			
 			switch (state) 

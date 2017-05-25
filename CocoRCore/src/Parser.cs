@@ -77,7 +77,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 
         private bool isKind(Token t, int n)
         {
-            int k = t.kind;
+            var k = t.kind;
             while (k >= 0)
             {
                 if (k == n) return true;
@@ -94,7 +94,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 
         private bool WeakSeparator(int n, int syFol, int repFol)
         {
-            int kind = la.kind;
+            var kind = la.kind;
             if (isKind(la, n)) { Get(); return true; }
             else if (StartOf(repFol)) { return false; }
             else
@@ -541,7 +541,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 			if (isKind(la, 31)) {
 				Get();
 				Char‿NT(out n2);
-				for (int i = n1; i <= n2; i++) s.Set(i); 
+				for (var i = n1; i <= n2; i++) s.Set(i); 
 			}
 		} else if (isKind(la, 32)) {
 			Get();

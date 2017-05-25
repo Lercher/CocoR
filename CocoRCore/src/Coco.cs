@@ -31,7 +31,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             bool emitLines = false, generateAutocompleteInformation = false, ignoreSemanticActions = false,
             isUTF8 = false;
             int retVal = 1;
-            for (int i = 0; i < arg.Length; i++)
+            for (var i = 0; i < arg.Length; i++)
             {
                 if (arg[i] == "-namespace" && i < arg.Length - 1) nsName = arg[++i].Trim();
                 else if (arg[i] == "-frames" && i < arg.Length - 1) frameDir = arg[++i].Trim();

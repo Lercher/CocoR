@@ -499,7 +499,7 @@ namespace CocoRCore
         public static void newline(int indent, StringBuilder sb)
         {
             sb.AppendLine();
-            for (int i = 0; i < indent; i++)
+            for (var i = 0; i < indent; i++)
                 sb.Append("  ");
         }
 
@@ -810,7 +810,7 @@ namespace CocoRCore
             {
                 if (ast == null || !(ast is ASTList)) return;
                 StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < ast.count; i++)
+                for (var i = 0; i < ast.count; i++)
                 {
                     if (i > 0) sb.Append(joinwith);
                     sb.Append(ast[i].val);

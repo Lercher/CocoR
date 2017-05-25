@@ -116,14 +116,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public void Or(CharSet s)
         {
             for (Range p = s.head; p != null; p = p.next)
-                for (int i = p.from; i <= p.to; i++) Set(i);
+                for (var i = p.from; i <= p.to; i++) Set(i);
         }
 
         public void And(CharSet s)
         {
             CharSet x = new CharSet();
             for (Range p = head; p != null; p = p.next)
-                for (int i = p.from; i <= p.to; i++)
+                for (var i = p.from; i <= p.to; i++)
                     if (s[i]) x.Set(i);
             head = x.head;
         }
@@ -132,7 +132,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             CharSet x = new CharSet();
             for (Range p = head; p != null; p = p.next)
-                for (int i = p.from; i <= p.to; i++)
+                for (var i = p.from; i <= p.to; i++)
                     if (!s[i]) x.Set(i);
             head = x.head;
         }
@@ -140,7 +140,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public bool Includes(CharSet s)
         {
             for (Range p = s.head; p != null; p = p.next)
-                for (int i = p.from; i <= p.to; i++)
+                for (var i = p.from; i <= p.to; i++)
                     if (!this[i]) return false;
             return true;
         }
@@ -148,7 +148,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public bool Intersects(CharSet s)
         {
             for (Range p = s.head; p != null; p = p.next)
-                for (int i = p.from; i <= p.to; i++)
+                for (var i = p.from; i <= p.to; i++)
                     if (this[i]) return true;
             return false;
         }

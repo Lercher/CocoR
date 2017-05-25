@@ -39,14 +39,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void Indent(int n)
         {
-            for (int i = 1; i <= n; i++) gen.Write('\t');
+            for (var i = 1; i <= n; i++) gen.Write('\t');
         }
 
 
         bool Overlaps(BitArray s1, BitArray s2)
         {
             int len = s1.Length;
-            for (int i = 0; i < len; ++i)
+            for (var i = 0; i < len; ++i)
             {
                 if (s1[i] && s2[i])
                 {
@@ -142,7 +142,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         int NewCondSet(BitArray s)
         {
-            for (int i = 1; i < symSet.Count; i++) // skip symSet[0] (reserved for union of SYNC sets)
+            for (var i = 1; i < symSet.Count; i++) // skip symSet[0] (reserved for union of SYNC sets)
                 if (Sets.Equals(s, (BitArray)symSet[i])) return i;
             symSet.Add(Clone(s));
             return symSet.Count - 1;
@@ -160,7 +160,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             if (!GenerateAutocompleteInformation) return; // we don't want autocomplete information in the parser
             if (p.typ == NodeKind.rslv) return; // if we have a resolver, we don't know what to do (yet), so we do nothing
-            int c = s.ElementCount();
+            var c = s.ElementCount();
             if (c == 0) return;
             if (c > maxTerm)
             {
@@ -170,7 +170,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             {
                 gen.Write("addAlt(");
                 if (c > 1) gen.Write("new int[] {");
-                int n = 0;
+                var n = 0;
                 foreach (Symbol sym in tab.terminals)
                 {
                     if (s[sym.n])
@@ -204,7 +204,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 CopySourcePart(p.pos, 0);
             else
             {
-                int n = s.ElementCount();
+                var n = s.ElementCount();
                 if (n == 0)
                     gen.Write("false"); // happens if an ANY set matches no symbol
                 else if (n <= maxTerm)
@@ -589,11 +589,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void InitSets0()
         {
-            for (int i = 0; i < symSet.Count; i++)
+            for (var i = 0; i < symSet.Count; i++)
             {
                 BitArray s = (BitArray)symSet[i];
                 gen.Write("\t\t{");
-                int j = 0;
+                var j = 0;
                 foreach (Symbol sym in tab.terminals)
                 {
                     if (s[sym.n]) gen.Write("_T,"); else gen.Write("_x,");
@@ -607,11 +607,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void InitSets()
         {
-            for (int i = 0; i < symSet.Count; i++)
+            for (var i = 0; i < symSet.Count; i++)
             {
                 BitArray s = DerivationsOf((BitArray)symSet[i]);
                 gen.Write("\t\t{");
-                int j = 0;
+                var j = 0;
                 foreach (Symbol sym in tab.terminals)
                 {
                     if (s[sym.n]) gen.Write("_T,"); else gen.Write("_x,");

@@ -244,7 +244,7 @@ SimSet<out CharSet s>           (. int n1, n2; .)
                                      if (dfa.ignoreCase) s.Set(char.ToLowerInvariant(ch));
                                      else s.Set(ch); .)
 | Char<out n1>                  (. s.Set(n1); .)
-  [ ".." Char<out n2>           (. for (int i = n1; i <= n2; i++) s.Set(i); .)
+  [ ".." Char<out n2>           (. for (var i = n1; i <= n2; i++) s.Set(i); .)
   ]
 | "ANY"                         (. s = new CharSet(); s.Fill(); .)
 )

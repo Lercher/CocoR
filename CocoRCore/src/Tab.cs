@@ -267,7 +267,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (s.Length == 0) parser.SemErr(82, "empty token not allowed");
             Graph g = new Graph();
             g.r = dummyNode;
-            for (int i = 0; i < s.Length; i++)
+            for (var i = 0; i < s.Length; i++)
             {
                 Node p = NewNode(NodeKind.chr, (int)s[i], 0);
                 g.r.next = p; g.r = p;
@@ -769,8 +769,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         char Hex2Char(string s)
         {
-            int val = 0;
-            for (int i = 0; i < s.Length; i++)
+            var val = 0;
+            for (var i = 0; i < s.Length; i++)
             {
                 char ch = s[i];
                 if ('0' <= ch && ch <= '9') val = 16 * val + (ch - '0');
@@ -926,7 +926,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             do
             {
                 changed = false;
-                for (int i = 0; i < list.Count; i++)
+                for (var i = 0; i < list.Count; i++)
                 {
                     CNode n = list[i];
                     onLeftSide = false; onRightSide = false;
@@ -956,7 +956,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void LL1Error(int cond, Symbol sym)
         {
-            string s = "LL1 warning in " + curSy.name + ": ";
+            var s = "LL1 warning in " + curSy.name + ": ";
             if (sym != null) s += sym.name + sym.pos.ToString() + " is ";
             switch (cond)
             {
@@ -983,7 +983,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             {
                 if (p.typ == NodeKind.alt)
                 {
-                    Node q = p;
+                    var q = p;
                     s1 = new BitArray(terminals.Count);
                     while (q != null)
                     { // for all alternatives
@@ -1017,7 +1017,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public void CheckLL1()
         {
-            foreach (Symbol sym in nonterminals)
+            foreach (var sym in nonterminals)
             {
                 curSy = sym;
                 CheckAlts(curSy.graph);
@@ -1038,15 +1038,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 switch (p.typ)
                 {
                     case NodeKind.alt:
-                        BitArray expected = new BitArray(terminals.Count);
+                        var expected = new BitArray(terminals.Count);
                         for (Node q = p; q != null; q = q.down)
                             expected.Or(Expected0(q.sub, curSy));
-                        BitArray soFar = new BitArray(terminals.Count);
+                        var soFar = new BitArray(terminals.Count);
                         for (Node q = p; q != null; q = q.down)
                         {
                             if (q.sub.typ == NodeKind.rslv)
                             {
-                                BitArray fs = Expected(q.sub.next, curSy);
+                                var fs = Expected(q.sub.next, curSy);
                                 if (fs.Intersects(soFar))
                                     ResErr(q.sub, "Warning: Resolver will never be evaluated. Place it at previous conflicting alternative.");
                                 if (!fs.Intersects(expected))
@@ -1060,8 +1060,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     case NodeKind.opt:
                         if (p.sub.typ == NodeKind.rslv)
                         {
-                            BitArray fs = First(p.sub.next);
-                            BitArray fsNext = Expected(p.next, curSy);
+                            var fs = First(p.sub.next);
+                            var fsNext = Expected(p.next, curSy);
                             if (!fs.Intersects(fsNext))
                                 ResErr(p.sub, "Warning: Misplaced resolver: no LL(1) conflict.");
                         }
@@ -1126,7 +1126,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public bool AllNtReached()
         {
-            bool ok = true;
+            var ok = true;
             visited = new BitArray(nonterminals.Count);
             visited[gramSy.n] = true;
             MarkReachedNts(gramSy.graph);
@@ -1162,7 +1162,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public bool AllNtToTerm()
         {
             bool changed, ok = true;
-            BitArray mark = new BitArray(nonterminals.Count);
+            var mark = new BitArray(nonterminals.Count);
             // a nonterminal is marked if it can be derived to terminal symbols
             do
             {
