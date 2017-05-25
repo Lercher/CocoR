@@ -306,10 +306,8 @@ namespace CocoRCore
         {
             Token.Builder t = new Token.Builder();
             t.kind = -1;
-            t.pos = -1;
-            t.charPos = -1;
+            t.position = Position.MinusOne;
             t.setValue(s, parser.scanner.casingString);
-            t.line = -1;
             currentScope.Add(t.Freeze());
         }
 
@@ -528,7 +526,8 @@ namespace CocoRCore
 
         public override string ToString()
         {
-            Token.Builder at0 = new Token.Builder(); at0.pos = -1; at0.charPos = -1;
+            Token.Builder at0 = new Token.Builder(); 
+            at0.position = Position.MinusOne;
             return ToString(at0.Freeze());
         }
 

@@ -333,7 +333,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             return (up) ? ("-" + ptr) : ptr;
         }
 
-        string Pos(Range pos) => string.Format("{0,5}", pos?.start?.ToString() ?? string.Empty);
+        string Pos(Range pos) => string.Format("{0,5}", pos?.start.ToString() ?? string.Empty);
 
         public string Name(string name)
         {

@@ -164,8 +164,7 @@ namespace CocoRCore.CSharp {
 		if (ch == '/' && Comment0() ||ch == '/' && Comment1()) return NextToken();
 			int recKind = noSym;
 			int recEnd = pos;
-			t = new Token.Builder();
-			t.pos = pos; t.col = col; t.line = line; t.charPos = charPos;
+			t = new Token.Builder() { position = new Position(pos, charPos, col, line) };
 			int state;
 			state = start.ContainsKey(ch) ? start[ch] : 0;
 			tval.Clear(); AddCh();
@@ -177,7 +176,7 @@ namespace CocoRCore.CSharp {
 					{
 						if (recKind != noSym) 
 						{
-							tval.Length = recEnd - t.pos;
+							tval.Length = recEnd - t.position.pos; // TODO: suspicious .pos -> .charPos?
 							SetScannerBehindT();
 						}
 						t.kind = recKind; break;

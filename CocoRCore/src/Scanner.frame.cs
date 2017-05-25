@@ -128,9 +128,9 @@ namespace CocoRCore
 
         protected void SetScannerBehindT()
         {
-            buffer.Pos = t.pos;
+            buffer.Pos = t.position.pos;
             NextCh();
-            line = t.line; col = t.col; charPos = t.charPos;
+            line = t.position.line; col = t.position.col; charPos = t.position.charPos;
             for (int i = 0; i < tval.Length; i++)
                 NextCh();
         }
@@ -178,7 +178,7 @@ namespace CocoRCore
         private Token(Builder b)
         {
             kind = b.kind;
-            position = new Position(b.pos, b.charPos, b.col, b.line);
+            position = b.position;
             val = b.val;
             valScanned = b.valScanned;
         }
@@ -208,24 +208,19 @@ namespace CocoRCore
         {
             public Builder() 
             {
+                position = Position.Zero;
             }
 
             public Builder(Token t)
             {
                 kind = t.kind;
-                pos = t.pos;
-                charPos = t.position.charPos;
-                col = t.col;
-                line = t.line;
+                position = t.position;
                 val = t.val;
                 valScanned = t.valScanned;
             }
 
             public int kind;
-            public int pos;
-            public int charPos;
-            public int col;
-            public int line;
+            public Position position;
             public string val { get; private set; }
             public string valScanned { get; private set; }
 
@@ -245,9 +240,10 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     // Position
     //-----------------------------------------------------------------------------------
-    public class Position
+    public struct Position
     {  // position of source code stretch (e.g. semantic action, resolver expressions)
-        public static readonly Position Zero = new Position(0, 0, 0, 0);
+        public static readonly Position Zero; // default struct constructor applies here
+        public static readonly Position MinusOne = new Position(-1, -1, -1, -1);
 
         public Position(int pos0, int charPos0, int col1, int line1)
         {
