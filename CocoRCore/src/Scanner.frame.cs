@@ -92,8 +92,12 @@ namespace CocoRCore
             peekToken = tokens = Token.Zero;  // first token is a dummy
         }
 
+        protected Position CurrentPosition() => new Position(pos, charPos, col, line);
+        protected Position lastPosition = Position.MinusOne;
+
         protected void NextCh()
         {
+            lastPosition = CurrentPosition();
             if (oldEols > 0) { ch = EOL; oldEols--; }
             else
             {
@@ -179,13 +183,16 @@ namespace CocoRCore
         {
             kind = b.kind;
             position = b.position;
+            endPosition = b.endPosition;
             val = b.val;
             valScanned = b.valScanned;
         }
 
+
         private Token()
         {
             position = Position.Zero;
+            endPosition = Position.Zero;
             val = string.Empty;
             valScanned = string.Empty;
         }
@@ -193,6 +200,7 @@ namespace CocoRCore
         public static readonly Token Zero = new Token();
         public readonly int kind;    // token kind
         public readonly Position position; // start position
+        public readonly Position endPosition;
         public int pos => position.pos;
         public int line => position.line;
         public int col => position.col;
@@ -203,6 +211,7 @@ namespace CocoRCore
         public Token next;  // ML 2005-03-11 Peeked Tokens are kept in linked list
 
         public Token.Builder Copy() => new Token.Builder(this); // to modify attributes
+        public Range Range() => new Range(position, endPosition);
 
         public class Builder
         {
@@ -221,6 +230,7 @@ namespace CocoRCore
 
             public int kind;
             public Position position;
+            public Position endPosition;
             public string val { get; private set; }
             public string valScanned { get; private set; }
 
@@ -231,8 +241,14 @@ namespace CocoRCore
             }
 
             public Token Freeze()
-            {
+            {                
                 return new Token(this);
+            }
+
+            public Token Freeze(Position end)
+            {
+                endPosition = end;
+                return Freeze();
             }
         }
     }

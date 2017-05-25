@@ -8,9 +8,9 @@
 
   <Target Name="Build-Grammars" AfterTargets="build">
     <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . Coco.ATG" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . ../sample-grammars/Taste/Taste.ATG -o ../sample-grammars/Taste" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -ac ../sample-grammars/Taste/Taste.ATG -o ../sample-grammars/Taste" />
     <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -ac ../sample-grammars/Inheritance/Inheritance.ATG -o ../sample-grammars/Inheritance" />
     <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -ac ../sample-grammars/WFModel/WFModel.ATG -o ../sample-grammars/WFModel" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -is ../sample-grammars/Coco/Coco.ATG -o ../sample-grammars/Coco" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -ac -is ../sample-grammars/Coco/Coco.ATG -o ../sample-grammars/Coco" />
   </Target>
 </Project>

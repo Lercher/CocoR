@@ -699,7 +699,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 gen.Write("t.kind = {0}; ", endOf.n);
                 if (endOf.tokenKind == Symbol.classLitToken)
                 {
-                    gen.WriteLine("t.setValue(tval.ToString(), casingString); CheckLiteral(); return t.Freeze();}");
+                    gen.WriteLine("t.setValue(tval.ToString(), casingString); CheckLiteral(); return t.Freeze(lastPosition);}");
                 }
                 else
                 {

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 
 namespace CocoRCore.Samples
 {
@@ -23,6 +24,13 @@ namespace CocoRCore.Samples
                     foreach (var e in parser.errors)
                         Console.Write(e.Format("", "")); // this is only to see if it compiles, it doesn't output anything
                     Console.WriteLine("{0}: {1} error(s), {2} warning(s).", parser.scanner.uri, parser.errors.CountError, parser.errors.CountWarning);
+                    if (parser.errors.CountError == 0)
+                    {
+                        foreach(var t in parser.tokens.Take(10))
+                        {
+                            Console.WriteLine($"  Token {t.t.Range()} = {t.t.valScanned}");
+                        }
+                    }
                 }
                 catch (FatalError ex)
                 {

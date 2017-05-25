@@ -67,7 +67,7 @@ using CocoRCore;
 -->scan2
 			int recKind = noSym;
 			int recEnd = pos;
-			t = new Token.Builder() { position = new Position(pos, charPos, col, line) };
+			t = new Token.Builder() { position = CurrentPosition() };
 			int state;
 			state = start.ContainsKey(ch) ? start[ch] : 0;
 			tval.Clear(); AddCh();
@@ -87,7 +87,7 @@ using CocoRCore;
 -->scan3
 			}
 			t.setValue(tval.ToString(), casingString);
-			return t.Freeze();
+			return t.Freeze(lastPosition);
 		}
 		
 	} // end Scanner
