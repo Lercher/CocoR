@@ -356,7 +356,7 @@ namespace CocoRCore
             foreach (Token t in list)
             {
                 string msg = string.Format(parser.MissingSymbol, parser.NameOf(t.kind), t.val, this.name);
-                parser.errors.SemErr(t.Position(), msg, 93);
+                parser.errors.SemErr(t.position, msg, 93);
             }
         }
 
@@ -465,17 +465,17 @@ namespace CocoRCore
                         if (oneOrMore)
                         {
                             string msg = string.Format("token '{0}' has to be used in this scope.", s);
-                            st.parser.errors.SemErr(scopeToken.Position(), msg, 94);
+                            st.parser.errors.SemErr(scopeToken.position, msg, 94);
                         }
                         else
                         {
                             string msg = string.Format("token '{0}' is used {1:n0} time(s) instead of at most once in this scope, see following errors for locations.", s, list.Count);
-                            st.parser.errors.SemErr(scopeToken.Position(), msg, 95);
+                            st.parser.errors.SemErr(scopeToken.position, msg, 95);
                             int n = 0;
                             foreach (Token t in list) {
                                 n++;
                                 var msgN = string.Format("... here #{0}/{1}: {2}", n, list.Count, s);
-                                st.parser.errors.SemErr(t.Position(), msgN, 96);
+                                st.parser.errors.SemErr(t.position, msgN, 96);
                             }
                         }
                     }

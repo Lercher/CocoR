@@ -178,32 +178,30 @@ namespace CocoRCore
         private Token(Builder b)
         {
             kind = b.kind;
-            pos = b.pos;
-            charPos = b.charPos;
-            col = b.col;
-            line = b.line;
+            position = new Position(b.pos, b.charPos, b.col, b.line);
             val = b.val;
             valScanned = b.valScanned;
         }
 
         private Token()
         {
+            position = Position.Zero;
             val = string.Empty;
             valScanned = string.Empty;
         }
 
         public static readonly Token Zero = new Token();
         public readonly int kind;    // token kind
-        public readonly int pos;     // token position in bytes in the source text (starting at 0)
-        public readonly int charPos;  // token position in characters in the source text (starting at 0)
-        public readonly int col;     // token column (starting at 1)
-        public readonly int line;    // token line (starting at 1)
+        public readonly Position position; // start position
+        public int pos => position.pos;
+        public int line => position.line;
+        public int col => position.col;
+        
         public readonly string val;  // token value, lowercase if case insensitive parser
         public readonly string valScanned; // token value as scanned (always case sensitive)
 
         public Token next;  // ML 2005-03-11 Peeked Tokens are kept in linked list
 
-        public Position Position() => new Position(this);
         public Token.Builder Copy() => new Token.Builder(this); // to modify attributes
 
         public class Builder
@@ -216,7 +214,7 @@ namespace CocoRCore
             {
                 kind = t.kind;
                 pos = t.pos;
-                charPos = t.charPos;
+                charPos = t.position.charPos;
                 col = t.col;
                 line = t.line;
                 val = t.val;
@@ -249,14 +247,23 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     public class Position
     {  // position of source code stretch (e.g. semantic action, resolver expressions)
-        public static readonly Position Zero = new Position(Token.Zero);
-        private readonly Token t;
-        public Position(Token t) => this.t = t;
-        public Range Range(Token t) => new Range(this, t.Position());
-        public Range RangeIfNotEmpty(Token t) => t.pos > this.t.pos ? Range(t) : null;
-        public int line => t.line;
-        public int col => t.col;
-        internal int pos => t.pos;
+        public static readonly Position Zero = new Position(0, 0, 0, 0);
+
+        public Position(int pos0, int charPos0, int col1, int line1)
+        {
+            this.pos = pos0;
+            this.charPos = charPos0;
+            this.col = col1;
+            this.line = line1;
+        }
+
+        public readonly int pos;     // token position in bytes in the source text (starting at 0)
+        public readonly int charPos; // token position in characters in the source text (starting at 0)
+        public readonly int col;     // token column (starting at 1)
+        public readonly int line;    // token line (starting at 1)
+
+        public Range Range(Token t) => new Range(this, t.position);
+        public Range RangeIfNotEmpty(Token t) => t.pos > this.pos ? Range(t) : null;
 
         public override string ToString() => string.Format("({0},{1})", line, col);
     }

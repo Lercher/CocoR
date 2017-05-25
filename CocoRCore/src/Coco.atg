@@ -63,14 +63,14 @@ PRODUCTIONS
 Coco                            (. Symbol sym; Graph g, g1, g2; string gramName; CharSet s; .)
 =
   [ // using statements
-    ANY                          (. var usingPos = t.Position(); .)
+    ANY                          (. var usingPos = t.position; .)
     { ANY }                      (. pgen.usingPos = usingPos.Range(la); .)
   ]
 
   "COMPILER"                    (. genScanner = true; 
                                    tab.ignored = new CharSet(); .) 
   ident                         (. gramName = t.val;
-                                   var semDeclPos = la.Position();
+                                   var semDeclPos = la.position;
                                  .)
   { ANY }                       (. tab.semDeclPos = semDeclPos.Range(la); .)
   [ "IGNORECASE"                (. dfa.ignoreCase = true; .) ]   /* pdt */
@@ -94,12 +94,12 @@ Coco                            (. Symbol sym; Graph g, g1, g2; string gramName;
                                  .)
   { ident                       (. sym = tab.FindSym(t.val);
                                    bool undef = sym == null;
-                                   if (undef) sym = tab.NewSym(NodeKind.nt, t.val, t.Position());
+                                   if (undef) sym = tab.NewSym(NodeKind.nt, t.val, t.position);
                                    else {
                                      if (sym.typ == NodeKind.nt) {
                                        if (sym.graph != null) SemErr(1, "name declared twice");
                                    	 } else SemErr(2, "this symbol kind not allowed on left side of production");
-                                   	 sym.pos = t.Position();
+                                   	 sym.pos = t.position;
                                    }
                                    bool noAttrs = sym.attrPos == null;
                                    sym.attrPos = null;
@@ -269,7 +269,7 @@ TokenDecl<NodeKind typ>
                                 (. var sym = tab.FindSym(name);
                                    if (sym != null) SemErr(13, "name declared twice");
                                    else {
-                                     sym = tab.NewSym(typ, name, t.Position());
+                                     sym = tab.NewSym(typ, name, t.position);
                                      sym.tokenKind = Symbol.fixedToken;
                                    }
                                    tokenString = null;
@@ -308,12 +308,12 @@ TokenDecl<NodeKind typ>
 
 AttrDecl<Symbol sym>
 =
-  '<'                           (. var attrPos = la.Position(); .)
+  '<'                           (. var attrPos = la.position; .)
   { ANY
   | badString                   (. SemErr(20, "bad string in attributes"); .)
   }
   '>'                           (. sym.attrPos = attrPos.RangeIfNotEmpty(t); .)
-| "<."                          (. var attrPos = la.Position(); .)
+| "<."                          (. var attrPos = la.position; .)
   { ANY
   | badString                   (. SemErr(21, "bad string in attributes"); .)
   }
@@ -367,7 +367,7 @@ Factor<out Graph g>             (. string name; int kind; Range pos; bool weak =
                                      if (kind == id)
                                        sym = tab.NewSym(NodeKind.nt, name, Position.Zero);  // forward nt
                                      else if (genScanner) { 
-                                       sym = tab.NewSym(NodeKind.t, name, t.Position());
+                                       sym = tab.NewSym(NodeKind.t, name, t.position);
                                        dfa.MatchLiteral(sym.name, sym);
                                      } else {  // undefined string in production
                                        SemErr(22, "undefined string in production");
@@ -482,7 +482,7 @@ ASTVal<out string val>           (. val = "?"; .)
 
 Resolver<out Range pos>   
 =
-  "IF" "("                       (. var p = la.Position(); .)
+  "IF" "("                       (. var p = la.position; .)
   Condition                      (. pos = p.Range(t); .)
 .
 
@@ -562,12 +562,12 @@ Sym<out string name, out int kind>
 
 Attribs<Node p>
 =
-  '<'                           (. var pos = la.Position(); .)
+  '<'                           (. var pos = la.position; .)
   { ANY 
   | badString                   (. SemErr(34, "bad string in attributes"); .)
   }
   '>'                           (. p.pos = pos.RangeIfNotEmpty(t); .)
-| "<."                          (. var pos = la.Position(); .)
+| "<."                          (. var pos = la.position; .)
   { ANY 
   | badString                   (. SemErr(35, "bad string in attributes"); .)
   }
@@ -578,7 +578,7 @@ Attribs<Node p>
 
 SemText<out Range pos>
 =
-  "(."                          (. var p = la.Position(); .)
+  "(."                          (. var p = la.position; .)
   { ANY
   | badString                   (. SemErr(36, "bad string in semantic action"); .)
   | "(."                        (. SemErr(37, "missing end of previous semantic action"); .)

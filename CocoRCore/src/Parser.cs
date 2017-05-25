@@ -131,7 +131,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 		Symbol sym; Graph g, g1, g2; string gramName; CharSet s; 
 		if (StartOf(1)) {
 			Get();
-			var usingPos = t.Position(); 
+			var usingPos = t.position; 
 			while (StartOf(1)) {
 				Get();
 							}
@@ -142,7 +142,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 		tab.ignored = new CharSet(); 
 		Expect(1); // ident
 		gramName = t.val;
-		var semDeclPos = la.Position();
+		var semDeclPos = la.position;
 		
 		while (StartOf(2)) {
 			Get();
@@ -203,12 +203,12 @@ string noString = "-none-"; // used in declarations of literal tokens
 			Get();
 			sym = tab.FindSym(t.val);
 			bool undef = sym == null;
-			if (undef) sym = tab.NewSym(NodeKind.nt, t.val, t.Position());
+			if (undef) sym = tab.NewSym(NodeKind.nt, t.val, t.position);
 			else {
 			 if (sym.typ == NodeKind.nt) {
 			   if (sym.graph != null) SemErr(1, "name declared twice");
 			 } else SemErr(2, "this symbol kind not allowed on left side of production");
-			 sym.pos = t.Position();
+			 sym.pos = t.position;
 			}
 			bool noAttrs = sym.attrPos == null;
 			sym.attrPos = null;
@@ -301,7 +301,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 		var sym = tab.FindSym(name);
 		if (sym != null) SemErr(13, "name declared twice");
 		else {
-		 sym = tab.NewSym(typ, name, t.Position());
+		 sym = tab.NewSym(typ, name, t.position);
 		 sym.tokenKind = Symbol.fixedToken;
 		}
 		tokenString = null;
@@ -402,7 +402,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 		{
 		if (isKind(la, 34)) {
 			Get();
-			var attrPos = la.Position(); 
+			var attrPos = la.position; 
 			while (StartOf(9)) {
 				if (StartOf(10)) {
 					Get();
@@ -415,7 +415,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 			sym.attrPos = attrPos.RangeIfNotEmpty(t); 
 		} else if (isKind(la, 36)) {
 			Get();
-			var attrPos = la.Position(); 
+			var attrPos = la.position; 
 			while (StartOf(11)) {
 				if (StartOf(12)) {
 					Get();
@@ -481,7 +481,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 	void SemText‿NT(out Range pos) {
 		{
 		Expect(49); // "(."
-		var p = la.Position(); 
+		var p = la.position; 
 		while (StartOf(13)) {
 			if (StartOf(14)) {
 				Get();
@@ -609,7 +609,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 		{
 		Expect(47); // "IF"
 		Expect(24); // "("
-		var p = la.Position(); 
+		var p = la.position; 
 		Condition‿NT();
 		pos = p.Range(t); 
 	}}
@@ -638,7 +638,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 			 if (kind == id)
 			   sym = tab.NewSym(NodeKind.nt, name, Position.Zero);  // forward nt
 			 else if (genScanner) { 
-			   sym = tab.NewSym(NodeKind.t, name, t.Position());
+			   sym = tab.NewSym(NodeKind.t, name, t.position);
 			   dfa.MatchLiteral(sym.name, sym);
 			 } else {  // undefined string in production
 			   SemErr(22, "undefined string in production");
@@ -743,7 +743,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 		{
 		if (isKind(la, 34)) {
 			Get();
-			var pos = la.Position(); 
+			var pos = la.position; 
 			while (StartOf(9)) {
 				if (StartOf(10)) {
 					Get();
@@ -756,7 +756,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 			p.pos = pos.RangeIfNotEmpty(t); 
 		} else if (isKind(la, 36)) {
 			Get();
-			var pos = la.Position(); 
+			var pos = la.position; 
 			while (StartOf(11)) {
 				if (StartOf(12)) {
 					Get();
