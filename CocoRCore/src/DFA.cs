@@ -39,10 +39,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             else return String.Format("'{0}'", (char)ch);
         }
 
-        private string ChCond(char ch)
-        {
-            return String.Format("ch == {0}", Ch(ch));
-        }
+        private string ChCond(char ch) => String.Format("ch == {0}", Ch(ch));
+        private string ChCondNot(char ch) => String.Format("ch != {0}", Ch(ch));
 
         private void PutRange(CharSet s)
         {
@@ -596,8 +594,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void GenComment(Comment com, int i)
         {
             gen.WriteLine();
-            gen.WriteLine("\tbool Comment{0}()", i); 
+            gen.WriteLine("\tbool Cmt{0}()", i); 
             gen.WriteLine("\t{");
+            gen.WriteLine("\t\tif ({0}) return false;", ChCondNot(com.start[0]));
             gen.WriteLine("\t\tvar level = 1;");
             gen.WriteLine("\t\tvar bookmark = buffer.PositionM1;");
             if (com.start.Length == 1)
@@ -756,12 +755,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             }
 
             g.CopyFramePart("-->comments");
-            Comment com = firstComment;
             int comIdx = 0;
-            while (com != null)
+            for (var com = firstComment; com != null; com = com.next)
             {
+                comIdx++;
                 GenComment(com, comIdx);
-                com = com.next; comIdx++;
             }
 
             g.CopyFramePart("-->literals"); 
@@ -782,17 +780,18 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (firstComment != null)
             {
                 gen.Write("\t\t\tif (");
-                com = firstComment; comIdx = 0;
-                while (com != null)
+                comIdx = 0;
+                for (var com = firstComment; com != null; com = com.next)
                 {
-                    gen.Write(ChCond(com.start[0]));
-                    gen.Write(" && Comment{0}()", comIdx);
+                    comIdx++;
+                    gen.Write("Cmt{0}()", comIdx);
                     if (com.next != null) 
-                        gen.Write(" ||");
-                    com = com.next; comIdx++;
+                        gen.Write(" || ");                    
                 }
-                gen.Write(") return NextToken();");
+                gen.WriteLine(")");
+                gen.Write("\t\t\t\treturn NextToken();");
             }
+
             if (hasCtxMoves) 
             { 
                 gen.WriteLine(); 

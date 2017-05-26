@@ -56,8 +56,9 @@ namespace CocoRCore.CSharp {
 		}
 				
 
-	bool Comment0()
+	bool Cmt1()
 	{
+		if (ch != '/') return false;
 		var level = 1;
 		var bookmark = buffer.PositionM1;
 		NextCh();
@@ -78,8 +79,9 @@ namespace CocoRCore.CSharp {
 		return false;
 	}
 
-	bool Comment1()
+	bool Cmt2()
 	{
+		if (ch != '/') return false;
 		var level = 1;
 		var bookmark = buffer.PositionM1;
 		NextCh();
@@ -146,7 +148,8 @@ namespace CocoRCore.CSharp {
 				ch >= 9 && ch <= 10 || ch == 13
 			) 
 				NextCh();
-			if (ch == '/' && Comment0() ||ch == '/' && Comment1()) return NextToken();
+			if (Cmt1() || Cmt2())
+				return NextToken();
 			var recKind = noSym;
 			var recEnd = buffer.PositionM1;
 			t = new Token.Builder() { position = buffer.Position };
