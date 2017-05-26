@@ -588,7 +588,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     gen.WriteLine("\t\t\t\t\t}");
                 }
             }
-            gen.WriteLine("\t\t\t\t} else if (ch == Buffer.EOF) return false;");
+            gen.WriteLine("\t\t\t\t} else if (ch == EOF) return false;");
             gen.WriteLine("\t\t\t\telse NextCh();");
             gen.WriteLine("\t\t\t}");
         }
@@ -634,14 +634,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void GenLiterals()
         {
-            if (ignoreCase)
-            {
-                gen.WriteLine("\t\tswitch (t.val.ToLowerInvariant()) {");
-            }
-            else
-            {
-                gen.WriteLine("\t\tswitch (t.val) {");
-            }
             foreach (IList ts in new IList[] { tab.terminals, tab.pragmas })
             {
                 foreach (Symbol sym in ts)
@@ -649,29 +641,27 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     if (sym.tokenKind == Symbol.litToken)
                     {
                         string name = SymName(sym);
-                        if (ignoreCase) name = name.ToLowerInvariant();
                         // sym.name stores literals with quotes, e.g. "\"Literal\""
-                        gen.WriteLine("\t\t\tcase {0}: t.kind = {1}; break;", name, sym.n);
+                        gen.WriteLine("\t\t\t\tcase {0}: t.kind = {1}; break;", parser.scanner.casingString(name), sym.n);
                     }
                 }
             }
-            gen.WriteLine("\t\t\tdefault: break;");
-            gen.Write("\t\t}");
+            gen.WriteLine("\t\t\t\tdefault: break;");
         }
 
         void WriteState(State state)
         {
             Symbol endOf = state.endOf;
-            gen.WriteLine("\t\t\tcase {0}:", state.nr);
+            gen.WriteLine("\t\t\t\tcase {0}:", state.nr);
             if (endOf != null && state.firstAction != null)
             {
-                gen.WriteLine("\t\t\t\trecEnd = pos; recKind = {0};", endOf.n);
+                gen.WriteLine("\t\t\t\t\trecEnd = pos; recKind = {0};", endOf.n);
             }
             bool ctxEnd = state.ctx;
             for (Action action = state.firstAction; action != null; action = action.next)
             {
-                if (action == state.firstAction) gen.Write("\t\t\t\tif (");
-                else gen.Write("\t\t\t\telse if (");
+                if (action == state.firstAction) gen.Write("\t\t\t\t\tif (");
+                else gen.Write("\t\t\t\t\telse if (");
                 if (action.typ == NodeKind.chr) gen.Write(ChCond((char)action.sym));
                 else PutRange(tab.CharClassSet(action.sym));
                 gen.Write(") {");
@@ -685,15 +675,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 gen.WriteLine("}");
             }
             if (state.firstAction == null)
-                gen.Write("\t\t\t\t{");
+                gen.Write("\t\t\t\t\t{");
             else
-                gen.Write("\t\t\t\telse {");
+                gen.Write("\t\t\t\t\telse {");
             if (ctxEnd)
             { // final context state: cut appendix
                 gen.WriteLine();
-                gen.WriteLine("\t\t\t\t\ttval.Length -= apx;");
-                gen.WriteLine("\t\t\t\t\tSetScannerBehindT();");
-                gen.Write("\t\t\t\t\t");
+                gen.WriteLine("\t\t\t\t\t\ttval.Length -= apx;");
+                gen.WriteLine("\t\t\t\t\t\tSetScannerBehindT();");
+                gen.Write("\t\t\t\t\t\t");
             }
             if (endOf == null)
             {
@@ -731,7 +721,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     }
                 }
             }
-            gen.WriteLine("\t\tstart[Buffer.EOF] = -1;");
+            gen.WriteLine("\t\tstart[EOF] = -1;");
         }
 
         public void WriteScanner()

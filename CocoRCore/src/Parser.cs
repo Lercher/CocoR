@@ -16,7 +16,6 @@ namespace CocoRCore.CSharp {
 
 	public class Parser : ParserBase 
 	{
-	public const int _EOF = 0; // TOKEN EOF
 	public const int _ident = 1; // TOKEN ident
 	public const int _number = 2; // TOKEN number
 	public const int _string = 3; // TOKEN string

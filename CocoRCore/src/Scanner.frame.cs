@@ -14,11 +14,12 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     public abstract class ScannerBase
     {
-        public string uri;
-        protected const char EOL = '\n';
-        protected const int eofSym = 0; /* pdt */
+        public string uri;        
+        public const int EOF = -1;
+        public const int EOL = '\n';
+        public const int _EOF = 0; // TOKEN EOF is the same for every parser
 
-        public Buffer buffer; // scanner buffer
+        public IBuffer buffer; // scanner buffer
 
         protected Token.Builder t;          // current token
         protected int ch;           // current input character (probably lowercased)
@@ -114,7 +115,7 @@ namespace CocoRCore
                 if (ch == EOL) { line++; col = 0; }
             }
             //if (pos <= 10) Console.Write("{0:X} ", ch);
-            if (ch != Buffer.EOF)
+            if (ch != EOF)
             {
                 valCh = (char)ch;
                 ch = casing(valCh);
@@ -123,7 +124,7 @@ namespace CocoRCore
 
         protected void AddCh()
         {
-            if (ch != Buffer.EOF)
+            if (ch != EOF)
             {
                 tval.Append(valCh);
                 NextCh();
@@ -302,9 +303,21 @@ namespace CocoRCore
     }
 
     //-----------------------------------------------------------------------------------
-    // Buffer
+    // IBuffer
     //-----------------------------------------------------------------------------------
-    public class Buffer
+    public interface IBuffer
+    {
+        int Read();
+        int Peek();
+        string GetString(int beg, int end);
+        int Pos { get; set; }
+
+    }
+
+    //-----------------------------------------------------------------------------------
+    // ANSI Buffer
+    //-----------------------------------------------------------------------------------
+    public class Buffer : IBuffer
     {
         // This Buffer supports the following cases:
         // 1) seekable stream (file)
@@ -312,7 +325,6 @@ namespace CocoRCore
         //    b) part of stream in buffer
         // 2) non seekable stream (network, console)
 
-        public const int EOF = char.MaxValue + 1;
         const int MIN_BUFFER_LENGTH = 1024; // 1KB
         const int MAX_BUFFER_LENGTH = MIN_BUFFER_LENGTH * 64; // 64KB
         byte[] buf;         // input buffer
@@ -344,6 +356,7 @@ namespace CocoRCore
             if (bufLen == fileLen && stream.CanSeek) Close();
         }
 
+/*
         protected Buffer(Buffer b)
         { // called in UTF8Buffer constructor
             buf = b.buf;
@@ -356,6 +369,7 @@ namespace CocoRCore
             b.stream = null;
             isUserStream = b.isUserStream;
         }
+*/
 
         ~Buffer() { Close(); }
 
@@ -385,7 +399,7 @@ namespace CocoRCore
             }
             else
             {
-                return EOF;
+                return ScannerBase.EOF;
             }
         }
 
@@ -478,19 +492,22 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     // UTF8Buffer
     //-----------------------------------------------------------------------------------
-    public class UTF8Buffer : Buffer
+    public class UTF8Buffer : IBuffer
     {
-        public UTF8Buffer(Buffer b) : base(b) { }
-
-        public override int Read()
+        IBuffer b;
+        public UTF8Buffer(IBuffer b) => this.b = b;
+        public int Pos { get => b.Pos; set => b.Pos = value; }
+        public string GetString(int beg, int end) => b.GetString(beg, end);
+        public int Peek() => b.Peek();
+        public int Read()
         {
             int ch;
             do
             {
-                ch = base.Read();
+                ch = b.Read();
                 // until we find a utf8 start (0xxxxxxx or 11xxxxxx)
-            } while ((ch >= 128) && ((ch & 0xC0) != 0xC0) && (ch != EOF));
-            if (ch < 128 || ch == EOF)
+            } while ((ch >= 128) && ((ch & 0xC0) != 0xC0) && (ch != ScannerBase.EOF));
+            if (ch < 128 || ch == ScannerBase.EOF)
             {
                 // nothing to do, first 127 chars are the same in ascii and utf8
                 // 0xxxxxxx or end of file character
@@ -498,30 +515,32 @@ namespace CocoRCore
             else if ((ch & 0xF0) == 0xF0)
             {
                 // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-                var c1 = ch & 0x07; ch = base.Read();
-                var c2 = ch & 0x3F; ch = base.Read();
-                var c3 = ch & 0x3F; ch = base.Read();
+                var c1 = ch & 0x07; ch = b.Read();
+                var c2 = ch & 0x3F; ch = b.Read();
+                var c3 = ch & 0x3F; ch = b.Read();
                 var c4 = ch & 0x3F;
                 ch = (((((c1 << 6) | c2) << 6) | c3) << 6) | c4;
             }
             else if ((ch & 0xE0) == 0xE0)
             {
                 // 1110xxxx 10xxxxxx 10xxxxxx
-                var c1 = ch & 0x0F; ch = base.Read();
-                var c2 = ch & 0x3F; ch = base.Read();
+                var c1 = ch & 0x0F; ch = b.Read();
+                var c2 = ch & 0x3F; ch = b.Read();
                 var c3 = ch & 0x3F;
                 ch = (((c1 << 6) | c2) << 6) | c3;
             }
             else if ((ch & 0xC0) == 0xC0)
             {
                 // 110xxxxx 10xxxxxx
-                var c1 = ch & 0x1F; ch = base.Read();
+                var c1 = ch & 0x1F; ch = b.Read();
                 var c2 = ch & 0x3F;
                 ch = (c1 << 6) | c2;
             }
             return ch;
         }
     }
+
+
 
     // --------------------------------
     // FatalError used in Scanner and Parser

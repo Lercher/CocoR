@@ -56,7 +56,10 @@ using CocoRCore;
 
 		protected override void CheckLiteral() 
 		{
+			// t.val is already lowercase if the scanner is ignorecase
+			switch (t.val) {
 -->literals
+			}
 		}
 
 		protected override Token NextToken() 
@@ -69,21 +72,23 @@ using CocoRCore;
 			var recKind = noSym;
 			var recEnd = pos;
 			t = new Token.Builder() { position = CurrentPosition() };
-			var state = start.ContainsKey(ch) ? start[ch] : 0;
+			start.TryGetValue(ch, out var state); // state = 0 if not found; state = -1 if EOF;
 			tval.Clear(); AddCh();
 			
 			switch (state) 
 			{
-				case -1: { t.kind = eofSym; break; } // NextCh already done
+				case -1: 
+					t.kind = _EOF;
+					break;
+					// NextCh already done
 				case 0: 
+					if (recKind != noSym) 
 					{
-						if (recKind != noSym) 
-						{
-							tval.Length = recEnd - t.position.pos; // TODO: suspicious .pos -> .charPos?
-							SetScannerBehindT();
-						}
-						t.kind = recKind; break;
-					} // NextCh already done
+						tval.Length = recEnd - t.position.pos; // TODO: suspicious .pos -> .charPos?
+						SetScannerBehindT();
+					}
+					t.kind = recKind; break;
+					// NextCh already done
 -->scan3
 			}
 			t.setValue(tval.ToString(), casingString);

@@ -35,7 +35,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         Tab tab;          // other Coco objects
         TextWriter trace;
         ErrorsBase errors;
-        Buffer buffer;
+        IBuffer buffer;
 
         void Indent(int n)
         {
@@ -501,7 +501,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             foreach (Symbol sym in tab.terminals)
             {
-                if (Char.IsLetter(sym.name[0]))
+                if (Char.IsLetter(sym.name[0]) && sym.name != "EOF")
                     gen.WriteLine("\tpublic const int _{0} = {1}; // TOKEN {0}{2}", sym.name, sym.n, sym.inherits != null ? " INHERITS " + sym.inherits.name : "");
             }
         }
