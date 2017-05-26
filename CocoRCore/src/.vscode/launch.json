@@ -14,7 +14,6 @@
             "args": [
                 "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
                 "${workspaceRoot}/Coco.ATG",
-                "-is",
                 "-oo",
                 "-o",
                 "${workspaceRoot}/../sample-grammars/Coco",

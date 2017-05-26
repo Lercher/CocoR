@@ -17,6 +17,8 @@ namespace CocoRCore.CSharp {
 	const int noSym = 51;
 
 
+		protected override int maxT => _maxT;
+
 		private static readonly Dictionary<int, int> start = new Dictionary<int, int>(); // maps first token character to start state
 		static Scanner() 
 		{
@@ -52,11 +54,9 @@ namespace CocoRCore.CSharp {
 		{
 
 		}
-		
-		protected override int maxT => _maxT;
-		
+				
 
-	bool Comment0() 
+	bool Comment0()
 	{
 		var level = 1;
 		var bookmark = buffer.PositionM1;
@@ -64,7 +64,7 @@ namespace CocoRCore.CSharp {
 		if (ch == '/') {
 			NextCh();
 			for(;;) {
-				if (ch == EOL) {
+				if (ch == 10) {
 					level--;
 					if (level == 0) { numberOfEOLinComments = line - bookmark.line; NextCh(); return true; }
 					NextCh();
@@ -78,7 +78,7 @@ namespace CocoRCore.CSharp {
 		return false;
 	}
 
-	bool Comment1() 
+	bool Comment1()
 	{
 		var level = 1;
 		var bookmark = buffer.PositionM1;
@@ -160,6 +160,7 @@ namespace CocoRCore.CSharp {
 					break;
 					// NextCh already done
 				case 0: 
+					// ch is not the start of any token.
 					if (recKind != noSym) 
 					{
 						tval.Length = recEnd - t.position.pos;

@@ -94,15 +94,17 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 if (string.IsNullOrWhiteSpace(s))
                     return;
                 var lines = s.Split((char)ScannerBase.EOL);
-                gen.WriteLine();
                 var n = range.start.line;
                 foreach (var l in lines)
                 {
-                    if (tab.emitLines)
+                    if (!string.IsNullOrWhiteSpace(l))
                     {
-                        Indent(indent); gen.WriteLine("#line {0} \"{1}\"", n, tab.srcName);
+                        if (tab.emitLines)
+                        {
+                            Indent(indent); gen.WriteLine("#line {0} \"{1}\"", n, tab.srcName);
+                        }
+                        Indent(indent); gen.WriteLine(l.Trim());
                     }
-                    Indent(indent); gen.WriteLine(l.Trim());
                     n++;
                 }
             }
@@ -654,12 +656,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             g.GenCopyright();
             g.SkipFramePart("-->begin");
 
-            if (usingPos != null) 
-            { 
-                CopySourcePart(usingPos); 
-                gen.WriteLine(); 
+            if (usingPos != null)
+            {
+                CopySourcePart(usingPos);
+                gen.WriteLine();
             }
-            
+
             g.CopyFramePart("-->namespace");
             /* AW open namespace, if it exists */
             if (tab.nsName != null && tab.nsName.Length > 0)
@@ -667,19 +669,19 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 gen.WriteLine("namespace {0} {{", tab.nsName);
                 gen.WriteLine();
             }
-            
+
             g.CopyFramePart("-->constants");
             GenTokens(); /* ML 2002/09/07 write the token kinds */
             gen.WriteLine("\tprivate const int __maxT = {0};", tab.terminals.Count - 1);
             GenPragmas(); /* ML 2005/09/23 write the pragma kinds */
-            
+
             g.CopyFramePart("-->declarations");
             GenSymbolTables(true);
             CopySourcePart(tab.semDeclPos);
 
             g.CopyFramePart("-->constructor");
             GenSymbolTables(false);
-            if (needsAST) 
+            if (needsAST)
                 gen.Write("\t\tastbuilder = new AST.Builder(this);");
             g.CopyFramePart("-->beginalternatives");
             g.CopyFramePart("-->endalternatives", GenerateAutocompleteInformation);
@@ -688,7 +690,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             g.CopyFramePart("-->endalternativescode", GenerateAutocompleteInformation);
             g.CopyFramePart("-->productions"); GenProductions();
             g.CopyFramePart("-->parseRoot"); gen.WriteLine("\t\t{0}{1}();", tab.gramSy.name, PROD_SUFFIX);
-            if (tab.checkEOF) 
+            if (tab.checkEOF)
                 gen.WriteLine("\t\tExpect(0);");
             GenSymbolTablesChecks();
             g.CopyFramePart("-->tbase"); GenTokenBase(); // write all tokens base types
