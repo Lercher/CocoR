@@ -13,7 +13,7 @@ COMPILER Taste
   
 /*--------------------------------------------------------------------------*/
 CHARACTERS
-  letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".
+  letter = "ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜabcdefghijklmnopqrstuvwxyzäöüß".
   digit = "0123456789".
   cr  = '\r'.
   lf  = '\n'.
@@ -25,6 +25,7 @@ TOKENS
 
 COMMENTS FROM "/*" TO "*/" NESTED
 COMMENTS FROM "//" TO lf
+COMMENTS FROM "#" to lf
 
 IGNORE cr + lf + tab
 

@@ -4,13 +4,13 @@
 // up to these numbers.
 
 program Test {
-	int i;
+	int i;	           # and this is a one-character-initiated comment
 	
 	void Foo() {
-		int a, b, max;
+		int a, b, mäx;
 		read a; read b;
-		if (a > b) max = a; else max = b;
-		write max;
+		if (a > b) mäx = a; else mäx = b;
+		write mäx;
 	}
 
 	void SumUp() {
@@ -28,4 +28,3 @@ program Test {
 		}
 	}
 }
-
