@@ -41,6 +41,12 @@ namespace CocoRCore
 
         protected abstract int maxT { get; }
 
+        private void PutCh(int c, char v)
+        {
+            ch = c;
+            valCh = v;
+        }
+
         public ScannerBase Initialize(string fileName)
         {
             try
@@ -49,8 +55,7 @@ namespace CocoRCore
                 var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096);
                 var tr = new StreamReader(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
                 var f = new System.IO.FileInfo(fileName);
-                buffer = new Reader(tr, f.FullName);
-                NextCh();
+                buffer = new Reader(tr, f.FullName, casing, PutCh);
             }
             catch (IOException ex)
             {
@@ -62,28 +67,18 @@ namespace CocoRCore
         protected ScannerBase Initialize(String s, string uri)
         {
             var sr = new StringReader(s);
-            buffer = new Reader(sr, uri);
-            NextCh();
+            buffer = new Reader(sr, uri, casing, PutCh);
             return this;
         }
 
         protected ScannerBase Initialize(StringBuilder sb, string uri)
         {
             var sbr = new StringBuilderReader(sb);
-            buffer = new Reader(sbr, uri);
-            NextCh();
+            buffer = new Reader(sbr, uri, casing, PutCh);
             return this;
         }
 
-        internal void NextCh()
-        {
-            ch = buffer.Read();
-            if (ch != EOF)
-            {
-                valCh = (char)ch;
-                ch = casing(valCh);
-            }
-        }
+        internal void NextCh() => buffer.NextCh();
 
         protected void AddCh()
         {
@@ -289,7 +284,7 @@ namespace CocoRCore
          * fetch a not too old string defined by a Range -> SlidingBuffer
          */
         string Uri { get; }
-        int Read();
+        void NextCh();
         Position PositionM1 { get; } // Position before last Read()
         Position Position { get; } // Position after last Read()
         string GetBufferedString(Range r);
@@ -305,31 +300,49 @@ namespace CocoRCore
         private Position _nextPosition;
         private Position _pos;
         private readonly SlidingBuffer _slider = new SlidingBuffer(128_000); // 128k chars for GetBufferedString()
-        private Func<int> readnext;
+        private Func<int> _readnext;
+        private Func<char, char> _casing;
+        private Action<int, char> _putCh;
+        public string Uri { get; private set; }
 
-        public Reader(TextReader tr, string uri)
+        public Reader(TextReader tr, string uri, Func<char, char> casing, Action<int, char> putCh)
         {
             _tr = tr;
             Uri = uri;
+            _casing = casing;
+            _putCh = putCh;
             _nextPosition = Position.StartOfFile;
             _pos = Position.MinusOne;
-            readnext = ReadNextRaw;
+            _readnext = ReadNextRaw;
+            NextCh();
         }
 
         public Position PositionM1 => _pos;
         public Position Position => _nextPosition;
 
-        public string Uri { get; private set; }
+        public void NextCh()
+        {
+            var ch = Read();
+            if (ch == ScannerBase.EOF)
+                _putCh(ch, '\0');
+            else
+            {
+                var valCh = (char) ch;
+                ch = _casing(valCh);
+                _putCh(ch, valCh);
+            }
+        }
 
         public void ResetPositionTo(Position bookmark)
         {
             _nextPosition = bookmark;
-            readnext = () =>
+            _readnext = () =>
             {
                 if (_pos.pos >= _slider.pos - 1)
-                    readnext = ReadNextRaw;
+                    _readnext = ReadNextRaw;
                 return _slider.CharAt(_pos.pos);
             };
+            NextCh();
         }
 
         public string GetBufferedString(Range r)
@@ -340,7 +353,7 @@ namespace CocoRCore
         public int Read()
         {
             _pos = _nextPosition;
-            var ch = readnext();
+            var ch = _readnext();
             if (ch == ScannerBase.EOL)
                 _nextPosition = _nextPosition.OneLinebreakForward();
             else
@@ -371,6 +384,7 @@ namespace CocoRCore
             }
             return ch; // in any other case return the char read.
         }
+
     }
 
 

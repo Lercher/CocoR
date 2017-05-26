@@ -609,10 +609,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 gen.Write("\t\tif ({0}) ", ChCond(com.start[1])); gen.WriteLine("{");
                 gen.WriteLine("\t\t\tNextCh();");
                 GenComBody(com);
-                gen.WriteLine("\t\t} else {");
+                gen.WriteLine("\t\t} else");
                 gen.WriteLine("\t\t\tbuffer.ResetPositionTo(bookmark);");
-                gen.WriteLine("\t\t\tNextCh();");
-                gen.WriteLine("\t\t}");
                 gen.WriteLine("\t\treturn false;");
             }
             gen.WriteLine("\t}");

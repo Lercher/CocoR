@@ -71,10 +71,8 @@ namespace CocoRCore.CSharp {
 				} else if (ch == EOF) return false;
 				else NextCh();
 			}
-		} else {
+		} else
 			buffer.ResetPositionTo(bookmark);
-			NextCh();
-		}
 		return false;
 	}
 
@@ -101,10 +99,8 @@ namespace CocoRCore.CSharp {
 				} else if (ch == EOF) return false;
 				else NextCh();
 			}
-		} else {
+		} else
 			buffer.ResetPositionTo(bookmark);
-			NextCh();
-		}
 		return false;
 	}
 
