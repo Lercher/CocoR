@@ -119,14 +119,16 @@ This is probably due to this bug:
 
 ## Status: incubating
 
+* after major redesign of buffers, some sample *.atg grammars fail to build because `protected void SetScannerBehindT()` has currently no proper replacement.
 * compiles to be run as a process
 * generates mixed V2 and core code
-* uses shorter frames instead of the long original ones
+* uses much shorter frames instead of the long original ones
 * multiple test cases but no unit tests
-* Coco/R core can successfully compile itself now
-* four sample grammars compile, can be linked together
-* four sample grammars parse their samples successfully and without diagnostics
-* problem with a csproj reference, can't find `CocoRCore.ParserBase` then
-* including `src/*.frame.cs` works
+* Coco/R core can successfully compile itself
+* [FAILS] four sample grammars compile, can be linked together
+* [FAILS] four sample grammars parse their samples successfully and without diagnostics
+* problem with a csproj reference, can't find `CocoRCore.ParserBase` if on, but ...
+* ... including `src/*.frame.cs` works
 * API unstable
 * switch -ac (autocomplete) unstable: removes initialization but not the calls
+* more new C# code
