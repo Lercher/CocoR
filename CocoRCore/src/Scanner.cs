@@ -59,20 +59,20 @@ namespace CocoRCore.CSharp {
 	bool Comment0() 
 	{
 		var level = 1;
-		var bookmark = buffer.SetBookmark();
+		var bookmark = buffer.PositionM1;
 		NextCh();
 		if (ch == '/') {
 			NextCh();
 			for(;;) {
 				if (ch == EOL) {
 					level--;
-					if (level == 0) { numberOfEOLinComments = line - bookmark.line; buffer.CollectBookmark(); NextCh(); return true; }
+					if (level == 0) { numberOfEOLinComments = line - bookmark.line; NextCh(); return true; }
 					NextCh();
 				} else if (ch == EOF) return false;
 				else NextCh();
 			}
 		} else {
-			buffer.ResetPositionToBookmark();
+			buffer.ResetPositionTo(bookmark);
 			NextCh();
 		}
 		return false;
@@ -81,7 +81,7 @@ namespace CocoRCore.CSharp {
 	bool Comment1() 
 	{
 		var level = 1;
-		var bookmark = buffer.SetBookmark();
+		var bookmark = buffer.PositionM1;
 		NextCh();
 		if (ch == '*') {
 			NextCh();
@@ -90,7 +90,7 @@ namespace CocoRCore.CSharp {
 					NextCh();
 					if (ch == '/') {
 						level--;
-						if (level == 0) { numberOfEOLinComments = line - bookmark.line; buffer.CollectBookmark(); NextCh(); return true; }
+						if (level == 0) { numberOfEOLinComments = line - bookmark.line; NextCh(); return true; }
 						NextCh();
 					}
 				} else if (ch == '/') {
@@ -102,7 +102,7 @@ namespace CocoRCore.CSharp {
 				else NextCh();
 			}
 		} else {
-			buffer.ResetPositionToBookmark();
+			buffer.ResetPositionTo(bookmark);
 			NextCh();
 		}
 		return false;
@@ -149,7 +149,7 @@ namespace CocoRCore.CSharp {
 			if (ch == '/' && Comment0() ||ch == '/' && Comment1()) return NextToken();
 			var recKind = noSym;
 			var recEnd = pos;
-			t = new Token.Builder() { position = CurrentPosition() };
+			t = new Token.Builder() { position = buffer.Position };
 			start.TryGetValue(ch, out var state); // state = 0 if not found; state = -1 if EOF;
 			tval.Clear(); AddCh();
 			
@@ -170,7 +170,7 @@ namespace CocoRCore.CSharp {
 				case 1:
 					recEnd = pos; recKind = 1;
 					if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 1;}
-					else {t.kind = 1; t.setValue(tval.ToString(), casingString); CheckLiteral(); return t.Freeze(CurrentPosition());}
+					else {t.kind = 1; t.setValue(tval.ToString(), casingString); CheckLiteral(); return t.Freeze(buffer.Position);}
 				case 2:
 					recEnd = pos; recKind = 2;
 					if (ch >= '0' && ch <= '9') {AddCh(); goto case 2;}
@@ -279,7 +279,7 @@ namespace CocoRCore.CSharp {
 
 			}
 			t.setValue(tval.ToString(), casingString);
-			return t.Freeze(CurrentPosition());
+			return t.Freeze(buffer.Position);
 		}
 		
 	} // end Scanner
