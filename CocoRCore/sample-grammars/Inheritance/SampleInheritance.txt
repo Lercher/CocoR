@@ -1,0 +1,7 @@
+var a as string;
+VAR c as DOUBLE;
+{
+    var a : int;
+    VAR Z;
+}
+var aa;

@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- https://docs.microsoft.com/en-us/dotnet/articles/core/tools/project-json-to-csproj -->
+  
+  <PropertyGroup>  
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <GenerateFullPaths>true</GenerateFullPaths>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- https://github.com/OmniSharp/omnisharp-roslyn/issues/762 -->
+    <!-- <ProjectReference Include="..\src\CocoRCore.csproj" /> -->
+    <Compile Include="../src/*.frame.cs"/>
+  </ItemGroup>
+
+</Project>

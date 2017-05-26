@@ -671,6 +671,8 @@ public class Parser : Parserbase {
 		}
 
 		public static void escapeJSON(string s, StringBuilder sb) {
+			// see Mark Amery's comment in
+			// http://stackoverflow.com/questions/19176024/how-to-escape-special-characters-in-building-a-json-string
 			foreach (char ch in s) {
 				switch(ch) {
 					case '\\': sb.Append("\\\\"); break;
@@ -679,7 +681,7 @@ public class Parser : Parserbase {
 					case '\r': sb.Append("\\r"); break;
 					case '\n': sb.Append("\\n"); break;
 					default:
-						if (ch < ' ' || ch > '\u007f') sb.AppendFormat("{0:x4}",ch);
+						if (ch < ' ' || ch > '\u007f') sb.AppendFormat("\\u{0:x4}",ch);
 						else sb.Append(ch);
 						break;
 				}
@@ -945,6 +947,12 @@ public class Parser : Parserbase {
 				if (merge && (ast is ASTList)) return;
 				ast = new ASTList(ast, 1);
 			}
+
+			public void wrapinobject() {
+				ASTObject o = new ASTObject();
+				o.add(this);
+				ast = o;
+			}
 		}
 
 
@@ -1009,7 +1017,7 @@ public class Parser : Parserbase {
 						bool merge = (e.name == null);
 						e.wrapinlist(merge);
 					} else if (e.name != null)
-						parser.errors.Warning(t.line, t.col, string.Format("overwriting AST objectname '{0}' with '{1}'", e.name, name));
+						e.wrapinobject();
 				}
 				e.name = name;
 				//System.Console.WriteLine("-------------> top {0}", e);
@@ -1306,7 +1314,7 @@ public class Symboltable {
 	public readonly string name;
 	public readonly bool ignoreCase;
 	public readonly bool strict;
-	public readonly List<Alternative> fixuplist;
+	private readonly List<Alternative> fixuplist;
 	private Symboltable clone = null;
 	public event TokenEventHandler TokenUsed;
 

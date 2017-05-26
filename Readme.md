@@ -2,7 +2,9 @@
 
 Based on the Coco/R Sources at
 http://www.ssw.uni-linz.ac.at/Coco
-that we call the "2011 version".
+that we call the "2011 version". 
+
+.Net core version with modernized API and implementation.
 
 
 # Introduction
@@ -648,12 +650,27 @@ plain vanilla .Net Framework 2.0 compilers and libraries.
 To generate parsers from attributed grammars, you only need
 these files from the language directory you choose:
 
-* coco.exe (built with build.bat if you don't have one yet)
-* scanner.frame
-* parser.frame
-* copyright.frame (optional)
+* `coco.exe` (built with build.bat if you don't have one yet)
+* `scanner.frame`
+* `parser.frame`
+* `copyright.frame` (optional)
 
 There are no dependencies to use the generated scanners and parsers.
+
+## Distributables Core
+
+Note that there are different distributables for the 2017 .Net Core version. To build scanner and parser sources:
+
+* `cocorcore.dll` (built with `dotnet build` if you don't have one yet)
+* `scanner.frame` (will eventually be a ressource)
+* `parser.frame` (will eventually be a ressource)
+* `copyright.frame` (optional)
+
+To compile scanners/parsers:
+
+* either reference `cocorcore.dll`, or add these sources once for all different parsers:
+* `scanner.frame.cs`
+* `parser.frame.cs`
 
 
 ## License
@@ -662,7 +679,7 @@ There are no dependencies to use the generated scanners and parsers.
     of the GNU General Public License (slightly extended).
 
 This means that you have to open source any extension to
-Coco/R itself but you are licensed to use generated
+Coco/R itself. But: you are licensed to use generated
 scanners and parsers in any software that you build, 
 even for closed source projects:
 
@@ -692,7 +709,8 @@ see readme.md in the respective language folder.
 
 ## Git Branches
 
-There is currently only one branch. Other branches are either
+There is currently only two branches. Other branches are either
 retired or not relevant for public use.
 
-* master - main development
+* master - main branch
+* csharp-core - .Net core version [incubating]

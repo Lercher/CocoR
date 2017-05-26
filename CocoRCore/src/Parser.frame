@@ -1,0 +1,152 @@
+-->begin
+//#define POSITIONS
+
+using System;
+using System.Text;
+using System.Collections;
+using System.Collections.Generic;
+using CocoRCore;
+
+-->namespace
+
+	public class Parser : ParserBase 
+	{
+-->constants
+		private const bool _T = true;
+		private const bool _x = false;
+-->declarations
+
+		public Parser(ScannerBase scanner) : base(scanner, new Errors())
+		{
+-->constructor
+		}
+
+		public override int maxT => __maxT;
+
+		protected override void Get() 
+		{
+			for (;;) 
+			{
+				t = la;
+-->beginalternatives
+				if (alternatives != null) 
+				{
+					tokens.Add(new Alternative(t, alternatives));
+				}
+				_newAlt();
+-->endalternatives
+				la = scanner.Scan();
+				if (la.kind <= maxT) { ++errDist; break; }
+-->pragmas
+				la = t;
+			}
+		}
+
+        private bool isKind(Token t, int n)
+        {
+            var k = t.kind;
+            while (k >= 0)
+            {
+                if (k == n) return true;
+                k = tBase[k];
+            }
+            return false;
+        }
+
+        // is the lookahead token la a start of the production s?
+        private bool StartOf(int s)
+        {
+            return set[s, la.kind];
+        }
+
+        private bool WeakSeparator(int n, int syFol, int repFol)
+        {
+            var kind = la.kind;
+            if (isKind(la, n)) { Get(); return true; }
+            else if (StartOf(repFol)) { return false; }
+            else
+            {
+                SynErr(n);
+                while (!(set[syFol, kind] || set[repFol, kind] || set[0, kind]))
+                {
+                    Get();
+                    kind = la.kind;
+                }
+                return StartOf(syFol);
+            }
+        }
+
+        protected void Expect(int n)
+        {
+            if (isKind(la, n)) Get(); else { SynErr(n); }
+        }
+
+
+        protected void ExpectWeak(int n, int follow)
+        {
+            if (isKind(la, n)) Get();
+            else
+            {
+                SynErr(n);
+                while (!StartOf(follow)) Get();
+            }
+        }
+
+-->beginalternativescode
+-->endalternativescode
+-->productions
+
+		public override void Parse() 
+		{
+			la = Token.Zero;
+			Get();
+-->parseRoot		
+		}
+	
+		// a token's base type
+		public static readonly int[] tBase = {
+-->tbase
+		};
+
+		// a token's name
+		public static readonly string[] tName = {
+-->tname
+		};
+		public override string NameOf(int tokenKind) => tName[tokenKind];
+
+		// states that a particular production (1st index) can start with a particular token (2nd index)
+		static readonly bool[,] set0 = {
+-->initialization0
+		};
+
+		// as set0 but with token inheritance taken into account
+		static readonly bool[,] set = {
+-->initialization
+		};
+
+-->beginastcode
+
+        public readonly AST.Builder astbuilder; // can also be private  
+        public AST ast { get { return astbuilder.current; }}
+
+-->endastcode
+
+
+		private class Errors : ErrorsBase
+		{
+			public override void SynErr(int line, int col, int n) 
+			{
+				string s;
+				switch (n) 
+				{
+-->errors
+					default: s = "error " + n; break;
+				}
+				// public void Add(int id, int level, int line, int col, string message)
+				Add(SynErrOffset + n, ErrorLevel, line, col, s);
+			}
+		} // Errors
+
+	} // end Parser
+
+// end namespace implicit

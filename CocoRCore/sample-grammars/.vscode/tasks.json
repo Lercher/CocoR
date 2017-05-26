@@ -1,0 +1,25 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "0.1.0",    
+    "tasks": [
+        {
+            "taskName": "restore",
+            "suppressTaskName": true,
+            "command": "dotnet",
+            "args" : ["restore"],
+            "isShellCommand": true,
+            "showOutput": "always",
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "taskName": "build",
+            "command": "dotnet",
+            "args": ["build"],
+            "isBuildCommand": true,
+            "isShellCommand": true,
+            "showOutput": "silent",
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}

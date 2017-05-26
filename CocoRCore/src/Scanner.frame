@@ -1,0 +1,76 @@
+-->begin
+using System;
+using System.IO;
+using System.Collections.Generic;
+using CocoRCore;
+
+-->namespace
+
+
+
+	//-----------------------------------------------------------------------------------
+	// Scanner
+	//-----------------------------------------------------------------------------------
+	public class Scanner : ScannerBase
+	{
+-->declarations
+
+		protected override int maxT => _maxT;
+
+		private static readonly Dictionary<int, int> start = new Dictionary<int, int>(); // maps first token character to start state
+		static Scanner() 
+		{
+-->staticinitialization
+		}
+	
+		public Scanner()
+		{
+-->initialization
+		}
+				
+-->comments
+
+		protected override void CheckLiteral() 
+		{
+			// t.val is already lowercase if the scanner is ignorecase
+			switch (t.val) {
+-->literals
+			}
+		}
+
+		protected override Token NextToken() 
+		{
+			while (ch == ' ' ||
+-->scan1
+			) 
+				NextCh();
+-->scan2
+			var recKind = noSym;
+			var recEnd = buffer.PositionM1;
+			t = new Token.Builder() { position = buffer.Position };
+			start.TryGetValue(ch, out var state); // state = 0 if not found; state = -1 if EOF;
+			tval.Clear(); AddCh();
+			
+			switch (state) 
+			{
+				case -1: 
+					t.kind = _EOF;
+					break;
+					// NextCh already done
+				case 0: 
+					// ch is not the start of any token.
+					if (recKind != noSym) 
+					{
+						tval.Length = recEnd.pos - t.position.pos;
+						SetScannerBehindT();
+					}
+					t.kind = recKind; break;
+					// NextCh already done
+-->scan3
+			}
+			t.setValue(tval.ToString(), casingString);
+			return t.Freeze(buffer.Position);
+		}
+		
+	} // end Scanner
+

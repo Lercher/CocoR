@@ -1,12 +1,19 @@
 *.old
 *.exe
 *.pdb
+bin/
+obj/
 /CSharp/*.dll
 /VisualBasic/*.dll
 
-Parser.*
+Parser.cs
+!/CocoRCore/src/Parser.cs
 !/CSharp/Parser.cs
+Parser.vb
 !/VisualBasic/Parser.vb
-Scanner.*
+
+Scanner.cs
+!/CocoRCore/src/Scanner.cs
 !/CSharp/Scanner.cs
+Scanner.vb
 !/VisualBasic/Scanner.vb
