@@ -941,7 +941,7 @@ namespace CocoRCore
                 if (e == null)
                 {
                     e = new E();
-                    string source = parser.scanner.buffer.GetString(s.pos, la.pos);
+                    string source = parser.scanner.buffer.GetBufferedString(s.position.Range(la));
                     source = source.Trim();
                     e.ast = new ASTLiteral(source);
                     e.ast.startToken = s;

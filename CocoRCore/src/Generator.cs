@@ -24,15 +24,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             if (tab.frameDir != null) frameFile = Path.Combine(tab.frameDir, frame);
             if (frameFile == null || !File.Exists(frameFile)) frameFile = Path.Combine(tab.srcDir, frame);
-            if (frameFile == null || !File.Exists(frameFile)) throw new FatalError("Cannot find : " + frame);
+            if (frameFile == null || !File.Exists(frameFile)) throw new FatalError("Can't find : " + frame);
 
             try
             {
                 fram = new FileStream(frameFile, FileMode.Open, FileAccess.Read, FileShare.Read);
             }
-            catch (FileNotFoundException)
+            catch (FileNotFoundException ex)
             {
-                throw new FatalError("Cannot open frame file: " + frameFile);
+                throw new FatalError("Can't open frame file: " + frameFile, ex);
             }
             return fram;
         }
@@ -44,12 +44,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             string fn = Path.Combine(tab.outDir, target);
             try
             {
-                if (File.Exists(fn)) File.Copy(fn, fn + ".old", true);
+                if (!tab.omitOld && File.Exists(fn)) 
+                    File.Copy(fn, fn + ".old", true);
                 gen = new StreamWriter(new FileStream(fn, FileMode.Create)); /* pdt */
             }
-            catch (IOException)
+            catch (IOException ex)
             {
-                throw new FatalError("Cannot generate file: " + fn);
+                throw new FatalError("Can't generate file: " + fn, ex);
             }
             return gen;
         }

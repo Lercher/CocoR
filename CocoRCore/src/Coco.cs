@@ -25,11 +25,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public static int Main(string[] arg)
         {
-            Console.Write("Coco/R Core (May 14, 2017)");
+            Console.Write("Coco/R Core (May 26, 2017)");
             string srcName = null, nsName = null, frameDir = null, ddtString = null,
             traceFileName = null, outDir = null;
-            bool emitLines = false, generateAutocompleteInformation = false, ignoreSemanticActions = false,
-            isUTF8 = false;
+            var emitLines = false;
+            var generateAutocompleteInformation = false;
+            var ignoreSemanticActions = false;
+            var omitOld = false;
+
             int retVal = 1;
             for (var i = 0; i < arg.Length; i++)
             {
@@ -40,13 +43,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 else if (arg[i] == "-lines") emitLines = true;
                 else if (arg[i] == "-ac") generateAutocompleteInformation = true;
                 else if (arg[i] == "-is") ignoreSemanticActions = true;
-                else if (arg[i] == "-utf8") isUTF8 = true;
+                else if (arg[i] == "-oo") omitOld = true;
+                else if (arg[i] == "-utf8") {/* ignored */}
                 else srcName = arg[i];
             }
             if (emitLines) Console.Write(" [emit lines]");
             if (generateAutocompleteInformation) Console.Write(" [generate autocomplete information]");
             if (ignoreSemanticActions) Console.Write(" [ignore semantic actions]");
-            if (isUTF8) Console.Write(" [forced UTF8 processing]");
+            if (omitOld) Console.Write(" [omit *.old files]");
             Console.WriteLine();
             if (arg.Length > 0 && srcName != null)
             {
@@ -54,9 +58,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 {
                     string srcDir = Path.GetDirectoryName(srcName);
 
-                    var scanner = Scanner.Create(srcName, isUTF8);
-                    Console.WriteLine(scanner.uri);
+                    var scanner = new Scanner().Initialize(srcName);
                     var parser = new Parser(scanner);
+                    Console.WriteLine($"{scanner.uri} -> {outDir ?? "."}");
 
                     traceFileName = Path.Combine(srcDir, "trace.txt");
                     parser.trace = new StreamWriter(new FileStream(traceFileName, FileMode.Create));
@@ -72,11 +76,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     parser.tab.frameDir = frameDir;
                     parser.tab.outDir = (outDir != null) ? outDir : srcDir;
                     parser.tab.emitLines = emitLines;
+                    parser.tab.omitOld = omitOld;
                     if (ddtString != null) parser.tab.SetDDT(ddtString);
 
                     parser.Parse();
 
-                    Console.WriteLine("grammar scanned by using {0}", scanner.buffer.GetType().Name);
                     parser.trace.Dispose();
                     FileInfo f = new FileInfo(traceFileName);
                     if (f.Length == 0) f.Delete();
@@ -104,7 +108,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                                   + "  -lines     [emit lines]{0}"
                                   + "  -ac        [generate autocomplete/intellisense information]{0}"
                                   + "  -is        [ignore semantic actions]{0}"
-                                  + "  -utf8      [force UTF-8 processing, even without BOM]{0}"
                                   + "Valid characters in the trace string:{0}"
                                   + "  A  trace automaton{0}"
                                   + "  F  list first/follow sets{0}"

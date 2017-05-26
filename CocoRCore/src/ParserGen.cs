@@ -35,11 +35,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         Tab tab;          // other Coco objects
         TextWriter trace;
         ErrorsBase errors;
-        IBuffer buffer;
+        IBufferedReader buffer;
 
         void Indent(int n)
         {
-            for (var i = 1; i <= n; i++) gen.Write('\t');
+            for (var i = 1; i <= n; i++)
+                gen.Write('\t');
         }
 
 
@@ -80,49 +81,33 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             return nAlts > 5;
         }
 
+        void CopySourcePart(Range range) => CopySourcePart(range, -1);
         void CopySourcePart(Range range, int indent)
         {
-            StreamWriter orig = gen;
-            if (IgnoreSemanticActions) gen = StreamWriter.Null;
-            try
+            if (IgnoreSemanticActions || range == null)
+                return;
+            var s = buffer.GetBufferedString(range);
+            if (indent < 0)
+                gen.Write(s);
+            else
             {
-                // Copy text described by pos from atg to gen
-                int ch, i;
-                if (range != null)
+                if (string.IsNullOrWhiteSpace(s))
+                    return;
+                var lines = s.Split((char)ScannerBase.EOL);
+                gen.WriteLine();
+                var n = range.start.line;
+                foreach (var l in lines)
                 {
-                    buffer.Pos = range.start.pos; ch = buffer.Read();
                     if (tab.emitLines)
                     {
-                        gen.WriteLine();
-                        gen.WriteLine("#line {0} \"{1}\"", range.start.line, tab.srcName);
+                        Indent(indent); gen.WriteLine("#line {0} \"{1}\"", n, tab.srcName);
                     }
-                    Indent(indent);
-                    while (buffer.Pos <= range.end.pos)
-                    {
-                        while (ch == CR || ch == LF)
-                        {  // eol is either CR or CRLF or LF
-                            gen.WriteLine(); Indent(indent);
-                            if (ch == CR) ch = buffer.Read(); // skip CR
-                            if (ch == LF) ch = buffer.Read(); // skip LF
-                            for (i = 1; i <= range.start.col && (ch == ' ' || ch == '\t'); i++)
-                            {
-                                // skip blanks at beginning of line
-                                ch = buffer.Read();
-                            }
-                            if (buffer.Pos > range.end.pos) goto done;
-                        }
-                        gen.Write((char)ch);
-                        ch = buffer.Read();
-                    }
-                done:
-                    if (indent > 0) gen.WriteLine();
+                    Indent(indent); gen.WriteLine(l.Trim());
+                    n++;
                 }
             }
-            finally
-            {
-                gen = orig;
-            }
         }
+
 
         void GenErrorMsg(int errTyp, Symbol sym)
         {
@@ -201,7 +186,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void GenCond(BitArray s, Node p)
         {
             if (p.typ == NodeKind.rslv)
-                CopySourcePart(p.pos, 0);
+                CopySourcePart(p.pos);
             else
             {
                 var n = s.ElementCount();
@@ -314,7 +299,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         Indent(indent);
                         GenAstBuilder(p, indent);
                         gen.Write("{0}{1}(", p.sym.name, PROD_SUFFIX);
-                        CopySourcePart(p.pos, 0); // ... with actual arguments
+                        CopySourcePart(p.pos); // ... with actual arguments
                         gen.WriteLine(");");
                         break;
                     case NodeKind.t:
@@ -535,7 +520,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void GenTokenNames()
         {
-            ForAllTerminals(sym =>            
+            ForAllTerminals(sym =>
                 gen.Write("{0}", tab.Quoted(sym.definedAs))
             );
         }
@@ -571,7 +556,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             {
                 curSy = sym;
                 gen.Write("\tvoid {0}{1}(", sym.name, PROD_SUFFIX);
-                CopySourcePart(sym.attrPos, 0);
+                CopySourcePart(sym.attrPos);
                 gen.WriteLine(") {");
                 if (needsAST)
                     gen.WriteLine("\t\tusing(astbuilder.createBarrier({0}))", tab.Quoted(sym.astjoinwith)); // intentionally no ; !
@@ -659,7 +644,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public void WriteParser()
         {
             Generator g = new Generator(tab);
-            int oldPos = buffer.Pos;  // Pos is modified by CopySourcePart
             symSet.Add(tab.allSyncSets);
 
             fram = g.OpenFrame("Parser.frame");
@@ -670,7 +654,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             g.GenCopyright();
             g.SkipFramePart("-->begin");
 
-            if (usingPos != null) { CopySourcePart(usingPos, 0); gen.WriteLine(); }
+            if (usingPos != null) 
+            { 
+                CopySourcePart(usingPos); 
+                gen.WriteLine(); 
+            }
+            
             g.CopyFramePart("-->namespace");
             /* AW open namespace, if it exists */
             if (tab.nsName != null && tab.nsName.Length > 0)
@@ -678,16 +667,20 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 gen.WriteLine("namespace {0} {{", tab.nsName);
                 gen.WriteLine();
             }
+            
             g.CopyFramePart("-->constants");
             GenTokens(); /* ML 2002/09/07 write the token kinds */
             gen.WriteLine("\tprivate const int __maxT = {0};", tab.terminals.Count - 1);
             GenPragmas(); /* ML 2005/09/23 write the pragma kinds */
+            
             g.CopyFramePart("-->declarations");
             GenSymbolTables(true);
-            CopySourcePart(tab.semDeclPos, 0);
+            CopySourcePart(tab.semDeclPos);
+
             g.CopyFramePart("-->constructor");
             GenSymbolTables(false);
-            if (needsAST) gen.Write("\t\tastbuilder = new AST.Builder(this);");
+            if (needsAST) 
+                gen.Write("\t\tastbuilder = new AST.Builder(this);");
             g.CopyFramePart("-->beginalternatives");
             g.CopyFramePart("-->endalternatives", GenerateAutocompleteInformation);
             g.CopyFramePart("-->pragmas"); GenCodePragmas();
@@ -695,7 +688,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             g.CopyFramePart("-->endalternativescode", GenerateAutocompleteInformation);
             g.CopyFramePart("-->productions"); GenProductions();
             g.CopyFramePart("-->parseRoot"); gen.WriteLine("\t\t{0}{1}();", tab.gramSy.name, PROD_SUFFIX);
-            if (tab.checkEOF) gen.WriteLine("\t\tExpect(0);");
+            if (tab.checkEOF) 
+                gen.WriteLine("\t\tExpect(0);");
             GenSymbolTablesChecks();
             g.CopyFramePart("-->tbase"); GenTokenBase(); // write all tokens base types
             g.CopyFramePart("-->tname"); GenTokenNames(); // write all token names
@@ -708,15 +702,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             /* AW 2002-12-20 close namespace, if it exists */
             if (tab.nsName != null && tab.nsName.Length > 0) gen.Write("}");
             gen.Dispose();
-            buffer.Pos = oldPos;
         }
 
         public void WriteStatistics()
         {
             trace.WriteLine();
             trace.WriteLine("{0} terminals", tab.terminals.Count);
-            trace.WriteLine("{0} symbols", tab.terminals.Count + tab.pragmas.Count +
-                                           tab.nonterminals.Count);
+            trace.WriteLine("{0} symbols", tab.terminals.Count + tab.pragmas.Count + tab.nonterminals.Count);
             trace.WriteLine("{0} nodes", tab.nodes.Count);
             trace.WriteLine("{0} sets", symSet.Count);
         }

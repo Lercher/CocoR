@@ -16,7 +16,7 @@ using CocoRCore;
 		private const bool _x = false;
 -->declarations
 
-		public Parser(Scanner scanner) : base(scanner, new Errors())
+		public Parser(ScannerBase scanner) : base(scanner, new Errors())
 		{
 -->constructor
 		}

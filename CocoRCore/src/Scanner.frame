@@ -15,43 +15,19 @@ using CocoRCore;
 	{
 -->declarations
 
+		protected override int maxT => _maxT;
+
 		private static readonly Dictionary<int, int> start = new Dictionary<int, int>(); // maps first token character to start state
 		static Scanner() 
 		{
 -->staticinitialization
 		}
 	
-		private Scanner()
+		public Scanner()
 		{
 -->initialization
 		}
-		
-		public static Scanner Create(string fileName)
-		{
-			return Create(fileName, false);
-		}
-
-		public static Scanner Create(string fileName, bool isBOMFreeUTF8)
-		{
-			var s = new Scanner();
-			s.Initialize(fileName, isBOMFreeUTF8);
-			return s;
-		}
-
-		public static Scanner Create(Stream st)
-		{
-			return Create(st, false);
-		}
-
-		public static Scanner Create(Stream st, bool isBOMFreeUTF8)
-		{
-			var s = new Scanner();
-			s.Initialize(st, isBOMFreeUTF8);
-			return s;
-		}
-		
-		protected override int maxT => _maxT;
-		
+				
 -->comments
 
 		protected override void CheckLiteral() 
@@ -71,7 +47,7 @@ using CocoRCore;
 -->scan2
 			var recKind = noSym;
 			var recEnd = pos;
-			t = new Token.Builder() { position = CurrentPosition() };
+			t = new Token.Builder() { position = buffer.Position };
 			start.TryGetValue(ch, out var state); // state = 0 if not found; state = -1 if EOF;
 			tval.Clear(); AddCh();
 			
@@ -82,9 +58,10 @@ using CocoRCore;
 					break;
 					// NextCh already done
 				case 0: 
+					// ch is not the start of any token.
 					if (recKind != noSym) 
 					{
-						tval.Length = recEnd - t.position.pos; // TODO: suspicious .pos -> .charPos?
+						tval.Length = recEnd - t.position.pos;
 						SetScannerBehindT();
 					}
 					t.kind = recKind; break;
@@ -92,7 +69,7 @@ using CocoRCore;
 -->scan3
 			}
 			t.setValue(tval.ToString(), casingString);
-			return t.Freeze(lastPosition);
+			return t.Freeze(buffer.Position);
 		}
 		
 	} // end Scanner

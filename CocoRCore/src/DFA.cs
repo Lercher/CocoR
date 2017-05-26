@@ -563,7 +563,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (com.stop.Length == 1)
             {
                 gen.WriteLine("\t\t\t\t\tlevel--;");
-                gen.WriteLine("\t\t\t\t\tif (level == 0) { oldEols = line - line0; NextCh(); return true; }");
+                gen.WriteLine("\t\t\t\t\tif (level == 0) { numberOfEOLinComments = line - bookmark.line; NextCh(); return true; }");
                 gen.WriteLine("\t\t\t\t\tNextCh();");
             }
             else
@@ -571,7 +571,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 gen.WriteLine("\t\t\t\t\tNextCh();");
                 gen.WriteLine("\t\t\t\t\tif ({0}) {{", ChCond(com.stop[1]));
                 gen.WriteLine("\t\t\t\t\t\tlevel--;");
-                gen.WriteLine("\t\t\t\t\t\tif (level == 0) { oldEols = line - line0; NextCh(); return true; }");
+                gen.WriteLine("\t\t\t\t\t\tif (level == 0) { numberOfEOLinComments = line - bookmark.line; NextCh(); return true; }");
                 gen.WriteLine("\t\t\t\t\t\tNextCh();");
                 gen.WriteLine("\t\t\t\t\t}");
             }
@@ -596,13 +596,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void GenComment(Comment com, int i)
         {
             gen.WriteLine();
-            gen.WriteLine("\tbool Comment{0}() ", i); 
+            gen.WriteLine("\tbool Comment{0}()", i); 
             gen.WriteLine("\t{");
             gen.WriteLine("\t\tvar level = 1;");
-            gen.WriteLine("\t\tvar pos0 = pos;");
-            gen.WriteLine("\t\tvar line0 = line;");
-            gen.WriteLine("\t\tvar col0 = col;");
-            gen.WriteLine("\t\tvar charPos0 = charPos;");
+            gen.WriteLine("\t\tvar bookmark = buffer.PositionM1;");
             if (com.start.Length == 1)
             {
                 gen.WriteLine("\t\tNextCh();");
@@ -615,7 +612,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 gen.WriteLine("\t\t\tNextCh();");
                 GenComBody(com);
                 gen.WriteLine("\t\t} else {");
-                gen.WriteLine("\t\t\tbuffer.Pos = pos0; NextCh(); line = line0; col = col0; charPos = charPos0;");
+                gen.WriteLine("\t\t\tbuffer.ResetPositionTo(bookmark);");
+                gen.WriteLine("\t\t\tNextCh();");
                 gen.WriteLine("\t\t}");
                 gen.WriteLine("\t\treturn false;");
             }
@@ -694,7 +692,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 gen.Write("t.kind = {0}; ", endOf.n);
                 if (endOf.tokenKind == Symbol.classLitToken)
                 {
-                    gen.WriteLine("t.setValue(tval.ToString(), casingString); CheckLiteral(); return t.Freeze(lastPosition);}");
+                    gen.WriteLine("t.setValue(tval.ToString(), casingString); CheckLiteral(); return t.Freeze(buffer.Position);}");
                 }
                 else
                 {
