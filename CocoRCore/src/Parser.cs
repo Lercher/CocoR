@@ -48,7 +48,7 @@ string noString = "-none-"; // used in declarations of literal tokens
 
 
 
-		public Parser(Scanner scanner) : base(scanner, new Errors())
+		public Parser(ScannerBase scanner) : base(scanner, new Errors())
 		{
 
 		}

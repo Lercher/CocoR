@@ -48,33 +48,9 @@ namespace CocoRCore.CSharp {
 
 		}
 	
-		private Scanner()
+		public Scanner()
 		{
 
-		}
-		
-		public static Scanner Create(string fileName)
-		{
-			return Create(fileName, false);
-		}
-
-		public static Scanner Create(string fileName, bool isBOMFreeUTF8)
-		{
-			var s = new Scanner();
-			s.Initialize(fileName, isBOMFreeUTF8);
-			return s;
-		}
-
-		public static Scanner Create(Stream st)
-		{
-			return Create(st, false);
-		}
-
-		public static Scanner Create(Stream st, bool isBOMFreeUTF8)
-		{
-			var s = new Scanner();
-			s.Initialize(st, isBOMFreeUTF8);
-			return s;
 		}
 		
 		protected override int maxT => _maxT;
@@ -83,23 +59,21 @@ namespace CocoRCore.CSharp {
 	bool Comment0() 
 	{
 		var level = 1;
-		var pos0 = pos;
-		var line0 = line;
-		var col0 = col;
-		var charPos0 = charPos;
+		var bookmark = buffer.SetBookmark();
 		NextCh();
 		if (ch == '/') {
 			NextCh();
 			for(;;) {
-				if (ch == 10) {
+				if (ch == EOL) {
 					level--;
-					if (level == 0) { oldEols = line - line0; NextCh(); return true; }
+					if (level == 0) { numberOfEOLinComments = line - bookmark.line; buffer.CollectBookmark(); NextCh(); return true; }
 					NextCh();
 				} else if (ch == EOF) return false;
 				else NextCh();
 			}
 		} else {
-			buffer.Pos = pos0; NextCh(); line = line0; col = col0; charPos = charPos0;
+			buffer.ResetPositionToBookmark();
+			NextCh();
 		}
 		return false;
 	}
@@ -107,10 +81,7 @@ namespace CocoRCore.CSharp {
 	bool Comment1() 
 	{
 		var level = 1;
-		var pos0 = pos;
-		var line0 = line;
-		var col0 = col;
-		var charPos0 = charPos;
+		var bookmark = buffer.SetBookmark();
 		NextCh();
 		if (ch == '*') {
 			NextCh();
@@ -119,7 +90,7 @@ namespace CocoRCore.CSharp {
 					NextCh();
 					if (ch == '/') {
 						level--;
-						if (level == 0) { oldEols = line - line0; NextCh(); return true; }
+						if (level == 0) { numberOfEOLinComments = line - bookmark.line; buffer.CollectBookmark(); NextCh(); return true; }
 						NextCh();
 					}
 				} else if (ch == '/') {
@@ -131,7 +102,8 @@ namespace CocoRCore.CSharp {
 				else NextCh();
 			}
 		} else {
-			buffer.Pos = pos0; NextCh(); line = line0; col = col0; charPos = charPos0;
+			buffer.ResetPositionToBookmark();
+			NextCh();
 		}
 		return false;
 	}
@@ -190,7 +162,7 @@ namespace CocoRCore.CSharp {
 				case 0: 
 					if (recKind != noSym) 
 					{
-						tval.Length = recEnd - t.position.pos; // TODO: suspicious .pos -> .charPos?
+						tval.Length = recEnd - t.position.pos;
 						SetScannerBehindT();
 					}
 					t.kind = recKind; break;
@@ -198,7 +170,7 @@ namespace CocoRCore.CSharp {
 				case 1:
 					recEnd = pos; recKind = 1;
 					if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 1;}
-					else {t.kind = 1; t.setValue(tval.ToString(), casingString); CheckLiteral(); return t.Freeze(lastPosition);}
+					else {t.kind = 1; t.setValue(tval.ToString(), casingString); CheckLiteral(); return t.Freeze(CurrentPosition());}
 				case 2:
 					recEnd = pos; recKind = 2;
 					if (ch >= '0' && ch <= '9') {AddCh(); goto case 2;}
@@ -307,7 +279,7 @@ namespace CocoRCore.CSharp {
 
 			}
 			t.setValue(tval.ToString(), casingString);
-			return t.Freeze(lastPosition);
+			return t.Freeze(CurrentPosition());
 		}
 		
 	} // end Scanner
