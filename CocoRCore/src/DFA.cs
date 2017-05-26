@@ -704,18 +704,18 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 int targetState = action.target.state.nr;
                 if (action.typ == NodeKind.chr)
                 {
-                    gen.WriteLine("\t\tstart[" + action.sym + "] = " + targetState + "; ");
+                    gen.WriteLine($"\t\t\tstart[{action.sym}] = {targetState}; ");
                 }
                 else
                 {
                     CharSet s = tab.CharClassSet(action.sym);
                     for (CharSet.Range r = s.head; r != null; r = r.next)
                     {
-                        gen.WriteLine("\t\tfor (var i = " + r.from + "; i <= " + r.to + "; ++i) start[i] = " + targetState + ";");
+                        gen.WriteLine($"\t\t\tfor (var i = {r.from}; i <= {r.to}; ++i) start[i] = {targetState};");
                     }
                 }
             }
-            gen.WriteLine("\t\tstart[EOF] = -1;");
+            gen.WriteLine("\t\t\tstart[EOF] = -1;");
         }
 
         public void WriteScanner()

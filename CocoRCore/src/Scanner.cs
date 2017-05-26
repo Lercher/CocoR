@@ -22,31 +22,31 @@ namespace CocoRCore.CSharp {
 		private static readonly Dictionary<int, int> start = new Dictionary<int, int>(); // maps first token character to start state
 		static Scanner() 
 		{
-		for (var i = 65; i <= 90; ++i) start[i] = 1;
-		for (var i = 95; i <= 95; ++i) start[i] = 1;
-		for (var i = 97; i <= 122; ++i) start[i] = 1;
-		for (var i = 48; i <= 57; ++i) start[i] = 2;
-		start[34] = 11; 
-		start[39] = 12; 
-		start[36] = 13; 
-		start[61] = 16; 
-		start[46] = 35; 
-		start[40] = 36; 
-		start[44] = 17; 
-		start[41] = 18; 
-		start[43] = 19; 
-		start[45] = 20; 
-		start[58] = 22; 
-		start[60] = 37; 
-		start[62] = 23; 
-		start[124] = 26; 
-		start[91] = 27; 
-		start[93] = 28; 
-		start[123] = 29; 
-		start[125] = 30; 
-		start[94] = 31; 
-		start[35] = 32; 
-		start[EOF] = -1;
+			for (var i = 65; i <= 90; ++i) start[i] = 1;
+			for (var i = 95; i <= 95; ++i) start[i] = 1;
+			for (var i = 97; i <= 122; ++i) start[i] = 1;
+			for (var i = 48; i <= 57; ++i) start[i] = 2;
+			start[34] = 11; 
+			start[39] = 12; 
+			start[36] = 13; 
+			start[61] = 16; 
+			start[46] = 35; 
+			start[40] = 36; 
+			start[44] = 17; 
+			start[41] = 18; 
+			start[43] = 19; 
+			start[45] = 20; 
+			start[58] = 22; 
+			start[60] = 37; 
+			start[62] = 23; 
+			start[124] = 26; 
+			start[91] = 27; 
+			start[93] = 28; 
+			start[123] = 29; 
+			start[125] = 30; 
+			start[94] = 31; 
+			start[35] = 32; 
+			start[EOF] = -1;
 
 		}
 	
