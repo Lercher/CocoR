@@ -14,7 +14,7 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     public abstract class ScannerBase
     {
-        public string uri;        
+        public string uri;
         public const int EOF = -1;
         public const int EOL = '\n';
         public const int _EOF = 0; // TOKEN EOF is the same for every parser
@@ -76,9 +76,9 @@ namespace CocoRCore
             NextCh();
             if (ch == 0xEF)
             { // check optional byte order mark for UTF-8
-                NextCh(); 
+                NextCh();
                 var ch1 = ch;
-                NextCh(); 
+                NextCh();
                 var ch2 = ch;
                 if (ch1 != 0xBB || ch2 != 0xBF)
                 {
@@ -88,9 +88,9 @@ namespace CocoRCore
                 NextCh();
             }
             else if (ch == 0xFEFF)
-            { 
+            {
                 // optional byte order mark for UTF-8 using UTF8Buffer
-                col = 0; 
+                col = 0;
                 charPos = -1; // reset the locgical position to zero and ...
                 NextCh(); // ... ignore the BOM, updating col and charPos
             }
@@ -209,7 +209,7 @@ namespace CocoRCore
         public int pos => position.pos;
         public int line => position.line;
         public int col => position.col;
-        
+
         public readonly string val;  // token value, lowercase if case insensitive parser
         public readonly string valScanned; // token value as scanned (always case sensitive)
 
@@ -220,7 +220,7 @@ namespace CocoRCore
 
         public class Builder
         {
-            public Builder() 
+            public Builder()
             {
                 position = Position.Zero;
             }
@@ -246,7 +246,7 @@ namespace CocoRCore
             }
 
             public Token Freeze()
-            {                
+            {
                 return new Token(this);
             }
 
@@ -307,10 +307,19 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     public interface IBuffer
     {
+        /* What we want:
+         * read the next char
+         * handle EOF
+         * handle \r\n, \r, \n to produce a single EOL
+         * be a TextReader (on Stream, on string and on StringBuilder)
+         * have a position (what about \n?) with pos, line and col
+         * for comments: store a single bookmark position and reset reading to this position or remove the bookmark -> Queue<char>
+         * fetch a not too old string defined by a Range -> SlidingBuffer
+         */
         int Read();
-        int Peek();
-        string GetString(int beg, int end);
-        int Pos { get; set; }
+        int Peek(); // for \r\n handling only
+        string GetString(int beg, int end); // for AST only
+        int Pos { get; set; } // used to seek
 
     }
 
@@ -356,20 +365,20 @@ namespace CocoRCore
             if (bufLen == fileLen && stream.CanSeek) Close();
         }
 
-/*
-        protected Buffer(Buffer b)
-        { // called in UTF8Buffer constructor
-            buf = b.buf;
-            bufStart = b.bufStart;
-            bufLen = b.bufLen;
-            fileLen = b.fileLen;
-            bufPos = b.bufPos;
-            stream = b.stream;
-            // keep destructor from closing the stream
-            b.stream = null;
-            isUserStream = b.isUserStream;
-        }
-*/
+        /*
+                protected Buffer(Buffer b)
+                { // called in UTF8Buffer constructor
+                    buf = b.buf;
+                    bufStart = b.bufStart;
+                    bufLen = b.bufLen;
+                    fileLen = b.fileLen;
+                    bufPos = b.bufPos;
+                    stream = b.stream;
+                    // keep destructor from closing the stream
+                    b.stream = null;
+                    isUserStream = b.isUserStream;
+                }
+        */
 
         ~Buffer() { Close(); }
 
@@ -540,7 +549,77 @@ namespace CocoRCore
         }
     }
 
+    //-----------------------------------------------------------------------------------
+    // SlidingBuffer
+    //-----------------------------------------------------------------------------------
+    public class SlidingBuffer
+    {
+        private readonly Queue<char> _q;
+        private int _remain;
+        private int pos = 0;
+        public SlidingBuffer(int capacity)
+        {
+            _remain = capacity;
+            _q = new Queue<char>(capacity);
+        }
 
+        public void Put(char c)
+        {
+            pos++;
+            if (_remain == 0)
+                _q.Dequeue();
+            else
+                _remain--;
+            _q.Enqueue(c);
+        }
+
+        public string String(int start, int end)
+        {
+            int startInQ = start - pos + _q.Count;
+            if (startInQ < 0) throw new FatalError("This text is no more buffered");
+            if (pos < end) throw new FatalError("This text is not yet buffered");
+            return new string(_q.ToArray(), startInQ, end - start);
+        }
+    }
+
+    //-----------------------------------------------------------------------------------
+    // StringBuilderReader
+    //-----------------------------------------------------------------------------------
+    public class StringBuilderReader : TextReader
+    {
+        private readonly StringBuilder _sb;
+        private int _pos = 0;
+
+        public StringBuilderReader(StringBuilder stringBuilder) => _sb = stringBuilder;
+
+        public override int Peek()
+        {
+            if (_pos < _sb.Length)
+                return _sb[_pos];
+            return -1;
+        }
+        public override int Read()
+        {
+            try {
+                return Peek();
+            } 
+            finally
+            {
+                _pos++;
+            }
+        }
+
+        public override int Read(char[] buffer, int index, int count)
+        {
+            var result = Math.Min(count, _sb.Length - _pos);
+            if (result > 0)
+            {
+                _sb.CopyTo(_pos, buffer, index, result);
+                _pos += result;
+            }
+            return result;
+        }
+    }
 
     // --------------------------------
     // FatalError used in Scanner and Parser
