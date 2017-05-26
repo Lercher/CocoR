@@ -594,26 +594,26 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void GenComment(Comment com, int i)
         {
             gen.WriteLine();
-            gen.WriteLine("\tbool Cmt{0}(Position bookmark)", i); 
-            gen.WriteLine("\t{");
-            gen.WriteLine("\t\tif ({0}) return false;", ChCondNot(com.start[0]));
-            gen.WriteLine("\t\tvar level = 1;");
+            gen.WriteLine("\t\tbool Cmt{0}(Position bookmark)", i); 
+            gen.WriteLine("\t\t{");
+            gen.WriteLine("\t\t\tif ({0}) return false;", ChCondNot(com.start[0]));
+            gen.WriteLine("\t\t\tvar level = 1;");
             if (com.start.Length == 1)
             {
-                gen.WriteLine("\t\tNextCh();");
+                gen.WriteLine("\t\t\tNextCh();");
                 GenComBody(com);
             }
             else
             {
-                gen.WriteLine("\t\tNextCh();");
-                gen.Write("\t\tif ({0}) ", ChCond(com.start[1])); gen.WriteLine("{");
                 gen.WriteLine("\t\t\tNextCh();");
+                gen.Write("\t\t\tif ({0}) ", ChCond(com.start[1])); gen.WriteLine("{");
+                gen.WriteLine("\t\t\t\tNextCh();");
                 GenComBody(com);
-                gen.WriteLine("\t\t} else");
-                gen.WriteLine("\t\t\tbuffer.ResetPositionTo(bookmark);");
-                gen.WriteLine("\t\treturn false;");
+                gen.WriteLine("\t\t\t} else");
+                gen.WriteLine("\t\t\t\tbuffer.ResetPositionTo(bookmark);");
+                gen.WriteLine("\t\t\treturn false;");
             }
-            gen.WriteLine("\t}");
+            gen.WriteLine("\t\t}");
         }
 
         string SymName(Symbol sym)

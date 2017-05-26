@@ -56,13 +56,13 @@ namespace CocoRCore.CSharp {
 		}
 				
 
-	bool Cmt1(Position bookmark)
-	{
-		if (ch != '/') return false;
-		var level = 1;
-		NextCh();
-		if (ch == '/') {
+		bool Cmt1(Position bookmark)
+		{
+			if (ch != '/') return false;
+			var level = 1;
 			NextCh();
+			if (ch == '/') {
+				NextCh();
 			for(;;) {
 				if (ch == 10) {
 					level--;
@@ -71,18 +71,18 @@ namespace CocoRCore.CSharp {
 				} else if (ch == EOF) return false;
 				else NextCh();
 			}
-		} else
-			buffer.ResetPositionTo(bookmark);
-		return false;
-	}
+			} else
+				buffer.ResetPositionTo(bookmark);
+			return false;
+		}
 
-	bool Cmt2(Position bookmark)
-	{
-		if (ch != '/') return false;
-		var level = 1;
-		NextCh();
-		if (ch == '*') {
+		bool Cmt2(Position bookmark)
+		{
+			if (ch != '/') return false;
+			var level = 1;
 			NextCh();
+			if (ch == '*') {
+				NextCh();
 			for(;;) {
 				if (ch == '*') {
 					NextCh();
@@ -99,10 +99,10 @@ namespace CocoRCore.CSharp {
 				} else if (ch == EOF) return false;
 				else NextCh();
 			}
-		} else
-			buffer.ResetPositionTo(bookmark);
-		return false;
-	}
+			} else
+				buffer.ResetPositionTo(bookmark);
+			return false;
+		}
 
 
 		protected override void CheckLiteral() 
