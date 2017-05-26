@@ -148,7 +148,7 @@ namespace CocoRCore.CSharp {
 				NextCh();
 			if (ch == '/' && Comment0() ||ch == '/' && Comment1()) return NextToken();
 			var recKind = noSym;
-			var recEnd = pos;
+			var recEnd = buffer.PositionM1;
 			t = new Token.Builder() { position = buffer.Position };
 			start.TryGetValue(ch, out var state); // state = 0 if not found; state = -1 if EOF;
 			tval.Clear(); AddCh();
@@ -163,17 +163,17 @@ namespace CocoRCore.CSharp {
 					// ch is not the start of any token.
 					if (recKind != noSym) 
 					{
-						tval.Length = recEnd - t.position.pos;
+						tval.Length = recEnd.pos - t.position.pos;
 						SetScannerBehindT();
 					}
 					t.kind = recKind; break;
 					// NextCh already done
 				case 1:
-					recEnd = pos; recKind = 1;
+					recEnd = buffer.PositionM1; recKind = 1;
 					if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 1;}
 					else {t.kind = 1; t.setValue(tval.ToString(), casingString); CheckLiteral(); return t.Freeze(buffer.Position);}
 				case 2:
-					recEnd = pos; recKind = 2;
+					recEnd = buffer.PositionM1; recKind = 2;
 					if (ch >= '0' && ch <= '9') {AddCh(); goto case 2;}
 					else {t.kind = 2; break;}
 				case 3:
@@ -193,11 +193,11 @@ namespace CocoRCore.CSharp {
 				case 8:
 					{t.kind = 5; break;}
 				case 9:
-					recEnd = pos; recKind = 52;
+					recEnd = buffer.PositionM1; recKind = 52;
 					if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 9;}
 					else {t.kind = 52; break;}
 				case 10:
-					recEnd = pos; recKind = 53;
+					recEnd = buffer.PositionM1; recKind = 53;
 					if (ch >= '-' && ch <= '.' || ch >= '0' && ch <= ':' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 10;}
 					else {t.kind = 53; break;}
 				case 11:
@@ -207,12 +207,12 @@ namespace CocoRCore.CSharp {
 					else if (ch == 92) {AddCh(); goto case 14;}
 					else {goto case 0;}
 				case 12:
-					recEnd = pos; recKind = 6;
+					recEnd = buffer.PositionM1; recKind = 6;
 					if (ch <= 9 || ch >= 11 && ch <= 12 || ch >= 14 && ch <= '&' || ch >= '(' && ch <= '[' || ch >= ']' && ch <= 65535) {AddCh(); goto case 5;}
 					else if (ch == 92) {AddCh(); goto case 6;}
 					else {t.kind = 6; break;}
 				case 13:
-					recEnd = pos; recKind = 52;
+					recEnd = buffer.PositionM1; recKind = 52;
 					if (ch >= '0' && ch <= '9') {AddCh(); goto case 9;}
 					else if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 15;}
 					else {t.kind = 52; break;}
@@ -220,7 +220,7 @@ namespace CocoRCore.CSharp {
 					if (ch >= ' ' && ch <= '~') {AddCh(); goto case 11;}
 					else {goto case 0;}
 				case 15:
-					recEnd = pos; recKind = 52;
+					recEnd = buffer.PositionM1; recKind = 52;
 					if (ch >= '0' && ch <= '9') {AddCh(); goto case 9;}
 					else if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 15;}
 					else if (ch == '=') {AddCh(); goto case 10;}
@@ -264,17 +264,17 @@ namespace CocoRCore.CSharp {
 				case 34:
 					{t.kind = 50; break;}
 				case 35:
-					recEnd = pos; recKind = 20;
+					recEnd = buffer.PositionM1; recKind = 20;
 					if (ch == '.') {AddCh(); goto case 21;}
 					else if (ch == '>') {AddCh(); goto case 25;}
 					else if (ch == ')') {AddCh(); goto case 34;}
 					else {t.kind = 20; break;}
 				case 36:
-					recEnd = pos; recKind = 24;
+					recEnd = buffer.PositionM1; recKind = 24;
 					if (ch == '.') {AddCh(); goto case 33;}
 					else {t.kind = 24; break;}
 				case 37:
-					recEnd = pos; recKind = 34;
+					recEnd = buffer.PositionM1; recKind = 34;
 					if (ch == '.') {AddCh(); goto case 24;}
 					else {t.kind = 34; break;}
 

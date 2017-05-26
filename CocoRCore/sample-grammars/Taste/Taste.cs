@@ -7,7 +7,7 @@ namespace CocoRCore.Samples.Taste
 
         public static ParserBase Create(string arg)
         {
-            Scanner scanner = Scanner.Create(arg, true);
+            Scanner scanner = new Scanner().Initialize(arg);
             Parser parser = new Parser(scanner);
             parser.tab = new SymbolTable(parser);
             parser.gen = new CodeGenerator();

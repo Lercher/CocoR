@@ -13,10 +13,11 @@
             "program": "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
             "args": [
                 "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
-                "${workspaceRoot}/Coco.ATG",
+                "${workspaceRoot}/../sample-grammars/WFModel/WFModel.ATG",
                 "-oo",
+                "-ac",
                 "-o",
-                "${workspaceRoot}/../sample-grammars/Coco",
+                "${workspaceRoot}/../sample-grammars/WFModel",
                 "-frames",
                 "${workspaceRoot}"
             ],

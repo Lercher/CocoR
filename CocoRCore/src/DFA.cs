@@ -653,7 +653,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             gen.WriteLine("\t\t\t\tcase {0}:", state.nr);
             if (endOf != null && state.firstAction != null)
             {
-                gen.WriteLine("\t\t\t\t\trecEnd = pos; recKind = {0};", endOf.n);
+                gen.WriteLine("\t\t\t\t\trecEnd = buffer.PositionM1; recKind = {0};", endOf.n);
             }
             bool ctxEnd = state.ctx;
             for (Action action = state.firstAction; action != null; action = action.next)

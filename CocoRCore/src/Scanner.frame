@@ -46,7 +46,7 @@ using CocoRCore;
 				NextCh();
 -->scan2
 			var recKind = noSym;
-			var recEnd = pos;
+			var recEnd = buffer.PositionM1;
 			t = new Token.Builder() { position = buffer.Position };
 			start.TryGetValue(ch, out var state); // state = 0 if not found; state = -1 if EOF;
 			tval.Clear(); AddCh();
@@ -61,7 +61,7 @@ using CocoRCore;
 					// ch is not the start of any token.
 					if (recKind != noSym) 
 					{
-						tval.Length = recEnd - t.position.pos;
+						tval.Length = recEnd.pos - t.position.pos;
 						SetScannerBehindT();
 					}
 					t.kind = recKind; break;
