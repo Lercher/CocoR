@@ -563,7 +563,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (com.stop.Length == 1)
             {
                 gen.WriteLine("\t\t\t\t\tlevel--;");
-                gen.WriteLine("\t\t\t\t\tif (level == 0) { numberOfEOLinComments = line - bookmark.line; NextCh(); return true; }");
+                gen.WriteLine("\t\t\t\t\tif (level == 0) { NextCh(); return true; }");
                 gen.WriteLine("\t\t\t\t\tNextCh();");
             }
             else
@@ -571,7 +571,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 gen.WriteLine("\t\t\t\t\tNextCh();");
                 gen.WriteLine("\t\t\t\t\tif ({0}) {{", ChCond(com.stop[1]));
                 gen.WriteLine("\t\t\t\t\t\tlevel--;");
-                gen.WriteLine("\t\t\t\t\t\tif (level == 0) { numberOfEOLinComments = line - bookmark.line; NextCh(); return true; }");
+                gen.WriteLine("\t\t\t\t\t\tif (level == 0) { NextCh(); return true; }");
                 gen.WriteLine("\t\t\t\t\t\tNextCh();");
                 gen.WriteLine("\t\t\t\t\t}");
             }

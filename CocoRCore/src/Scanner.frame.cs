@@ -31,7 +31,6 @@ namespace CocoRCore
         protected int ch;           // current input character (probably lowercased)
         protected char valCh;       // current input character (original version)
 
-        protected int numberOfEOLinComments = 0;      // EOLs that appeared in a comment;
         protected Token tokens = Token.Zero;     // list of tokens already peeked (first token is a dummy)
         protected Token peekToken = Token.Zero;         // current peek token
 
@@ -78,15 +77,7 @@ namespace CocoRCore
 
         internal void NextCh()
         {
-            if (numberOfEOLinComments > 0) 
-            { 
-                ch = EOL; 
-                numberOfEOLinComments--; 
-            }
-            else
-            {
-                ch = buffer.Read();
-            }
+            ch = buffer.Read();
             if (ch != EOF)
             {
                 valCh = (char)ch;

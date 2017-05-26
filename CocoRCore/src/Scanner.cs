@@ -66,7 +66,7 @@ namespace CocoRCore.CSharp {
 			for(;;) {
 				if (ch == 10) {
 					level--;
-					if (level == 0) { numberOfEOLinComments = line - bookmark.line; NextCh(); return true; }
+					if (level == 0) { NextCh(); return true; }
 					NextCh();
 				} else if (ch == EOF) return false;
 				else NextCh();
@@ -90,7 +90,7 @@ namespace CocoRCore.CSharp {
 					NextCh();
 					if (ch == '/') {
 						level--;
-						if (level == 0) { numberOfEOLinComments = line - bookmark.line; NextCh(); return true; }
+						if (level == 0) { NextCh(); return true; }
 						NextCh();
 					}
 				} else if (ch == '/') {
