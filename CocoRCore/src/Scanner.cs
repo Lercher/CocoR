@@ -56,11 +56,10 @@ namespace CocoRCore.CSharp {
 		}
 				
 
-	bool Cmt1()
+	bool Cmt1(Position bookmark)
 	{
 		if (ch != '/') return false;
 		var level = 1;
-		var bookmark = buffer.PositionM1;
 		NextCh();
 		if (ch == '/') {
 			NextCh();
@@ -79,11 +78,10 @@ namespace CocoRCore.CSharp {
 		return false;
 	}
 
-	bool Cmt2()
+	bool Cmt2(Position bookmark)
 	{
 		if (ch != '/') return false;
 		var level = 1;
-		var bookmark = buffer.PositionM1;
 		NextCh();
 		if (ch == '*') {
 			NextCh();
@@ -148,7 +146,8 @@ namespace CocoRCore.CSharp {
 				ch >= 9 && ch <= 10 || ch == 13
 			) 
 				NextCh();
-			if (Cmt1() || Cmt2())
+			var bm = buffer.PositionM1; // comment(s)
+			if (Cmt1(bm) || Cmt2(bm))
 				return NextToken();
 			var recKind = noSym;
 			var recEnd = buffer.PositionM1;

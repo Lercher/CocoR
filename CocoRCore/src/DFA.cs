@@ -594,11 +594,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void GenComment(Comment com, int i)
         {
             gen.WriteLine();
-            gen.WriteLine("\tbool Cmt{0}()", i); 
+            gen.WriteLine("\tbool Cmt{0}(Position bookmark)", i); 
             gen.WriteLine("\t{");
             gen.WriteLine("\t\tif ({0}) return false;", ChCondNot(com.start[0]));
             gen.WriteLine("\t\tvar level = 1;");
-            gen.WriteLine("\t\tvar bookmark = buffer.PositionM1;");
             if (com.start.Length == 1)
             {
                 gen.WriteLine("\t\tNextCh();");
@@ -768,23 +767,20 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             g.CopyFramePart("-->scan1");
             gen.Write("\t\t\t\t");
             if (tab.ignored.Elements() > 0) 
-            { 
                 PutRange(tab.ignored); 
-            } 
             else 
-            { 
                 gen.Write("false"); 
-            }
             
             g.CopyFramePart("-->scan2");
             if (firstComment != null)
             {
+                gen.WriteLine("\t\t\tvar bm = buffer.PositionM1; // comment(s)");
                 gen.Write("\t\t\tif (");
                 comIdx = 0;
                 for (var com = firstComment; com != null; com = com.next)
                 {
                     comIdx++;
-                    gen.Write("Cmt{0}()", comIdx);
+                    gen.Write("Cmt{0}(bm)", comIdx);
                     if (com.next != null) 
                         gen.Write(" || ");                    
                 }
