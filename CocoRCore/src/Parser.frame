@@ -16,7 +16,7 @@ using CocoRCore;
 		private const bool _x = false;
 -->declarations
 
-		public Parser(ScannerBase scanner) : base(scanner, new Errors())
+		public Parser(ScannerBase scanner) : base(scanner)
 		{
 -->constructor
 		}
@@ -132,20 +132,14 @@ using CocoRCore;
 -->endastcode
 
 
-		private class Errors : ErrorsBase
+		public override string Syntaxerror(int n) 
 		{
-			public override void SynErr(int line, int col, int n) 
+			switch (n) 
 			{
-				string s;
-				switch (n) 
-				{
 -->errors
-					default: s = "error " + n; break;
-				}
-				// public void Add(int id, int level, int line, int col, string message)
-				Add(SynErrOffset + n, ErrorLevel, line, col, s);
+				default: return $"error {n}";
 			}
-		} // Errors
+		}
 
 	} // end Parser
 

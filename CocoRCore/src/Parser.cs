@@ -48,7 +48,7 @@ const int id = 0;
 
 
 
-		public Parser(ScannerBase scanner) : base(scanner, new Errors())
+		public Parser(ScannerBase scanner) : base(scanner)
 		{
 
 		}
@@ -977,84 +977,77 @@ const int id = 0;
 
 
 
-		private class Errors : ErrorsBase
+		public override string Syntaxerror(int n) 
 		{
-			public override void SynErr(int line, int col, int n) 
+			switch (n) 
 			{
-				string s;
-				switch (n) 
-				{
-			case 0: s = "EOF expected"; break;
-			case 1: s = "ident expected"; break;
-			case 2: s = "number expected"; break;
-			case 3: s = "string expected"; break;
-			case 4: s = "badString expected"; break;
-			case 5: s = "char expected"; break;
-			case 6: s = "prime expected"; break;
-			case 7: s = "\"COMPILER\" expected"; break;
-			case 8: s = "\"IGNORECASE\" expected"; break;
-			case 9: s = "\"CHARACTERS\" expected"; break;
-			case 10: s = "\"TOKENS\" expected"; break;
-			case 11: s = "\"PRAGMAS\" expected"; break;
-			case 12: s = "\"COMMENTS\" expected"; break;
-			case 13: s = "\"FROM\" expected"; break;
-			case 14: s = "\"TO\" expected"; break;
-			case 15: s = "\"NESTED\" expected"; break;
-			case 16: s = "\"IGNORE\" expected"; break;
-			case 17: s = "\"SYMBOLTABLES\" expected"; break;
-			case 18: s = "\"PRODUCTIONS\" expected"; break;
-			case 19: s = "\"=\" expected"; break;
-			case 20: s = "\".\" expected"; break;
-			case 21: s = "\"END\" expected"; break;
-			case 22: s = "\"STRICT\" expected"; break;
-			case 23: s = "\"SCOPES\" expected"; break;
-			case 24: s = "\"(\" expected"; break;
-			case 25: s = "\",\" expected"; break;
-			case 26: s = "\")\" expected"; break;
-			case 27: s = "\"USEONCE\" expected"; break;
-			case 28: s = "\"USEALL\" expected"; break;
-			case 29: s = "\"+\" expected"; break;
-			case 30: s = "\"-\" expected"; break;
-			case 31: s = "\"..\" expected"; break;
-			case 32: s = "\"ANY\" expected"; break;
-			case 33: s = "\":\" expected"; break;
-			case 34: s = "\"<\" expected"; break;
-			case 35: s = "\">\" expected"; break;
-			case 36: s = "\"<.\" expected"; break;
-			case 37: s = "\".>\" expected"; break;
-			case 38: s = "\"|\" expected"; break;
-			case 39: s = "\"WEAK\" expected"; break;
-			case 40: s = "\"[\" expected"; break;
-			case 41: s = "\"]\" expected"; break;
-			case 42: s = "\"{\" expected"; break;
-			case 43: s = "\"}\" expected"; break;
-			case 44: s = "\"SYNC\" expected"; break;
-			case 45: s = "\"^\" expected"; break;
-			case 46: s = "\"#\" expected"; break;
-			case 47: s = "\"IF\" expected"; break;
-			case 48: s = "\"CONTEXT\" expected"; break;
-			case 49: s = "\"(.\" expected"; break;
-			case 50: s = "\".)\" expected"; break;
-			case 51: s = "??? expected"; break;
-			case 52: s = "this symbol not expected in Coco"; break;
-			case 53: s = "this symbol not expected in TokenDecl"; break;
-			case 54: s = "invalid TokenDecl"; break;
-			case 55: s = "invalid AttrDecl"; break;
-			case 56: s = "invalid SimSet"; break;
-			case 57: s = "invalid Sym"; break;
-			case 58: s = "invalid Term"; break;
-			case 59: s = "invalid Factor"; break;
-			case 60: s = "invalid Attribs"; break;
-			case 61: s = "invalid AST"; break;
-			case 62: s = "invalid ASTVal"; break;
-			case 63: s = "invalid TokenFactor"; break;
-
-					default: s = "error " + n; break;
-				}
-				// public void Add(int id, int level, int line, int col, string message)
-				Add(SynErrOffset + n, ErrorLevel, line, col, s);
+				case 0: return "EOF expected"; // T/NT
+				case 1: return "ident expected"; // T/NT
+				case 2: return "number expected"; // T/NT
+				case 3: return "string expected"; // T/NT
+				case 4: return "badString expected"; // T/NT
+				case 5: return "char expected"; // T/NT
+				case 6: return "prime expected"; // T/NT
+				case 7: return "\"COMPILER\" expected"; // T/NT
+				case 8: return "\"IGNORECASE\" expected"; // T/NT
+				case 9: return "\"CHARACTERS\" expected"; // T/NT
+				case 10: return "\"TOKENS\" expected"; // T/NT
+				case 11: return "\"PRAGMAS\" expected"; // T/NT
+				case 12: return "\"COMMENTS\" expected"; // T/NT
+				case 13: return "\"FROM\" expected"; // T/NT
+				case 14: return "\"TO\" expected"; // T/NT
+				case 15: return "\"NESTED\" expected"; // T/NT
+				case 16: return "\"IGNORE\" expected"; // T/NT
+				case 17: return "\"SYMBOLTABLES\" expected"; // T/NT
+				case 18: return "\"PRODUCTIONS\" expected"; // T/NT
+				case 19: return "\"=\" expected"; // T/NT
+				case 20: return "\".\" expected"; // T/NT
+				case 21: return "\"END\" expected"; // T/NT
+				case 22: return "\"STRICT\" expected"; // T/NT
+				case 23: return "\"SCOPES\" expected"; // T/NT
+				case 24: return "\"(\" expected"; // T/NT
+				case 25: return "\",\" expected"; // T/NT
+				case 26: return "\")\" expected"; // T/NT
+				case 27: return "\"USEONCE\" expected"; // T/NT
+				case 28: return "\"USEALL\" expected"; // T/NT
+				case 29: return "\"+\" expected"; // T/NT
+				case 30: return "\"-\" expected"; // T/NT
+				case 31: return "\"..\" expected"; // T/NT
+				case 32: return "\"ANY\" expected"; // T/NT
+				case 33: return "\":\" expected"; // T/NT
+				case 34: return "\"<\" expected"; // T/NT
+				case 35: return "\">\" expected"; // T/NT
+				case 36: return "\"<.\" expected"; // T/NT
+				case 37: return "\".>\" expected"; // T/NT
+				case 38: return "\"|\" expected"; // T/NT
+				case 39: return "\"WEAK\" expected"; // T/NT
+				case 40: return "\"[\" expected"; // T/NT
+				case 41: return "\"]\" expected"; // T/NT
+				case 42: return "\"{\" expected"; // T/NT
+				case 43: return "\"}\" expected"; // T/NT
+				case 44: return "\"SYNC\" expected"; // T/NT
+				case 45: return "\"^\" expected"; // T/NT
+				case 46: return "\"#\" expected"; // T/NT
+				case 47: return "\"IF\" expected"; // T/NT
+				case 48: return "\"CONTEXT\" expected"; // T/NT
+				case 49: return "\"(.\" expected"; // T/NT
+				case 50: return "\".)\" expected"; // T/NT
+				case 51: return "??? expected"; // T/NT
+				case 52: return "this symbol not expected in Coco (SYNC error)";
+				case 53: return "this symbol not expected in TokenDecl (SYNC error)";
+				case 54: return "invalid TokenDecl. None of the expected alternatives was present."; // ALT
+				case 55: return "invalid AttrDecl. None of the expected alternatives was present."; // ALT
+				case 56: return "invalid SimSet. None of the expected alternatives was present."; // ALT
+				case 57: return "invalid Sym. None of the expected alternatives was present."; // ALT
+				case 58: return "invalid Term. None of the expected alternatives was present."; // ALT
+				case 59: return "invalid Factor. None of the expected alternatives was present."; // ALT
+				case 60: return "invalid Attribs. None of the expected alternatives was present."; // ALT
+				case 61: return "invalid AST. None of the expected alternatives was present."; // ALT
+				case 62: return "invalid ASTVal. None of the expected alternatives was present."; // ALT
+				case 63: return "invalid TokenFactor. None of the expected alternatives was present."; // ALT
+				default: return $"error {n}";
 			}
-		} // Errors
+		}
 
 	} // end Parser
 

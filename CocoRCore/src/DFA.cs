@@ -29,7 +29,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         // other Coco objects
         private Parser parser;
         private Tab tab;
-        private ErrorsBase errors;
+        private Errors errors;
         private TextWriter trace;
 
         //---------- Output primitives

@@ -7,6 +7,13 @@ using System.Text;
 namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 {
 
+    public enum ErrorCodes
+    {
+        tErr = 0,
+        altErr = 1,
+        syncErr = 2
+    }
+
     public class ParserGen
     {
         const string PROD_SUFFIX = "‿NT"; // U+203F UNDERTIE, see http://www.fileformat.info/info/unicode/category/Pc/list.htm 
@@ -15,9 +22,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         const char LF = '\n';
         const int EOF = -1;
 
-        const int tErr = 0;         // error codes
-        const int altErr = 1;
-        const int syncErr = 2;
 
         public Range usingPos; // "using" definitions from the attributed grammar
         public bool GenerateAutocompleteInformation = false;  // generate addAlt() calls to fill the "alt" set with alternatives to the next to Get() token.
@@ -34,7 +38,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         Tab tab;          // other Coco objects
         TextWriter trace;
-        ErrorsBase errors;
+        Errors errors;
         IBufferedReader buffer;
 
         void Indent(int n)
@@ -111,20 +115,25 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         }
 
 
-        void GenErrorMsg(int errTyp, Symbol sym)
+        void GenErrorMsg(ErrorCodes errTyp, Symbol sym)
         {
             errorNr++;
-            err.Write("\t\t\tcase " + errorNr + ": s = \"");
+            if (errorNr > 0)
+                err.WriteLine();
+            err.Write($"\t\t\t\tcase {errorNr}: return \"");
+            var sn = tab.Escape(sym.name);
             switch (errTyp)
             {
-                case tErr:
-                    if (sym.name[0] == '"') err.Write(tab.Escape(sym.name) + " expected");
-                    else err.Write(sym.name + " expected");
+                case ErrorCodes.tErr:
+                    err.Write($"{sn} expected\"; // T/NT");
                     break;
-                case altErr: err.Write("invalid " + sym.name); break;
-                case syncErr: err.Write("this symbol not expected in " + sym.name); break;
+                case ErrorCodes.altErr:
+                    err.Write($"invalid {sn}. None of the expected alternatives was present.\"; // ALT");
+                    break;
+                case ErrorCodes.syncErr:
+                    err.Write($"this symbol not expected in {sn} (SYNC error)\";");
+                    break;
             }
-            err.WriteLine("\"; break;");
         }
 
         int NewCondSet(BitArray s)
@@ -343,7 +352,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         }
                         else
                         {
-                            GenErrorMsg(altErr, curSy);
+                            GenErrorMsg(ErrorCodes.altErr, curSy);
                             if (acc > 0)
                             {
                                 GenAutocomplete(p.set, p, indent, "ANY");
@@ -361,7 +370,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         break;
                     case NodeKind.sync:
                         Indent(indent);
-                        GenErrorMsg(syncErr, curSy);
+                        GenErrorMsg(ErrorCodes.syncErr, curSy);
                         s1 = Clone(p.set);
                         gen.Write("while (!("); GenCond(s1, p); gen.Write(")) {");
                         gen.Write("SynErr({0}); Get();", errorNr); gen.WriteLine("}");
@@ -425,7 +434,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         }
                         else
                         {
-                            GenErrorMsg(altErr, curSy);
+                            GenErrorMsg(ErrorCodes.altErr, curSy);
                             if (useSwitch)
                             {
                                 gen.WriteLine("default: SynErr({0}); break;", errorNr);
@@ -650,8 +659,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
             fram = g.OpenFrame("Parser.frame");
             gen = g.OpenGen("Parser.cs");
+
             err = new StringWriter();
-            foreach (Symbol sym in tab.terminals) GenErrorMsg(tErr, sym);
+            foreach (Symbol sym in tab.terminals) 
+                GenErrorMsg(ErrorCodes.tErr, sym);
 
             g.GenCopyright();
             g.SkipFramePart("-->begin");
