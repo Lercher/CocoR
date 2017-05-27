@@ -1,17 +1,18 @@
 # Enhanced Coco/R Compiler Compiler
 
-Based on the Coco/R Sources at
-http://www.ssw.uni-linz.ac.at/Coco
-that we call the "2011 version". 
-
-.Net core version with modernized API and implementation.
+Based on the [Coco/R Sources at Uni Linz](http://www.ssw.uni-linz.ac.at/Coco)
+that we call the "2011 version". We provide an enhanced 
+version that sticks with .Net V2 and the original API
+plus a .Net core version with modernized API and implementation.
 
 
 # Introduction
 
-This repository includes these enhancements. More detailed
-information can be found in the following sections.
-
+This repository includes some enhancements over the 2011 version. 
+See the original 
+[Coco/R User Manual](http://www.ssw.uni-linz.ac.at/Coco/Doc/UserManual.pdf) 
+for an introduction to compiler compilers and for basic ATG operations.
+More detailed information can be found in the following sections after the introduction.
 
 ## Token Inheritance
 A typical usage scenario for this extension
@@ -116,7 +117,8 @@ the generated `.ast` of the parser:
         <pre ng-bind="AST | json"></pre>
     </section>
 
-Note: This needs .Net 4 Framework and the Fleck library. See https://github.com/statianzo/Fleck
+Note: This needs .Net 4 Framework and the Fleck library. See the 
+[Fleck Sources](https://github.com/statianzo/Fleck).
 
 
 ## BOM Free UTF-8 Scanner
@@ -132,7 +134,7 @@ of a UTF-8 BOM. In this version with the new constructor, the BOM
 is optional but it is mandatory that the stream is UTF-8 encoded.
 
 
-## Declarative, language independent AST -
+## Declarative, language independent AST
 Forming an abstract syntax tree (AST) from the parse can be done
 using semantic actions in the 2011 version. 
 However, this couples the AST generation strictly to the target
@@ -199,7 +201,8 @@ with a parser generated with the 2011 version of Coco/R.
 
 ## Extended syntax for token inheritance
 
-see http://www.ssw.uni-linz.ac.at/Coco/Doc/UserManual.pdf 
+see the 
+[Coco/R User Manual](http://www.ssw.uni-linz.ac.at/Coco/Doc/UserManual.pdf)
 with this modification of section "2.3.2 Tokens":
 
     // Coco/R grammar
@@ -276,7 +279,8 @@ So the extended Coco/R syntax for productions is
     Production = ident [FormalAttributes] [ScopesDecl] [LocalDecl] '=' Expression '.'.
     ScopesDecl = "SCOPES" '(' ident { ',' ident } ')' .
 
-See http://www.ssw.uni-linz.ac.at/Coco/Doc/UserManual.pdf 
+see the 
+[Coco/R User Manual](http://www.ssw.uni-linz.ac.at/Coco/Doc/UserManual.pdf)
 section "2.4 Parser Specification".
 
 Note: Every symbol table has at least one scope, so you don't have
@@ -448,12 +452,13 @@ responsiveness can be called "instant" on my machine
 
 
 
-Planned: Build a language-server for Visual Studio Code and other IDEs. See
-https://code.visualstudio.com/docs/extensions/example-language-server
+Planned: Build a 
+[language server for Visual Studio Code](https://code.visualstudio.com/docs/extensions/example-language-server)
+and other IDEs.
 
 Alternativly: Adopt RUST's way (via stdin/stdout and the RACER process) to
 provide suggestions to Visual Studio Code. 
-See https://github.com/saviorisdead/RustyCode/blob/master/src/services/suggestService.ts
+See [suggestService.ts](https://github.com/saviorisdead/RustyCode/blob/master/src/services/suggestService.ts)
 and its dependencies.
 
 Alternativly: Build a JavaScript/TypeScript version of Coco/R with this extensions
@@ -708,8 +713,15 @@ this repository.
 see readme.md in the respective language folder.
 
 ## Helpful links
-[ASCII table](http://ascii.cl/),
+|
 [Language Server Protocol binding](https://github.com/Lercher/csharp-language-server-protocol)
+|
+[Coco/R 2011 homepage](http://www.ssw.uni-linz.ac.at/Coco)
+|
+[Coco/R 2011 User Manual](http://www.ssw.uni-linz.ac.at/Coco/Doc/UserManual.pdf)
+|
+[ASCII table](http://ascii.cl/)
+|
 
 
 ## Git Branches
