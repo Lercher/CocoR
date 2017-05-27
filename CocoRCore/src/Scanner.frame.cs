@@ -81,7 +81,7 @@ namespace CocoRCore
             return this;           
         }
 
-        internal void NextCh() => buffer.NextCh();
+        protected void NextCh() => buffer.NextCh();
 
         protected void AddCh()
         {
