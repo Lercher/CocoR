@@ -13,6 +13,9 @@ using System.Linq;
 namespace CocoRCore
 {
 
+    //-----------------------------------------------------------------------------------
+    // ParserBase
+    //-----------------------------------------------------------------------------------
     public abstract class ParserBase
     {
         public virtual void Prime(ref Token t) { /* hook */ }
@@ -97,6 +100,9 @@ namespace CocoRCore
     }
 
 
+    //-----------------------------------------------------------------------------------
+    // Diagnostic
+    //-----------------------------------------------------------------------------------
     public class Diagnostic
     {
         public readonly string prefix;
@@ -119,6 +125,10 @@ namespace CocoRCore
         public string Format(string fmt, string uri) => string.Format(fmt, line1, col1, message, level, id, uri, prefix);
     }
 
+
+    //-----------------------------------------------------------------------------------
+    // ErrorsBase
+    //-----------------------------------------------------------------------------------
     public abstract class ErrorsBase : List<Diagnostic>, IFormattable
     {
         public string uri = null;
@@ -219,6 +229,10 @@ namespace CocoRCore
     } // Errors
 
 
+
+    //-----------------------------------------------------------------------------------
+    // Alt
+    //-----------------------------------------------------------------------------------
     // mutatable alternatives
     public class Alt
     {
@@ -235,6 +249,9 @@ namespace CocoRCore
         }
     }
 
+    //-----------------------------------------------------------------------------------
+    // Alternative
+    //-----------------------------------------------------------------------------------
     // non mutatable
     public class Alternative
     {
@@ -258,7 +275,16 @@ namespace CocoRCore
         }
     }
 
+
+    //-----------------------------------------------------------------------------------
+    // TokenEventHandler
+    //-----------------------------------------------------------------------------------
     public delegate void TokenEventHandler(Token t);
+
+
+    //-----------------------------------------------------------------------------------
+    // Symboltable
+    //-----------------------------------------------------------------------------------
     public class Symboltable
     {
         public readonly string name;
@@ -550,6 +576,10 @@ namespace CocoRCore
 
     }
 
+
+    //-----------------------------------------------------------------------------------
+    // AST
+    //-----------------------------------------------------------------------------------
     public abstract class AST
     {
         public abstract string val { get; }
