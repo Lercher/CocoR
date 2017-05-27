@@ -55,27 +55,30 @@ namespace CocoRCore
                 var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096);
                 var tr = new StreamReader(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
                 var f = new System.IO.FileInfo(fileName);
-                buffer = new Reader(tr, f.FullName, casing, PutCh);
+                return Initialize(tr, f.FullName);
             }
             catch (IOException ex)
             {
                 throw new FatalError(ex.Message, ex);
             }
-            return this;
         }
 
-        protected ScannerBase Initialize(String s, string uri)
+        public ScannerBase Initialize(String s, string uri)
         {
             var sr = new StringReader(s);
-            buffer = new Reader(sr, uri, casing, PutCh);
-            return this;
+            return Initialize(sr, uri);
         }
 
-        protected ScannerBase Initialize(StringBuilder sb, string uri)
+        public ScannerBase Initialize(StringBuilder sb, string uri)
         {
             var sbr = new StringBuilderReader(sb);
-            buffer = new Reader(sbr, uri, casing, PutCh);
-            return this;
+            return Initialize(sbr, uri);
+        }
+
+        public ScannerBase Initialize(TextReader rd, string uri)
+        {
+            buffer = new Reader(rd, uri, casing, PutCh);
+            return this;           
         }
 
         internal void NextCh() => buffer.NextCh();
