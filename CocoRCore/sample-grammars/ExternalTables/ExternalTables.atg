@@ -1,0 +1,521 @@
+$namespace=CocoRCore.Samples.ExternalTables
+
+/*
+Only allowed:
+
+UPDATE_EXTERNALTABLES.SQL
+TUSER	LANTUSER
+
+TUSPARAM and LANTUSPARAM entries must not be part of the standard scripts as the values are valid only for specific site. If DEV has to provide a script those tables, it must be committed into UPDATE_CUSTOM_<customer>.SQL only, (see the dedicated section)
+It's stricly forbidden to test any TUPCODE entry in Cassiopae core code, only TUSNOM ( user table name ) can be tested.UPDATE_INTERNALTABLES.SQL
+One exception, entries with TUPFLAGORFI = 1 are Cassiopae entries - so they can be tested in application code.
+
+UPDATE_INTERNALTABLES.SQL
+TTRAITEMENT	LANTTRAITEMENT
+TTRPARAM	LANTTRPARAM
+*/
+
+COMPILER ExternalTables
+
+// C# methods of Parser -- begin
+
+public HashSet<int> suppressed = new HashSet<int>();
+public Dictionary<int, int> diagnostics = new Dictionary<int, int>();
+
+void Diag(int n, string s, string kind) {
+    if (suppressed.Contains(n)) return;
+    int count = 0;
+    diagnostics.TryGetValue(n, out count);
+    diagnostics[n] = count + 1;
+    var msg = $"[{kind}] {s}";
+    if (kind == "CRIT")
+        SemErr(n, msg);
+    else
+        Warning(n, msg);
+}
+
+// C# methods of Parser -- end
+
+IGNORECASE
+
+
+CHARACTERS
+    ucletter  = 'A'..'Z'.
+    lcletter  = 'a'..'z'.
+    umlaut    = "ÄÖÜäöüß".
+	letter    = ucletter + lcletter + umlaut + '_'.
+    digit     = '0'..'9'. 
+	cr        = '\r'.
+	lf        = '\n'.
+	tab       = '\t'.
+    quote     = '\''.
+    star      = '*'.
+	stringCh  = ANY - quote - cr - lf.
+
+TOKENS
+    number = ['-'] digit { digit }.
+	ident = letter { letter }.
+    set : ident = "set".
+    serveroutput : ident = "serveroutput".
+    on : ident = "on".
+    size : ident = "size".
+    insert : ident = "insert".
+    update : ident = "update".
+    delete : ident = "delete".
+    into : ident = "into".
+    values: ident = "values".    
+    prompt : ident = "prompt". 
+    null : ident = "null".
+    lantusparam : ident = "LANTUSPARAM".
+    tusparam : ident = "TUSPARAM".
+    tusnom : ident = "TUSNOM".    
+    tupcode : ident = "TUPCODE".
+    tupflagorfi : ident = "TUPFLAGORFI".
+    tuplibelle : ident = "TUPLIBELLE".
+    sc = ";".
+    openparen = "(".
+    closeparen = ")".
+    slash = "/".
+    dot = ".".
+    comma = ",".
+    equals = "=".
+    doublebar = "||".
+	string = quote { stringCh | [cr] lf | quote quote } quote.
+    stars = star { star }.
+    
+
+COMMENTS FROM "/*" TO "*/" NESTED
+COMMENTS FROM "--" TO lf
+
+IGNORE cr + lf + tab
+
+
+SYMBOLTABLES
+   languages STRICT "'EN'" "'FR'". 
+   deletabletables STRICT "LANTUSPARAM" "TUSPARAM" "LKTUPTACTPG".
+   updatetables STRICT "TUSPARAM" "LANTUSPARAM".
+   columns STRICT "TUSNOM" "TUPCODE" "TUPFLAGORFI".
+   chrarguments STRICT "38".
+
+
+PRODUCTIONS
+
+    ExternalTables =
+        [ StarPrompt slash ]
+        SetServeroutput
+        slash
+        { Block }
+        EOF
+        .
+
+    Block =
+        ( ExceptionHandledBlock
+        | StarPrompt
+        | DeclareBlock
+        )
+        { slash }
+        .
+
+    DeclareBlock = 
+        "declare"       (. Diag(1, "Mysterious DECLARE block detected", "TBD"); .)
+        { ANY }
+        slash
+        .
+
+    ExceptionHandledBlock =
+        [ "set" "serveroutput" "on" sc]
+        "begin"
+            InsertDeleteUpdate { InsertDeleteUpdate }
+            ( "commit" sc
+            | (. Diag(2, "COMMIT in ExceptionHandledBlock missing", "CRIT"); .)
+            )
+            ( PutLine 
+            | (. Diag(3, "COMMIT without dbms_output.PUT_LINE", "WARN"); .)
+            )
+        "exception" "when" "others" "then"
+            [ PutLine ]
+            ( "rollback"
+            | null (. Diag(20, "Null instead of ROLLBACK in exception block", "WARN"); .)
+            ) 
+            sc
+            [ PutLine ]   
+        "end" sc
+        slash
+        .
+    
+    InsertDeleteUpdate = 
+        ( Insert
+        | Delete
+        | Update
+        )
+        .
+
+    // UPDATE TUSPARAM SET TUPFLAGORFI = 1 WHERE TUSNOM = 'GENREHABSTATUS'AND TUPCODE = '05';
+    // UPDATE TUSPARAM SET TUPFLAGORFI = TUPCODE WHERE TUSNOM = 'APTSTATUS';
+    // UPDATE LANTUSPARAM SET TUPCODE = 'NEW' WHERE TUSNOM='INUPDMODE' AND TUPCODE = 'NEW ';
+    Update =
+        update
+        ident:updatetables
+        "set" ident:columns equals (number | string | ident:columns )
+        "where"
+        ident:columns equals String
+        { "and" ANY { ANY } }
+        sc
+        .
+
+    // DELETE FROM LANTUSPARAM WHERE TUSNOM = 'DEFAULTBVE';
+    // DELETE FROM LKTUPTACTPG WHERE TUSNOM = 'PENALITE_RACHAT'
+    //    AND TUPCODE NOT IN('REFINOMINAL', 'FORFAIT')
+    //    AND TUPCODE NOT LIKE('ACT%')
+    //    AND TUPCODE NOT LIKE('PCT%') ;
+    Delete =
+        delete "from"
+        ident:deletabletables
+        "where"
+        ident:columns
+        "="
+        String
+        { "and" ANY { ANY }}
+        sc
+        .
+
+    Insert =
+        "insert" "into"
+        ( TUSER       | LANTUSER
+        | TUSPARAM    | LANTUSPARAM
+        | TTRPARAM    | LANTTRPARAM
+        | TTRAITEMENT | LANTTRAITEMENT
+        )
+        .
+
+    // 	INSERT INTO TTRPARAM ( TTRNOM, TTPCODE ) VALUES ('IMPUTANAFILTRE','REVPLAN');
+    TTRPARAM =
+        "TTRPARAM"   (. Diag(4, "Forbidden insert into TTRPARAM in externaltables", "CRIT"); .)
+        openparen
+            "TTRNOM"
+            comma "TTPCODE"
+        closeparen
+        values
+        openparen
+            String
+            comma String
+        closeparen
+        sc
+        .
+
+    // 	INSERT INTO LANTTRPARAM ( TTRNOM, TTPCODE, LANCODE, TTPLIBELLE )
+	//  VALUES ('IMPUTANAFILTRE','REVPLAN', 'EN','Revolving instalment plan');
+    // 	INSERT INTO LANTTRPARAM (TTRNOM,TTPCODE,LANCODE,TTPLIBELLE,TTPHELPTEXT) VALUES ('GENDERTYPE','M','EN','Male',NULL);
+    //  INSERT INTO LANTTRPARAM (TTRNOM, TTPCODE, TTPLIBELLE, LANCODE) VALUES ('SCENARIO', 'EVBAIL_RENOUV', 'Renouvellement', 'FR') ;
+
+    LANTTRPARAM =
+        "LANTTRPARAM"   (. Diag(5, "Forbidden insert into LANTTRPARAM in externaltables", "CRIT"); .)
+        openparen
+            "TTRNOM"
+            comma "TTPCODE"
+            comma 
+            ( LANTTRPARAM_LANCODE | LANTTRPARAM_TTPLIBELLE )
+            ( comma 
+                (String
+                | null (. Diag(6, "LANTTRPARAM without Helptext (null)", "WARN"); .)
+                )
+            | (. Diag(7, "LANTTRPARAM without Helptext (column missing)", "WARN"); .)
+            )
+        closeparen
+        sc
+        .
+    
+    LANTTRPARAM_LANCODE = 
+            "LANCODE"
+            comma "TTPLIBELLE"
+            [ comma "TTPHELPTEXT" ]
+        closeparen
+        values
+        openparen
+            String
+            comma String
+            comma string:languages
+            comma String
+        .
+
+    LANTTRPARAM_TTPLIBELLE = 
+            "TTPLIBELLE"
+            comma "LANCODE"
+            [ comma "TTPHELPTEXT" ]
+        closeparen
+        values
+        openparen
+            String
+            comma String
+            comma String
+            comma string:languages
+        .
+
+    //	INSERT INTO TTRAITEMENT ( TTRNOM, TTRFLAGPREF ) VALUES ('REVTRANSDEST',1);
+    TTRAITEMENT =
+        "TTRAITEMENT"   (. Diag(8, "Forbidden insert into TTRAITEMENT in externaltables", "CRIT"); .)
+        openparen
+            "TTRNOM"
+            comma "TTRFLAGPREF"
+        closeparen
+        values
+        openparen
+            String
+            comma number
+        closeparen
+        sc
+        .
+
+
+	// INSERT INTO LANTTRAITEMENT ( TTRNOM, LANCODE, TTRLIBELLE, TTRCONTEXT )
+	// VALUES ('REVTRANSDEST', 'EN', 'Revolving transfer destination', 'Revolving');
+    // INSERT INTO LANTTRAITEMENT (TTRNOM, TTRLIBELLE, TTRCONTEXT, LANCODE) VALUES
+    // ('SCENARIO', 'Scénario de lot', 'Bail', 'FR') ;
+
+    LANTTRAITEMENT =
+        "LANTTRAITEMENT"   (. Diag(9, "Forbidden insert into LANTTRAITEMENT in externaltables", "CRIT"); .)
+        openparen
+            "TTRNOM"
+            comma
+            ( LANTTRAITEMENT_LANCODE
+            | LANTTRAITEMENT_TTRLIBELLE
+            )
+        sc
+        .
+
+    LANTTRAITEMENT_LANCODE =
+            "LANCODE"
+            comma "TTRLIBELLE"
+            comma "TTRCONTEXT"
+        closeparen
+        values
+        openparen
+            String
+            comma string:languages
+            comma String
+            comma String
+        closeparen
+        .
+
+    LANTTRAITEMENT_TTRLIBELLE =
+            "TTRLIBELLE"
+            comma "TTRCONTEXT"
+            comma "LANCODE"
+        closeparen
+        values
+        openparen
+            String
+            comma String
+            comma String
+            comma string:languages
+        closeparen
+        .
+
+
+    TUSER = 
+        "TUSER" 
+        (openparen 
+            tusnom comma 
+            "TUSLONGUEUR"
+        closeparen
+        |  (. Diag(10, "Insert into TUSER without column list", "WARN"); .)
+        )
+        values
+        openparen
+            String comma
+            ( number // OK
+            | null      (. Diag(11, t.val + " as TUSLONGUEUR (a length) is invalid", "TBD"); .)
+            | string    (. Diag(12, t.val + " (string) as TUSLONGUEUR (a length) is invalid", "TBD"); .)
+            )
+        closeparen
+        sc
+        .
+
+    LANTUSER = 
+        "LANTUSER"
+        (
+            openparen 
+                tusnom comma 
+                ( LANTUSER_LANCODE
+                | LANTUSER_TUSLIBELLE
+                )
+        | 
+            values 
+            openparen
+                String         (. Diag(13, "INSERT INTO LANTUSER without column list: " + t.val, "WARN"); .) 
+                comma String
+                comma String 
+            closeparen
+            sc
+        ) 
+        .
+
+    LANTUSER_LANCODE =
+            "LANCODE" comma
+            "TUSLIBELLE"
+        closeparen
+        values
+        openparen
+            String comma
+            string:languages comma
+            String
+        closeparen
+        sc
+        .
+
+    LANTUSER_TUSLIBELLE =
+            "TUSLIBELLE" comma
+            "LANCODE"
+        closeparen
+        values
+        openparen
+            String comma
+            String comma
+            string:languages
+        closeparen
+        sc
+        .
+
+
+    TUSPARAM = 
+        (. bool isOrfi = false; .)
+        tusparam 
+        (
+        openparen 
+            tusnom 
+            comma tupcode
+            [ comma tupflagorfi ]
+        closeparen
+        |  (. Diag(14, "INSERT INTO TUSPARAM without column list", "WARN"); .)
+        )
+        values
+        openparen
+            String 
+            comma String 
+            [ 
+            comma 
+            ( number  (. isOrfi = true; .)
+            | null 
+            | string  (. Diag(15, "TUPFLAGORFI (a number) is assigned the string " + t.val, "CRIT"); .)
+            ) 
+            ]
+        closeparen
+        sc
+        (. 
+            if (isOrfi)
+                Diag(21, "Suspicious INSERT to table TUSPARAM in externaltables with ORFI set", "WARN");
+            else
+                Diag(22, "Forbidden INSERT to table TUSPARAM in externaltables", "CRIT");
+        .)
+        .
+
+    LANTUSPARAM = 
+        lantusparam
+        (        
+            openparen 
+                tusnom comma 
+                tupcode comma
+                ( LANTUSPARAM_LANCODE
+                | LANTUSPARAM_TUPLIBELLE
+                )
+        |
+            values
+            openparen
+                String          (. Diag(16, "INSERT INTO LANTUSPARAM without column list: " + t.val, "WARN"); .) 
+                comma String
+                comma string:languages 
+                comma String 
+                comma (String | null)
+            closeparen
+            sc
+        )
+        .
+
+    LANTUSPARAM_LANCODE =
+            "LANCODE" comma
+            tuplibelle
+            [ comma "TUPHELPTEXT" ]
+        closeparen
+        values
+        openparen
+            String comma
+            String comma
+            string:languages comma
+            String
+            [ comma (String | null) ]
+        closeparen
+        sc
+        .
+
+    LANTUSPARAM_TUPLIBELLE =
+            "TUPLIBELLE" comma
+            "LANCODE"
+        closeparen
+        values
+        openparen
+            String comma
+            String comma
+            String comma
+            string:languages
+        closeparen
+        sc
+        .
+
+// ---------------------------------------------------------
+
+    PutLine =
+        "dbms_output" dot "PUT_LINE"
+        openparen 
+            UncheckedString
+        closeparen
+        sc
+        .
+
+    String =
+        StringFactor 
+        (. 
+            if (t.kind == _string && t.val.StartsWith("' ")) {
+                if (t.val.ToUpper() == t.val && t.val.Replace(" ", "").Length + 1 == t.val.Length)
+                    Diag(24, "Key-kind string literal starts with a space: " + t.val, "CRIT");
+                else
+                    Diag(17, "First string literal starts with a space: " + t.val, "WARN");
+            }
+        .)
+        { doublebar StringFactor }
+        (. 
+            if (t.kind == _string && t.val.EndsWith(" '")) {
+                if (t.val.ToUpper() == t.val && t.val.Replace(" ", "").Length + 1 == t.val.Length)
+                    Diag(25, "Key-kind string literal ends with a space: " + t.val, "CRIT");
+                else
+                    Diag(18, "Last string literal ends with a space: " + t.val, "WARN");
+            }
+        .)
+        .
+
+    UncheckedString =
+        StringFactor 
+        { doublebar StringFactor }
+        .
+
+    StringFactor
+    =
+        string        
+            (.  if (t.val.Contains("\n"))
+                    Diag(19, "Illegal line break in string literal", "CRIT");
+                if (t.val.Contains("Ã"))
+                    Diag(23, "Suspicious UTF-8/ANSI char in string literal: " + t.val, "WARN");
+            .)
+        | "chr" openparen number:chrarguments closeparen
+        | "SQLERRM"
+        .
+
+    SetServeroutput =
+        set serveroutput on size number
+        sc
+        .
+
+    StarPrompt =
+        prompt stars { ANY } stars
+        .
+
+END ExternalTables.
