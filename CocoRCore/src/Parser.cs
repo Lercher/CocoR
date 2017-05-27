@@ -253,18 +253,18 @@ const int id = 0;
 		tab.RenumberPragmas();
 		if (tab.ddt[2]) tab.PrintNodes();
 		if (errors.Count == 0) {
-		Console.WriteLine("checking");
+		Information(1, "checking if grammar is OK.");
 		tab.CompSymbolSets();
 		if (tab.ddt[7]) tab.XRef();
 		if (tab.GrammarOk()) {
-		Console.Write("parser");
+		Information(2, "writing parser", null);
 		pgen.WriteParser();
 		if (genScanner) {
-		Console.Write(" + scanner");
+		Information(3, "writing scanner", null);
 		dfa.WriteScanner();
 		if (tab.ddt[0]) dfa.PrintStates();
 		}
-		Console.WriteLine(" generated");
+		Information(4, "parser and scanner generated", null);
 		if (tab.ddt[8]) pgen.WriteStatistics();
 		}
 		}

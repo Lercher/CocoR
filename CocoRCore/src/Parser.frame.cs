@@ -29,7 +29,7 @@ namespace CocoRCore
         public string MissingSymbol = "{0} '{1}' not declared in '{2}'";
         protected const int minErrDist = 2;
         public readonly ScannerBase scanner;
-        // public readonly Errors errors;
+        public readonly Errors errors;
         public readonly List<Alternative> tokens = new List<Alternative>();
 
         public Token t;    // last recognized token
@@ -138,6 +138,7 @@ namespace CocoRCore
         public string uri = null;
         public System.IO.TextWriter errorStream = Console.Out;   // error messages go to this stream
         public string DiagnosticFormat = "{5}({0},{1}): {3} {6}{4}: {2}"; // 0=line, 1=column, 2=text, 3=level, 4=id, 5=uri, 6=CC
+        public string DiagnosticFormat0 = "{5}: {3} {6}{4}: {2}"; // 0=line, 1=column, 2=text, 3=level, 4=id, 5=uri, 6=CC
         public string DiagnosticIdPrefix = "CC";
 
         public int InfoOffset = 4000; // Infos start at 4000, 1 based
@@ -185,7 +186,7 @@ namespace CocoRCore
             _diagnosticsCounts.AddOrUpdate(id, 1, (_ , j) => j + 1);
             var error = new Diagnostic(id, level, line, col, message, DiagnosticIdPrefix);
             Add(error);
-            errorStream.WriteLine(error.Format(DiagnosticFormat, uri));
+            errorStream.WriteLine(error.Format(line == 0 ? DiagnosticFormat0 : DiagnosticFormat, uri));
         }
 
         public void SynErr(int line, int col, string s, int id) => Add(SynErrOffset + id, ErrorLevel, line, col, s);
