@@ -47,7 +47,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 else if (arg[i] == "-utf8") {/* ignored */}
                 else srcName = arg[i];
             }
-            if (emitLines) Console.Write(" [emit lines]");
+            if (emitLines) Console.Write(" [emit #line directives]");
             if (generateAutocompleteInformation) Console.Write(" [generate autocomplete information]");
             if (ignoreSemanticActions) Console.Write(" [ignore semantic actions]");
             if (omitOld) Console.Write(" [omit *.old files]");
@@ -108,6 +108,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                                   + "  -lines     [emit lines]{0}"
                                   + "  -ac        [generate autocomplete/intellisense information]{0}"
                                   + "  -is        [ignore semantic actions]{0}"
+                                  + "  -oo        [omit *.old files]{0}"
                                   + "Valid characters in the trace string:{0}"
                                   + "  A  trace automaton{0}"
                                   + "  F  list first/follow sets{0}"

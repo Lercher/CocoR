@@ -8,7 +8,7 @@ namespace CocoRCore.Samples
     {
         public static int Main(string[] arg)
         {
-            Console.WriteLine("Coco/R Core Samples (May 19, 2017)");
+            Console.WriteLine("Coco/R Core Samples (May 27, 2017)");
             var all = new Func<CocoRCore.ParserBase>[] {
                 () => new Coco.Parser(new Coco.Scanner().Initialize(@"Coco\Coco.atg")),
                 () => Taste.Taste.Create(@"Taste\Test.tas"),
