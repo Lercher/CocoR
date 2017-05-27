@@ -115,23 +115,27 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         }
 
 
-        void GenErrorMsg(ErrorCodes errTyp, Symbol sym)
+        void GenErrorMsg(string escaped)
         {
             errorNr++;
             if (errorNr > 0)
                 err.WriteLine();
-            err.Write($"\t\t\t\tcase {errorNr}: return \"");
+            err.Write($"\t\t\t\tcase {errorNr}: return \"{escaped}\";");
+        }
+
+        void GenErrorMsg(ErrorCodes errTyp, Symbol sym)
+        {
             var sn = tab.Escape(sym.name);
             switch (errTyp)
             {
                 case ErrorCodes.tErr:
-                    err.Write($"{sn} expected\"; // T/NT");
+                    GenErrorMsg($"{sn} expected.");
                     break;
                 case ErrorCodes.altErr:
-                    err.Write($"invalid {sn}. None of the expected alternatives was present.\"; // ALT");
+                    GenErrorMsg($"invalid {sn}. None of the expected alternatives was present.");
                     break;
                 case ErrorCodes.syncErr:
-                    err.Write($"this symbol not expected in {sn} (SYNC error)\";");
+                    GenErrorMsg($"this symbol not expected in {sn} (SYNC error).");
                     break;
             }
         }
@@ -264,14 +268,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (!string.IsNullOrEmpty(p.declares))
             {
                 Indent(indent);
-                gen.WriteLine("if (!{0}.Add(la)) SemErr(71, la, string.Format(DuplicateSymbol, {1}, la.val, {0}.name));", p.declares, tab.Quoted(p.sym.name));
+                gen.WriteLine("if (!{0}.Add(la)) SemErr(71, string.Format(DuplicateSymbol, {1}, la.val, {0}.name), la);", p.declares, tab.Quoted(p.sym.name));
                 Indent(indent);
                 gen.WriteLine("alternatives.tdeclares = {0};", p.declares);
             }
             else if (!string.IsNullOrEmpty(p.declared))
             {
                 Indent(indent);
-                gen.WriteLine("if (!{0}.Use(la, alternatives)) SemErr(72, la, string.Format(MissingSymbol, {1}, la.val, {0}.name));", p.declared, tab.Quoted(p.sym.name));
+                gen.WriteLine("if (!{0}.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, {1}, la.val, {0}.name), la);", p.declared, tab.Quoted(p.sym.name));
             }
         }
 

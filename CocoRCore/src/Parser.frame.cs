@@ -164,7 +164,7 @@ namespace CocoRCore
 
         public void UseShortDiagnosticFormat()
         {
-            DiagnosticFormat = "-- line {0:n0}, col {1:n0}: {2}";
+            DiagnosticFormat = "-- line {0}, col {1}: {2}";
             DiagnosticFormat0 = "-- {2}";
         }
 

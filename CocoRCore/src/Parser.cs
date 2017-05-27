@@ -981,70 +981,70 @@ const int id = 0;
 		{
 			switch (n) 
 			{
-				case 0: return "EOF expected"; // T/NT
-				case 1: return "ident expected"; // T/NT
-				case 2: return "number expected"; // T/NT
-				case 3: return "string expected"; // T/NT
-				case 4: return "badString expected"; // T/NT
-				case 5: return "char expected"; // T/NT
-				case 6: return "prime expected"; // T/NT
-				case 7: return "\"COMPILER\" expected"; // T/NT
-				case 8: return "\"IGNORECASE\" expected"; // T/NT
-				case 9: return "\"CHARACTERS\" expected"; // T/NT
-				case 10: return "\"TOKENS\" expected"; // T/NT
-				case 11: return "\"PRAGMAS\" expected"; // T/NT
-				case 12: return "\"COMMENTS\" expected"; // T/NT
-				case 13: return "\"FROM\" expected"; // T/NT
-				case 14: return "\"TO\" expected"; // T/NT
-				case 15: return "\"NESTED\" expected"; // T/NT
-				case 16: return "\"IGNORE\" expected"; // T/NT
-				case 17: return "\"SYMBOLTABLES\" expected"; // T/NT
-				case 18: return "\"PRODUCTIONS\" expected"; // T/NT
-				case 19: return "\"=\" expected"; // T/NT
-				case 20: return "\".\" expected"; // T/NT
-				case 21: return "\"END\" expected"; // T/NT
-				case 22: return "\"STRICT\" expected"; // T/NT
-				case 23: return "\"SCOPES\" expected"; // T/NT
-				case 24: return "\"(\" expected"; // T/NT
-				case 25: return "\",\" expected"; // T/NT
-				case 26: return "\")\" expected"; // T/NT
-				case 27: return "\"USEONCE\" expected"; // T/NT
-				case 28: return "\"USEALL\" expected"; // T/NT
-				case 29: return "\"+\" expected"; // T/NT
-				case 30: return "\"-\" expected"; // T/NT
-				case 31: return "\"..\" expected"; // T/NT
-				case 32: return "\"ANY\" expected"; // T/NT
-				case 33: return "\":\" expected"; // T/NT
-				case 34: return "\"<\" expected"; // T/NT
-				case 35: return "\">\" expected"; // T/NT
-				case 36: return "\"<.\" expected"; // T/NT
-				case 37: return "\".>\" expected"; // T/NT
-				case 38: return "\"|\" expected"; // T/NT
-				case 39: return "\"WEAK\" expected"; // T/NT
-				case 40: return "\"[\" expected"; // T/NT
-				case 41: return "\"]\" expected"; // T/NT
-				case 42: return "\"{\" expected"; // T/NT
-				case 43: return "\"}\" expected"; // T/NT
-				case 44: return "\"SYNC\" expected"; // T/NT
-				case 45: return "\"^\" expected"; // T/NT
-				case 46: return "\"#\" expected"; // T/NT
-				case 47: return "\"IF\" expected"; // T/NT
-				case 48: return "\"CONTEXT\" expected"; // T/NT
-				case 49: return "\"(.\" expected"; // T/NT
-				case 50: return "\".)\" expected"; // T/NT
-				case 51: return "??? expected"; // T/NT
-				case 52: return "this symbol not expected in Coco (SYNC error)";
-				case 53: return "this symbol not expected in TokenDecl (SYNC error)";
-				case 54: return "invalid TokenDecl. None of the expected alternatives was present."; // ALT
-				case 55: return "invalid AttrDecl. None of the expected alternatives was present."; // ALT
-				case 56: return "invalid SimSet. None of the expected alternatives was present."; // ALT
-				case 57: return "invalid Sym. None of the expected alternatives was present."; // ALT
-				case 58: return "invalid Term. None of the expected alternatives was present."; // ALT
-				case 59: return "invalid Factor. None of the expected alternatives was present."; // ALT
-				case 60: return "invalid Attribs. None of the expected alternatives was present."; // ALT
-				case 61: return "invalid AST. None of the expected alternatives was present."; // ALT
-				case 62: return "invalid ASTVal. None of the expected alternatives was present."; // ALT
-				case 63: return "invalid TokenFactor. None of the expected alternatives was present."; // ALT
+				case 0: return "EOF expected.";
+				case 1: return "ident expected.";
+				case 2: return "number expected.";
+				case 3: return "string expected.";
+				case 4: return "badString expected.";
+				case 5: return "char expected.";
+				case 6: return "prime expected.";
+				case 7: return "\"COMPILER\" expected.";
+				case 8: return "\"IGNORECASE\" expected.";
+				case 9: return "\"CHARACTERS\" expected.";
+				case 10: return "\"TOKENS\" expected.";
+				case 11: return "\"PRAGMAS\" expected.";
+				case 12: return "\"COMMENTS\" expected.";
+				case 13: return "\"FROM\" expected.";
+				case 14: return "\"TO\" expected.";
+				case 15: return "\"NESTED\" expected.";
+				case 16: return "\"IGNORE\" expected.";
+				case 17: return "\"SYMBOLTABLES\" expected.";
+				case 18: return "\"PRODUCTIONS\" expected.";
+				case 19: return "\"=\" expected.";
+				case 20: return "\".\" expected.";
+				case 21: return "\"END\" expected.";
+				case 22: return "\"STRICT\" expected.";
+				case 23: return "\"SCOPES\" expected.";
+				case 24: return "\"(\" expected.";
+				case 25: return "\",\" expected.";
+				case 26: return "\")\" expected.";
+				case 27: return "\"USEONCE\" expected.";
+				case 28: return "\"USEALL\" expected.";
+				case 29: return "\"+\" expected.";
+				case 30: return "\"-\" expected.";
+				case 31: return "\"..\" expected.";
+				case 32: return "\"ANY\" expected.";
+				case 33: return "\":\" expected.";
+				case 34: return "\"<\" expected.";
+				case 35: return "\">\" expected.";
+				case 36: return "\"<.\" expected.";
+				case 37: return "\".>\" expected.";
+				case 38: return "\"|\" expected.";
+				case 39: return "\"WEAK\" expected.";
+				case 40: return "\"[\" expected.";
+				case 41: return "\"]\" expected.";
+				case 42: return "\"{\" expected.";
+				case 43: return "\"}\" expected.";
+				case 44: return "\"SYNC\" expected.";
+				case 45: return "\"^\" expected.";
+				case 46: return "\"#\" expected.";
+				case 47: return "\"IF\" expected.";
+				case 48: return "\"CONTEXT\" expected.";
+				case 49: return "\"(.\" expected.";
+				case 50: return "\".)\" expected.";
+				case 51: return "??? expected.";
+				case 52: return "this symbol not expected in Coco (SYNC error).";
+				case 53: return "this symbol not expected in TokenDecl (SYNC error).";
+				case 54: return "invalid TokenDecl. None of the expected alternatives was present.";
+				case 55: return "invalid AttrDecl. None of the expected alternatives was present.";
+				case 56: return "invalid SimSet. None of the expected alternatives was present.";
+				case 57: return "invalid Sym. None of the expected alternatives was present.";
+				case 58: return "invalid Term. None of the expected alternatives was present.";
+				case 59: return "invalid Factor. None of the expected alternatives was present.";
+				case 60: return "invalid Attribs. None of the expected alternatives was present.";
+				case 61: return "invalid AST. None of the expected alternatives was present.";
+				case 62: return "invalid ASTVal. None of the expected alternatives was present.";
+				case 63: return "invalid TokenFactor. None of the expected alternatives was present.";
 				default: return $"error {n}";
 			}
 		}
