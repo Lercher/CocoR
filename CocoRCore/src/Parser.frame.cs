@@ -19,7 +19,7 @@ namespace CocoRCore
     public abstract class ParserBase
     {
         public virtual void Prime(ref Token t) { /* hook */ }
-        public abstract string NameOf(int tokenKind);
+        public abstract string NameOfTokenKind(int tokenKind);
         public abstract int maxT { get; }
         protected abstract void Get();
         public abstract void Parse();
@@ -466,7 +466,7 @@ namespace CocoRCore
             List<Token> list = undeclaredTokens.Peek();
             foreach (Token t in list)
             {
-                string msg = string.Format(parser.MissingSymbol, parser.NameOf(t.kind), t.val, this.name);
+                string msg = string.Format(parser.MissingSymbol, parser.NameOfTokenKind(t.kind), t.val, this.name);
                 parser.errors.SemErr(t.position, msg, 93);
             }
         }

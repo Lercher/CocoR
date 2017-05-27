@@ -239,7 +239,7 @@ SimSet<out CharSet s>           (. int n1, n2; .)
                                    if (c == null) SemErr(11, "undefined name"); else s.Or(c.set);
                                  .)
 | string                        (. string name = tab.Unstring(t.val);
-                                   foreach (char ch in name)
+                                   foreach (var ch in name)
                                      if (dfa.ignoreCase) s.Set(char.ToLowerInvariant(ch));
                                      else s.Set(ch); .)
 | Char<out n1>                  (. s.Set(n1); .)
@@ -269,7 +269,7 @@ TokenDecl<NodeKind typ>
                                    if (sym != null) SemErr(13, "name declared twice");
                                    else {
                                      sym = tab.NewSym(typ, name, t.position);
-                                     sym.tokenKind = Symbol.fixedToken;
+                                     sym.tokenKind = TerminalTokenKind.fixedToken;
                                    }
                                    tokenString = null;
                                  .)

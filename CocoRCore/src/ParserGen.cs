@@ -9,7 +9,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
     public enum ErrorCodes
     {
-        tErr = 0,
         anyErr = 1,
         syncErr = 2
     }
@@ -30,7 +29,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         private readonly DFA dfa;
 
         int errorNr;      // highest parser error number
-        Symbol curSy;     // symbol whose production is currently generated
+        private Symbol CurrentNtSym;     // symbol whose production is currently generated
         FileStream fram;  // parser frame file
         StreamWriter gen; // generated parser source file
         StringWriter err; // generated parser error messages
@@ -71,16 +70,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (p.typ != NodeKind.alt) return false;
             int nAlts = 0;
             s1 = new BitArray(tab.terminals.Count);
-            while (p != null)
+            for (var pp = p; pp != null; pp = pp.down)
             {
-                s2 = tab.Expected0(p.sub, curSy);
+                s2 = tab.Expected0(pp.sub, CurrentNtSym);
                 // must not optimize with switch statement, if there are ll1 warnings
                 if (Overlaps(s1, s2)) { return false; }
                 s1.Or(s2);
                 ++nAlts;
                 // must not optimize with switch-statement, if alt uses a resolver expression
-                if (p.sub.typ == NodeKind.rslv) return false;
-                p = p.down;
+                if (pp.sub.typ == NodeKind.rslv) return false;
             }
             return nAlts > 5;
         }
@@ -123,14 +121,17 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             err.Write($"\t\t\t\tcase {errorNr}: return \"{escaped}\";");
         }
 
+        void GenTerminalErrorMsg(Symbol tSym)
+        {            
+            var sn = tab.Escape(tSym.variantName);           
+            GenErrorMsg($"{sn} expected");
+        }
+
         void GenErrorMsg(ErrorCodes errTyp, Symbol sym)
         {
             var sn = tab.Escape(sym.name);
             switch (errTyp)
             {
-                case ErrorCodes.tErr:
-                    GenErrorMsg($"{sn} expected");
-                    break;
                 case ErrorCodes.anyErr:
                     GenErrorMsg($"invalid {sn} (ANY error)");
                     break;
@@ -145,25 +146,20 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             var ht = new HashSet<string>();
             for (var p2 = p; p2 != null; p2 = p2.down)
             {
-                var s1 = tab.Expected(p2.sub, curSy);
+                var s1 = tab.Expected(p2.sub, CurrentNtSym);
                 // we probably don't need BitArray s = DerivationsOf(s0); here
                 foreach (var sym in tab.terminals)
                     if (s1[sym.n])
-                        ht.Add(sym.name);
+                        ht.Add(sym.variantName);
             }
             var sb = new StringBuilder();
-            var sn = tab.Escape(curSy.name);
+            var sn = tab.Escape(CurrentNtSym.name);
             sb.AppendFormat("invalid {0}, expected", sn);
-            foreach(var s in ht)
-            {
-                if (s.StartsWith("\""))
-                    sb.AppendFormat(" {0}", tab.Escape(s.Substring(1, s.Length - 2)));
-                else
-                    sb.AppendFormat(" [{0}]", tab.Escape(s));
-            }
+            foreach (var s in ht)
+                sb.AppendFormat(" {0}", tab.Escape(s));
             GenErrorMsg(sb.ToString());
             // gen and use the std msg:
-            // GenErrorMsg(ErrorCodes.altErr, curSy);
+            // GenErrorMsg(ErrorCodes.altErr, CurrentNtSym);
         }
 
         int NewCondSet(BitArray s)
@@ -197,7 +193,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 gen.Write("addAlt(");
                 if (c > 1) gen.Write("new int[] {");
                 var n = 0;
-                foreach (Symbol sym in tab.terminals)
+                foreach (var sym in tab.terminals)
                 {
                     if (s[sym.n])
                     {
@@ -235,7 +231,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     gen.Write("false"); // happens if an ANY set matches no symbol
                 else if (n <= maxTerm)
                 {
-                    foreach (Symbol sym in tab.terminals)
+                    foreach (var sym in tab.terminals)
                     {
                         if (s[sym.n])
                         {
@@ -271,11 +267,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             while (!done)
             {
                 done = true;
-                foreach (Symbol sym in tab.terminals)
+                foreach (var sym in tab.terminals)
                 {
                     if (s[sym.n])
                     {
-                        foreach (Symbol baseSym in tab.terminals)
+                        foreach (var baseSym in tab.terminals)
                         {
                             if (baseSym.inherits == sym && !s[baseSym.n])
                             {
@@ -319,19 +315,18 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             if (needsAST && p.asts != null)
             {
-                foreach (AstOp ast in p.asts)
+                foreach (var astOp in p.asts)
                 {
-                    gen.WriteLine("using(astbuilder.createMarker({0}, {1}, {2}, {3}, {4}))", tab.Quoted(ast.name), tab.Quoted(ast.literal), toTF(ast.isList), toTF(ast.ishatch), toTF(ast.primed));
+                    gen.WriteLine("using(astbuilder.createMarker({0}, {1}, {2}, {3}, {4}))", tab.Quoted(astOp.name), tab.Quoted(astOp.literal), toTF(astOp.isList), toTF(astOp.ishatch), toTF(astOp.primed));
                     Indent(indent);
                 }
             }
         }
 
-        void GenCode(Node p, int indent, BitArray isChecked)
+        void GenCode(Node pn, int indent, BitArray isChecked)
         {
-            Node p2;
             BitArray s1, s2;
-            while (p != null)
+            for (var p = pn; p != null; p = p.next)
             {
                 switch (p.typ)
                 {
@@ -363,7 +358,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     case NodeKind.wt:
                         GenSymboltableCheck(p, indent);
                         Indent(indent);
-                        s1 = tab.Expected(p.next, curSy);
+                        s1 = tab.Expected(p.next, CurrentNtSym);
                         s1.Or(tab.allSyncSets);
                         int ncs1 = NewCondSet(s1);
                         Symbol ncs1sym = (Symbol)tab.terminals[ncs1];
@@ -382,7 +377,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         }
                         else
                         {
-                            GenErrorMsg(ErrorCodes.anyErr, curSy);
+                            GenErrorMsg(ErrorCodes.anyErr, CurrentNtSym);
                             if (acc > 0)
                             {
                                 GenAutocomplete(p.set, p, indent, "ANY");
@@ -400,7 +395,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         break;
                     case NodeKind.sync:
                         Indent(indent);
-                        GenErrorMsg(ErrorCodes.syncErr, curSy);
+                        GenErrorMsg(ErrorCodes.syncErr, CurrentNtSym);
                         s1 = Clone(p.set);
                         gen.Write("while (!("); GenCond(s1, p); gen.Write(")) {");
                         gen.Write("SynErr({0}); Get();", errorNr); gen.WriteLine("}");
@@ -410,14 +405,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         bool equal = Sets.Equals(s1, isChecked);
 
                         // intellisense
-                        p2 = p;
                         Indent(indent);
-                        while (p2 != null)
+                        for (var pd = p; pd != null; pd = pd.down)
                         {
-                            s1 = tab.Expected(p2.sub, curSy);
-                            GenAutocomplete(s1, p2.sub, indent, "ALT");
-                            GenAutocompleteSymboltable(p2.sub, indent, "ALT");
-                            p2 = p2.down;
+                            s1 = tab.Expected(pd.sub, CurrentNtSym);
+                            GenAutocomplete(s1, pd.sub, indent, "ALT");
+                            GenAutocompleteSymboltable(pd.sub, indent, "ALT");
                         }
                         // end intellisense
 
@@ -426,20 +419,19 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         {
                             gen.WriteLine("switch (la.kind) {");
                         }
-                        p2 = p;
-                        while (p2 != null)
+                        for (var pp = p; pp != null; pp = pp.down)
                         {
-                            s1 = tab.Expected(p2.sub, curSy);
+                            s1 = tab.Expected(pp.sub, CurrentNtSym);
                             if (useSwitch)
                             {
                                 PutCaseLabels(s1, indent);
                                 gen.WriteLine("{");
                             }
-                            else if (p2 == p)
+                            else if (pp == p)
                             {
-                                gen.Write("if ("); GenCond(s1, p2.sub); gen.WriteLine(") {");
+                                gen.Write("if ("); GenCond(s1, pp.sub); gen.WriteLine(") {");
                             }
-                            else if (p2.down == null && equal)
+                            else if (pp.down == null && equal)
                             {
                                 Indent(indent);
                                 gen.WriteLine("} else {");
@@ -447,15 +439,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                             else
                             {
                                 Indent(indent);
-                                gen.Write("} else if ("); GenCond(s1, p2.sub); gen.WriteLine(") {");
+                                gen.Write("} else if ("); GenCond(s1, pp.sub); gen.WriteLine(") {");
                             }
-                            GenCode(p2.sub, indent + 1, s1);
+                            GenCode(pp.sub, indent + 1, s1);
                             if (useSwitch)
                             {
                                 Indent(indent); gen.WriteLine("\tbreak;");
                                 Indent(indent); gen.WriteLine("}");
                             }
-                            p2 = p2.down;
                         }
                         Indent(indent);
                         if (equal)
@@ -478,16 +469,16 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         break;
                     case NodeKind.iter:
                         Indent(indent);
-                        p2 = p.sub;
-                        Node pac = p2;
+                        var p2 = p.sub;
+                        var pac = p2;
                         BitArray sac = (BitArray)tab.First(pac);
                         GenAutocomplete(sac, pac, indent, "ITER start");
                         GenAutocompleteSymboltable(pac, indent, "ITER start");
                         gen.Write("while (");
                         if (p2.typ == NodeKind.wt)
                         {
-                            s1 = tab.Expected(p2.next, curSy);
-                            s2 = tab.Expected(p.next, curSy);
+                            s1 = tab.Expected(p2.next, CurrentNtSym);
+                            s2 = tab.Expected(p.next, CurrentNtSym);
                             gen.Write("WeakSeparator({0},{1},{2}) ", p2.sym.n, NewCondSet(s1), NewCondSet(s2));
                             s1 = new BitArray(tab.terminals.Count);  // for inner structure
                             if (p2.up || p2.next == null)
@@ -518,14 +509,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 }
                 if (p.typ != NodeKind.eps && p.typ != NodeKind.sem && p.typ != NodeKind.sync)
                     isChecked.SetAll(false);  // = new BitArray(tab.terminals.Count);
-                if (p.up) break;
-                p = p.next;
+                if (p.up) 
+                    break;
             }
         }
 
         void GenTokens()
         {
-            foreach (Symbol sym in tab.terminals)
+            foreach (var sym in tab.terminals)
             {
                 if (Char.IsLetter(sym.name[0]) && sym.name != "EOF")
                     gen.WriteLine("\tpublic const int _{0} = {1}; // TOKEN {0}{2}", sym.name, sym.n, sym.inherits != null ? " INHERITS " + sym.inherits.name : "");
@@ -535,14 +526,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void ForAllTerminals(Action<Symbol> write)
         {
             int n = 0;
-            foreach (Symbol sym in tab.terminals)
+            foreach (var sym in tab.terminals)
             {
                 if (n % 20 == 0)
                     gen.Write("\t\t");
                 else if (n % 4 == 0)
                     gen.Write(" ");
                 n++;
-                write.Invoke(sym);
+                write(sym);
                 if (n < tab.terminals.Count) gen.Write(",");
                 if (n % 20 == 0) gen.WriteLine();
             }
@@ -562,13 +553,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void GenTokenNames()
         {
             ForAllTerminals(sym =>
-                gen.Write("{0}", tab.Quoted(sym.definedAs))
+                gen.Write("{0}", tab.Quoted(sym.variantName))
             );
         }
 
         void GenPragmas()
         {
-            foreach (Symbol sym in tab.pragmas)
+            foreach (var sym in tab.pragmas)
             {
                 gen.WriteLine("\tpublic const int _{0} = {1};", sym.name, sym.n);
             }
@@ -576,7 +567,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void GenCodePragmas()
         {
-            foreach (Symbol sym in tab.pragmas)
+            foreach (var sym in tab.pragmas)
             {
                 gen.WriteLine("\t\t\t\tif (la.kind == {0}) {{", sym.n);
                 CopySourcePart(sym.semPos, 4);
@@ -587,15 +578,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void GenUsingSymtabSomething(List<SymTab> list, string method, string param, string comment)
         {
             if (list == null) return;
-            foreach (SymTab st in list)
+            foreach (var st in list)
                 gen.WriteLine("\t\tusing({0}.{1}({2})) {3}", st.name, method, param, comment); // intentionally no ; !
         }
 
         void GenProductions()
         {
-            foreach (Symbol sym in tab.nonterminals)
+            foreach (var sym in tab.nonterminals)
             {
-                curSy = sym;
+                CurrentNtSym = sym;
                 gen.Write("\tvoid {0}{1}(", sym.name, PROD_SUFFIX);
                 CopySourcePart(sym.attrPos);
                 gen.WriteLine(") {");
@@ -620,7 +611,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 BitArray s = (BitArray)symSet[i];
                 gen.Write("\t\t{");
                 var j = 0;
-                foreach (Symbol sym in tab.terminals)
+                foreach (var sym in tab.terminals)
                 {
                     if (s[sym.n]) gen.Write("_T,"); else gen.Write("_x,");
                     ++j;
@@ -638,7 +629,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 BitArray s = DerivationsOf((BitArray)symSet[i]);
                 gen.Write("\t\t{");
                 var j = 0;
-                foreach (Symbol sym in tab.terminals)
+                foreach (var sym in tab.terminals)
                 {
                     if (s[sym.n]) gen.Write("_T,"); else gen.Write("_x,");
                     ++j;
@@ -655,21 +646,21 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void GenSymbolTables(bool declare)
         {
-            foreach (SymTab st in tab.symtabs)
+            foreach (var st in tab.symtabs)
             {
                 if (declare)
                     gen.WriteLine("\tpublic readonly Symboltable {0};", st.name);
                 else
                 {
                     gen.WriteLine("\t\t{0} = new Symboltable(\"{0}\", {1}, {2}, this);", st.name, toTF(dfa.ignoreCase), toTF(st.strict));
-                    foreach (string s in st.predefined)
+                    foreach (var s in st.predefined)
                         gen.WriteLine("\t\t{0}.Add({1});", st.name, tab.Quoted(s));
                 }
             }
             if (declare)
             {
                 gen.WriteLine("\tpublic Symboltable symbols(string name) {");
-                foreach (SymTab st in tab.symtabs)
+                foreach (var st in tab.symtabs)
                     gen.WriteLine("\t\tif (name == {1}) return {0};", st.name, tab.Quoted(st.name));
                 gen.WriteLine("\t\treturn null;");
                 gen.WriteLine("\t}\n");
@@ -678,7 +669,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void GenSymbolTablesChecks()
         {
-            foreach (SymTab st in tab.symtabs)
+            foreach (var st in tab.symtabs)
                 gen.WriteLine("\t\t{0}.CheckDeclared();", st.name);
         }
 
@@ -691,8 +682,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             gen = g.OpenGen("Parser.cs");
 
             err = new StringWriter();
-            foreach (Symbol sym in tab.terminals)
-                GenErrorMsg(ErrorCodes.tErr, sym);
+            tab.terminals.ForEach(GenTerminalErrorMsg);
 
             g.GenCopyright();
             g.SkipFramePart("-->begin");

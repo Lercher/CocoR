@@ -307,7 +307,7 @@ const int id = 0;
 		if (sym != null) SemErr(13, "name declared twice");
 		else {
 		sym = tab.NewSym(typ, name, t.position);
-		sym.tokenKind = Symbol.fixedToken;
+		sym.tokenKind = TerminalTokenKind.fixedToken;
 		}
 		tokenString = null;
 		if (isKind(la, 33)) {
@@ -527,7 +527,7 @@ const int id = 0;
 		} else if (isKind(la, 3)) {
 			Get();
 			string name = tab.Unstring(t.val);
-			foreach (char ch in name)
+			foreach (var ch in name)
 			if (dfa.ignoreCase) s.Set(char.ToLowerInvariant(ch));
 			else s.Set(ch);
 		} else if (isKind(la, 5)) {
@@ -923,12 +923,12 @@ const int id = 0;
 		};
 
 		// a token's name
-		public static readonly string[] tName = {
-		"EOF","ident","number","string", "badString","char","\"\\\'\"","\"COMPILER\"", "\"IGNORECASE\"","\"CHARACTERS\"","\"TOKENS\"","\"PRAGMAS\"", "\"COMMENTS\"","\"FROM\"","\"TO\"","\"NESTED\"", "\"IGNORE\"","\"SYMBOLTABLES\"","\"PRODUCTIONS\"","\"=\"",
-		"\".\"","\"END\"","\"STRICT\"","\"SCOPES\"", "\"(\"","\",\"","\")\"","\"USEONCE\"", "\"USEALL\"","\"+\"","\"-\"","\"..\"", "\"ANY\"","\":\"","\"<\"","\">\"", "\"<.\"","\".>\"","\"|\"","\"WEAK\"",
-		"\"[\"","\"]\"","\"{\"","\"}\"", "\"SYNC\"","\"^\"","\"#\"","\"IF\"", "\"CONTEXT\"","\"(.\"","\".)\"","???"
+		public static readonly string[] varTName = {
+		"[EOF]","[ident]","[number]","[string]", "[badString]","[char]","\\\'","COMPILER", "IGNORECASE","CHARACTERS","TOKENS","PRAGMAS", "COMMENTS","FROM","TO","NESTED", "IGNORE","SYMBOLTABLES","PRODUCTIONS","=",
+		".","END","STRICT","SCOPES", "(",",",")","USEONCE", "USEALL","+","-","..", "ANY",":","<",">", "<.",".>","|","WEAK",
+		"[","]","{","}", "SYNC","^","#","IF", "CONTEXT","(.",".)","[???]"
 		};
-		public override string NameOf(int tokenKind) => tName[tokenKind];
+		public override string NameOfTokenKind(int tokenKind) => varTName[tokenKind];
 
 		// states that a particular production (1st index) can start with a particular token (2nd index)
 		static readonly bool[,] set0 = {
@@ -995,58 +995,58 @@ const int id = 0;
 		{
 			switch (n) 
 			{
-				case 0: return "EOF expected";
-				case 1: return "ident expected";
-				case 2: return "number expected";
-				case 3: return "string expected";
-				case 4: return "badString expected";
-				case 5: return "char expected";
-				case 6: return "prime expected";
-				case 7: return "\"COMPILER\" expected";
-				case 8: return "\"IGNORECASE\" expected";
-				case 9: return "\"CHARACTERS\" expected";
-				case 10: return "\"TOKENS\" expected";
-				case 11: return "\"PRAGMAS\" expected";
-				case 12: return "\"COMMENTS\" expected";
-				case 13: return "\"FROM\" expected";
-				case 14: return "\"TO\" expected";
-				case 15: return "\"NESTED\" expected";
-				case 16: return "\"IGNORE\" expected";
-				case 17: return "\"SYMBOLTABLES\" expected";
-				case 18: return "\"PRODUCTIONS\" expected";
-				case 19: return "\"=\" expected";
-				case 20: return "\".\" expected";
-				case 21: return "\"END\" expected";
-				case 22: return "\"STRICT\" expected";
-				case 23: return "\"SCOPES\" expected";
-				case 24: return "\"(\" expected";
-				case 25: return "\",\" expected";
-				case 26: return "\")\" expected";
-				case 27: return "\"USEONCE\" expected";
-				case 28: return "\"USEALL\" expected";
-				case 29: return "\"+\" expected";
-				case 30: return "\"-\" expected";
-				case 31: return "\"..\" expected";
-				case 32: return "\"ANY\" expected";
-				case 33: return "\":\" expected";
-				case 34: return "\"<\" expected";
-				case 35: return "\">\" expected";
-				case 36: return "\"<.\" expected";
-				case 37: return "\".>\" expected";
-				case 38: return "\"|\" expected";
-				case 39: return "\"WEAK\" expected";
-				case 40: return "\"[\" expected";
-				case 41: return "\"]\" expected";
-				case 42: return "\"{\" expected";
-				case 43: return "\"}\" expected";
-				case 44: return "\"SYNC\" expected";
-				case 45: return "\"^\" expected";
-				case 46: return "\"#\" expected";
-				case 47: return "\"IF\" expected";
-				case 48: return "\"CONTEXT\" expected";
-				case 49: return "\"(.\" expected";
-				case 50: return "\".)\" expected";
-				case 51: return "??? expected";
+				case 0: return "[EOF] expected";
+				case 1: return "[ident] expected";
+				case 2: return "[number] expected";
+				case 3: return "[string] expected";
+				case 4: return "[badString] expected";
+				case 5: return "[char] expected";
+				case 6: return "\\\' expected";
+				case 7: return "COMPILER expected";
+				case 8: return "IGNORECASE expected";
+				case 9: return "CHARACTERS expected";
+				case 10: return "TOKENS expected";
+				case 11: return "PRAGMAS expected";
+				case 12: return "COMMENTS expected";
+				case 13: return "FROM expected";
+				case 14: return "TO expected";
+				case 15: return "NESTED expected";
+				case 16: return "IGNORE expected";
+				case 17: return "SYMBOLTABLES expected";
+				case 18: return "PRODUCTIONS expected";
+				case 19: return "= expected";
+				case 20: return ". expected";
+				case 21: return "END expected";
+				case 22: return "STRICT expected";
+				case 23: return "SCOPES expected";
+				case 24: return "( expected";
+				case 25: return ", expected";
+				case 26: return ") expected";
+				case 27: return "USEONCE expected";
+				case 28: return "USEALL expected";
+				case 29: return "+ expected";
+				case 30: return "- expected";
+				case 31: return ".. expected";
+				case 32: return "ANY expected";
+				case 33: return ": expected";
+				case 34: return "< expected";
+				case 35: return "> expected";
+				case 36: return "<. expected";
+				case 37: return ".> expected";
+				case 38: return "| expected";
+				case 39: return "WEAK expected";
+				case 40: return "[ expected";
+				case 41: return "] expected";
+				case 42: return "{ expected";
+				case 43: return "} expected";
+				case 44: return "SYNC expected";
+				case 45: return "^ expected";
+				case 46: return "# expected";
+				case 47: return "IF expected";
+				case 48: return "CONTEXT expected";
+				case 49: return "(. expected";
+				case 50: return ".) expected";
+				case 51: return "[???] expected";
 				case 52: return "symbol not expected in Coco (SYNC error)";
 				case 53: return "symbol not expected in TokenDecl (SYNC error)";
 				case 54: return "invalid TokenDecl, expected = [ident] [string] [char] PRAGMAS COMMENTS IGNORE SYMBOLTABLES PRODUCTIONS (.";

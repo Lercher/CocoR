@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Collections;
 using CocoRCore;
@@ -68,7 +69,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             Target t = new Target() { state = to };
             Action a = new Action(typ, sym, tc) { target = t };
             from.AddAction(a);
-            if (typ == NodeKind.clas) curSy.tokenKind = Symbol.classToken;
+            if (typ == NodeKind.clas) curSy.tokenKind = TerminalTokenKind.classToken;
         }
 
         void CombineShifts()
@@ -296,15 +297,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             {
                 state.endOf = sym;
             }
-            else if (matchedSym.tokenKind == Symbol.fixedToken || (a != null && a.tc == NodeTransition.contextTrans))
+            else if (matchedSym.tokenKind == TerminalTokenKind.fixedToken || (a != null && a.tc == NodeTransition.contextTrans))
             {
                 // s matched a token with a fixed definition or a token with an appendix that will be cut off
                 parser.SemErr(63, "tokens " + sym.name + " and " + matchedSym.name + " cannot be distinguished");
             }
             else
             { // matchedSym == classToken || classLitToken
-                matchedSym.tokenKind = Symbol.classLitToken;
-                sym.tokenKind = Symbol.litToken;
+                matchedSym.tokenKind = TerminalTokenKind.classLitToken;
+                sym.tokenKind = TerminalTokenKind.litToken;
             }
         }
 
@@ -594,7 +595,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void GenComment(Comment com, int i)
         {
             gen.WriteLine();
-            gen.WriteLine("\t\tbool Cmt{0}(Position bm)", i); 
+            gen.WriteLine("\t\tbool Cmt{0}(Position bm)", i);
             gen.WriteLine("\t\t{");
             gen.WriteLine("\t\t\tif ({0}) return false;", ChCondNot(com.start[0]));
             gen.WriteLine("\t\t\tvar level = 1;");
@@ -628,16 +629,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void GenLiterals()
         {
-            foreach (IList ts in new IList[] { tab.terminals, tab.pragmas })
+            foreach (var sym in tab.terminals.Concat(tab.pragmas))
             {
-                foreach (Symbol sym in ts)
+                if (sym.tokenKind == TerminalTokenKind.litToken)
                 {
-                    if (sym.tokenKind == Symbol.litToken)
-                    {
-                        string name = SymName(sym);
-                        // sym.name stores literals with quotes, e.g. "\"Literal\""
-                        gen.WriteLine("\t\t\t\tcase {0}: t.kind = {1}; break;", parser.scanner.casingString(name), sym.n);
-                    }
+                    string name = SymName(sym);
+                    // sym.name stores literals with quotes, e.g. "\"Literal\""
+                    gen.WriteLine("\t\t\t\tcase {0}: t.kind = {1}; break;", parser.scanner.casingString(name), sym.n);
                 }
             }
             gen.WriteLine("\t\t\t\tdefault: break;");
@@ -686,7 +684,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             else
             {
                 gen.Write("t.kind = {0}; ", endOf.n);
-                if (endOf.tokenKind == Symbol.classLitToken)
+                if (endOf.tokenKind == TerminalTokenKind.classLitToken)
                 {
                     gen.WriteLine("t.setValue(tval.ToString(), casingString); CheckLiteral(); return t.Freeze(buffer.Position);}");
                 }
@@ -744,7 +742,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             WriteStartTab();
 
             g.CopyFramePart("-->initialization");
-            if (ignoreCase) 
+            if (ignoreCase)
             {
                 // defaults to identity if !ignoreCase
                 gen.WriteLine("\t\tcasing = char.ToLowerInvariant;");
@@ -759,16 +757,16 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 GenComment(com, comIdx);
             }
 
-            g.CopyFramePart("-->literals"); 
+            g.CopyFramePart("-->literals");
             GenLiterals();
 
             g.CopyFramePart("-->scan1");
             gen.Write("\t\t\t\t");
-            if (tab.ignored.Elements() > 0) 
-                PutRange(tab.ignored); 
-            else 
-                gen.Write("false"); 
-            
+            if (tab.ignored.Elements() > 0)
+                PutRange(tab.ignored);
+            else
+                gen.Write("false");
+
             g.CopyFramePart("-->scan2");
             if (firstComment != null)
             {
@@ -779,23 +777,23 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 {
                     comIdx++;
                     gen.Write("Cmt{0}(bm)", comIdx);
-                    if (com.next != null) 
-                        gen.Write(" || ");                    
+                    if (com.next != null)
+                        gen.Write(" || ");
                 }
                 gen.WriteLine(")");
                 gen.Write("\t\t\t\treturn NextToken();");
             }
 
-            if (hasCtxMoves) 
-            { 
-                gen.WriteLine(); 
-                gen.Write("\t\tvar apx = 0;"); 
+            if (hasCtxMoves)
+            {
+                gen.WriteLine();
+                gen.Write("\t\tvar apx = 0;");
             } /* pdt */
-            
+
             g.CopyFramePart("-->scan3");
             for (State state = firstState.next; state != null; state = state.next)
                 WriteState(state);
-            
+
             // -->end   copy frame up to it's end
             g.CopyFramePart(null);
             if (tab.nsName != null && tab.nsName.Length > 0) gen.Write("}");

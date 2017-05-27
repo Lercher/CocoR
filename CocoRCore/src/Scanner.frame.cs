@@ -181,8 +181,8 @@ namespace CocoRCore
 
         public string ToString(ParserBase parser)
         {
-            var nm = parser.NameOf(kind);
-            if (nm.StartsWith("\""))
+            var nm = parser.NameOfTokenKind(kind);
+            if (!nm.StartsWith("["))
                 return valScanned;
             if (valScanned.Length > 30)
                 return $"{nm} '{valScanned.Substring(0, 28)}...'";

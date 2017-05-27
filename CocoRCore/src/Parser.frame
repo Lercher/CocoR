@@ -123,10 +123,10 @@ using CocoRCore;
 		};
 
 		// a token's name
-		public static readonly string[] tName = {
+		public static readonly string[] varTName = {
 -->tname
 		};
-		public override string NameOf(int tokenKind) => tName[tokenKind];
+		public override string NameOfTokenKind(int tokenKind) => varTName[tokenKind];
 
 		// states that a particular production (1st index) can start with a particular token (2nd index)
 		static readonly bool[,] set0 = {

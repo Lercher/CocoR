@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Collections;
 using System.Collections.Generic;
@@ -59,16 +60,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public List<Symbol> pragmas = new List<Symbol>();
         public List<Symbol> nonterminals = new List<Symbol>();
 
-        string[] tKind = { "fixedToken", "classToken", "litToken", "classLitToken" };
-
         public Symbol NewSym(NodeKind typ, string name, Position pos)
         {
             if (name.Length == 2 && name[0] == '"')
             {
-                parser.SemErr(81, "empty token not allowed"); name = "???";
+                parser.SemErr(81, "empty token not allowed"); 
+                name = "???";
             }
             Symbol sym = new Symbol(typ, name, pos);
-            sym.definedAs = name;
             switch (typ)
             {
                 case NodeKind.t:
@@ -76,6 +75,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     terminals.Add(sym);
                     break;
                 case NodeKind.pr:
+                    sym.n = pragmas.Count;
                     pragmas.Add(sym);
                     break;
                 case NodeKind.nt:
@@ -88,24 +88,17 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public Symbol FindSym(string name)
         {
-            foreach (Symbol s in terminals)
-                if (s.name == name) return s;
-            foreach (Symbol s in nonterminals)
-                if (s.name == name) return s;
-            return null;
+            var qy = from s in terminals.Concat(nonterminals) where s.name == name select s;
+            return qy.FirstOrDefault();
         }
 
         public SymTab FindSymtab(string name)
         {
-            foreach (SymTab st in symtabs)
-                if (st.name == name) return st;
-            return null;
+            var qy = from st in symtabs where st.name == name select st;
+            return qy.FirstOrDefault();
         }
 
-        int Num(Node p)
-        {
-            if (p == null) return 0; else return p.n;
-        }
+        int Num(Node p) => p?.n??0;
 
         void PrintSym(Symbol sym)
         {
@@ -118,7 +111,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             }
             else
                 trace.Write("            ");
-            trace.WriteLine("{0,5} {1}", sym.pos, tKind[sym.tokenKind]);
+            trace.WriteLine("{0,5} {1}", sym.pos, sym.tokenKind);
         }
 
         public void PrintSymbolTable()
@@ -126,16 +119,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             trace.WriteLine("Symbol Table:");
             trace.WriteLine("------------"); trace.WriteLine();
             trace.WriteLine(" nr name          typ  hasAt graph  del    line tokenKind");
-            foreach (Symbol sym in terminals) PrintSym(sym);
-            foreach (Symbol sym in pragmas) PrintSym(sym);
-            foreach (Symbol sym in nonterminals) PrintSym(sym);
+            terminals.ForEach(PrintSym);
+            pragmas.ForEach(PrintSym);
+            nonterminals.ForEach(PrintSym);
             trace.WriteLine();
             trace.WriteLine("Literal Tokens:");
             trace.WriteLine("--------------");
             foreach (var e in literals)
-            {
                 trace.WriteLine("_" + e.Value.name + " = " + e.Key + ".");
-            }
             trace.WriteLine();
         }
 
@@ -143,7 +134,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             int col, len;
             col = indent;
-            foreach (Symbol sym in terminals)
+            foreach (var sym in terminals)
             {
                 if (s[sym.n])
                 {
@@ -351,7 +342,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             trace.WriteLine("   n type name          next  down   sub   pos  line");
             trace.WriteLine("                               val  code");
             trace.WriteLine("----------------------------------------------------");
-            foreach (Node p in nodes)
+            foreach (var p in nodes)
             {
                 trace.Write("{0,4} {1,-4} ", p.n, p.typ);
                 if (p.sym != null)
@@ -407,46 +398,37 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             return c;
         }
 
-        public CharClass FindCharClass(string name)
-        {
-            foreach (CharClass c in classes)
-                if (c.name == name) return c;
-            return null;
-        }
+        public CharClass FindCharClass(string name) => classes.Where(cc => cc.name == name).FirstOrDefault();
 
-        public CharClass FindCharClass(CharSet s)
-        {
-            foreach (CharClass c in classes)
-                if (s.Equals(c.set)) return c;
-            return null;
-        }
+        public CharClass FindCharClass(CharSet s) => classes.Where(cc => s.Equals(cc.set)).FirstOrDefault();
 
-        public CharSet CharClassSet(int i)
-        {
-            return ((CharClass)classes[i]).set;
-        }
+        public CharSet CharClassSet(int i) => classes[i].set;
 
         //----------- character class printing
 
         string Ch(int ch)
         {
-            if (ch < ' ' || ch >= 127 || ch == '\'' || ch == '\\') return ch.ToString();
-            else return String.Format("'{0}'", (char)ch);
+            if (ch < ' ' || ch >= 127 || ch == '\'' || ch == '\\') 
+                return ch.ToString();
+            else 
+                return String.Format("'{0}'", (char)ch);
         }
 
         void WriteCharSet(CharSet s)
         {
-            for (CharSet.Range r = s.head; r != null; r = r.next)
-                if (r.from < r.to) { trace.Write(Ch(r.from) + ".." + Ch(r.to) + " "); }
-                else { trace.Write(Ch(r.from) + " "); }
+            for (var r = s.head; r != null; r = r.next)
+                if (r.from < r.to) 
+                    trace.Write(Ch(r.from) + ".." + Ch(r.to) + " "); 
+                else 
+                    trace.Write(Ch(r.from) + " "); 
         }
 
         public void WriteCharClasses()
         {
-            foreach (CharClass c in classes)
+            foreach (var cc in classes)
             {
-                trace.Write("{0,-10}: ", c.name);
-                WriteCharSet(c.set);
+                trace.Write("{0,-10}: ", cc.name);
+                WriteCharSet(cc.set);
                 trace.WriteLine();
             }
             trace.WriteLine();
@@ -508,12 +490,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void CompFirstSets()
         {
-            foreach (Symbol sym in nonterminals)
+            foreach (var sym in nonterminals)
             {
                 sym.first = new BitArray(terminals.Count);
                 sym.firstReady = false;
             }
-            foreach (Symbol sym in nonterminals)
+            foreach (var sym in nonterminals)
             {
                 sym.first = First(sym.graph);
                 sym.firstReady = true;
@@ -549,7 +531,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (!visited[sym.n])
             {
                 visited[sym.n] = true;
-                foreach (Symbol s in nonterminals)
+                foreach (var s in nonterminals)
                 {
                     if (sym.nts[s.n])
                     {
@@ -563,19 +545,19 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void CompFollowSets()
         {
-            foreach (Symbol sym in nonterminals)
+            foreach (var sym in nonterminals)
             {
                 sym.follow = new BitArray(terminals.Count);
                 sym.nts = new BitArray(nonterminals.Count);
             }
             gramSy.follow[eofSy.n] = true;
             visited = new BitArray(nodes.Count);
-            foreach (Symbol sym in nonterminals)
+            foreach (var sym in nonterminals)
             { // get direct successors of nonterminals
                 curSy = sym;
                 CompFollow(sym.graph);
             }
-            foreach (Symbol sym in nonterminals)
+            foreach (var sym in nonterminals)
             { // add indirect successors to followers
                 visited = new BitArray(nonterminals.Count);
                 curSy = sym;
@@ -587,14 +569,18 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             if (p == null) return null;
             Node a = null;
-            if (p.typ == NodeKind.any) a = p;
+            if (p.typ == NodeKind.any) 
+                a = p;
             else if (p.typ == NodeKind.alt)
             {
                 a = LeadingAny(p.sub);
-                if (a == null) a = LeadingAny(p.down);
+                if (a == null) 
+                    a = LeadingAny(p.down);
             }
-            else if (p.typ == NodeKind.opt || p.typ == NodeKind.iter) a = LeadingAny(p.sub);
-            if (a == null && DelNode(p) && !p.up) a = LeadingAny(p.next);
+            else if (p.typ == NodeKind.opt || p.typ == NodeKind.iter) 
+                a = LeadingAny(p.sub);
+            if (a == null && DelNode(p) && !p.up) 
+                a = LeadingAny(p.next);
             return a;
         }
 
@@ -646,21 +632,25 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void CompAnySets()
         {
-            foreach (Symbol sym in nonterminals) FindAS(sym.graph);
+            foreach (var sym in nonterminals) 
+                FindAS(sym.graph);
         }
 
         public BitArray Expected(Node p, Symbol curSy)
         {
-            BitArray s = First(p);
-            if (DelGraph(p)) s.Or(curSy.follow);
+            var s = First(p);
+            if (DelGraph(p)) 
+                s.Or(curSy.follow);
             return s;
         }
 
         // does not look behind resolvers; only called during LL(1) test and in CheckRes
         public BitArray Expected0(Node p, Symbol curSy)
         {
-            if (p.typ == NodeKind.rslv) return new BitArray(terminals.Count);
-            else return Expected(p, curSy);
+            if (p.typ == NodeKind.rslv) 
+                return new BitArray(terminals.Count);
+            else 
+                return Expected(p, curSy);
         }
 
         void CompSync(Node p)
@@ -690,7 +680,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             allSyncSets = new BitArray(terminals.Count);
             allSyncSets[eofSy.n] = true;
             visited = new BitArray(nodes.Count);
-            foreach (Symbol sym in nonterminals)
+            foreach (var sym in nonterminals)
             {
                 curSy = sym;
                 CompSync(curSy.graph);
@@ -699,7 +689,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public void SetupAnys()
         {
-            foreach (Node p in nodes)
+            foreach (var p in nodes)
                 if (p.typ == NodeKind.any)
                 {
                     p.set = new BitArray(terminals.Count, true);
@@ -713,13 +703,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             do
             {
                 changed = false;
-                foreach (Symbol sym in nonterminals)
+                foreach (var sym in nonterminals)
                     if (!sym.deletable && sym.graph != null && DelGraph(sym.graph))
                     {
-                        sym.deletable = true; changed = true;
+                        sym.deletable = true; 
+                        changed = true;
                     }
             } while (changed);
-            foreach (Symbol sym in nonterminals)
+            foreach (var sym in nonterminals)
                 if (sym.deletable) 
                     errors.Warning(sym.pos, "NT " + sym.name + " deletable", 11);
         }
@@ -727,7 +718,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public void RenumberPragmas()
         {
             int n = terminals.Count;
-            foreach (Symbol sym in pragmas) sym.n = n++;
+            foreach (var sym in pragmas) 
+                sym.n = n++;
         }
 
         public void CompSymbolSets()
@@ -742,7 +734,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 trace.WriteLine();
                 trace.WriteLine("First & follow symbols:");
                 trace.WriteLine("----------------------"); trace.WriteLine();
-                foreach (Symbol sym in nonterminals)
+                foreach (var sym in nonterminals)
                 {
                     trace.WriteLine(sym.name);
                     trace.Write("first:   "); PrintSet(sym.first, 10);
@@ -755,7 +747,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 trace.WriteLine();
                 trace.WriteLine("ANY and SYNC sets:");
                 trace.WriteLine("-----------------");
-                foreach (Node p in nodes)
+                foreach (var p in nodes)
                     if (p.typ == NodeKind.any || p.typ == NodeKind.sync)
                     {
                         trace.Write("{0,4} {1,-4}: ", p.n, p.typ);
@@ -774,26 +766,29 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             for (var i = 0; i < s.Length; i++)
             {
                 char ch = s[i];
-                if ('0' <= ch && ch <= '9') val = 16 * val + (ch - '0');
-                else if ('a' <= ch && ch <= 'f') val = 16 * val + (10 + ch - 'a');
-                else if ('A' <= ch && ch <= 'F') val = 16 * val + (10 + ch - 'A');
-                else parser.SemErr(83, "bad escape sequence in string or character");
+                if ('0' <= ch && ch <= '9') 
+                    val = 16 * val + (ch - '0');
+                else if ('a' <= ch && ch <= 'f') 
+                    val = 16 * val + (10 + ch - 'a');
+                else if ('A' <= ch && ch <= 'F') 
+                    val = 16 * val + (10 + ch - 'A');
+                else 
+                    parser.SemErr(83, "non hex escape sequence in string or character");
             }
-            if (val > char.MaxValue) /* pdt */
-                parser.SemErr(84, "bad escape sequence in string or character");
+            if (val > char.MaxValue)
+            {   /* pdt */
+                parser.SemErr(84, "too big hex escape sequence in string or character");
+                return '\0';
+            }
             return (char)val;
         }
 
-        string Char2Hex(char ch)
-        {
-            StringWriter w = new StringWriter();
-            w.Write("\\u{0:x4}", (int)ch);
-            return w.ToString();
-        }
+        string Char2Hex(char ch) => string.Format(@"\u{0:x4}", (int)ch);
 
         public string Unstring(string s)
         {
-            if (s == null || s.Length < 2) return s;
+            if (s == null || s.Length < 2) 
+                return s;
             return Unescape(s.Substring(1, s.Length - 2));
         }
 
@@ -850,7 +845,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public string Escape(string s)
         {
             StringBuilder buf = new StringBuilder();
-            foreach (char ch in s)
+            foreach (var ch in s)
             {
                 switch (ch)
                 {
@@ -879,7 +874,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 && AllNtReached()
                 && NoCircularProductions()
                 && AllNtToTerm();
-            if (ok) { CheckResolvers(); CheckLL1(); }
+            if (ok) 
+            { 
+                CheckResolvers(); 
+                CheckLL1(); 
+            }
             return ok;
         }
 
@@ -891,7 +890,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
             public CNode(Symbol l, Symbol r)
             {
-                left = l; right = r;
+                left = l; 
+                right = r;
             }
         }
 
@@ -900,28 +900,31 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (p == null) return;  // end of graph
             if (p.typ == NodeKind.nt)
             {
-                if (p.up || DelGraph(p.next)) singles.Add(p.sym);
+                if (p.up || DelGraph(p.next)) 
+                    singles.Add(p.sym);
             }
             else if (p.typ == NodeKind.alt || p.typ == NodeKind.iter || p.typ == NodeKind.opt)
             {
                 if (p.up || DelGraph(p.next))
                 {
                     GetSingles(p.sub, singles);
-                    if (p.typ == NodeKind.alt) GetSingles(p.down, singles);
+                    if (p.typ == NodeKind.alt) 
+                        GetSingles(p.down, singles);
                 }
             }
-            if (!p.up && DelNode(p)) GetSingles(p.next, singles);
+            if (!p.up && DelNode(p)) 
+                GetSingles(p.next, singles);
         }
 
         public bool NoCircularProductions()
         {
             bool ok, changed, onLeftSide, onRightSide;
             var list = new List<CNode>();
-            foreach (Symbol sym in nonterminals)
+            foreach (var sym in nonterminals)
             {
                 var singles = new List<Symbol>();
                 GetSingles(sym.graph, singles); // get nonterminals s such that sym-->s
-                foreach (Symbol s in singles) 
+                foreach (var s in singles) 
                     list.Add(new CNode(sym, s));
             }
             do
@@ -929,12 +932,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 changed = false;
                 for (var i = 0; i < list.Count; i++)
                 {
-                    CNode n = list[i];
-                    onLeftSide = false; onRightSide = false;
-                    foreach (CNode m in list)
+                    var n = list[i];
+                    onLeftSide = false; 
+                    onRightSide = false;
+                    foreach (var m in list)
                     {
-                        if (n.left == m.right) onRightSide = true;
-                        if (n.right == m.left) onLeftSide = true;
+                        if (n.left == m.right) 
+                            onRightSide = true;
+                        if (n.right == m.left) 
+                            onLeftSide = true;
                     }
                     if (!onLeftSide || !onRightSide)
                     {
@@ -945,7 +951,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 }
             } while (changed);
             ok = true;
-            foreach (CNode n in list)
+            foreach (var n in list)
             {
                 ok = false;
                 errors.SemErr(n.left.pos, n.left.name + " --> " + n.right.name + n.right.pos.ToString(), 87);
@@ -958,7 +964,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void LL1Error(int cond, Symbol sym)
         {
             var s = "LL1 warning in " + curSy.name + ": ";
-            if (sym != null) s += sym.name + sym.pos.ToString() + " is ";
+            if (sym != null) 
+                s += sym.name + sym.pos.ToString() + " is ";
             switch (cond)
             {
                 case 1: s += "start of several alternatives"; break;
@@ -971,9 +978,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void CheckOverlap(BitArray s1, BitArray s2, int cond)
         {
-            foreach (Symbol sym in terminals)
+            foreach (var sym in terminals)
             {
-                if (s1[sym.n] && s2[sym.n]) LL1Error(cond, sym);
+                if (s1[sym.n] && s2[sym.n]) 
+                    LL1Error(cond, sym);
             }
         }
 
@@ -1081,7 +1089,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public void CheckResolvers()
         {
-            foreach (Symbol sym in nonterminals)
+            foreach (var sym in nonterminals)
             {
                 curSy = sym;
                 CheckRes(curSy.graph, false);
@@ -1093,7 +1101,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public bool NtsComplete()
         {
             bool complete = true;
-            foreach (Symbol sym in nonterminals)
+            foreach (var sym in nonterminals)
             {
                 if (sym.graph == null)
                 {
@@ -1131,7 +1139,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             visited = new BitArray(nonterminals.Count);
             visited[gramSy.n] = true;
             MarkReachedNts(gramSy.graph);
-            foreach (Symbol sym in nonterminals)
+            foreach (var sym in nonterminals)
             {
                 if (!visited[sym.n])
                 {
@@ -1168,13 +1176,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             do
             {
                 changed = false;
-                foreach (Symbol sym in nonterminals)
+                foreach (var sym in nonterminals)
                     if (!mark[sym.n] && IsTerm(sym.graph, mark))
                     {
                         mark[sym.n] = true; changed = true;
                     }
             } while (changed);
-            foreach (Symbol sym in nonterminals)
+            foreach (var sym in nonterminals)
                 if (!mark[sym.n])
                 {
                     ok = false;
@@ -1199,7 +1207,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             var xref = new SortedList<Symbol, List<int>>(new SymbolComp());
             // collect lines where symbols have been defined
-            foreach (Symbol sym in nonterminals)
+            foreach (var sym in nonterminals)
             {
                 if (!xref.TryGetValue(sym, out var list))
                 {
@@ -1209,7 +1217,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 list.Add(-sym.pos.line);
             }
             // collect lines where symbols have been referenced
-            foreach (Node n in nodes)
+            foreach (var n in nodes)
             {
                 if (n.typ == NodeKind.t || n.typ == NodeKind.wt || n.typ == NodeKind.nt)
                 {
@@ -1226,12 +1234,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             trace.WriteLine("Cross reference list:");
             trace.WriteLine("---------------------");
             trace.WriteLine();
-            foreach (Symbol sym in xref.Keys)
+            foreach (var sym in xref.Keys)
             {
                 trace.Write("  {0,-12}", Name(sym.name));
                 var list = xref[sym];
                 int col = 14;
-                foreach (int line in list)
+                foreach (var line in list)
                 {
                     if (col + 5 > 80)
                     {
@@ -1249,9 +1257,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public void SetDDT(string s)
         {
             s = s.ToUpper();
-            foreach (char ch in s)
+            foreach (var ch in s)
             {
-                if ('0' <= ch && ch <= '9') ddt[ch - '0'] = true;
+                if (char.IsDigit(ch)) 
+                    ddt[ch - '0'] = true;
                 else switch (ch)
                     {
                         case 'A': ddt[0] = true; break; // trace automaton
@@ -1269,15 +1278,17 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public void SetOption(string s)
         {
-            string[] option = s.Split(new char[] { '=' }, 2);
-            string name = option[0], value = option[1];
-            if ("$namespace".Equals(name))
+            var option = s.Split('=');
+            var name = option.First();
+            var value = option.Last();
+            switch(name)
             {
-                if (nsName == null) nsName = value;
-            }
-            else if ("$checkEOF".Equals(name))
-            {
-                checkEOF = "true".Equals(value);
+                case "$namespace":
+                    nsName = value;
+                    break;
+                case "$checkEOF":
+                    checkEOF = ("true" == value);
+                    break;
             }
         }
 
