@@ -93,18 +93,11 @@ namespace CocoRCore
 
         protected abstract Token NextToken();
 
-        protected void SetScannerBehindT()
+        protected void SetScannerBackBehindT()
         {
-            Console.WriteLine();
-            Console.WriteLine($">>>>> TOKEN at {t.position}, length {tval.Length} '{tval}', Buffer at {buffer.Position}. Should be equal.");
-            throw new NotImplementedException("SetScannerBehindT");
-            /*
-            buffer.Pos = t.position.pos;
-            NextCh();
-            line = t.position.line; col = t.position.col;
+            buffer.ResetPositionTo(t.positionM1);
             for (var i = 0; i < tval.Length; i++)
                 NextCh();
-            */
         }
 
         // get the next token (possibly a token already seen during peeking)
@@ -199,6 +192,7 @@ namespace CocoRCore
             }
 
             public int kind;
+            public Position positionM1;
             public Position position;
             public Position endPosition;
             public string val { get; private set; }
