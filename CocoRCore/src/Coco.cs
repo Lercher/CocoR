@@ -39,10 +39,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             int retVal = 1;
             for (var i = 0; i < arg.Length; i++)
             {
-                if (arg[i] == "-namespace" && i < arg.Length - 1) nsName = arg[++i].Trim();
-                else if (arg[i] == "-frames" && i < arg.Length - 1) frameDir = arg[++i].Trim();
-                else if (arg[i] == "-trace" && i < arg.Length - 1) ddtString = arg[++i].Trim();
-                else if (arg[i] == "-o" && i < arg.Length - 1) outDir = arg[++i].Trim();
+                if (false) {}
+                else if (arg[i] == "-namespace" && i < arg.Length - 1) nsName = arg[++i].Trim();
+                else if (arg[i] == "-frames"    && i < arg.Length - 1) frameDir = arg[++i].Trim();
+                else if (arg[i] == "-trace"     && i < arg.Length - 1) ddtString = arg[++i].Trim();
+                else if (arg[i] == "-o"         && i < arg.Length - 1) outDir = arg[++i].Trim();
                 else if (arg[i] == "-lines") emitLines = true;
                 else if (arg[i] == "-ac") generateAutocompleteInformation = true;
                 else if (arg[i] == "-is") ignoreSemanticActions = true;

@@ -36,7 +36,11 @@ using CocoRCore;
 				_newAlt();
 -->endalternatives
 				la = scanner.Scan();
-				if (la.kind <= maxT) { ++errDist; break; }
+				if (la.kind <= maxT) 
+				{ 
+					++errDist; 
+					break; 
+				}
 -->pragmas
 				la = t;
 			}
@@ -62,8 +66,13 @@ using CocoRCore;
         private bool WeakSeparator(int n, int syFol, int repFol)
         {
             var kind = la.kind;
-            if (isKind(la, n)) { Get(); return true; }
-            else if (StartOf(repFol)) { return false; }
+            if (isKind(la, n)) 
+			{ 
+				Get(); 
+				return true; 
+			}
+            else if (StartOf(repFol)) 
+				return false;
             else
             {
                 SynErr(n);
@@ -78,17 +87,22 @@ using CocoRCore;
 
         protected void Expect(int n)
         {
-            if (isKind(la, n)) Get(); else { SynErr(n); }
+            if (isKind(la, n)) 
+				Get(); 
+			else 
+				SynErr(n);
         }
 
 
         protected void ExpectWeak(int n, int follow)
         {
-            if (isKind(la, n)) Get();
+            if (isKind(la, n)) 
+				Get();
             else
             {
                 SynErr(n);
-                while (!StartOf(follow)) Get();
+                while (!StartOf(follow)) 
+					Get();
             }
         }
 

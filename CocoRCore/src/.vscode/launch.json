@@ -12,12 +12,8 @@
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
             "args": [
-                "${workspaceRoot}/bin/Debug/netcoreapp1.1/CocoRCore.dll",
-                "${workspaceRoot}/../sample-grammars/WFModel/WFModel.ATG",
+                "${workspaceRoot}/../sample-grammars/Taste/Taste.ATG",
                 "-oo",
-                "-ac",
-                "-o",
-                "${workspaceRoot}/../sample-grammars/WFModel",
                 "-frames",
                 "${workspaceRoot}"
             ],

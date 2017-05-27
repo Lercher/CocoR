@@ -10,7 +10,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
     public enum ErrorCodes
     {
         tErr = 0,
-        altErr = 1,
+        anyErr = 1,
         syncErr = 2
     }
 
@@ -129,15 +129,41 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             switch (errTyp)
             {
                 case ErrorCodes.tErr:
-                    GenErrorMsg($"{sn} expected.");
+                    GenErrorMsg($"{sn} expected");
                     break;
-                case ErrorCodes.altErr:
-                    GenErrorMsg($"invalid {sn}. None of the expected alternatives was present.");
+                case ErrorCodes.anyErr:
+                    GenErrorMsg($"invalid {sn} (ANY error)");
                     break;
                 case ErrorCodes.syncErr:
-                    GenErrorMsg($"this symbol not expected in {sn} (SYNC error).");
+                    GenErrorMsg($"symbol not expected in {sn} (SYNC error)");
                     break;
             }
+        }
+
+        void GenAltErrorMsg(Node p)
+        {
+            var ht = new HashSet<string>();
+            for (var p2 = p; p2 != null; p2 = p2.down)
+            {
+                var s1 = tab.Expected(p2.sub, curSy);
+                // we probably don't need BitArray s = DerivationsOf(s0); here
+                foreach (var sym in tab.terminals)
+                    if (s1[sym.n])
+                        ht.Add(sym.name);
+            }
+            var sb = new StringBuilder();
+            var sn = tab.Escape(curSy.name);
+            sb.AppendFormat("invalid {0}, expected", sn);
+            foreach(var s in ht)
+            {
+                if (s.StartsWith("\""))
+                    sb.AppendFormat(" {0}", tab.Escape(s.Substring(1, s.Length - 2)));
+                else
+                    sb.AppendFormat(" [{0}]", tab.Escape(s));
+            }
+            GenErrorMsg(sb.ToString());
+            // gen and use the std msg:
+            // GenErrorMsg(ErrorCodes.altErr, curSy);
         }
 
         int NewCondSet(BitArray s)
@@ -228,8 +254,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void PutCaseLabels(BitArray s0, int indent)
         {
-            BitArray s = DerivationsOf(s0);
-            foreach (Symbol sym in tab.terminals)
+            var s = DerivationsOf(s0);
+            foreach (var sym in tab.terminals)
                 if (s[sym.n])
                 {
                     Indent(indent);
@@ -328,8 +354,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         }
                         else
                         {
-                            GenAutocomplete(p.sym.n, indent, "T");
-                            GenAutocompleteSymboltable(p, indent, "T");
+                            GenAutocomplete(p.sym.n, indent, "T " + p.sym.name);
+                            GenAutocompleteSymboltable(p, indent, "T " + p.sym.name);
                             GenAstBuilder(p, indent);
                             gen.WriteLine("Expect({0}); // {1}", p.sym.n, p.sym.name);
                         }
@@ -341,8 +367,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         s1.Or(tab.allSyncSets);
                         int ncs1 = NewCondSet(s1);
                         Symbol ncs1sym = (Symbol)tab.terminals[ncs1];
-                        GenAutocomplete(p.sym.n, indent, "WT");
-                        GenAutocompleteSymboltable(p, indent, "WT");
+                        GenAutocomplete(p.sym.n, indent, "WT " + p.sym.name);
+                        GenAutocompleteSymboltable(p, indent, "WT " + p.sym.name);
                         GenAstBuilder(p, indent);
                         gen.WriteLine("ExpectWeak({0}, {1}); // {2} followed by {3}", p.sym.n, ncs1, p.sym.name, ncs1sym.name);
                         break;
@@ -356,7 +382,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         }
                         else
                         {
-                            GenErrorMsg(ErrorCodes.altErr, curSy);
+                            GenErrorMsg(ErrorCodes.anyErr, curSy);
                             if (acc > 0)
                             {
                                 GenAutocomplete(p.set, p, indent, "ANY");
@@ -438,7 +464,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         }
                         else
                         {
-                            GenErrorMsg(ErrorCodes.altErr, curSy);
+                            GenAltErrorMsg(p);
                             if (useSwitch)
                             {
                                 gen.WriteLine("default: SynErr({0}); break;", errorNr);
@@ -665,7 +691,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             gen = g.OpenGen("Parser.cs");
 
             err = new StringWriter();
-            foreach (Symbol sym in tab.terminals) 
+            foreach (Symbol sym in tab.terminals)
                 GenErrorMsg(ErrorCodes.tErr, sym);
 
             g.GenCopyright();

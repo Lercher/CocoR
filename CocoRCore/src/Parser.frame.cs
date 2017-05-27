@@ -43,7 +43,8 @@ namespace CocoRCore
             this.errors = new Errors() { uri = this.scanner.uri };
         }
 
-        protected void SynErr(int n) => DiagnosticMessage(errors.SynErr, la, Syntaxerror(n), n, true);
+        protected void SynErr(int n) 
+            => DiagnosticMessage(errors.SynErr, la, $"{Syntaxerror(n)}, found {la.ToString(this)}.", n, true);
 
         public void SemErr(int n, string msg) => SemErr(n, msg, t);
         public void SemErr(int n, string msg, Token t) => DiagnosticMessage(errors.SemErr, t, msg, n, true);
@@ -54,9 +55,9 @@ namespace CocoRCore
         public void Information(int n, string msg) => Information(n, msg, t);
         public void Information(int n, string msg, Token t) => DiagnosticMessage(errors.Info, t, msg, n, false);
 
-        public void DiagnosticMessage(Action<Position, string, int> diag, Token tOrNull, string msg, int n, bool resetErrDistance)
+        public void DiagnosticMessage(Action<Position, string, int> diag, Token t, string msg, int n, bool resetErrDistance)
         {
-            if (tOrNull == null)
+            if (t == null)
                 diag(Position.Zero, msg, n);
             else
             {

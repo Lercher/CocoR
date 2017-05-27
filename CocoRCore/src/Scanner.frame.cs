@@ -52,9 +52,9 @@ namespace CocoRCore
             try
             {
                 // TODO: Who disposes of the stream and the reader
-                var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096);
-                var tr = new StreamReader(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
                 var f = new System.IO.FileInfo(fileName);
+                var stream = new FileStream(f.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096);
+                var tr = new StreamReader(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
                 return Initialize(tr, f.FullName);
             }
             catch (IOException ex)
@@ -178,6 +178,16 @@ namespace CocoRCore
 
         public Token.Builder Copy() => new Token.Builder(this); // to modify attributes
         public Range Range() => new Range(position, endPosition);
+
+        public string ToString(ParserBase parser)
+        {
+            var nm = parser.NameOf(kind);
+            if (nm.StartsWith("\""))
+                return valScanned;
+            if (valScanned.Length > 30)
+                return $"{nm} '{valScanned.Substring(0, 28)}...'";
+            return $"{nm} '{valScanned}'";
+        }
 
         public class Builder
         {

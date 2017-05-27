@@ -4,27 +4,30 @@
 // up to these numbers.
 
 program Täst {
-	int i;	           # and this is a one-character-initiated comment
-	
-	void Föö() {
-		int a, b, mäx;
-		read a; read b;
-		if (a > b) mäx = a; else mäx = b;
-		write mäx;
-	}
+    int i;	           # and this is a one-character-initiated comment
+    
+    void Föö() {
+        int a, b, mäx;
+        rel <;
+        // rel >=; # Syntax error CC1033: invalid RelOp, expected == < >, found >=.
+        rel ==;
+        read a; read b;
+        if (a > b) mäx = a; else mäx = b;
+        write mäx;
+    }
 
-	void SumUp() {
-		int sum;
-		sum = 0;
-		while (i > 0) { sum = sum + i; i = i - 1; }
-		write sum;
-	}
+    void SumUp() {
+        int sum;
+        sum = 0;
+        while (i > 0) { sum = sum + i; i = i - 1; }
+        write sum;
+    }
 
-	void Main() {
-		read i;
-		while (i > 0) {
-			SumUp();
-			read i;
-		}
-	}
+    void Main() {
+        read i;
+        while (i > 0) {
+            SumUp();
+            read i;
+        }
+    }
 }

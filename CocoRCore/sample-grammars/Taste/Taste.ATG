@@ -22,6 +22,7 @@ CHARACTERS
 TOKENS
   ident  = letter {letter | digit}.
   number = digit {digit}.
+  gte = ">=".
 
 COMMENTS FROM "/*" TO "*/" NESTED
 COMMENTS FROM "//" TO lf
@@ -111,6 +112,8 @@ Stat                     (. int type; string name; Obj obj;
 	| '(' ')' ';'          (. if (obj.kind != proc) SemErr(7, "object is not a procedure");
 												  	gen.Emit(Op.CALL, obj.adr); .)
 	)
+
+| "rel" RelOp<out var op> ';'
 
 | "if" 
 	'(' Expr<out type> ')' (. if (type != boolean) SemErr(8, "boolean type expected");
