@@ -21,6 +21,7 @@ namespace CocoRCore.Samples
                 var parser = pgen();
                 try
                 {
+                    parser.errors.UseShortDiagnosticFormat();
                     parser.Parse();
                     foreach (var e in parser.errors)
                         Console.Write(e.Format("", "")); // this is only to see if it compiles, it doesn't output anything
