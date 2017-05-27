@@ -52,17 +52,20 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (ignoreSemanticActions) Console.Write(" [ignore semantic actions]");
             if (omitOld) Console.Write(" [omit *.old files]");
             Console.WriteLine();
+
             if (arg.Length > 0 && srcName != null)
             {
                 try
                 {
-                    string srcDir = Path.GetDirectoryName(srcName);
+                    var src = new FileInfo(srcName);
+                    var srcDir = src.DirectoryName;
+                    outDir = outDir ?? srcDir;
+                    traceFileName = Path.Combine(outDir, "trace.txt");
 
                     var scanner = new Scanner().Initialize(srcName);
                     var parser = new Parser(scanner);
-                    Console.WriteLine($"{scanner.uri} -> {outDir ?? "."}");
+                    Console.WriteLine($"{scanner.uri} -> {outDir}");
 
-                    traceFileName = Path.Combine(srcDir, "trace.txt");
                     parser.trace = new StreamWriter(new FileStream(traceFileName, FileMode.Create));
                     parser.tab = new Tab(parser);
                     parser.dfa = new DFA(parser);
@@ -77,20 +80,25 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     parser.tab.outDir = (outDir != null) ? outDir : srcDir;
                     parser.tab.emitLines = emitLines;
                     parser.tab.omitOld = omitOld;
-                    if (ddtString != null) parser.tab.SetDDT(ddtString);
+                    if (ddtString != null) 
+                        parser.tab.SetDDT(ddtString);
 
                     parser.Parse();
 
                     parser.trace.Dispose();
-                    FileInfo f = new FileInfo(traceFileName);
-                    if (f.Length == 0) f.Delete();
-                    else Console.WriteLine("trace output is in " + traceFileName);
+                    FileInfo trc = new FileInfo(traceFileName);
+                    if (trc.Length == 0) 
+                        trc.Delete();
+                    else 
+                        Console.WriteLine("trace output is in " + trc.FullName);
+                    
                     Console.WriteLine("{0} error(s) and {1} warning(s) detected", parser.errors.CountError, parser.errors.CountWarning);
-                    if (parser.errors.CountError == 0) { retVal = 0; }
+                    if (parser.errors.CountError == 0) 
+                        retVal = 0;
                 }
-                catch (IOException)
+                catch (IOException ex)
                 {
-                    Console.WriteLine("-- could not open " + traceFileName);
+                    Console.WriteLine("-- " + ex.Message);
                 }
                 catch (FatalError e)
                 {
@@ -104,12 +112,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                                   + "  -namespace <namespaceName>{0}"
                                   + "  -frames    <frameFilesDirectory>{0}"
                                   + "  -trace     <traceString>{0}"
-                                  + "  -o         <outputDirectory>{0}"
-                                  + "  -lines     [emit lines]{0}"
+                                  + "  -o         <outputDirectory> - defaults to *.ATG location{0}"
+                                  + "  -lines     [emit #line directives]{0}"
                                   + "  -ac        [generate autocomplete/intellisense information]{0}"
                                   + "  -is        [ignore semantic actions]{0}"
                                   + "  -oo        [omit *.old files]{0}"
-                                  + "Valid characters in the trace string:{0}"
+                                  + "Valid characters in the <traceString>:{0}"
                                   + "  A  trace automaton{0}"
                                   + "  F  list first/follow sets{0}"
                                   + "  G  print syntax graph{0}"
