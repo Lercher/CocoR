@@ -34,6 +34,7 @@ In particular:
 * Getting the compiler compiler itself as a linkable component instead of an executable alone 
 * using `Func<X,Y>` etc. instead of frame file code.
 * remove/replace scanner buffer spaghetti code
+* better diagnostic messages (e.g. on alternatives)
 
 
 ## Build on the command line
