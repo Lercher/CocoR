@@ -253,7 +253,7 @@ const int id = 0;
 		tab.RenumberPragmas();
 		if (tab.ddt[2]) tab.PrintNodes();
 		if (errors.Count == 0) {
-		Information(1, "checking if grammar is OK.");
+		Information(1, "checking if grammar is OK.", null);
 		tab.CompSymbolSets();
 		if (tab.ddt[7]) tab.XRef();
 		if (tab.GrammarOk()) {

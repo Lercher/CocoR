@@ -60,7 +60,7 @@ namespace CocoRCore
                 diag(Position.Zero, msg, n);
             else
             {
-                if (errDist >= minErrDist) 
+                if (errDist >= minErrDist)
                     diag(t.position, msg, n);
                 if (resetErrDistance)
                     errDist = 0;
@@ -137,9 +137,6 @@ namespace CocoRCore
     {
         public string uri = null;
         public System.IO.TextWriter errorStream = Console.Out;   // error messages go to this stream
-        public string DiagnosticFormat = "{5}({0},{1}): {3} {6}{4}: {2}"; // 0=line, 1=column, 2=text, 3=level, 4=id, 5=uri, 6=CC
-        public string DiagnosticFormat0 = "{5}: {3} {6}{4}: {2}"; // 0=line, 1=column, 2=text, 3=level, 4=id, 5=uri, 6=CC
-        public string DiagnosticIdPrefix = "CC";
 
         public int InfoOffset = 4000; // Infos start at 4000, 1 based
         public int WarningOffset = 3000; // Warnings start at 3000, 1 based
@@ -160,6 +157,16 @@ namespace CocoRCore
         public readonly ISet<int> Suppressed = new HashSet<int>();
         public IDictionary<int, int> DiagnosticsCounts => _diagnosticsCounts;
         private ConcurrentDictionary<int, int> _diagnosticsCounts = new ConcurrentDictionary<int, int>();
+
+        public string DiagnosticFormat = "{5}({0},{1}): {3} {6}{4}: {2}"; // 0=line, 1=column, 2=text, 3=level, 4=id, 5=uri, 6=CC
+        public string DiagnosticFormat0 = "{5}: {3} {6}{4}: {2}"; // 0=line, 1=column, 2=text, 3=level, 4=id, 5=uri, 6=CC
+        public string DiagnosticIdPrefix = "CC";
+
+        public void UseShortDiagnosticFormat()
+        {
+            DiagnosticFormat = "-- line {0:n0}, col {1:n0}: {2}";
+            DiagnosticFormat0 = "-- {2}";
+        }
 
         public virtual void Add(int id, string level, int line, int col, string message)
         {
@@ -183,7 +190,7 @@ namespace CocoRCore
                 CountInfo++;
             }
 
-            _diagnosticsCounts.AddOrUpdate(id, 1, (_ , j) => j + 1);
+            _diagnosticsCounts.AddOrUpdate(id, 1, (_, j) => j + 1);
             var error = new Diagnostic(id, level, line, col, message, DiagnosticIdPrefix);
             Add(error);
             errorStream.WriteLine(error.Format(line == 0 ? DiagnosticFormat0 : DiagnosticFormat, uri));
@@ -213,15 +220,15 @@ namespace CocoRCore
             string separator = newline ? "\r\n" : "  ";
             var sb = new StringBuilder();
             Action<int, string> add = (n, s) => sb.Insert(0, string.Format("{0:n0} {1}{2}{3}", n, s, (n != 1) ? "s" : string.Empty, separator));
-            switch(iwef.ToLowerInvariant())
+            switch (iwef.ToLowerInvariant())
             {
                 case "f":
-                    var qy = 
-                        from dc in DiagnosticsCounts 
-                        where dc.Value > 0 
-                        orderby dc.Key 
+                    var qy =
+                        from dc in DiagnosticsCounts
+                        where dc.Value > 0
+                        orderby dc.Key
                         select dc;
-                    foreach(var dc in qy)
+                    foreach (var dc in qy)
                         sb.AppendFormat("[{3}{0}:{1:n0}]{2}", dc.Key, dc.Value, separator, DiagnosticIdPrefix);
                     goto case "i";
                 case "i":

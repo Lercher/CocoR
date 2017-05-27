@@ -34,6 +34,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             var omitOld = false;
             var enableWarnings = true;
             var enableInfos = true;
+            var useShort = false;
 
             int retVal = 1;
             for (var i = 0; i < arg.Length; i++)
@@ -47,7 +48,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 else if (arg[i] == "-is") ignoreSemanticActions = true;
                 else if (arg[i] == "-oo") omitOld = true;
                 else if (arg[i] == "-nowarn") enableWarnings = false;
-                else if (arg[i] == "-nowarn") enableInfos = false;
+                else if (arg[i] == "-noinfo") enableInfos = false;
+                else if (arg[i] == "-short") useShort = true;
                 else if (arg[i] == "-utf8") {/* ignored */}                
                 else srcName = arg[i];
             }
@@ -79,6 +81,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     parser.errors.DiagnosticIdPrefix = "ATG";
                     parser.errors.EnableWarnings = enableWarnings;
                     parser.errors.EnableInfos = enableInfos;
+                    if (useShort) parser.errors.UseShortDiagnosticFormat();
 
                     parser.tab.srcName = srcName;
                     parser.tab.srcDir = srcDir;
@@ -125,6 +128,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                                   + "  -is        [ignore semantic actions]{0}"
                                   + "  -oo        [omit *.old files]{0}"
                                   + "  -nowarn    disable all warnings{0}"
+                                  + "  -noinfo    disable all informational messages{0}"
+                                  + "  -short     use short diagnostic format{0}"
                                   + "Valid characters in the <traceString>:{0}"
                                   + "  A  trace automaton{0}"
                                   + "  F  list first/follow sets{0}"
