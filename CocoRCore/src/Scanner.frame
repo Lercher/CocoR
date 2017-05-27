@@ -47,7 +47,7 @@ using CocoRCore;
 -->scan2
 			var recKind = noSym;
 			var recEnd = buffer.Position;
-			t = new Token.Builder() { position = buffer.Position };
+			t = new Token.Builder(buffer);
 			start.TryGetValue(ch, out var state); // state = 0 if not found; state = -1 if EOF;
 			tval.Clear(); AddCh();
 			

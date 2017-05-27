@@ -56,51 +56,51 @@ namespace CocoRCore.CSharp {
 		}
 				
 
-		bool Cmt1(Position bookmark)
+		bool Cmt1(Position bm)
 		{
 			if (ch != '/') return false;
 			var level = 1;
 			NextCh();
 			if (ch == '/') {
 				NextCh();
-			for(;;) {
-				if (ch == 10) {
-					level--;
-					if (level == 0) { NextCh(); return true; }
-					NextCh();
-				} else if (ch == EOF) return false;
-				else NextCh();
-			}
+				for(;;) {
+					if (ch == 10) {
+						level--;
+						if (level == 0) { NextCh(); return true; }
+						NextCh();
+					} else if (ch == EOF) return false;
+					else NextCh();
+				}
 			} else
-				buffer.ResetPositionTo(bookmark);
+				buffer.ResetPositionTo(bm);
 			return false;
 		}
 
-		bool Cmt2(Position bookmark)
+		bool Cmt2(Position bm)
 		{
 			if (ch != '/') return false;
 			var level = 1;
 			NextCh();
 			if (ch == '*') {
 				NextCh();
-			for(;;) {
-				if (ch == '*') {
-					NextCh();
-					if (ch == '/') {
-						level--;
-						if (level == 0) { NextCh(); return true; }
-						NextCh();
-					}
-				} else if (ch == '/') {
-					NextCh();
+				for(;;) {
 					if (ch == '*') {
-						level++; NextCh();
-					}
-				} else if (ch == EOF) return false;
-				else NextCh();
-			}
+						NextCh();
+						if (ch == '/') {
+							level--;
+							if (level == 0) { NextCh(); return true; }
+							NextCh();
+						}
+					} else if (ch == '/') {
+						NextCh();
+						if (ch == '*') {
+							level++; NextCh();
+						}
+					} else if (ch == EOF) return false;
+					else NextCh();
+				}
 			} else
-				buffer.ResetPositionTo(bookmark);
+				buffer.ResetPositionTo(bm);
 			return false;
 		}
 
@@ -147,7 +147,7 @@ namespace CocoRCore.CSharp {
 				return NextToken();
 			var recKind = noSym;
 			var recEnd = buffer.Position;
-			t = new Token.Builder() { position = buffer.Position };
+			t = new Token.Builder(buffer);
 			start.TryGetValue(ch, out var state); // state = 0 if not found; state = -1 if EOF;
 			tval.Clear(); AddCh();
 			

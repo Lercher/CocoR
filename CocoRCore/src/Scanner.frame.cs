@@ -178,8 +178,15 @@ namespace CocoRCore
 
         public class Builder
         {
+            public Builder(IBufferedReader buffer)
+            {
+                positionM1 = buffer.PositionM1;
+                position = buffer.Position;
+            }
+
             public Builder()
             {
+                positionM1 = Position.MinusOne;
                 position = Position.Zero;
             }
 

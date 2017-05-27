@@ -556,45 +556,45 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void GenComBody(Comment com)
         {
-            gen.WriteLine("\t\t\tfor(;;) {");
-            gen.Write("\t\t\t\tif ({0}) ", ChCond(com.stop[0])); gen.WriteLine("{");
+            gen.WriteLine("\t\t\t\tfor(;;) {");
+            gen.Write("\t\t\t\t\tif ({0}) ", ChCond(com.stop[0])); gen.WriteLine("{");
             if (com.stop.Length == 1)
             {
-                gen.WriteLine("\t\t\t\t\tlevel--;");
-                gen.WriteLine("\t\t\t\t\tif (level == 0) { NextCh(); return true; }");
-                gen.WriteLine("\t\t\t\t\tNextCh();");
-            }
-            else
-            {
-                gen.WriteLine("\t\t\t\t\tNextCh();");
-                gen.WriteLine("\t\t\t\t\tif ({0}) {{", ChCond(com.stop[1]));
                 gen.WriteLine("\t\t\t\t\t\tlevel--;");
                 gen.WriteLine("\t\t\t\t\t\tif (level == 0) { NextCh(); return true; }");
                 gen.WriteLine("\t\t\t\t\t\tNextCh();");
-                gen.WriteLine("\t\t\t\t\t}");
+            }
+            else
+            {
+                gen.WriteLine("\t\t\t\t\t\tNextCh();");
+                gen.WriteLine("\t\t\t\t\t\tif ({0}) {{", ChCond(com.stop[1]));
+                gen.WriteLine("\t\t\t\t\t\t\tlevel--;");
+                gen.WriteLine("\t\t\t\t\t\t\tif (level == 0) { NextCh(); return true; }");
+                gen.WriteLine("\t\t\t\t\t\t\tNextCh();");
+                gen.WriteLine("\t\t\t\t\t\t}");
             }
             if (com.nested)
             {
-                gen.Write("\t\t\t\t}"); gen.Write(" else if ({0}) ", ChCond(com.start[0])); gen.WriteLine("{");
+                gen.Write("\t\t\t\t\t}"); gen.Write(" else if ({0}) ", ChCond(com.start[0])); gen.WriteLine("{");
                 if (com.start.Length == 1)
-                    gen.WriteLine("\t\t\t\t\tlevel++; NextCh();");
+                    gen.WriteLine("\t\t\t\t\t\tlevel++; NextCh();");
                 else
                 {
-                    gen.WriteLine("\t\t\t\t\tNextCh();");
-                    gen.Write("\t\t\t\t\tif ({0}) ", ChCond(com.start[1])); gen.WriteLine("{");
-                    gen.WriteLine("\t\t\t\t\t\tlevel++; NextCh();");
-                    gen.WriteLine("\t\t\t\t\t}");
+                    gen.WriteLine("\t\t\t\t\t\tNextCh();");
+                    gen.Write("\t\t\t\t\t\tif ({0}) ", ChCond(com.start[1])); gen.WriteLine("{");
+                    gen.WriteLine("\t\t\t\t\t\t\tlevel++; NextCh();");
+                    gen.WriteLine("\t\t\t\t\t\t}");
                 }
             }
-            gen.WriteLine("\t\t\t\t} else if (ch == EOF) return false;");
-            gen.WriteLine("\t\t\t\telse NextCh();");
-            gen.WriteLine("\t\t\t}");
+            gen.WriteLine("\t\t\t\t\t} else if (ch == EOF) return false;");
+            gen.WriteLine("\t\t\t\t\telse NextCh();");
+            gen.WriteLine("\t\t\t\t}");
         }
 
         void GenComment(Comment com, int i)
         {
             gen.WriteLine();
-            gen.WriteLine("\t\tbool Cmt{0}(Position bookmark)", i); 
+            gen.WriteLine("\t\tbool Cmt{0}(Position bm)", i); 
             gen.WriteLine("\t\t{");
             gen.WriteLine("\t\t\tif ({0}) return false;", ChCondNot(com.start[0]));
             gen.WriteLine("\t\t\tvar level = 1;");
@@ -610,7 +610,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 gen.WriteLine("\t\t\t\tNextCh();");
                 GenComBody(com);
                 gen.WriteLine("\t\t\t} else");
-                gen.WriteLine("\t\t\t\tbuffer.ResetPositionTo(bookmark);");
+                gen.WriteLine("\t\t\t\tbuffer.ResetPositionTo(bm);");
                 gen.WriteLine("\t\t\treturn false;");
             }
             gen.WriteLine("\t\t}");
