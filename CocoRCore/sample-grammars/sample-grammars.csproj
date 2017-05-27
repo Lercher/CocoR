@@ -9,8 +9,8 @@
 
   <ItemGroup>
     <!-- https://github.com/OmniSharp/omnisharp-roslyn/issues/762 -->
-    <!-- <ProjectReference Include="..\src\CocoRCore.csproj" /> -->
-    <Compile Include="../src/*.frame.cs"/>
+    <ProjectReference Include="..\src\CocoRCore.csproj" /> 
+    <!-- <Compile Include="../src/*.frame.cs"/> -->
   </ItemGroup>
 
 </Project>
