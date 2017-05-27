@@ -618,15 +618,15 @@ byte order mark. This is the default e.g. if you use Visual Studio Code.
 ## Languages - Subfolders
 
 * C# - CSharp -
-  token inheritance *beta*, 
-  autocomplete information *beta*, 
-  symbol tables *beta*,
-  non strict symbol tables *beta*,
-  useonce and useall scopes *beta*, 
-  -is switch *beta*,
-  -utf8 switch *beta*,
-  editor *beta*,
-  BOM free scanner *beta*
+  token inheritance *stable*, 
+  autocomplete information *stable*, 
+  symbol tables *stable*,
+  non strict symbol tables *stable*,
+  useonce and useall scopes *stable*, 
+  -is switch *stable*,
+  -utf8 switch *stable* (obsolete with core),
+  editor *alpha* (obsolete with core plus vscode),
+  BOM free scanner *stable*,
   AST *alpha*
 
 * VB.Net - VisualBasic - 
@@ -635,7 +635,8 @@ byte order mark. This is the default e.g. if you use Visual Studio Code.
 * Java - (TBD)
   maybe, but not yet scheduled
 
-
+* C#7 Core - all features of the vanilla C# version but with a different API and *alpha*
+  
 * Utilities/Hexdump -
   a utility to inspect files, in particular to see, if byte 
   order marks are present.
@@ -645,7 +646,7 @@ Note: The generated code for .Net languages targets
 plain vanilla .Net Framework 2.0 compilers and libraries. 
 
 
-## Distributables
+## Distributables .Net V2
 
 To generate parsers from attributed grammars, you only need
 these files from the language directory you choose:
@@ -657,7 +658,7 @@ these files from the language directory you choose:
 
 There are no dependencies to use the generated scanners and parsers.
 
-## Distributables Core
+## Distributables .Net Core
 
 Note that there are different distributables for the 2017 .Net Core version. To build scanner and parser sources:
 
@@ -705,6 +706,10 @@ this repository.
 ## Known Bugs
 
 see readme.md in the respective language folder.
+
+## Helpful links
+[ASCII table](http://ascii.cl/),
+[Language Server Protocol binding](https://github.com/Lercher/csharp-language-server-protocol)
 
 
 ## Git Branches
