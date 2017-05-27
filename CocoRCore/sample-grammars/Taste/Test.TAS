@@ -3,10 +3,10 @@
 // It reads a sequence of numbers and computes the sum of all integers 
 // up to these numbers.
 
-program Test {
+program Täst {
 	int i;	           # and this is a one-character-initiated comment
 	
-	void Foo() {
+	void Föö() {
 		int a, b, mäx;
 		read a; read b;
 		if (a > b) mäx = a; else mäx = b;
