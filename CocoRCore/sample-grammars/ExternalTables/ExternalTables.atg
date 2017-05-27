@@ -91,11 +91,15 @@ SYMBOLTABLES
 PRODUCTIONS
 
     ExternalTables =
-        [ StarPrompt slash ]
+        [ StarPrompt Slash ]
         SetServeroutput
-        slash
+        Slash
         { Block }
         EOF
+        .
+
+    Slash = 
+        SYNC slash 
         .
 
     Block =
@@ -103,13 +107,13 @@ PRODUCTIONS
         | StarPrompt
         | DeclareBlock
         )
-        { slash }
+        { Slash }
         .
 
     DeclareBlock = 
         "declare"       (. Diag(1, "Mysterious DECLARE block detected", "TBD"); .)
         { ANY }
-        slash
+        Slash
         .
 
     ExceptionHandledBlock =
@@ -130,7 +134,7 @@ PRODUCTIONS
             sc
             [ PutLine ]   
         "end" sc
-        slash
+        Slash
         .
     
     InsertDeleteUpdate = 
