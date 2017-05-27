@@ -24,7 +24,7 @@ namespace CocoRCore.Samples
                     parser.Parse();
                     foreach (var e in parser.errors)
                         Console.Write(e.Format("", "")); // this is only to see if it compiles, it doesn't output anything
-                    Console.WriteLine("{0}: {1} error(s), {2} warning(s).", parser.scanner.uri, parser.errors.CountError, parser.errors.CountWarning);
+                    Console.WriteLine("{0}: {1:f}.", parser.scanner.uri, parser.errors);
                     if (parser.errors.CountError == 0)
                     {
                         foreach(var t in parser.tokens.Take(10))

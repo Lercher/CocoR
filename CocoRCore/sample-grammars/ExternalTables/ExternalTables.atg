@@ -17,16 +17,7 @@ TTRPARAM	LANTTRPARAM
 
 COMPILER ExternalTables
 
-// C# methods of Parser -- begin
-
-public HashSet<int> suppressed = new HashSet<int>();
-public Dictionary<int, int> diagnostics = new Dictionary<int, int>();
-
 void Diag(int n, string s, string kind) {
-    if (suppressed.Contains(n)) return;
-    int count = 0;
-    diagnostics.TryGetValue(n, out count);
-    diagnostics[n] = count + 1;
     var msg = $"[{kind}] {s}";
     if (kind == "CRIT")
         SemErr(n, msg);
@@ -34,7 +25,6 @@ void Diag(int n, string s, string kind) {
         Warning(n, msg);
 }
 
-// C# methods of Parser -- end
 
 IGNORECASE
 

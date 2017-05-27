@@ -25,13 +25,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public static int Main(string[] arg)
         {
-            Console.Write("Coco/R Core (May 26, 2017)");
+            Console.Write("Coco/R Core (May 27, 2017)");
             string srcName = null, nsName = null, frameDir = null, ddtString = null,
             traceFileName = null, outDir = null;
             var emitLines = false;
             var generateAutocompleteInformation = false;
             var ignoreSemanticActions = false;
             var omitOld = false;
+            var enableWarnings = true;
+            var enableInfos = true;
 
             int retVal = 1;
             for (var i = 0; i < arg.Length; i++)
@@ -44,7 +46,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 else if (arg[i] == "-ac") generateAutocompleteInformation = true;
                 else if (arg[i] == "-is") ignoreSemanticActions = true;
                 else if (arg[i] == "-oo") omitOld = true;
-                else if (arg[i] == "-utf8") {/* ignored */}
+                else if (arg[i] == "-nowarn") enableWarnings = false;
+                else if (arg[i] == "-nowarn") enableInfos = false;
+                else if (arg[i] == "-utf8") {/* ignored */}                
                 else srcName = arg[i];
             }
             if (emitLines) Console.Write(" [emit #line directives]");
@@ -72,6 +76,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     parser.pgen = new ParserGen(parser);
                     parser.pgen.GenerateAutocompleteInformation = generateAutocompleteInformation;
                     parser.pgen.IgnoreSemanticActions = ignoreSemanticActions;
+                    parser.errors.DiagnosticIdPrefix = "ATG";
+                    parser.errors.EnableWarnings = enableWarnings;
+                    parser.errors.EnableInfos = enableInfos;
 
                     parser.tab.srcName = srcName;
                     parser.tab.srcDir = srcDir;
@@ -92,7 +99,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     else 
                         Console.WriteLine("trace output is in " + trc.FullName);
                     
-                    Console.WriteLine("{0} error(s) and {1} warning(s) detected", parser.errors.CountError, parser.errors.CountWarning);
+                    Console.WriteLine(parser.errors);
                     if (parser.errors.CountError == 0) 
                         retVal = 0;
                 }
@@ -117,6 +124,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                                   + "  -ac        [generate autocomplete/intellisense information]{0}"
                                   + "  -is        [ignore semantic actions]{0}"
                                   + "  -oo        [omit *.old files]{0}"
+                                  + "  -nowarn    disable all warnings{0}"
                                   + "Valid characters in the <traceString>:{0}"
                                   + "  A  trace automaton{0}"
                                   + "  F  list first/follow sets{0}"
