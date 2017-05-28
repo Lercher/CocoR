@@ -63,7 +63,7 @@ namespace CocoRCore
             }
         }
 
-        public ScannerBase Initialize(String s, string uri)
+        public ScannerBase Initialize(string s, string uri)
         {
             var sr = new StringReader(s);
             return Initialize(sr, uri);
@@ -107,7 +107,7 @@ namespace CocoRCore
         public Token Scan()
         {
             if (buffer == null)
-                throw new FatalError($"The Scanner {this.GetType().FullName} has to be Initialize()-ed before use");
+                throw new FatalError($"The Scanner {GetType().FullName} has to be Initialize()-ed before use");
             if (tokens.next == null)
             {
                 return NextToken();
@@ -431,7 +431,7 @@ namespace CocoRCore
 
         public string String(int start, int end)
         {
-            int startInQ = start - pos + _q.Count;
+            var startInQ = start - pos + _q.Count;
             if (startInQ < 0) throw new FatalError("This text is no more buffered");
             if (pos < end) throw new FatalError("This text is not yet buffered");
             return new string(_q.ToArray(), startInQ, end - start);
