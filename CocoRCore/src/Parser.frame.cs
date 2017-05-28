@@ -40,7 +40,7 @@ namespace CocoRCore
         protected ParserBase(ScannerBase scanner)
         {
             this.scanner = scanner;
-            this.errors = new Errors() { uri = this.scanner.uri };
+            errors = new Errors() { uri = this.scanner.uri };
         }
 
         protected void SynErr(int n) 
@@ -90,13 +90,13 @@ namespace CocoRCore
 
         protected void addAlt(int[] range)
         {
-            foreach (int kind in range)
+            foreach (var kind in range)
                 addAlt(kind);
         }
 
         protected void addAlt(bool[,] pred, int line)
         {
-            for (int kind = 0; kind < maxT; kind++)
+            for (var kind = 0; kind < maxT; kind++)
                 if (pred[line, kind])
                     addAlt(kind);
         }
@@ -217,8 +217,8 @@ namespace CocoRCore
         public virtual string ToString(string iwef, IFormatProvider formatProvider)
         {
             iwef = iwef ?? "i";
-            bool newline = (iwef.ToUpperInvariant() == iwef);
-            string separator = newline ? "\r\n" : "  ";
+            var newline = (iwef.ToUpperInvariant() == iwef);
+            var separator = newline ? "\r\n" : "  ";
             var sb = new StringBuilder();
             Action<int, string> add = (n, s) => sb.Insert(0, string.Format("{0:n0} {1}{2}{3}", n, s, (n != 1) ? "s" : string.Empty, separator));
             switch (iwef.ToLowerInvariant())
@@ -287,12 +287,12 @@ namespace CocoRCore
         {
             this.t = t;
             if (alternatives.tdeclares != null)
-                this.declares = alternatives.tdeclares.name;
+                declares = alternatives.tdeclares.name;
             if (alternatives.tdeclared != null)
-                this.declared = alternatives.tdeclared.name;
-            this.alt = alternatives.alt;
-            this.st = alternatives.altst;
-            this.declaration = alternatives.declaration;
+                declared = alternatives.tdeclared.name;
+            alt = alternatives.alt;
+            st = alternatives.altst;
+            declaration = alternatives.declaration;
         }
     }
 
@@ -325,27 +325,27 @@ namespace CocoRCore
             this.name = name;
             this.ignoreCase = ignoreCase;
             this.strict = strict;
-            this.scopes = new Stack<List<Token>>();
             this.parser = parser;
+            scopes = new Stack<List<Token>>();
             pushNewScope();
         }
 
         private Symboltable(Symboltable st)
         {
-            this.name = st.name;
-            this.ignoreCase = st.ignoreCase;
-            this.strict = st.strict;
-            this.parser = st.parser;
+            name = st.name;
+            ignoreCase = st.ignoreCase;
+            strict = st.strict;
+            parser = st.parser;
 
             // now copy the scopes and its lists
-            this.scopes = new Stack<List<Token>>();
-            Stack<List<Token>> reverse = new Stack<List<Token>>(st.scopes);
-            foreach (List<Token> list in reverse)
+            scopes = new Stack<List<Token>>();
+            var reverse = new Stack<List<Token>>(st.scopes);
+            foreach (var list in reverse)
             {
                 if (strict)
-                    this.scopes.Push(new List<Token>(list)); // strict: copy the list values
+                    scopes.Push(new List<Token>(list)); // strict: copy the list values
                 else
-                    this.scopes.Push(list); // non strict: copy the list reference
+                    scopes.Push(list); // non strict: copy the list reference
             }
         }
 
@@ -361,30 +361,16 @@ namespace CocoRCore
 
         private StringComparer comparer => ignoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
 
-        private Token Find(IEnumerable<Token> list, Token tok)
-        {
-            StringComparer cmp = comparer;
-            foreach (Token t in list)
-                if (0 == cmp.Compare(t.val, tok.val))
-                    return t;
-            return null;
-        }
+        private Token Find(IEnumerable<Token> list, Token tok) => list.FirstOrDefault(t => t.val == tok.val);
 
-        public Token Find(Token t)
-        {
-            foreach (List<Token> list in scopes)
-            {
-                Token tok = Find(list, t);
-                if (tok != null) return tok;
-            }
-            return null;
-        }
+        public Token Find(Token t) => scopes.Select(list => Find(list, t)).FirstOrDefault(tok => tok != null);
+
 
         // ----------------------------------- for Parser use start -------------------- 
 
         public bool Use(Token t, Alt a)
         {
-            if (TokenUsed != null) TokenUsed(t);
+            TokenUsed?.Invoke(t);
             a.tdeclared = this;
             if (strict)
             {
@@ -417,9 +403,10 @@ namespace CocoRCore
 
         public void Add(string s)
         {
-            Token.Builder t = new Token.Builder();
-            t.kind = -1;
-            t.position = Position.MinusOne;
+            var t = new Token.Builder() {
+                kind = -1,
+                position = Position.MinusOne
+            };
             t.setValue(s, parser.scanner.casingString);
             currentScope.Add(t.Freeze());
         }
@@ -433,15 +420,15 @@ namespace CocoRCore
 
         void RemoveFromAndFixupList(List<Token> undeclared, Token declaration)
         {
-            StringComparer cmp = comparer;
-            List<Token> found = new List<Token>();
-            foreach (Token t in undeclared)
+            var cmp = comparer;
+            var found = new List<Token>();
+            foreach (var t in undeclared)
                 if (0 == cmp.Compare(t.val, declaration.val))
                     found.Add(t);
-            foreach (Token t in found)
+            foreach (var t in found)
             {
                 undeclared.Remove(t);
-                foreach (Alternative a in fixuplist)
+                foreach (var a in fixuplist)
                     if (a.t == t)
                         a.declaration = declaration;
             }
@@ -463,20 +450,20 @@ namespace CocoRCore
 
         public void CheckDeclared()
         {
-            List<Token> list = undeclaredTokens.Peek();
-            foreach (Token t in list)
+            var list = undeclaredTokens.Peek();
+            foreach (var t in list)
             {
-                string msg = string.Format(parser.MissingSymbol, parser.NameOfTokenKind(t.kind), t.val, this.name);
+                var msg = string.Format(parser.MissingSymbol, parser.NameOfTokenKind(t.kind), t.val, name);
                 parser.errors.SemErr(t.position, msg, 93);
             }
         }
 
         void PromoteUndeclaredToParent()
         {
-            List<Token> list = undeclaredTokens.Pop();
+            var list = undeclaredTokens.Pop();
             // now that the lexical scope is about to terminate, we know that there cannot be more declarations in this scope
             // so we can take the existing declarations of the parent scope to resolve these unresolved tokens in 'list'.
-            foreach (Token decl in currentScope)
+            foreach (var decl in currentScope)
                 RemoveFromAndFixupList(list, decl);
             // now list contains all tokens that were not delared in the popped scope
             // and not yet declared in the now current scope
@@ -505,9 +492,9 @@ namespace CocoRCore
             {
                 if (scopes.Count == 1) return currentScope;
 
-                Symboltable all = new Symboltable(name, ignoreCase, true, parser);
-                foreach (List<Token> list in scopes)
-                    foreach (Token t in list)
+                var all = new Symboltable(name, ignoreCase, true, parser);
+                foreach (var list in scopes)
+                    foreach (var t in list)
                         all.Add(t);
                 return all.currentScope;
             }
@@ -546,13 +533,13 @@ namespace CocoRCore
                 this.st = st;
                 this.oneOrMore = oneOrMore;
                 this.scopeToken = scopeToken;
-                this.uses = new List<Token>();
+                uses = new List<Token>();
                 st.TokenUsed += uses.Add;
             }
 
             private bool isValid(List<Token> list)
             {
-                int cnt = list.Count;
+                var cnt = list.Count;
                 if (oneOrMore) return (cnt >= 1);
                 return (cnt <= 1);
             }
@@ -561,29 +548,29 @@ namespace CocoRCore
             {
                 GC.SuppressFinalize(this);
                 st.TokenUsed -= uses.Add;
-                Dictionary<string, List<Token>> counter = new Dictionary<string, List<Token>>(st.comparer);
-                foreach (Token t in st.items)
+                var counter = new Dictionary<string, List<Token>>(st.comparer);
+                foreach (var t in st.items)
                     counter[t.val] = new List<Token>();
-                foreach (Token t in uses)
+                foreach (var t in uses)
                     if (counter.ContainsKey(t.val)) // we ignore undeclared Tokens:
                         counter[t.val].Add(t);
                 // now check for validity
-                foreach (string s in counter.Keys)
+                foreach (var s in counter.Keys)
                 {
-                    List<Token> list = counter[s];
+                    var list = counter[s];
                     if (!isValid(list))
                     {
                         if (oneOrMore)
                         {
-                            string msg = string.Format("token '{0}' has to be used in this scope.", s);
+                            var msg = string.Format("token '{0}' has to be used in this scope.", s);
                             st.parser.errors.SemErr(scopeToken.position, msg, 94);
                         }
                         else
                         {
-                            string msg = string.Format("token '{0}' is used {1:n0} time(s) instead of at most once in this scope, see following errors for locations.", s, list.Count);
+                            var msg = string.Format("token '{0}' is used {1:n0} time(s) instead of at most once in this scope, see following errors for locations.", s, list.Count);
                             st.parser.errors.SemErr(scopeToken.position, msg, 95);
-                            int n = 0;
-                            foreach (Token t in list)
+                            var n = 0;
+                            foreach (var t in list)
                             {
                                 n++;
                                 var msgN = string.Format("... here #{0}/{1}: {2}", n, list.Count, s);
@@ -625,7 +612,7 @@ namespace CocoRCore
         {
             // see Mark Amery's comment in
             // http://stackoverflow.com/questions/19176024/how-to-escape-special-characters-in-building-a-json-string
-            foreach (char ch in s)
+            foreach (var ch in s)
             {
                 switch (ch)
                 {
@@ -644,14 +631,15 @@ namespace CocoRCore
 
         public override string ToString()
         {
-            Token.Builder at0 = new Token.Builder();
-            at0.position = Position.MinusOne;
+            var at0 = new Token.Builder() {
+                position = Position.MinusOne
+            };
             return ToString(at0.Freeze());
         }
 
         public string ToString(Token at)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             serialize(sb, 0, at);
             return sb.ToString();
         }
@@ -744,9 +732,8 @@ namespace CocoRCore
 
             public ASTList(AST a)
             {
-                if (a is ASTList)
+                if (a is ASTList li)
                 {
-                    ASTList li = (ASTList)a;
                     list = li.list;
                     startToken = li.startToken;
                     endToken = li.endToken;
@@ -771,11 +758,10 @@ namespace CocoRCore
 
             public AST merge(AST a)
             {
-                if (a is ASTList)
+                if (a is ASTList li)
                 {
-                    ASTList li = (ASTList)a;
                     list.AddRange(li.list);
-                    foreach (AST ast in li.list)
+                    foreach (var ast in li.list)
                         mergeStartEnd(ast);
                 }
                 else
@@ -788,12 +774,12 @@ namespace CocoRCore
 
             protected override void serialize(StringBuilder sb, int indent, Token at) // ASTList
             {
-                bool longlist = (count > 3);
+                var longlist = (count > 3);
                 sb.Append('[');
                 addPos(sb);
                 if (longlist) AST.newline(indent + 1, sb);
-                int n = 0;
-                foreach (AST ast in list)
+                var n = 0;
+                foreach (var ast in list)
                 {
                     ast.serialize(sb, indent + 1, at);
                     n++;
@@ -841,7 +827,7 @@ namespace CocoRCore
                     return true;
                 }
                 // we have e.nam, call it a thing:
-                AST thing = ht[e.name];
+                var thing = ht[e.name];
                 if (thing is ASTList)
                 {
                     ((ASTList)thing).merge(e.ast);
@@ -854,16 +840,16 @@ namespace CocoRCore
 
             protected override void serialize(StringBuilder sb, int indent, Token at) // ASTObject 
             {
-                bool longlist = (count > 3);
+                var longlist = (count > 3);
                 sb.Append('{');
                 addPos(sb);
                 if (longlist) AST.newline(indent + 1, sb);
-                int n = 0;
+                var n = 0;
                 if (inOrder(at))
                     sb.Append("\"$active\": true, ");
-                foreach (string name in ht.Keys)
+                foreach (var name in ht.Keys)
                 {
-                    AST ast = ht[name];
+                    var ast = ht[name];
                     sb.Append('\"');
                     AST.escapeJSON(name, sb);
                     sb.Append("\": ");
@@ -888,8 +874,8 @@ namespace CocoRCore
 
             public override string ToString()
             {
-                string a = ast == null ? "null" : ast.ToString();
-                string n = name == null ? "." : name;
+                var a = ast == null ? "null" : ast.ToString();
+                var n = name ?? ".";
                 return string.Format("{0} = {1};", n, a);
             }
 
@@ -898,21 +884,23 @@ namespace CocoRCore
                 if (name == e.name)
                 {
                     //if (name == null) Console.WriteLine(" [merge two unnamed to a single list]"); else Console.WriteLine(" [merge two named {0} to a single list]", name);
-                    ASTList list = new ASTList(ast);
+                    var list = new ASTList(ast);
                     list.merge(e.ast);
-                    E ret = new E();
-                    ret.ast = list;
-                    ret.name = name;
+                    var ret = new E() {
+                        ast = list,
+                        name = name
+                    };
                     return ret;
                 }
                 else if (name != null && e.name != null)
                 {
                     //Console.WriteLine(" [merge named {0}+{1} to an unnamed object]", name, e.name);
-                    ASTObject obj = new ASTObject();
+                    var obj = new ASTObject();
                     obj.add(this);
                     obj.add(e);
-                    E ret = new E();
-                    ret.ast = obj;
+                    var ret = new E() {
+                        ast = obj
+                    };
                     return ret;
                 }
                 else if (ast.merge(e))
@@ -927,7 +915,7 @@ namespace CocoRCore
             public void join(string joinwith)
             {
                 if (ast == null || !(ast is ASTList)) return;
-                StringBuilder sb = new StringBuilder();
+                var sb = new StringBuilder();
                 for (var i = 0; i < ast.count; i++)
                 {
                     if (i > 0) sb.Append(joinwith);
@@ -949,7 +937,7 @@ namespace CocoRCore
 
             public void wrapinobject()
             {
-                ASTObject o = new ASTObject();
+                var o = new ASTObject();
                 o.add(this);
                 ast = o;
             }
@@ -975,8 +963,8 @@ namespace CocoRCore
 
             public override string ToString()
             {
-                StringBuilder sb = new StringBuilder();
-                foreach (E e in stack)
+                var sb = new StringBuilder();
+                foreach (var e in stack)
                     sb.AppendFormat("{0}\n", e);
                 return sb.ToString();
             }
@@ -991,8 +979,9 @@ namespace CocoRCore
             public void hatch(Token s, Token t, string literal, string name, bool islist)
             {
                 //System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1} at {4},{5}.", t.val, literal, name, islist, t.line, t.col);
-                E e = new E();
-                e.ast = new ASTLiteral(literal != null ? literal : t.val);
+                var e = new E() {
+                    ast = new ASTLiteral(literal ?? t.val)
+                };
                 e.ast.mergeStart(s);
                 e.ast.mergeEnd(t);
                 if (islist)
@@ -1005,7 +994,7 @@ namespace CocoRCore
             public void sendup(Token s, Token t, string literal, string name, bool islist)
             {
                 if (stack.Count == 0) return;
-                E e = currentE;
+                var e = currentE;
                 if (e == null)
                 {
                     e = new E();
@@ -1022,7 +1011,7 @@ namespace CocoRCore
                 {
                     if (islist)
                     {
-                        bool merge = (e.name == null);
+                        var merge = (e.name == null);
                         e.wrapinlist(merge);
                     }
                     else if (e.name != null)
@@ -1041,29 +1030,30 @@ namespace CocoRCore
             // remove the topmost null on the stack, keeping anythng else 
             public void popNull()
             {
-                Stack<E> list = new Stack<E>();
+                var list = new Stack<E>();
                 while (true)
                 {
                     if (stack.Count == 0) break;
-                    E e = stack.Pop();
+                    var e = stack.Pop();
                     if (e == null) break;
                     list.Push(e);
                 }
-                foreach (E e in list)
+                foreach (var e in list)
                     stack.Push(e);
             }
 
             private void join(string joinwith, Token s, Token t, Token la)
             {
-                E e = currentE;
+                var e = currentE;
                 if (e == null)
                 {
                     e = new E();
-                    string source = parser.scanner.buffer.GetBufferedString(s.position.Range(la));
+                    var source = parser.scanner.buffer.GetBufferedString(s.position.Range(la));
                     source = source.Trim();
-                    e.ast = new ASTLiteral(source);
-                    e.ast.startToken = s;
-                    e.ast.endToken = t;
+                    e.ast = new ASTLiteral(source) {
+                        startToken = s,
+                        endToken = t
+                    };
                     push(e);
                 }
                 else if (e.ast is ASTList)
@@ -1082,9 +1072,9 @@ namespace CocoRCore
 
             private bool mergeToNull(Token t)
             {
-                bool somethingMerged = false;
-                Stack<E> list = new Stack<E>();
-                int cnt = 0;
+                var somethingMerged = false;
+                var list = new Stack<E>();
+                var cnt = 0;
                 while (true)
                 {
                     if (stack.Count == 0) return false;
@@ -1103,8 +1093,8 @@ namespace CocoRCore
                 }
                 // merge as much as we can and push the results. Start with null
                 E ret = null;
-                int n = 0;
-                foreach (E e in list)
+                var n = 0;
+                foreach (var e in list)
                 {
                     n++;
                     //System.Console.Write("{3}>> {1} of {2}   merge: {0}", e, n, cnt, stack.Count);
@@ -1112,7 +1102,7 @@ namespace CocoRCore
                         ret = e;
                     else
                     {
-                        E merged = ret.add(e);
+                        var merged = ret.add(e);
                         if (merged != null)
                         {
                             somethingMerged = true;
@@ -1156,8 +1146,8 @@ namespace CocoRCore
                     this.ishatch = ishatch;
                     this.islist = islist;
                     this.primed = primed;
-                    Token t = builder.parser.la;
-                    this.startToken = t;
+                    var t = builder.parser.la;
+                    startToken = t;
                     if (ishatch)
                     {
                         if (primed)
@@ -1182,7 +1172,7 @@ namespace CocoRCore
                 public void Dispose()
                 {
                     GC.SuppressFinalize(this);
-                    Token t = builder.parser.t;
+                    var t = builder.parser.t;
                     if (!ishatch)
                     {
                         builder.sendup(startToken, t, literal, name, islist);
@@ -1207,14 +1197,14 @@ namespace CocoRCore
                 {
                     this.builder = builder;
                     this.joinwith = joinwith;
-                    this.startToken = builder.parser.la;
+                    startToken = builder.parser.la;
                     builder.stack.Push(null); // push a marker
                 }
 
                 public void Dispose()
                 {
                     GC.SuppressFinalize(this);
-                    Token t = builder.parser.t;
+                    var t = builder.parser.t;
                     builder.mergeAt(t);
                     if (joinwith != null)
                         builder.join(joinwith, startToken, t, builder.parser.la);
