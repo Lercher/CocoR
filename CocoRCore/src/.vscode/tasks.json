@@ -17,7 +17,7 @@
         },
         {
             "taskName": "build",
-            "args": [],
+            "args": [],u
             "isBuildCommand": true,
             "showOutput": "silent",
             "problemMatcher": "$msCompile"

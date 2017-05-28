@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <Target Name="Build-Grammars" AfterTargets="build">
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo         Coco.ATG" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo -ac     ../sample-grammars/Taste/Taste.ATG" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo -ac     ../sample-grammars/Inheritance/Inheritance.ATG" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo -ac -is ../sample-grammars/Coco/Coco.ATG" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo -ac     ../sample-grammars/WFModel/WFModel.ATG" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo -ac     ../sample-grammars/ExternalTables/ExternalTables.ATG" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo         Coco.atg" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo -ac     ../sample-grammars/Taste/Taste.atg" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo -ac     ../sample-grammars/Inheritance/inheritance.atg" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo -ac -is ../sample-grammars/Coco/Coco.atg" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo -ac     ../sample-grammars/wfmodel/WFModel.atg" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo -ac     ../sample-grammars/ExternalTables/ExternalTables.atg" />
   </Target>
 </Project>
