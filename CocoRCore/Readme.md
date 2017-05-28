@@ -36,6 +36,10 @@ In particular:
 * remove/replace scanner buffer spaghetti code
 * better diagnostic messages (e.g. on alternatives)
 
+## Howto install the dotnet SDK on ubuntu 17.04
+
+[Doku on microsoft.com](https://www.microsoft.com/net/core#linuxubuntu)
+(use the 16.10 kind)
 
 ## Build on the command line
 
