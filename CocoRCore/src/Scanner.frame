@@ -68,7 +68,7 @@ using CocoRCore;
 -->scan3
 			}
 			t.setValue(tval.ToString(), casingString);
-			return t.Freeze(buffer.Position);
+			return t.Freeze(buffer.Position, buffer.PositionM1);
 		}
 		
 	} // end Scanner

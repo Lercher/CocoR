@@ -229,9 +229,9 @@ namespace CocoRCore
                 return new Token(this);
             }
 
-            public Token Freeze(Position end)
+            public Token Freeze(Position end, Position endM1)
             {
-                endPosition = end;
+                endPosition = end.col <= 0 ? endM1.OneCharForward() : end;
                 return Freeze();
             }
         }
