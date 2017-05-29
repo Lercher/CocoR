@@ -423,7 +423,7 @@ namespace CocoRCore
     }
 
 
-    public class CircularBuffer<T> : IEnumerable<T>
+    public class CircularBuffer<T> : IEnumerable<T>, IDisposable
     {
         private int capacity;
         private int size;
@@ -446,7 +446,7 @@ namespace CocoRCore
             AllowOverflow = allowOverflow;
         }
 
-        public bool AllowOverflow;
+        public readonly bool AllowOverflow;
 
         public int Capacity => capacity;
 
@@ -499,16 +499,6 @@ namespace CocoRCore
             return count;
         }
 
-        public void Put(T item)
-        {
-            if (!AllowOverflow && size == capacity)
-                throw new InvalidOperationException("MessageBufferOverflow");
-
-            buffer[tail] = item;
-            if (++tail == capacity)
-                tail = 0;
-            size++;
-        }
 
         public void Skip(int count)
         {
@@ -543,17 +533,6 @@ namespace CocoRCore
             return realCount;
         }
 
-        public T Get()
-        {
-            if (size == 0)
-                throw new InvalidOperationException("MessageBufferEmpty");
-
-            var item = buffer[head];
-            if (++head == capacity)
-                head = 0;
-            size--;
-            return item;
-        }
 
         public void CopyTo(T[] array)
         {
@@ -612,6 +591,60 @@ namespace CocoRCore
         {
             return GetEnumerator();
         }
+
+        public void Put(T item)
+        {
+            if (!AllowOverflow && size == capacity)
+                throw new InvalidOperationException("MessageBufferOverflow");
+
+            buffer[tail] = item;
+            if (++tail == capacity)
+                tail = 0;
+            size++;
+        }
+
+        public T Get()
+        {
+            if (size == 0)
+                throw new InvalidOperationException("MessageBufferEmpty");
+
+            var item = buffer[head];
+            if (++head == capacity)
+                head = 0;
+            size--;
+            return item;
+        }
+
+        public T ItemAt(int index)
+        {
+            if (index >= 0)
+            { // look up index items on the Get/head end
+                var i = index + head;
+                if (i > capacity)
+                    i -= capacity;
+                return buffer[i];
+            }
+            else
+            { // look up index items on the Put/tail end
+                var i = index + tail;
+                if (i < 0)
+                    i += capacity;
+                return buffer[i];
+            }
+        }
+
+        public T[] Slice(int index, int count)
+        {
+            var ar = new T[count];
+            for (int i = 0; i < count; i++)
+                ar[i] = ItemAt(index + i);
+            return ar;
+        }
+
+        public void Dispose()
+        {
+            buffer = null;
+        }
     }
 
     //-----------------------------------------------------------------------------------
@@ -619,37 +652,33 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     public class SlidingBuffer : IDisposable
     {
-        private readonly Queue<char> _q;
-        private int _remain;
+        private readonly CircularBuffer<char> _q;
         public int pos { get; private set; }
         public SlidingBuffer(int capacity)
         {
             pos = 0;
-            _remain = capacity;
-            _q = new Queue<char>(capacity);
+            _q = new CircularBuffer<char>(capacity, allowOverflow: true);
         }
 
         public void Put(char c)
         {
             pos++;
-            if (_remain == 0)
-                _q.Dequeue();
-            else
-                _remain--;
-            _q.Enqueue(c);
+            _q.Put(c);
         }
 
-        public char CharAt(int p) => _q.ToArray()[p - pos + _q.Count];
+        public char CharAt(int p) => _q.ItemAt(p - pos);
 
         public string String(int start, int end)
         {
-            var startInQ = start - pos + _q.Count;
-            if (startInQ < 0) throw new FatalError("This text is no more buffered");
+            var startInQ = start - pos; // is negative
+            if (-startInQ >= _q.Capacity) throw new FatalError("This text is no more buffered");
             if (pos < end) throw new FatalError("This text is not yet buffered");
-            return new string(_q.ToArray(), startInQ, end - start);
+            if (start > end) throw new FatalError("Start can't be after end");
+            var ar = _q.Slice(startInQ, end - start);
+            return new String(ar);
         }
 
-        public void Dispose() => _q.Clear();
+        public void Dispose() => _q.Dispose();
     }
 
 

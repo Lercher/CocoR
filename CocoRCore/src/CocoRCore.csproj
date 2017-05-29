@@ -14,7 +14,7 @@
 
   <PropertyGroup>  
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net40;netcoreapp1.1</TargetFrameworks>
+    <TargetFrameworks>netcoreapp1.1;net40</TargetFrameworks>
     <GenerateFullPaths>true</GenerateFullPaths>
     <RuntimeIdentifier>win</RuntimeIdentifier>
   </PropertyGroup>
