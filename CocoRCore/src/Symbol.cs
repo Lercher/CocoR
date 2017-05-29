@@ -23,6 +23,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public Node graph;       // nt: to first node of syntax graph
         public TerminalTokenKind tokenKind;   // t:  token kind (fixedToken, classToken, ...)
         public bool deletable;   // nt: true if nonterminal is deletable
+        public bool deletableOK; // nt: true if we noticed and accepted that this nonterminal is deletable
         public bool firstReady;  // nt: true if terminal start symbols have already been computed
         public BitArray first;       // nt: terminal start symbols
         public BitArray follow;      // nt: terminal followers

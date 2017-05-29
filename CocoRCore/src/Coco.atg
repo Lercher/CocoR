@@ -64,7 +64,7 @@ IGNORE cr + lf + tab
 
 PRODUCTIONS
 
-Coco                            (. Symbol sym; Graph g, g1, g2; string gramName; CharSet s; .)
+Coco                            (. string gramName; CharSet s; .)
 =
   [ // using statements
     ANY                          (. var usingPos = t.position; .)
@@ -82,8 +82,8 @@ Coco                            (. Symbol sym; Graph g, g1, g2; string gramName;
   [ "TOKENS"  { TokenDecl<NodeKind.t> }]
   [ "PRAGMAS" { TokenDecl<NodeKind.pr> }]
   { "COMMENTS"                  (. bool nested = false; .)
-    "FROM" TokenExpr<out g1> 
-    "TO" TokenExpr<out g2>
+    "FROM" TokenExpr<out var g1> 
+    "TO" TokenExpr<out var g2>
     [ "NESTED"                  (. nested = true; .)
     ]                           (. dfa.NewComment(g1.l, g2.l, nested); .)
   }
@@ -96,33 +96,7 @@ Coco                            (. Symbol sym; Graph g, g1, g2; string gramName;
   "PRODUCTIONS"                 (. if (genScanner) dfa.MakeDeterministic();
                                    tab.DeleteNodes();
                                  .)
-  { ident                       (. sym = tab.FindSym(t.val);
-                                   bool undef = sym == null;
-                                   if (undef) sym = tab.NewSym(NodeKind.nt, t.val, t.position);
-                                   else {
-                                     if (sym.typ == NodeKind.nt) {
-                                       if (sym.graph != null) SemErr(1, "name declared twice");
-                                   	 } else SemErr(2, "this symbol kind not allowed on left side of production");
-                                   	 sym.pos = t.position;
-                                   }
-                                   bool noAttrs = sym.attrPos == null;
-                                   sym.attrPos = null;
-                                 .)
-    [ AttrDecl<sym> ]           (. if (!undef)
-                                     if (noAttrs != (sym.attrPos == null))
-                                       SemErr(3, "attribute mismatch between declaration and use of this symbol");
-                                 .)
-    [ ASTJoin<sym> ]
-    [ ScopesDecl<sym> ]
-    [ UseOnceDecl<sym> ]
-    [ UseAllDecl<sym> ]
-    [ SemText<out sym.semPos> ] WEAK
-    '='
-    Expression<out g>           (. sym.graph = g.l;
-                                   tab.Finish(g);
-                                 .)
-                                WEAK
-    '.'
+  { Production
   }
   "END" ident                   (. if (gramName != t.val)
                                      SemErr(4, "name does not match grammar name");
@@ -130,7 +104,7 @@ Coco                            (. Symbol sym; Graph g, g1, g2; string gramName;
                                    if (tab.gramSy == null)
                                      SemErr(5, "missing production for grammar name");
                                    else {
-                                     sym = tab.gramSy;
+                                     var sym = tab.gramSy;
                                      if (sym.attrPos != null)
                                        SemErr(6, "grammar symbol must not have attributes");
                                    }
@@ -157,6 +131,43 @@ Coco                            (. Symbol sym; Graph g, g1, g2; string gramName;
                                    if (tab.ddt[6]) tab.PrintSymbolTable();
                                  .)
   '.'
+.
+
+
+Production                      (. var deletableOK = false; .)
+=
+    [ "DELETEABLE"              (. deletableOK = true; .)
+    ]
+    ident                       (. var sym = tab.FindSym(t.val);
+                                   bool undef = sym == null;
+                                   if (undef) sym = tab.NewSym(NodeKind.nt, t.val, t.position);
+                                   else {
+                                     if (sym.typ == NodeKind.nt) {
+                                       if (sym.graph != null) SemErr(1, "name declared twice");
+                                   	 } else SemErr(2, "this symbol kind not allowed on left side of production");
+                                   	 sym.pos = t.position;
+                                   }
+                                   bool noAttrs = sym.attrPos == null;
+                                   sym.attrPos = null;
+                                   sym.deletableOK = deletableOK;
+                                 .)
+    [ AttrDecl<sym> ]           (. if (!undef)
+                                     if (noAttrs != (sym.attrPos == null))
+                                       SemErr(3, "attribute mismatch between declaration and use of this symbol");
+                                 .)
+    [ ASTJoin<sym> ]
+    [ ScopesDecl<sym> ]
+    [ UseOnceDecl<sym> ]
+    [ UseAllDecl<sym> ]
+    [ SemText<out sym.semPos> ] 
+    
+    WEAK
+    '='
+    Expression<out var g>       (. sym.graph = g.l;
+                                   tab.Finish(g);
+                                 .)
+    WEAK
+    '.'
 .
 
 
@@ -326,6 +337,7 @@ AttrDecl<Symbol sym>
 
 /*------------------------------------------------------------------------------------*/
 
+DELETEABLE
 Expression<out Graph g>         (. Graph g2; .)
 = 
   Term<out g>                   (. bool first = true; .)
@@ -339,6 +351,7 @@ Expression<out Graph g>         (. Graph g2; .)
 
 /*------------------------------------------------------------------------------------*/
 
+DELETEABLE
 Term<out Graph g>               (. Graph g2; Node rslv = null; g = null; .)
 =
 ( [                             (. rslv = tab.NewNode(NodeKind.rslv, null, la.line); .)

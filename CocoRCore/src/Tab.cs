@@ -710,8 +710,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     }
             } while (changed);
             foreach (var sym in nonterminals)
-                if (sym.deletable) 
-                    errors.Warning(sym.pos, "NT " + sym.name + " deletable", 11);
+                if (sym.deletable && !sym.deletableOK) 
+                    errors.Warning(sym.pos, $"NT {sym.name} deletable", 11);
         }
 
         public void RenumberPragmas()
