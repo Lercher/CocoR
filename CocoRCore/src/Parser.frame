@@ -16,9 +16,18 @@ using CocoRCore;
 		private const bool _x = false;
 -->declarations
 
-		public Parser(ScannerBase scanner) : base(scanner)
+		public Parser()
 		{
 -->constructor
+		}
+
+		public static Parser Create() => (Parser) new Parser().Initialize(new Scanner());
+
+		public static Parser Create(Action<Scanner> init)
+		{
+			var p = Create();
+			init((Scanner) p.scanner);
+			return p;
 		}
 
 		public override int maxT => __maxT;
@@ -112,6 +121,7 @@ using CocoRCore;
 
 		public override void Parse() 
 		{
+			if (scanner == null) throw new FatalError("This parser is not Initialize()-ed.");
 			la = Token.Zero;
 			Get();
 -->parseRoot

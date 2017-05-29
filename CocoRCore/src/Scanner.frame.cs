@@ -61,15 +61,15 @@ namespace CocoRCore
             disposables.Clear();
         }
 
-        public ScannerBase Initialize(string fileName)
+        public ScannerBase Initialize(string fileName) => Initialize(new FileInfo(fileName));
+
+        public ScannerBase Initialize(FileInfo file)        
         {
             try
             {
-                // TODO: Who disposes of the stream and the reader
-                var f = new System.IO.FileInfo(fileName);
-                var stream = Track(new FileStream(f.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096));
-                var tr =  Track(new StreamReader(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true));
-                return Initialize(tr, f.FullName);
+                var stream = Track(file.OpenRead());
+                var tr =  Track(new StreamReader(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 4096));
+                return Initialize(tr, file.FullName);
             }
             catch (IOException ex)
             {
@@ -77,9 +77,9 @@ namespace CocoRCore
             }
         }
 
-        public ScannerBase Initialize(string s, string uri)
+        public ScannerBase Initialize(string source, string uri)
         {
-            var sr = Track(new StringReader(s));
+            var sr = Track(new StringReader(source));
             return Initialize(sr, uri);
         }
 

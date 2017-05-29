@@ -28,7 +28,7 @@ namespace CocoRCore
         public string DuplicateSymbol = "{0} '{1}' declared twice in '{2}'";
         public string MissingSymbol = "{0} '{1}' not declared in '{2}'";
         protected const int minErrDist = 2;
-        public readonly ScannerBase scanner;
+        public ScannerBase scanner { get; private set; }
         public readonly Errors errors;
         public readonly List<Alternative> tokens = new List<Alternative>();
 
@@ -37,10 +37,12 @@ namespace CocoRCore
         protected int errDist = minErrDist;
 
 
-        protected ParserBase(ScannerBase scanner)
+        protected ParserBase() => errors = new Errors(this);
+
+        public ParserBase Initialize(ScannerBase scanner)
         {
             this.scanner = scanner;
-            errors = new Errors() { uri = this.scanner.uri };
+            return this;
         }
 
         // disposes only buffers and readers, normally no vital structures
@@ -141,8 +143,8 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     public class Errors : List<Diagnostic>, IFormattable
     {
-        public string uri = null;
-        public System.IO.TextWriter errorStream = Console.Out;   // error messages go to this stream
+        private readonly ParserBase parser;
+        public System.IO.TextWriter errorStream = null;
 
         public int InfoOffset = 4000; // Infos start at 4000, 1 based
         public int WarningOffset = 3000; // Warnings start at 3000, 1 based
@@ -167,6 +169,8 @@ namespace CocoRCore
         public string DiagnosticFormat = "{5}({0},{1}): {3} {6}{4}: {2}"; // 0=line, 1=column, 2=text, 3=level, 4=id, 5=uri, 6=CC
         public string DiagnosticFormat0 = "{5}: {3} {6}{4}: {2}"; // 0=line, 1=column, 2=text, 3=level, 4=id, 5=uri, 6=CC
         public string DiagnosticIdPrefix = "CC";
+
+        public Errors(ParserBase parser) => this.parser = parser;
 
         public void UseShortDiagnosticFormat()
         {
@@ -199,7 +203,7 @@ namespace CocoRCore
             _diagnosticsCounts.AddOrUpdate(id, 1, (_, j) => j + 1);
             var error = new Diagnostic(id, level, line, col, message, DiagnosticIdPrefix);
             Add(error);
-            errorStream.WriteLine(error.Format(line == 0 ? DiagnosticFormat0 : DiagnosticFormat, uri));
+            errorStream?.WriteLine(error.Format(line == 0 ? DiagnosticFormat0 : DiagnosticFormat, parser?.scanner?.uri));
         }
 
         public void SynErr(int line, int col, string s, int id) => Add(SynErrOffset + id, ErrorLevel, line, col, s);

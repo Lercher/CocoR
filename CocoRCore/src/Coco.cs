@@ -72,16 +72,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     outDir = outDir ?? srcDir;
                     traceFileName = Path.Combine(outDir, "trace.txt");
 
-                    var scanner = new Scanner().Initialize(srcName);
-                    var parser = new Parser(scanner);
-                    Console.WriteLine($"{scanner.uri} -> {outDir}");
-
+                    var parser = Parser.Create();
                     parser.trace = File.CreateText(traceFileName);
                     parser.tab = new Tab(parser);
                     parser.dfa = new DFA(parser);
                     parser.pgen = new ParserGen(parser);
                     parser.pgen.GenerateAutocompleteInformation = generateAutocompleteInformation;
                     parser.pgen.IgnoreSemanticActions = ignoreSemanticActions;
+                    parser.errors.errorStream = Console.Out;
                     parser.errors.DiagnosticIdPrefix = "ATG";
                     parser.errors.EnableWarnings = enableWarnings;
                     parser.errors.EnableInfos = enableInfos;
@@ -95,6 +93,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     parser.tab.createOld = createOld;
                     parser.tab.SetDDT(ddtString);
 
+                    parser.scanner.Initialize(src);
+                    Console.WriteLine($"{parser.scanner.uri} -> {outDir}");
                     parser.Parse();
                     parser.Dispose();
 
