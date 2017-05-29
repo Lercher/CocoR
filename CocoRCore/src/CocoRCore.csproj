@@ -1,18 +1,20 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- https://docs.microsoft.com/en-us/dotnet/articles/core/tools/project-json-to-csproj -->
-  <PropertyGroup>  
-    <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp1.1;net40</TargetFrameworks>
-    <GenerateFullPaths>true</GenerateFullPaths>
-    <RuntimeIdentifiers>win7-x64</RuntimeIdentifiers>
-  </PropertyGroup>
 
   <PropertyGroup>  
     <OutputType>Exe</OutputType>
     <TargetFrameworks>netcoreapp1.1</TargetFrameworks>
     <GenerateFullPaths>true</GenerateFullPaths>
-    <RuntimeIdentifiers>ubuntu.17.04-x64</RuntimeIdentifiers>
+    <RuntimeIdentifier>ubuntu.17.04-x64</RuntimeIdentifier>
   </PropertyGroup>
+
+  <PropertyGroup>  
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net40;netcoreapp1.1</TargetFrameworks>
+    <GenerateFullPaths>true</GenerateFullPaths>
+    <RuntimeIdentifier>win</RuntimeIdentifier>
+  </PropertyGroup>
+
 
   <!-- https://freetodev.wordpress.com/2009/06/24/msbuild-4-0-beforetargets-and-aftertargets/
   dotnet build /t:grammars

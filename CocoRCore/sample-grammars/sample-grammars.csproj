@@ -3,18 +3,18 @@
   
   <PropertyGroup>  
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp1.1;net40</TargetFrameworks>
+    <TargetFrameworks>netcoreapp1.1</TargetFrameworks>
     <GenerateFullPaths>true</GenerateFullPaths>
-    <RuntimeIdentifiers>win7-x64</RuntimeIdentifiers>
+    <RuntimeIdentifier>ubuntu.17.04-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>  
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp1.1</TargetFrameworks>
+    <TargetFrameworks>net40;netcoreapp1.1</TargetFrameworks>
     <GenerateFullPaths>true</GenerateFullPaths>
-    <RuntimeIdentifiers>ubuntu.17.04-x64</RuntimeIdentifiers>
+    <RuntimeIdentifier>win</RuntimeIdentifier>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <!-- https://github.com/OmniSharp/omnisharp-roslyn/issues/762 -->
     <ProjectReference Include="..\src\CocoRCore.csproj" /> 

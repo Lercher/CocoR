@@ -8,7 +8,7 @@ namespace CocoRCore.Samples
     {
         public static int Main(string[] arg)
         {
-            Console.WriteLine("Coco/R Core Samples (May 27, 2017)");
+            Console.WriteLine("Coco/R Core Samples (May 29, 2017)");
             var all = new Func<CocoRCore.ParserBase>[] {
                 () => Coco.Parser.Create(s => s.Initialize("Coco/Coco.atg")),
                 () => Taste.Taste.Create("Taste/Test.tas"),
@@ -22,6 +22,7 @@ namespace CocoRCore.Samples
                 try
                 {
                     parser.errors.UseShortDiagnosticFormat();
+                    // parser.errors.errorStream = Console.Out;
                     parser.Parse();
                     foreach (var e in parser.errors)
                         Console.Write(e.Format("", "")); // this is only to see if it compiles, it doesn't output anything
