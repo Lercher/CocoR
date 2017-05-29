@@ -12,13 +12,6 @@
     <RuntimeIdentifier>ubuntu.17.04-x64</RuntimeIdentifier>
   </PropertyGroup>
 
-  <PropertyGroup>  
-    <OutputType>Exe</OutputType>
-    <TargetFrameworks>net40;netcoreapp1.1</TargetFrameworks>
-    <GenerateFullPaths>true</GenerateFullPaths>
-    <RuntimeIdentifier>win</RuntimeIdentifier>
-  </PropertyGroup>
-
 
   <!-- https://freetodev.wordpress.com/2009/06/24/msbuild-4-0-beforetargets-and-aftertargets/
   dotnet build /t:grammars
