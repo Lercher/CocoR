@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- https://docs.microsoft.com/en-us/dotnet/articles/core/tools/project-json-to-csproj -->
   
+  <PropertyGroup>
+    <RuntimeIdentifiers>win;ubuntu.17.04-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
   <PropertyGroup>  
     <OutputType>Exe</OutputType>
     <TargetFrameworks>netcoreapp1.1</TargetFrameworks>
@@ -14,6 +18,7 @@
     <GenerateFullPaths>true</GenerateFullPaths>
     <RuntimeIdentifier>win</RuntimeIdentifier>
   </PropertyGroup>
+
   
   <ItemGroup>
     <!-- https://github.com/OmniSharp/omnisharp-roslyn/issues/762 -->
