@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
+using System.Collections;
 
 namespace CocoRCore
 {
@@ -48,27 +49,27 @@ namespace CocoRCore
         }
 
         private readonly Stack<IDisposable> disposables = new Stack<IDisposable>();
-        public T Track<T>(T disposable) where T : IDisposable 
+        public T Track<T>(T disposable) where T : IDisposable
         {
             disposables.Push(disposable);
             return disposable;
         }
 
-        public void Dispose() 
+        public void Dispose()
         {
-            foreach(var d in disposables)
+            foreach (var d in disposables)
                 d.Dispose();
             disposables.Clear();
         }
 
         public ScannerBase Initialize(string fileName) => Initialize(new FileInfo(fileName));
 
-        public ScannerBase Initialize(FileInfo file)        
+        public ScannerBase Initialize(FileInfo file)
         {
             try
             {
                 var stream = Track(file.OpenRead());
-                var tr =  Track(new StreamReader(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 4096));
+                var tr = Track(new StreamReader(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 4096));
                 return Initialize(tr, file.FullName);
             }
             catch (IOException ex)
@@ -92,7 +93,7 @@ namespace CocoRCore
         public ScannerBase Initialize(TextReader rd, string uri)
         {
             buffer = Track(new Reader(rd, uri, casing, PutCh));
-            return this;           
+            return this;
         }
 
         protected void NextCh() => buffer.NextCh();
@@ -345,7 +346,8 @@ namespace CocoRCore
             NextCh();
         }
 
-        public void Dispose() {
+        public void Dispose()
+        {
             _tr.Dispose();
             _slider.Dispose();
         }
@@ -360,7 +362,7 @@ namespace CocoRCore
                 _putCh(ch, '\0');
             else
             {
-                var valCh = (char) ch;
+                var valCh = (char)ch;
                 ch = _casing(valCh);
                 _putCh(ch, valCh);
             }
@@ -420,6 +422,197 @@ namespace CocoRCore
 
     }
 
+
+    public class CircularBuffer<T> : IEnumerable<T>
+    {
+        private int capacity;
+        private int size;
+        private int head;
+        private int tail;
+        private T[] buffer;
+
+        public CircularBuffer(int capacity)
+            : this(capacity, false)
+        {
+        }
+
+        public CircularBuffer(int capacity, bool allowOverflow)
+        {
+            this.capacity = capacity;
+            size = 0;
+            head = 0;
+            tail = 0;
+            buffer = new T[capacity];
+            AllowOverflow = allowOverflow;
+        }
+
+        public bool AllowOverflow;
+
+        public int Capacity => capacity;
+
+        public int Count => size;
+
+        public bool Contains(T item)
+        {
+            int bufferIndex = head;
+            var comparer = EqualityComparer<T>.Default;
+            for (int i = 0; i < size; i++, bufferIndex++)
+            {
+                if (bufferIndex == capacity)
+                    bufferIndex = 0;
+
+                if (item == null && buffer[bufferIndex] == null)
+                    return true;
+                else if ((buffer[bufferIndex] != null) &&
+                    comparer.Equals(buffer[bufferIndex], item))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public void Clear()
+        {
+            size = 0;
+            head = 0;
+            tail = 0;
+        }
+
+        public int Put(T[] src)
+        {
+            return Put(src, 0, src.Length);
+        }
+
+        public int Put(T[] src, int offset, int count)
+        {
+            if (!AllowOverflow && count > capacity - size)
+                throw new InvalidOperationException("MessageBufferOverflow");
+
+            int srcIndex = offset;
+            for (int i = 0; i < count; i++, tail++, srcIndex++)
+            {
+                if (tail == capacity)
+                    tail = 0;
+                buffer[tail] = src[srcIndex];
+            }
+            size = Math.Min(size + count, capacity);
+            return count;
+        }
+
+        public void Put(T item)
+        {
+            if (!AllowOverflow && size == capacity)
+                throw new InvalidOperationException("MessageBufferOverflow");
+
+            buffer[tail] = item;
+            if (++tail == capacity)
+                tail = 0;
+            size++;
+        }
+
+        public void Skip(int count)
+        {
+            head += count;
+            if (head >= capacity)
+                head -= capacity;
+        }
+
+        public T[] Get(int count)
+        {
+            var dst = new T[count];
+            Get(dst);
+            return dst;
+        }
+
+        public int Get(T[] dst)
+        {
+            return Get(dst, 0, dst.Length);
+        }
+
+        public int Get(T[] dst, int offset, int count)
+        {
+            int realCount = Math.Min(count, size);
+            int dstIndex = offset;
+            for (int i = 0; i < realCount; i++, head++, dstIndex++)
+            {
+                if (head == capacity)
+                    head = 0;
+                dst[dstIndex] = buffer[head];
+            }
+            size -= realCount;
+            return realCount;
+        }
+
+        public T Get()
+        {
+            if (size == 0)
+                throw new InvalidOperationException("MessageBufferEmpty");
+
+            var item = buffer[head];
+            if (++head == capacity)
+                head = 0;
+            size--;
+            return item;
+        }
+
+        public void CopyTo(T[] array)
+        {
+            CopyTo(array, 0);
+        }
+
+        public void CopyTo(T[] array, int arrayIndex)
+        {
+            CopyTo(0, array, arrayIndex, size);
+        }
+
+        public void CopyTo(int index, T[] array, int arrayIndex, int count)
+        {
+            if (count > size)
+                throw new ArgumentOutOfRangeException("count", "MessageReadCountTooLarge");
+
+            int bufferIndex = head;
+            for (int i = 0; i < count; i++, bufferIndex++, arrayIndex++)
+            {
+                if (bufferIndex == capacity)
+                    bufferIndex = 0;
+                array[arrayIndex] = buffer[bufferIndex];
+            }
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            int bufferIndex = head;
+            for (int i = 0; i < size; i++, bufferIndex++)
+            {
+                if (bufferIndex == capacity)
+                    bufferIndex = 0;
+
+                yield return buffer[bufferIndex];
+            }
+        }
+
+        public T[] GetBuffer()
+        {
+            return buffer;
+        }
+
+        public T[] ToArray()
+        {
+            var dst = new T[size];
+            CopyTo(dst);
+            return dst;
+        }
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+    }
 
     //-----------------------------------------------------------------------------------
     // SlidingBuffer
@@ -506,8 +699,8 @@ namespace CocoRCore
     // --------------------------------
     public class FatalError : Exception
     {
-        public FatalError(string m) : base(m) 
-        {             
+        public FatalError(string m) : base(m)
+        {
         }
 
         public FatalError(string message, Exception innerException) : base(message, innerException)
