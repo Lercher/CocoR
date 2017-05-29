@@ -76,7 +76,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     var parser = new Parser(scanner);
                     Console.WriteLine($"{scanner.uri} -> {outDir}");
 
-                    parser.trace = new StreamWriter(new FileStream(traceFileName, FileMode.Create));
+                    parser.trace = File.CreateText(traceFileName);
                     parser.tab = new Tab(parser);
                     parser.dfa = new DFA(parser);
                     parser.pgen = new ParserGen(parser);
@@ -86,20 +86,18 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     parser.errors.EnableWarnings = enableWarnings;
                     parser.errors.EnableInfos = enableInfos;
                     if (useShort) parser.errors.UseShortDiagnosticFormat();
-
                     parser.tab.srcName = srcName;
                     parser.tab.srcDir = srcDir;
                     parser.tab.nsName = nsName;
                     parser.tab.frameDir = frameDir;
-                    parser.tab.outDir = (outDir != null) ? outDir : srcDir;
+                    parser.tab.outDir = outDir;
                     parser.tab.emitLines = emitLines;
                     parser.tab.createOld = createOld;
-                    if (ddtString != null) 
-                        parser.tab.SetDDT(ddtString);
+                    parser.tab.SetDDT(ddtString);
 
                     parser.Parse();
+                    parser.Dispose();
 
-                    parser.trace.Dispose();
                     FileInfo trc = new FileInfo(traceFileName);
                     if (trc.Length == 0) 
                         trc.Delete();

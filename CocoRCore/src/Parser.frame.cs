@@ -16,7 +16,7 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     // ParserBase
     //-----------------------------------------------------------------------------------
-    public abstract class ParserBase
+    public abstract class ParserBase : IDisposable
     {
         public virtual void Prime(ref Token t) { /* hook */ }
         public abstract string NameOfTokenKind(int tokenKind);
@@ -41,6 +41,11 @@ namespace CocoRCore
         {
             this.scanner = scanner;
             errors = new Errors() { uri = this.scanner.uri };
+        }
+
+        // disposes only buffers and readers, normally no vital structures
+        public virtual void Dispose() {
+            scanner?.Dispose();
         }
 
         protected void SynErr(int n) 

@@ -28,10 +28,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public bool hasCtxMoves;  // DFA has context transitions
 
         // other Coco objects
-        private Parser parser;
-        private Tab tab;
-        private Errors errors;
-        private TextWriter trace;
+        public readonly Parser parser;                    // other Coco objects
+        private TextWriter trace => parser.trace;
+        private Errors errors => parser.errors;
+        private Tab tab => parser.tab;
 
         //---------- Output primitives
         private string Ch(int ch)
@@ -803,9 +803,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public DFA(CocoRCore.CSharp.Parser parser)
         {
             this.parser = parser;
-            tab = parser.tab;
-            errors = parser.errors;
-            trace = parser.trace;
             firstState = null; lastState = null; lastStateNr = -1;
             firstState = NewState();
             firstMelted = null; firstComment = null;

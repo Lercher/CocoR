@@ -114,7 +114,7 @@ using CocoRCore;
 		{
 			la = Token.Zero;
 			Get();
--->parseRoot		
+-->parseRoot
 		}
 	
 		// a token's base type

@@ -12,7 +12,7 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     // Scanner
     //-----------------------------------------------------------------------------------
-    public abstract class ScannerBase
+    public abstract class ScannerBase : IDisposable
     {
         public const int EOF = -1;
         public const int EOL = '\n';
@@ -47,14 +47,28 @@ namespace CocoRCore
             valCh = v;
         }
 
+        private readonly Stack<IDisposable> disposables = new Stack<IDisposable>();
+        public T Track<T>(T disposable) where T : IDisposable 
+        {
+            disposables.Push(disposable);
+            return disposable;
+        }
+
+        public void Dispose() 
+        {
+            foreach(var d in disposables)
+                d.Dispose();
+            disposables.Clear();
+        }
+
         public ScannerBase Initialize(string fileName)
         {
             try
             {
                 // TODO: Who disposes of the stream and the reader
                 var f = new System.IO.FileInfo(fileName);
-                var stream = new FileStream(f.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096);
-                var tr = new StreamReader(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true);
+                var stream = Track(new FileStream(f.FullName, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize: 4096));
+                var tr =  Track(new StreamReader(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true));
                 return Initialize(tr, f.FullName);
             }
             catch (IOException ex)
@@ -65,19 +79,19 @@ namespace CocoRCore
 
         public ScannerBase Initialize(string s, string uri)
         {
-            var sr = new StringReader(s);
+            var sr = Track(new StringReader(s));
             return Initialize(sr, uri);
         }
 
         public ScannerBase Initialize(StringBuilder sb, string uri)
         {
-            var sbr = new StringBuilderReader(sb);
+            var sbr = Track(new StringBuilderReader(sb));
             return Initialize(sbr, uri);
         }
 
         public ScannerBase Initialize(TextReader rd, string uri)
         {
-            buffer = new Reader(rd, uri, casing, PutCh);
+            buffer = Track(new Reader(rd, uri, casing, PutCh));
             return this;           
         }
 
@@ -308,7 +322,7 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     // Reader
     //-----------------------------------------------------------------------------------
-    public class Reader : IBufferedReader
+    public class Reader : IBufferedReader, IDisposable
     {
         private readonly TextReader _tr;
         private Position _nextPosition;
@@ -329,6 +343,11 @@ namespace CocoRCore
             _pos = Position.MinusOne;
             _readnext = ReadNextRaw;
             NextCh();
+        }
+
+        public void Dispose() {
+            _tr.Dispose();
+            _slider.Dispose();
         }
 
         public Position PositionM1 => _pos;
@@ -405,7 +424,7 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     // SlidingBuffer
     //-----------------------------------------------------------------------------------
-    public class SlidingBuffer
+    public class SlidingBuffer : IDisposable
     {
         private readonly Queue<char> _q;
         private int _remain;
@@ -436,6 +455,8 @@ namespace CocoRCore
             if (pos < end) throw new FatalError("This text is not yet buffered");
             return new string(_q.ToArray(), startInQ, end - start);
         }
+
+        public void Dispose() => _q.Clear();
     }
 
 

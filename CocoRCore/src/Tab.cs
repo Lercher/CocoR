@@ -16,13 +16,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
     {
         public Range semDeclPos;       // position of global semantic declarations
         public CharSet ignored;           // characters ignored by the scanner
-        public bool[] ddt = new bool[10]; // debug and test switches
+        public readonly bool[] ddt = new bool[10]; // debug and test switches
         public Symbol gramSy;             // root nonterminal; filled by ATG
         public Symbol eofSy;              // end of file symbol
         public Symbol noSym;              // used in case of an error
         public BitArray allSyncSets;      // union of all synchronisation sets
-        public IDictionary<string, Symbol> literals;        // symbols that are used as literals
-        public List<SymTab> symtabs = new List<SymTab>();
+        public readonly IDictionary<string, Symbol> literals;        // symbols that are used as literals
+        public readonly List<SymTab> symtabs = new List<SymTab>();
 
         public string srcName;            // name of the atg file (including path)
         public string srcDir;             // directory path of the atg file
@@ -38,15 +38,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         BitArray visited;                 // mark list for graph traversals
         Symbol curSy;                     // current symbol in computation of sets
 
-        Parser parser;                    // other Coco objects
-        TextWriter trace;
-        Errors errors;
+        public readonly Parser parser;                    // other Coco objects
+        private TextWriter trace => parser.trace;
+        private Errors errors => parser.errors;
+
 
         public Tab(CocoRCore.CSharp.Parser parser)
         {
             this.parser = parser;
-            trace = parser.trace;
-            errors = parser.errors;
             eofSy = NewSym(NodeKind.t, "EOF", Position.Zero);
             dummyNode = NewNode(NodeKind.eps, null, 0);
             literals = new Dictionary<string, Symbol>();
@@ -1256,6 +1255,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public void SetDDT(string s)
         {
+            if (string.IsNullOrWhiteSpace(s)) return;
             s = s.ToUpper();
             foreach (var ch in s)
             {

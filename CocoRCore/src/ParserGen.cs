@@ -26,7 +26,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public bool GenerateAutocompleteInformation = false;  // generate addAlt() calls to fill the "alt" set with alternatives to the next to Get() token.
         public bool IgnoreSemanticActions = false;
         public bool needsAST = false;
-        private readonly DFA dfa;
 
         int errorNr;      // highest parser error number
         private Symbol CurrentNtSym;     // symbol whose production is currently generated
@@ -35,10 +34,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         StringWriter err; // generated parser error messages
         List<BitArray> symSet = new List<BitArray>();
 
-        Tab tab;          // other Coco objects
-        TextWriter trace;
-        Errors errors;
-        IBufferedReader buffer;
+        public readonly Parser parser;                    // other Coco objects
+        private TextWriter trace => parser.trace;
+        private Errors errors => parser.errors;
+        private Tab tab => parser.tab;
+
 
         void Indent(int n)
         {
@@ -88,7 +88,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             if (IgnoreSemanticActions || range == null)
                 return;
-            var s = buffer.GetBufferedString(range);
+            var s = parser.scanner.buffer.GetBufferedString(range);
             if (indent < 0)
                 gen.Write(s);
             else
@@ -652,7 +652,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     gen.WriteLine("\tpublic readonly Symboltable {0};", st.name);
                 else
                 {
-                    gen.WriteLine("\t\t{0} = new Symboltable(\"{0}\", {1}, {2}, this);", st.name, toTF(dfa.ignoreCase), toTF(st.strict));
+                    gen.WriteLine("\t\t{0} = new Symboltable(\"{0}\", {1}, {2}, this);", st.name, toTF(parser.dfa.ignoreCase), toTF(st.strict));
                     foreach (var s in st.predefined)
                         gen.WriteLine("\t\t{0}.Add({1});", st.name, tab.Quoted(s));
                 }
@@ -748,11 +748,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public ParserGen(CocoRCore.CSharp.Parser parser)
         {
-            tab = parser.tab;
-            errors = parser.errors;
-            trace = parser.trace;
-            buffer = parser.scanner.buffer;
-            dfa = parser.dfa;
+            this.parser = parser;
             errorNr = -1;
             usingPos = null;
         }
