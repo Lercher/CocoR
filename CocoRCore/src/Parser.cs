@@ -33,16 +33,21 @@ namespace CocoRCore.CSharp {
 	}
 
 const int id = 0;
-	const int str = 1;
-	
-	public TextWriter trace;    // other Coco objects referenced in this ATG
-	public Tab tab;
-	public DFA dfa;
-	public ParserGen pgen;
+    const int str = 1;
+    
+    public TextWriter trace;    // other Coco objects referenced in this ATG
+    public Tab tab;
+    public DFA dfa;
+    public ParserGen pgen;
 
-	bool   genScanner;
-	string tokenString;         // used in declarations of literal tokens
-	string noString = "-none-"; // used in declarations of literal tokens
+    bool   genScanner;
+    string tokenString;         // used in declarations of literal tokens
+    string noString = "-none-"; // used in declarations of literal tokens
+
+    public override void Dispose() {
+        trace?.Dispose();
+        base.Dispose();
+    }
 
 /*-------------------------------------------------------------------------*/
 
@@ -912,7 +917,7 @@ const int id = 0;
 			Get();
 		Coco‿NT();
 		Expect(0);
-		
+
 		}
 	
 		// a token's base type
