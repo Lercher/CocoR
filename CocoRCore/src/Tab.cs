@@ -33,7 +33,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                                           //   the end of Parser.Parse():
         public bool emitLines;            // emit #line pragmas for semantic actions
                                           //   in the generated parser
-        public bool omitOld;              // omit scanner.cs.old and parser.cs.old
+        public bool createOld;              // omit scanner.cs.old and parser.cs.old
 
         BitArray visited;                 // mark list for graph traversals
         Symbol curSy;                     // current symbol in computation of sets

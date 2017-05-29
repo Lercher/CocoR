@@ -44,7 +44,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             string fn = Path.Combine(tab.outDir, target);
             try
             {
-                if (!tab.omitOld && File.Exists(fn)) 
+                if (tab.createOld && File.Exists(fn)) 
                     File.Copy(fn, fn + ".old", true);
                 gen = new StreamWriter(new FileStream(fn, FileMode.Create)); /* pdt */
             }

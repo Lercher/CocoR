@@ -25,13 +25,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public static int Main(string[] arg)
         {
-            Console.Write("Coco/R Core (May 27, 2017)");
+            Console.Write("Coco/R Core (May 29, 2017)");
             string srcName = null, nsName = null, frameDir = null, ddtString = null,
             traceFileName = null, outDir = null;
             var emitLines = false;
             var generateAutocompleteInformation = false;
             var ignoreSemanticActions = false;
-            var omitOld = false;
+            var createOld = false;
             var enableWarnings = true;
             var enableInfos = true;
             var useShort = false;
@@ -40,24 +40,27 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             for (var i = 0; i < arg.Length; i++)
             {
                 if (false) {}
-                else if (arg[i] == "-namespace" && i < arg.Length - 1) nsName = arg[++i].Trim();
-                else if (arg[i] == "-frames"    && i < arg.Length - 1) frameDir = arg[++i].Trim();
-                else if (arg[i] == "-trace"     && i < arg.Length - 1) ddtString = arg[++i].Trim();
-                else if (arg[i] == "-o"         && i < arg.Length - 1) outDir = arg[++i].Trim();
-                else if (arg[i] == "-lines") emitLines = true;
-                else if (arg[i] == "-ac") generateAutocompleteInformation = true;
-                else if (arg[i] == "-is") ignoreSemanticActions = true;
-                else if (arg[i] == "-oo") omitOld = true;
-                else if (arg[i] == "-nowarn") enableWarnings = false;
-                else if (arg[i] == "-noinfo") enableInfos = false;
-                else if (arg[i] == "-short") useShort = true;
-                else if (arg[i] == "-utf8") {/* ignored */}                
-                else srcName = arg[i];
+                else if  (arg[i] == "-namespace" && i < arg.Length - 1) nsName = arg[++i].Trim();
+                else if  (arg[i] == "-frames"    && i < arg.Length - 1) frameDir = arg[++i].Trim();
+                else if  (arg[i] == "-trace"     && i < arg.Length - 1) ddtString = arg[++i].Trim();
+                else if  (arg[i] == "-o"         && i < arg.Length - 1) outDir = arg[++i].Trim();
+                else if  (arg[i] == "-lines") emitLines = true;
+                else if  (arg[i] == "-ac") generateAutocompleteInformation = true;
+                else if  (arg[i] == "-is") ignoreSemanticActions = true;
+                else if  (arg[i] == "-old") createOld = true;
+                else if  (arg[i] == "-nowarn") enableWarnings = false;
+                else if  (arg[i] == "-noinfo") enableInfos = false;
+                else if  (arg[i] == "-short") useShort = true;
+                else if (!arg[i].StartsWith("-")) srcName = arg[i];
+                else Console.Write($" [arg{i}: {arg[i]} ignored]");
             }
             if (emitLines) Console.Write(" [emit #line directives]");
-            if (generateAutocompleteInformation) Console.Write(" [generate autocomplete information]");
+            if (generateAutocompleteInformation) Console.Write(" [with autocomplete]");
             if (ignoreSemanticActions) Console.Write(" [ignore semantic actions]");
-            if (omitOld) Console.Write(" [omit *.old files]");
+            if (createOld) Console.Write(" [*.old files]");
+            if (useShort) Console.Write(" [short message format]");
+            if (!enableWarnings) Console.Write(" [no WARN]");
+            if (!enableInfos) Console.Write(" [no INFO]");
             Console.WriteLine();
 
             if (arg.Length > 0 && srcName != null)
@@ -90,7 +93,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     parser.tab.frameDir = frameDir;
                     parser.tab.outDir = (outDir != null) ? outDir : srcDir;
                     parser.tab.emitLines = emitLines;
-                    parser.tab.omitOld = omitOld;
+                    parser.tab.createOld = createOld;
                     if (ddtString != null) 
                         parser.tab.SetDDT(ddtString);
 
@@ -118,19 +121,21 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             }
             else
             {
-                Console.WriteLine("Usage: Coco Grammar.ATG {{Option}}{0}"
-                                  + "Options:{0}"
+                Console.WriteLine();
+                Console.WriteLine("Usage: CocoRCore grammar.atg {{Option}}{0}"
+                                  + "Options with a parameter:{0}"
                                   + "  -namespace <namespaceName>{0}"
-                                  + "  -frames    <frameFilesDirectory>{0}"
-                                  + "  -trace     <traceString>{0}"
-                                  + "  -o         <outputDirectory> - defaults to *.ATG location{0}"
-                                  + "  -lines     [emit #line directives]{0}"
-                                  + "  -ac        [generate autocomplete/intellisense information]{0}"
-                                  + "  -is        [ignore semantic actions]{0}"
-                                  + "  -oo        [omit *.old files]{0}"
-                                  + "  -nowarn    disable all warnings{0}"
-                                  + "  -noinfo    disable all informational messages{0}"
-                                  + "  -short     use short diagnostic format{0}"
+                                  + "  -frames <frameFilesDirectory>{0}"
+                                  + "  -trace <traceString>          [trace.txt file at *.ATG location]{0}"
+                                  + "  -o <outputDirectory>          [defaults to *.ATG location]{0}"
+                                  + "Other options:{0}"
+                                  + "  -lines  [emit #line directives]{0}"
+                                  + "  -ac     [generate autocomplete/intellisense information]{0}"
+                                  + "  -is     [ignore semantic actions]{0}"
+                                  + "  -old    [create *.old files]{0}"
+                                  + "  -nowarn [disable all warnings]{0}"
+                                  + "  -noinfo [disable all informational messages]{0}"
+                                  + "  -short  [use short diagnostic format]{0}"
                                   + "Valid characters in the <traceString>:{0}"
                                   + "  A  trace automaton{0}"
                                   + "  F  list first/follow sets{0}"
@@ -141,7 +146,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                                   + "  S  list symbol table{0}"
                                   + "  X  list cross reference table{0}"
                                   + "Scanner.frame and Parser.frame files needed in ATG directory{0}"
-                                  + "or in a directory specified in the -frames option.",
+                                  + "or in a directory specified in the -frames <frameFilesDirectory> option.",
                                   Environment.NewLine);
             }
             return retVal;
