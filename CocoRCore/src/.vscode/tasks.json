@@ -17,7 +17,7 @@
         },
         {
             "taskName": "build",
-            "args": [],
+            "args": ["/t:grammars"],
             "isBuildCommand": true,
             "showOutput": "silent",
             "problemMatcher": "$msCompile"

@@ -46,7 +46,7 @@ In particular:
 Change to this directory and then:
 * `cd src`
 * `dotnet restore` to restore packages.
-* `dotnet build` to build Coco/R itself and the sample grammars
+* `dotnet build /t:grammars` to build Coco/R itself and the sample grammars
 * `dotnet run` to run Coco/R
 * `cd ..`
 
@@ -144,28 +144,6 @@ We recommend to use Visual Studio Code to build this version. First open this di
 * `F5` to run.
 * If it won't run, try `F1` plus `task restore` first.
 
-Note: OmniSharp detects a lot of problems, if a project reference is used. 
-If you don't like that, open `sample-grammars.csproj` and change
-
-````xml
-  <ItemGroup>
-    <ProjectReference Include="..\src\CocoRCore.csproj" />
-    <!-- <Compile Include="../src/*.frame.cs"/> -->
-  </ItemGroup>
-````
-
-to
-
-````xml
-  <ItemGroup>
-    <!-- <ProjectReference Include="..\src\CocoRCore.csproj" /> -->
-    <Compile Include="../src/*.frame.cs"/>
-  </ItemGroup>
-````
-
-This is probably due to this bug: 
-[omnisharp-roslyn #762](https://github.com/OmniSharp/omnisharp-roslyn/issues/762)
-
 
 ## Status: incubating / stabilizing
 
@@ -184,3 +162,4 @@ This is probably due to this bug:
 * more new C# code
 * no more Buffer but a TextReader facade
 * due to a buffer constraint, ATGs with semantic actions cannot be longer than aprox. 128k characters currently
+* targets core and net40 now

@@ -2,16 +2,21 @@
   <!-- https://docs.microsoft.com/en-us/dotnet/articles/core/tools/project-json-to-csproj -->
   <PropertyGroup>  
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFrameworks>netcoreapp1.1;net40</TargetFrameworks>
     <GenerateFullPaths>true</GenerateFullPaths>
   </PropertyGroup>
 
-  <Target Name="Build-Grammars" AfterTargets="build">
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo         Coco.atg" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo -ac     ../sample-grammars/Taste/Taste.atg" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo -ac     ../sample-grammars/Inheritance/inheritance.atg" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo -ac -is ../sample-grammars/Coco/Coco.atg" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo -ac     ../sample-grammars/wfmodel/WFModel.atg" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -nowarn -oo -ac     ../sample-grammars/ExternalTables/ExternalTables.atg" />
+  <!-- https://freetodev.wordpress.com/2009/06/24/msbuild-4-0-beforetargets-and-aftertargets/
+  dotnet build /t:grammars
+  -->
+  <Target Name="grammars" DependsOnTargets="build">
+    <Message Importance="High" Text="---------------------------- Build Coco/R grammar"/>
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -noinfo -nowarn -oo         Coco.atg" />
+    <Message Importance="High" Text="---------------------------- Build sample grammars"/>
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -noinfo -nowarn -oo -ac     ../sample-grammars/Taste/Taste.atg" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -noinfo -nowarn -oo -ac     ../sample-grammars/Inheritance/inheritance.atg" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -noinfo -nowarn -oo -ac -is ../sample-grammars/Coco/Coco.atg" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -noinfo -nowarn -oo -ac     ../sample-grammars/wfmodel/WFModel.atg" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -utf8 -frames . -noinfo -nowarn -oo -ac     ../sample-grammars/ExternalTables/ExternalTables.atg" />
   </Target>
 </Project>
