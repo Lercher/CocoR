@@ -21,14 +21,21 @@ using CocoRCore;
 -->constructor
 		}
 
-		public static Parser Create() => (Parser) new Parser().Initialize(new Scanner());
+		public static Parser Create(string fileName) 
+			=> Create(s => s.Initialize(fileName));
+
+		public static Parser Create() 
+			=> Create(s => {});
 
 		public static Parser Create(Action<Scanner> init)
 		{
-			var p = Create();
-			init((Scanner) p.scanner);
+			var p = new Parser();
+			var scanner = new Scanner();
+			p.Initialize(scanner);
+			init(scanner);
 			return p;
 		}
+
 
 		public override int maxT => __maxT;
 

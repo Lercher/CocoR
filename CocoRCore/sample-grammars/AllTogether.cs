@@ -10,11 +10,11 @@ namespace CocoRCore.Samples
         {
             Console.WriteLine("Coco/R Core Samples (May 27, 2017)");
             var all = new Func<CocoRCore.ParserBase>[] {
-                () => new Coco.Parser(new Coco.Scanner().Initialize(@"Coco/Coco.atg")),
-                () => Taste.Taste.Create(@"Taste/Test.tas"),
-                () => new Inheritance.Parser(new Inheritance.Scanner().Initialize(@"Inheritance/SampleInheritance.txt")),
-                () => new WFModel.Parser(new WFModel.Scanner().Initialize(@"wfmodel/SampleWfModel.txt")),
-                () => new ExternalTables.Parser(new ExternalTables.Scanner().Initialize(@"ExternalTables/ExternalTables.txt")),
+                () => Coco.Parser.Create(s => s.Initialize("Coco/Coco.atg")),
+                () => Taste.Taste.Create("Taste/Test.tas"),
+                () => Inheritance.Parser.Create("Inheritance/SampleInheritance.txt"),
+                () => WFModel.Parser.Create("wfmodel/SampleWfModel.txt"),
+                () => ExternalTables.Parser.Create("ExternalTables/ExternalTables.txt"),
             };
             foreach (var pgen in all)
             {

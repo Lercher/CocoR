@@ -651,11 +651,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 if (declare)
                     gen.WriteLine("\tpublic readonly Symboltable {0};", st.name);
                 else
-                {
                     gen.WriteLine("\t\t{0} = new Symboltable(\"{0}\", {1}, {2}, this);", st.name, toTF(parser.dfa.ignoreCase), toTF(st.strict));
-                    foreach (var s in st.predefined)
-                        gen.WriteLine("\t\t{0}.Add({1});", st.name, tab.Quoted(s));
-                }
             }
             if (declare)
             {
@@ -664,6 +660,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     gen.WriteLine("\t\tif (name == {1}) return {0};", st.name, tab.Quoted(st.name));
                 gen.WriteLine("\t\treturn null;");
                 gen.WriteLine("\t}\n");
+            }
+        }
+
+        void GenSymbolTablesPredfinedValues()
+        {
+            foreach (var st in tab.symtabs)
+            {
+                foreach (var s in st.predefined)
+                    gen.WriteLine("\t\t{0}.Add({1});", st.name, tab.Quoted(s));
             }
         }
 
@@ -720,10 +725,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             g.CopyFramePart("-->beginalternativescode");
             g.CopyFramePart("-->endalternativescode", GenerateAutocompleteInformation);
             g.CopyFramePart("-->productions"); GenProductions();
-            g.CopyFramePart("-->parseRoot"); gen.WriteLine("\t\t{0}{1}();", tab.gramSy.name, PROD_SUFFIX);
+            
+            g.CopyFramePart("-->parseRoot"); 
+            GenSymbolTablesPredfinedValues();
+            gen.WriteLine("\t\t{0}{1}();", tab.gramSy.name, PROD_SUFFIX);
             if (tab.checkEOF)
                 gen.WriteLine("\t\tExpect(0);");
             GenSymbolTablesChecks();
+
             g.CopyFramePart("-->tbase"); GenTokenBase(); // write all tokens base types
             g.CopyFramePart("-->tname"); GenTokenNames(); // write all token names
             g.CopyFramePart("-->initialization0"); InitSets0();
