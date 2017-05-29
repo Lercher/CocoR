@@ -5,6 +5,14 @@
     <OutputType>Exe</OutputType>
     <TargetFrameworks>netcoreapp1.1;net40</TargetFrameworks>
     <GenerateFullPaths>true</GenerateFullPaths>
+    <RuntimeIdentifiers>win7-x64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <PropertyGroup>  
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>netcoreapp1.1</TargetFrameworks>
+    <GenerateFullPaths>true</GenerateFullPaths>
+    <RuntimeIdentifiers>ubuntu.17.04-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
   <ItemGroup>
