@@ -23,7 +23,7 @@ using CocoRCore;
             => Create(s => s.Initialize(fileName));
 
         public static Parser Create() 
-            => Create(s => {});
+            => Create(s => { });
 
         public static Parser Create(Action<Scanner> init)
         {
