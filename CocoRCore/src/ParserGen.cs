@@ -427,7 +427,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                             {
                                 Gen.Indentation--;
                                 Gen.Write(GW.Line, "}");
-                                Gen.Write(GW.Line, "else if (");
+                                Gen.Write(GW.StartLine, "else if (");
                                 GenCond(s1, pp.sub);
                                 Gen.Write(GW.EndLine, ")");
                                 Gen.Write(GW.Line, "{");
@@ -736,33 +736,43 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 GenProductions();
 
                 Gen.CopyFramePart("-->parseRoot");
-                Gen.Indentation++;
+                Gen.Indentation++; // in void Parse()
                 GenSymbolTablesPredfinedValues();
-                Gen.Write(GW.Line, "{0}{1}();", Tab.gramSy.name, PROD_SUFFIX);
+                Gen.Write(GW.Line, "{0}{1}();", Tab.gramSy.name, PROD_SUFFIX); // main production
                 if (Tab.checkEOF)
                     Gen.Write(GW.Line, "Expect(0);");
                 GenSymbolTablesChecks();
                 Gen.Indentation--;
 
                 Gen.CopyFramePart("-->tbase");
+                Gen.Indentation++;
                 GenTokenBase(); // write all tokens base types
+                Gen.Indentation--;
 
                 Gen.CopyFramePart("-->tname");
+                Gen.Indentation++;
                 GenTokenNames(); // write all token names
+                Gen.Indentation--;
 
                 Gen.CopyFramePart("-->initialization0");
+                Gen.Indentation++;
                 InitSets0();
+                Gen.Indentation--;
 
                 Gen.CopyFramePart("-->initialization");
+                Gen.Indentation++;
                 InitSets();
+                Gen.Indentation--;
 
                 Gen.CopyFramePart("(((beginastcode"); // class AST, only needed, if declarative AST is used.
                 Gen.CopyFramePart(")))endastcode", needsAST);
 
                 Gen.CopyFramePart("-->errors");
+                Gen.Indentation += 2; // void Syntaxerror() / switch() 
                 foreach (var e in Errors)
                     Gen.Write(GW.Line, e);
-
+                Gen.Indentation -= 2;
+                
                 Gen.CopyFramePart(null);
                 Gen.Indentation--; // now out of class Parser
 
