@@ -459,7 +459,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                                 Gen.Write(GW.LineIndent1, "break;", Errors.Count);
                                 Gen.Indentation--; // is effectively two tabs back
                                 Gen.Write(GW.Line, "} // end switch");
-                                Gen.Indentation--;
                             }
                             else
                             {
