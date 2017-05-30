@@ -406,6 +406,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                             {
                                 PutCaseLabels(s1);   // case x:, case y:
                                 Gen.Indentation++;
+                                Gen.Write(GW.Line, "{ // scoping"); // for a semantic's scoping
+                                Gen.Indentation++;
                             }
                             else if (pp == p)
                             {
@@ -436,14 +438,16 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                             GenCode(pp.sub, s1);
                             if (useSwitch)
                             {
+                                Gen.Indentation--;
+                                Gen.Write(GW.Line, "}");
                                 Gen.Write(GW.Line, "break;");
                                 Gen.Indentation--;
                             }
                         }
                         if (equal)
                         {
-                            Gen.Write(GW.Line, "}");
                             Gen.Indentation--;
+                            Gen.Write(GW.Line, "}");
                         }
                         else
                         {
