@@ -24,6 +24,7 @@ namespace CocoRCore.Samples
                     parser.errors.UseShortDiagnosticFormat();
                     // parser.errors.errorStream = Console.Out;
                     parser.Parse();
+                    parser.Dispose();
                     foreach (var e in parser.errors)
                         Console.Write(e.Format("", "")); // this is only to see if it compiles, it doesn't output anything
                     Console.WriteLine("{0}: {1:f}.", parser.scanner.uri, parser.errors);
