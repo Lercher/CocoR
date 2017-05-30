@@ -19,7 +19,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         private StreamReader frameReader;
         private StreamWriter gen;
         private readonly Tab Tab;
-        public int Indentation = 2; // namespace + class
+        public int Indentation = 0;
 
         public Generator(Tab tab) => Tab = tab;
 
@@ -118,7 +118,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     if (line == null)
                     {
                         if (stop == null) return;
-                        throw new FatalError($"Incomplete or corrupt frame file {frameFile}");
+                        throw new FatalError($"Incomplete or corrupt frame file {frameFile}, expected {stop}");
                     }
                     if (line.Trim() == stop)
                         return;

@@ -523,7 +523,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             foreach (var sym in Tab.terminals)
             {
                 if (char.IsLetter(sym.name[0]) && sym.name != "EOF")
-                    Gen.Write(GW.Line, "public const int _{0} = {1}; // TOKEN {0}{2}", sym.name, sym.n, " INHERITS " + sym.inherits?.name ?? "");
+                    Gen.Write(GW.Line, "public const int _{0} = {1}; // TOKEN {0}{2}", sym.name, sym.n, sym.inherits != null ? " INHERITS " + sym.inherits.name : "");
             }
         }
 
@@ -694,8 +694,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
                 symSet.Add(Tab.allSyncSets);
                 Tab.terminals.ForEach(GenTerminalErrorMsg);
-
-                Gen.SkipFramePart("-->begin");
 
                 if (usingPos != null)
                 {
