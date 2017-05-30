@@ -725,12 +725,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     Gen.Write(GW.Line, "astbuilder = new AST.Builder(this);");
 
                 Gen.CopyFramePart("(((beginalternatives");
+                Gen.Indentation += 2; // in Get()/for()
                 Gen.CopyFramePart(")))endalternatives", GenerateAutocompleteInformation);
 
                 Gen.CopyFramePart("-->pragmas");
                 GenCodePragmas();
 
-                Gen.CopyFramePart("-->productions"); GenProductions();
+                Gen.CopyFramePart("-->productions");
+                Gen.Indentation -= 2; // back in class Parser
+                GenProductions();
 
                 Gen.CopyFramePart("-->parseRoot");
                 Gen.Indentation++;
@@ -762,7 +765,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
                 Gen.CopyFramePart(null);
                 Gen.Indentation--; // now out of class Parser
-                
+
                 /* AW 2002-12-20 close namespace, if it exists */
                 if (!string.IsNullOrWhiteSpace(Tab.nsName))
                 {
