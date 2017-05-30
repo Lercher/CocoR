@@ -1,6 +1,7 @@
 *.old
 *.exe
 *.pdb
+.vs/
 bin/
 obj/
 /CSharp/*.dll
