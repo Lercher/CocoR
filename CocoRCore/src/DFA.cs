@@ -720,14 +720,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 if (action == state.firstAction)
                     Gen.Write(GW.StartLine, "if (");
                 else
-                    Gen.Write(GW.StartLine, "else if (");
+                    Gen.Write(GW.Append, " else if (");
 
                 if (action.typ == NodeKind.chr)
                     Gen.Write(GW.Append, ChCond((char)action.sym));
                 else
                     PutRange(Tab.CharClassSet(action.sym));
-                Gen.Write(GW.EndLine, ")");
-                Gen.Write(GW.Line, "{");
+                Gen.Write(GW.EndLine, ") {");
                 Gen.Indentation++;
 
                 if (action.tc == NodeTransition.contextTrans)
@@ -740,14 +739,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
                 Gen.Write(GW.Line, "AddCh(); goto case {0};", action.target.state.nr);
                 Gen.Indentation--;
-                Gen.Write(GW.Line, "}");
+                Gen.Write(GW.StartLine, "}");
             }
 
-            if (state.firstAction != null)
-                Gen.Write(GW.Line, "else");
-
-            Gen.Write(GW.Line, "{");
+            if (state.firstAction == null)
+                Gen.Write(GW.Line, "{");
+            else
+                Gen.Write(GW.EndLine, " else {");
             Gen.Indentation++;
+
             if (ctxEnd)
             { // final context state: cut appendix
                 Gen.Write(GW.Line, "tval.Length -= apx;");
@@ -759,16 +759,16 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             }
             else
             {
-                Gen.Write(GW.Line, "t.kind = {0}; ", endOf.n);
                 if (endOf.tokenKind == TerminalTokenKind.classLitToken)
                 {
+                    Gen.Write(GW.Line, "t.kind = {0};", endOf.n);
                     Gen.Write(GW.Line, "t.setValue(tval.ToString(), casingString);");
                     Gen.Write(GW.Line, "CheckLiteral();");
                     Gen.Write(GW.Line, "return t.Freeze(buffer.Position, buffer.PositionM1);");
                 }
                 else
                 {
-                    Gen.Write(GW.Line, "break;");
+                    Gen.Write(GW.Line, "t.kind = {0}; break;", endOf.n);
                 }
             }
             Gen.Indentation--;
