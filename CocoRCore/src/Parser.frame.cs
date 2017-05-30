@@ -151,7 +151,7 @@ namespace CocoRCore
         public int InfoOffset = 4000; // Infos start at 4000, 1 based
         public int WarningOffset = 3000; // Warnings start at 3000, 1 based
         public int SemErrOffset = 2000; // Semantic Errors start at 2000, 1 based
-        public int SynErrOffset = 1001; // Syntax Errors start at 1001, 0 based
+        public int SynErrOffset = 1000; // Syntax Errors start at 1000, 1 based
         public string ErrorLevel = "error";
         public string WarningLevel = "warning";
         public string InfoLevel = "info";
