@@ -41,7 +41,8 @@ const int id = 0;
     string tokenString;         // used in declarations of literal tokens
     string noString = "-none-"; // used in declarations of literal tokens
 
-    public override void Dispose() {
+    public override void Dispose() 
+    {
         trace?.Dispose();
         base.Dispose();
     }
@@ -57,7 +58,7 @@ const int id = 0;
             => Create(s => s.Initialize(fileName));
 
         public static Parser Create() 
-            => Create(s => {});
+            => Create(s => { });
 
         public static Parser Create(Action<Scanner> init)
         {
@@ -370,7 +371,7 @@ const int id = 0;
                 Graph g2;
                 TokenTerm‿NT(out g);
                 bool first = true;
-                while (WeakSeparator(39,5,6) )
+                while (WeakSeparator(39, 5, 6) )
                 {
                     TokenTerm‿NT(out g2);
                     if (first) { tab.MakeFirstAlt(g); first = false; }
@@ -635,7 +636,7 @@ const int id = 0;
                 Graph g2;
                 Term‿NT(out g);
                 bool first = true;
-                while (WeakSeparator(39,15,16) )
+                while (WeakSeparator(39, 15, 16) )
                 {
                     Term‿NT(out g2);
                     if (first) { tab.MakeFirstAlt(g); first = false; }
@@ -975,7 +976,7 @@ const int id = 0;
                 else if (isKind(la, 47))
                 {
                     ASTHatch‿NT(p);
-                    while (WeakSeparator(26,21,22) )
+                    while (WeakSeparator(26, 21, 22) )
                     {
                         ASTHatch‿NT(p);
                     }
