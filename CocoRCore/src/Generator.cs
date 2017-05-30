@@ -87,7 +87,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             return i;
         }
 
-        public TextWriter OpenGen(string target)
+        public void OpenGen(string target)
         {
             var fn = Path.Combine(Tab.outDir, target);
             try
@@ -95,7 +95,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 if (Tab.createOld && File.Exists(fn))
                     File.Copy(fn, $"{fn}.old", true);
                 gen = new StreamWriter(new FileStream(fn, FileMode.Create)); /* pdt */
-                return gen;
+                // return gen;
             }
             catch (IOException ex)
             {

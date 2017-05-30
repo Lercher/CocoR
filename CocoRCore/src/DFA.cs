@@ -19,7 +19,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         private State firstState;
         private State lastState;   // last allocated state
         private int lastSimState;  // last non melted state
-        private TextWriter gen;  // generated scanner file
+        private Generator Gen;  // generated scanner file
         private Symbol curSy;      // current token to be recognized (in FindTrans)
         private bool dirtyDFA;     // DFA may become nondeterministic in MatchLiteral
 
@@ -47,13 +47,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             for (var r = s.head; r != null; r = r.next)
             {
                 if (r.from == r.to)
-                    gen.Write($"ch == {Ch(r.from)}");
+                    Gen.Write(GW.Append, $"ch == {Ch(r.from)}");
                 else if (r.from == 0)
-                    gen.Write($"ch <= {Ch(r.to)}"); 
+                    Gen.Write(GW.Append, $"ch <= {Ch(r.to)}"); 
                 else
-                    gen.Write($"{Ch(r.from)} <= ch && ch <= {Ch(r.to)}"); 
+                    Gen.Write(GW.Append, $"{Ch(r.from)} <= ch && ch <= {Ch(r.to)}"); 
                 if (r.next != null)
-                    gen.Write(" || ");
+                    Gen.Write(GW.Append, " || ");
             }
         }
 
@@ -596,64 +596,89 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void GenComBody(Comment com)
         {
-            gen.WriteLine("\t\t\t\tfor(;;) {");
-            gen.Write("\t\t\t\t\tif ({0}) ", ChCond(com.stop[0])); gen.WriteLine("{");
+            Gen.Write(GW.Line, "for(;;)");
+            Gen.Write(GW.Line, "{");
+            Gen.Indentation++;
+            Gen.Write(GW.Line, "if ({0})", ChCond(com.stop[0]));
+            Gen.Write(GW.Line, "{");
+            Gen.Indentation++;
             if (com.stop.Length == 1)
             {
-                gen.WriteLine("\t\t\t\t\t\tlevel--;");
-                gen.WriteLine("\t\t\t\t\t\tif (level == 0) { NextCh(); return true; }");
-                gen.WriteLine("\t\t\t\t\t\tNextCh();");
+                Gen.Write(GW.Line, "level--;");
+                Gen.Write(GW.Line, "if (level == 0) { NextCh(); return true; }");
+                Gen.Write(GW.Line, "NextCh();");
             }
             else
             {
-                gen.WriteLine("\t\t\t\t\t\tNextCh();");
-                gen.WriteLine("\t\t\t\t\t\tif ({0}) {{", ChCond(com.stop[1]));
-                gen.WriteLine("\t\t\t\t\t\t\tlevel--;");
-                gen.WriteLine("\t\t\t\t\t\t\tif (level == 0) { NextCh(); return true; }");
-                gen.WriteLine("\t\t\t\t\t\t\tNextCh();");
-                gen.WriteLine("\t\t\t\t\t\t}");
+                Gen.Write(GW.Line, "NextCh();");
+                Gen.Write(GW.Line, "if ({0})", ChCond(com.stop[1]));
+                Gen.Write(GW.Line, "{");
+                Gen.Write(GW.LineIndent1, "level--;");
+                Gen.Write(GW.LineIndent1, "if (level == 0) { NextCh(); return true; }");
+                Gen.Write(GW.LineIndent1, "NextCh();");
+                Gen.Write(GW.Line, "}");
             }
             if (com.nested)
             {
-                gen.Write("\t\t\t\t\t}"); gen.Write(" else if ({0}) ", ChCond(com.start[0])); gen.WriteLine("{");
+                Gen.Indentation--;
+                Gen.Write(GW.Line, "}");
+                Gen.Write(GW.Line, "else if ({0})", ChCond(com.start[0]));
+                Gen.Write(GW.Line, "{");
+                Gen.Indentation++;
                 if (com.start.Length == 1)
-                    gen.WriteLine("\t\t\t\t\t\tlevel++; NextCh();");
+                {
+                    Gen.Write(GW.Line, "level++;");
+                    Gen.Write(GW.Line, "NextCh();");
+                }
                 else
                 {
-                    gen.WriteLine("\t\t\t\t\t\tNextCh();");
-                    gen.Write("\t\t\t\t\t\tif ({0}) ", ChCond(com.start[1])); gen.WriteLine("{");
-                    gen.WriteLine("\t\t\t\t\t\t\tlevel++; NextCh();");
-                    gen.WriteLine("\t\t\t\t\t\t}");
+                    Gen.Write(GW.Line, "NextCh();");
+                    Gen.Write(GW.Line, "if ({0})", ChCond(com.start[1]));
+                    Gen.Write(GW.Line, "{");
+                    Gen.Write(GW.LineIndent1, "level++;");
+                    Gen.Write(GW.LineIndent1, "NextCh();");
+                    Gen.Write(GW.Line, "}");
                 }
             }
-            gen.WriteLine("\t\t\t\t\t} else if (ch == EOF) return false;");
-            gen.WriteLine("\t\t\t\t\telse NextCh();");
-            gen.WriteLine("\t\t\t\t}");
+            Gen.Indentation--;
+            Gen.Write(GW.Line, "}");
+            Gen.Write(GW.Line, "else if (ch == EOF)");
+            Gen.Write(GW.LineIndent1, "return false;");
+            Gen.Write(GW.Line, "else");
+            Gen.Write(GW.LineIndent1, "NextCh();");
+            Gen.Indentation--;
+            Gen.Write(GW.Line, "}");
         }
 
         void GenComment(Comment com, int i)
         {
-            gen.WriteLine();
-            gen.WriteLine("\t\tbool Cmt{0}(Position bm)", i);
-            gen.WriteLine("\t\t{");
-            gen.WriteLine("\t\t\tif ({0}) return false;", ChCondNot(com.start[0]));
-            gen.WriteLine("\t\t\tvar level = 1;");
+            Gen.Write(GW.Line, "bool Cmt{0}(Position bm)", i);
+            Gen.Write(GW.Line, "{");
+            Gen.Indentation++;
+            Gen.Write(GW.Line, "if ({0}) return false;", ChCondNot(com.start[0]));
+            Gen.Write(GW.Line, "var level = 1;");
             if (com.start.Length == 1)
             {
-                gen.WriteLine("\t\t\tNextCh();");
+                Gen.Write(GW.Line, "NextCh();");
                 GenComBody(com);
             }
             else
             {
-                gen.WriteLine("\t\t\tNextCh();");
-                gen.Write("\t\t\tif ({0}) ", ChCond(com.start[1])); gen.WriteLine("{");
-                gen.WriteLine("\t\t\t\tNextCh();");
+                Gen.Write(GW.Line, "NextCh();");
+                Gen.Write(GW.Line, "if ({0}) ", ChCond(com.start[1]));
+                Gen.Write(GW.Line, "{");
+                Gen.Indentation++;
+                Gen.Write(GW.Line, "NextCh();");
                 GenComBody(com);
-                gen.WriteLine("\t\t\t} else");
-                gen.WriteLine("\t\t\t\tbuffer.ResetPositionTo(bm);");
-                gen.WriteLine("\t\t\treturn false;");
+                Gen.Indentation--;
+                Gen.Write(GW.Line, "}");
+                Gen.Write(GW.Line, "else");
+                Gen.Write(GW.LineIndent1, "buffer.ResetPositionTo(bm);");
+                Gen.Write(GW.Line, "return false;");
             }
-            gen.WriteLine("\t\t}");
+            Gen.Indentation--;
+            Gen.Write(GW.Line, "}");
+            Gen.Write(GW.Break, string.Empty);
         }
 
         string SymName(Symbol sym)
@@ -674,68 +699,81 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 {
                     var name = SymName(sym);
                     // sym.name stores literals with quotes, e.g. "\"Literal\""
-                    gen.WriteLine("\t\t\t\tcase {0}: t.kind = {1}; break;", Parser.scanner.casingString(name), sym.n);
+                    Gen.Write(GW.Line, "case {0}: t.kind = {1}; break;", Parser.scanner.casingString(name), sym.n);
                 }
             }
-            gen.WriteLine("\t\t\t\tdefault: break;");
+            Gen.Write(GW.Line, "default: break;");
         }
 
         void WriteState(State state)
         {
             var endOf = state.endOf;
-            gen.WriteLine("\t\t\t\tcase {0}:", state.nr);
+            Gen.Write(GW.Line, "case {0}:", state.nr);
+            Gen.Indentation++;
             if (endOf != null && state.firstAction != null)
             {
-                gen.WriteLine("\t\t\t\t\trecEnd = buffer.Position; recKind = {0};", endOf.n);
+                Gen.Write(GW.Line, "recEnd = buffer.Position; recKind = {0};", endOf.n);
             }
             var ctxEnd = state.ctx;
             for (var action = state.firstAction; action != null; action = action.next)
             {
                 if (action == state.firstAction)
-                    gen.Write("\t\t\t\t\tif (");
+                    Gen.Write(GW.StartLine, "if (");
                 else
-                    gen.Write("\t\t\t\t\telse if (");
+                    Gen.Write(GW.StartLine, "else if (");
+
                 if (action.typ == NodeKind.chr)
-                    gen.Write(ChCond((char)action.sym));
+                    Gen.Write(GW.Append, ChCond((char)action.sym));
                 else
                     PutRange(Tab.CharClassSet(action.sym));
-                gen.Write(") {");
+                Gen.Write(GW.EndLine, ")");
+                Gen.Write(GW.Line, "{");
+                Gen.Indentation++;
+
                 if (action.tc == NodeTransition.contextTrans)
                 {
-                    gen.Write("apx++; ");
+                    Gen.Write(GW.Line, "apx++; ");
                     ctxEnd = false;
                 }
                 else if (state.ctx)
-                    gen.Write("apx = 0; ");
-                gen.Write("AddCh(); goto case {0};", action.target.state.nr);
-                gen.WriteLine("}");
+                    Gen.Write(GW.Line, "apx = 0; ");
+
+                Gen.Write(GW.Line, "AddCh(); goto case {0};", action.target.state.nr);
+                Gen.Indentation--;
+                Gen.Write(GW.Line, "}");
             }
-            if (state.firstAction == null)
-                gen.Write("\t\t\t\t\t{");
-            else
-                gen.Write("\t\t\t\t\telse {");
+
+            if (state.firstAction != null)
+                Gen.Write(GW.Line, "else");
+            Gen.Write(GW.Line, "{");
+            Gen.Indentation++;
+
             if (ctxEnd)
             { // final context state: cut appendix
-                gen.WriteLine();
-                gen.WriteLine("\t\t\t\t\t\ttval.Length -= apx;");
-                gen.WriteLine("\t\t\t\t\t\tSetScannerBackBehindT();");
-                gen.Write("\t\t\t\t\t\t");
+                Gen.Write(GW.Line, "tval.Length -= apx;");
+                Gen.Write(GW.Line, "SetScannerBackBehindT();");
             }
             if (endOf == null)
             {
-                gen.WriteLine("goto case 0;}");
+                Gen.Write(GW.Line, "goto case 0;");
+                Gen.Indentation--;
+                Gen.Write(GW.Line, "}");
             }
             else
             {
-                gen.Write("t.kind = {0}; ", endOf.n);
+                Gen.Write(GW.Line, "t.kind = {0}; ", endOf.n);
                 if (endOf.tokenKind == TerminalTokenKind.classLitToken)
                 {
-                    gen.WriteLine("t.setValue(tval.ToString(), casingString); CheckLiteral(); return t.Freeze(buffer.Position, buffer.PositionM1);}");
+                    Gen.Write(GW.Line, "t.setValue(tval.ToString(), casingString);");
+                    Gen.Write(GW.Line, "CheckLiteral();");
+                    Gen.Write(GW.Line, "return t.Freeze(buffer.Position, buffer.PositionM1);");
                 }
                 else
                 {
-                    gen.WriteLine("break;}");
+                    Gen.Write(GW.Line, "break;");
                 }
+                Gen.Indentation--;
+                Gen.Write(GW.Line, "}");
             }
         }
 
@@ -746,55 +784,62 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 var targetState = action.target.state.nr;
                 if (action.typ == NodeKind.chr)
                 {
-                    gen.WriteLine($"\t\t\tstart[{action.sym}] = {targetState}; ");
+                    Gen.Write(GW.Line, $"start[{action.sym}] = {targetState}; ");
                 }
                 else
                 {
                     var s = Tab.CharClassSet(action.sym);
                     for (var r = s.head; r != null; r = r.next)
                     {
-                        gen.WriteLine($"\t\t\tfor (var i = {r.from}; i <= {r.to}; ++i) start[i] = {targetState};");
+                        Gen.Write(GW.Line, $"for (var i = {r.from}; i <= {r.to}; ++i) start[i] = {targetState};");
                     }
                 }
             }
-            gen.WriteLine("\t\t\tstart[EOF] = -1;");
+            Gen.Write(GW.Line, "start[EOF] = -1;");
         }
 
         public void WriteScanner()
         {
-            using (var g = new Generator(Tab))
+            using (Gen = new Generator(Tab))
             {
-                g.OpenFrame("Scanner.frame");
-                gen = g.OpenGen("Scanner.cs");
+                Gen.OpenFrame("Scanner.frame");
+                Gen.OpenGen("Scanner.cs");
+
                 if (dirtyDFA)
                     MakeDeterministic();
 
-                g.SkipFramePart("-->begin");
-
-                g.CopyFramePart("-->namespace");
-                if (Tab.nsName != null && Tab.nsName.Length > 0)
+                Gen.CopyFramePart("-->namespace");
+                if (!string.IsNullOrWhiteSpace(Tab.nsName))
                 {
-                    gen.Write("namespace ");
-                    gen.Write(Tab.nsName);
-                    gen.Write(" {");
+                    Gen.Write(GW.Line, "namespace ");
+                    Gen.Write(GW.EndLine, Tab.nsName);
+                    Gen.Write(GW.Line, "{");
+                    Gen.Indentation++;
                 }
 
-                g.CopyFramePart("-->declarations");
-                gen.WriteLine("\tprivate const int _maxT = {0};", Tab.terminals.Count - 1);
-                gen.WriteLine("\tconst int noSym = {0};", Tab.noSym.n);
+                Gen.CopyFramePart("-->declarations");
+                Gen.Indentation++; // in class Scanner now
+                Gen.Write(GW.Line, "private const int _maxT = {0};", Tab.terminals.Count - 1);
+                Gen.Write(GW.Line, "private const int noSym = {0};", Tab.noSym.n);
 
-                g.CopyFramePart("-->staticinitialization");
+                Gen.CopyFramePart("-->staticinitialization");
+                Gen.Indentation++; // in static constructor
                 WriteStartTab();
+                Gen.Indentation--;
 
-                g.CopyFramePart("-->initialization");
+
+                Gen.CopyFramePart("-->initialization");
+                Gen.Indentation++; // in constructor
                 if (ignoreCase)
                 {
                     // defaults to identity if !ignoreCase
-                    gen.WriteLine("\t\tcasing = char.ToLowerInvariant;");
-                    gen.WriteLine("\t\tcasingString = ScannerBase.ToLower;");
+                    Gen.Write(GW.Line, "casing = char.ToLowerInvariant;");
+                    Gen.Write(GW.Line, "casingString = ScannerBase.ToLower;");
                 }
+                Gen.Indentation--;
 
-                g.CopyFramePart("-->comments");
+
+                Gen.CopyFramePart("-->comments");
                 var comIdx = 0;
                 for (var com = firstComment; com != null; com = com.next)
                 {
@@ -802,48 +847,58 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     GenComment(com, comIdx);
                 }
 
-                g.CopyFramePart("-->literals");
+                Gen.CopyFramePart("-->literals");
+                Gen.Indentation += 2; // in CheckLiteral() / switch()
                 GenLiterals();
+                Gen.Indentation -= 2;
 
-                g.CopyFramePart("-->scan1");
+                Gen.CopyFramePart("-->scan1");
+                Gen.Indentation += 2; // in NextToken() / while (
                 if (Tab.ignored.Elements() > 0) {
-                    gen.Write("\t\t\t\t|| ");
+                    Gen.Write(GW.StartLine, "|| ");
                     PutRange(Tab.ignored);
-                    gen.WriteLine();
+                    Gen.Write(GW.EndLine, string.Empty);
                 }
-                    
+                Gen.Indentation -= 2;
 
-                g.CopyFramePart("-->scan2");
+
+                Gen.CopyFramePart("-->scan2");
+                Gen.Indentation++; // in NextToken()
                 if (firstComment != null)
                 {
-                    gen.WriteLine("\t\t\tvar bm = buffer.PositionM1; // comment(s)");
-                    gen.Write("\t\t\tif (");
+                    Gen.Write(GW.Line, "var bm = buffer.PositionM1; // comment(s)");
+                    Gen.Write(GW.Line, "if (");
                     comIdx = 0;
                     for (var com = firstComment; com != null; com = com.next)
                     {
                         comIdx++;
-                        gen.Write("Cmt{0}(bm)", comIdx);
+                        Gen.Write(GW.Append, "Cmt{0}(bm)", comIdx);
                         if (com.next != null)
-                            gen.Write(" || ");
+                            Gen.Write(GW.Append, " || ");
                     }
-                    gen.WriteLine(")");
-                    gen.WriteLine("\t\t\t\treturn NextToken();");
+                    Gen.Write(GW.EndLine, ")");
+                    Gen.Write(GW.LineIndent1, "return NextToken();");
                 }
 
                 if (hasCtxMoves)
                 {
-                    gen.WriteLine();
-                    gen.WriteLine("\t\tvar apx = 0;");
+                    Gen.Write(GW.Line, "var apx = 0;");
                 } /* pdt */
 
-                g.CopyFramePart("-->scan3");
+                Gen.CopyFramePart("-->scan3");
+                Gen.Indentation++; // in NextToken / switch()
                 for (var state = firstState.next; state != null; state = state.next) // firstState cannot be final
                     WriteState(state);
+                Gen.Indentation--; // end switch
+                Gen.Indentation--; // end NextToken()
 
                 // -->end   copy frame up to it's end
-                g.CopyFramePart(null);
-                if (Tab.nsName != null && Tab.nsName.Length > 0)
-                    gen.Write("}");
+                Gen.CopyFramePart(null);
+                if (!string.IsNullOrWhiteSpace(Tab.nsName))
+                {
+                    Gen.Indentation--;
+                    Gen.Write(GW.Line, "}");
+                }
             }
         }
 
