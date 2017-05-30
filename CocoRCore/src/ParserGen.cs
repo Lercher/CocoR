@@ -306,7 +306,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     case NodeKind.nt:
                         // generate a production method call ...
                         GenAstBuilder(p);
-                        Gen.Write(GW.Append, "{0}{1}(", p.sym.name, PROD_SUFFIX);
+                        Gen.Write(GW.StartLine, "{0}{1}(", p.sym.name, PROD_SUFFIX);
                         CopySourcePart(p.pos, indent: false); // ... with actual arguments
                         Gen.Write(GW.EndLine, ");");
                         break;
