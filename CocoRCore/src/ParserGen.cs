@@ -480,7 +480,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         {
                             s1 = Tab.Expected(p2.next, CurrentNtSym);
                             s2 = Tab.Expected(p.next, CurrentNtSym);
-                            Gen.Write(GW.Append, "WeakSeparator({0},{1},{2}) ", p2.sym.n, NewCondSet(s1), NewCondSet(s2));
+                            Gen.Write(GW.Append, "WeakSeparator({0}, {1}, {2}) ", p2.sym.n, NewCondSet(s1), NewCondSet(s2));
                             s1 = new BitArray(Tab.terminals.Count);  // for inner structure
                             if (p2.up || p2.next == null)
                                 p2 = null;
