@@ -27,28 +27,23 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public bool IgnoreSemanticActions = false;
         public bool needsAST = false;
 
-        int errorNr;      // highest parser error number
+        private Generator Gen; // generator for parser source file
+
+        private List<string> Errors = new List<string>(); // generated parser error messages
+
+
         private Symbol CurrentNtSym;     // symbol whose production is currently generated
-        private TextWriter gen; // generated parser source file
-        private TextWriter err; // generated parser error messages
-        List<BitArray> symSet = new List<BitArray>();
+        private List<BitArray> symSet = new List<BitArray>();
 
         public readonly Parser parser;                    // other Coco objects
-        private TextWriter trace => parser.trace;
-        private Errors errors => parser.errors;
-        private Tab tab => parser.tab;
+        private TextWriter Trace => parser.trace;
+        private Tab Tab => parser.tab;
 
-
-        void Indent(int n)
-        {
-            for (var i = 1; i <= n; i++)
-                gen.Write('\t');
-        }
 
 
         bool Overlaps(BitArray s1, BitArray s2)
         {
-            int len = s1.Length;
+            var len = s1.Length;
             for (var i = 0; i < len; ++i)
             {
                 if (s1[i] && s2[i])
@@ -65,31 +60,31 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         //   and no LL1 warning
         bool UseSwitch(Node p)
         {
-            BitArray s1, s2;
             if (p.typ != NodeKind.alt) return false;
-            int nAlts = 0;
-            s1 = new BitArray(tab.terminals.Count);
+            var nAlts = 0;
+            var s1 = new BitArray(Tab.terminals.Count);
             for (var pp = p; pp != null; pp = pp.down)
             {
-                s2 = tab.Expected0(pp.sub, CurrentNtSym);
+                var s2 = Tab.Expected0(pp.sub, CurrentNtSym);
                 // must not optimize with switch statement, if there are ll1 warnings
-                if (Overlaps(s1, s2)) { return false; }
+                if (Overlaps(s1, s2))
+                    return false; 
                 s1.Or(s2);
                 ++nAlts;
                 // must not optimize with switch-statement, if alt uses a resolver expression
-                if (pp.sub.typ == NodeKind.rslv) return false;
+                if (pp.sub.typ == NodeKind.rslv)
+                    return false;
             }
             return nAlts > 5;
         }
 
-        void CopySourcePart(Range range) => CopySourcePart(range, -1);
-        void CopySourcePart(Range range, int indent)
+        void CopySourcePart(Range range, bool indent)
         {
             if (IgnoreSemanticActions || range == null)
                 return;
             var s = parser.scanner.buffer.GetBufferedString(range);
-            if (indent < 0)
-                gen.Write(s);
+            if (!indent)
+                Gen.Write(GW.Append, s);
             else
             {
                 if (string.IsNullOrWhiteSpace(s))
@@ -100,11 +95,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 {
                     if (!string.IsNullOrWhiteSpace(l))
                     {
-                        if (tab.emitLines)
+                        if (Tab.emitLines)
                         {
-                            Indent(indent); gen.WriteLine("#line {0} \"{1}\"", n, tab.srcName);
+                            Gen.Write(GW.Line, "#line {0} \"{1}\"", n, Tab.srcName);
                         }
-                        Indent(indent); gen.WriteLine(l.Trim());
+                        Gen.Write(GW.Line, l.Trim());
                     }
                     n++;
                 }
@@ -112,23 +107,17 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         }
 
 
-        void GenErrorMsg(string escaped)
-        {
-            errorNr++;
-            if (errorNr > 0)
-                err.WriteLine();
-            err.Write($"\t\t\t\tcase {errorNr}: return \"{escaped}\";");
-        }
+        void GenErrorMsg(string escaped) => Errors.Add($"case {Errors.Count + 1}: return \"{escaped}\";");
 
         void GenTerminalErrorMsg(Symbol tSym)
-        {            
-            var sn = tab.Escape(tSym.VariantName);           
+        {
+            var sn = Tab.Escape(tSym.VariantName);
             GenErrorMsg($"{sn} expected");
         }
 
         void GenErrorMsg(ErrorCodes errTyp, Symbol sym)
         {
-            var sn = tab.Escape(sym.name);
+            var sn = Tab.Escape(sym.name);
             switch (errTyp)
             {
                 case ErrorCodes.anyErr:
@@ -145,17 +134,17 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             var ht = new HashSet<string>();
             for (var p2 = p; p2 != null; p2 = p2.down)
             {
-                var s1 = tab.Expected(p2.sub, CurrentNtSym);
+                var s1 = Tab.Expected(p2.sub, CurrentNtSym);
                 // we probably don't need BitArray s = DerivationsOf(s0); here
-                foreach (var sym in tab.terminals)
+                foreach (var sym in Tab.terminals)
                     if (s1[sym.n])
                         ht.Add(sym.VariantName);
             }
             var sb = new StringBuilder();
-            var sn = tab.Escape(CurrentNtSym.name);
+            var sn = Tab.Escape(CurrentNtSym.name);
             sb.AppendFormat("invalid {0}, expected", sn);
             foreach (var s in ht)
-                sb.AppendFormat(" {0}", tab.Escape(s));
+                sb.AppendFormat(" {0}", Tab.Escape(s));
             GenErrorMsg(sb.ToString());
             // gen and use the std msg:
             // GenErrorMsg(ErrorCodes.altErr, CurrentNtSym);
@@ -177,7 +166,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         // for autocomplete/intellisense
         // same as GenCond(), but we only notfiy the 'alt' list of alternatives of new members		
-        void GenAutocomplete(BitArray s, Node p, int indent, string comment)
+        void GenAutocomplete(BitArray s, Node p, string comment)
         {
             if (!GenerateAutocompleteInformation) return; // we don't want autocomplete information in the parser
             if (p.typ == NodeKind.rslv) return; // if we have a resolver, we don't know what to do (yet), so we do nothing
@@ -185,78 +174,72 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (c == 0) return;
             if (c > maxTerm)
             {
-                gen.WriteLine("addAlt(set0, {0}); // {1}", NewCondSet(s), comment);
+                Gen.Write(GW.Line, "addAlt(set0, {0}); // {1}", NewCondSet(s), comment);
             }
             else
             {
-                gen.Write("addAlt(");
-                if (c > 1) gen.Write("new int[] {");
+                Gen.Write(GW.StartLine, "addAlt(");
+                if (c > 1) Gen.Write(GW.Append, "new int[] {");
                 var n = 0;
-                foreach (var sym in tab.terminals)
+                foreach (var sym in Tab.terminals)
                 {
                     if (s[sym.n])
                     {
                         n++;
-                        if (n > 1) gen.Write(", ");
-                        gen.Write(sym.n);
+                        if (n > 1) Gen.Write(GW.Append, ", ");
+                        Gen.Write(GW.Append, sym.n.ToString());
                         // note: we don't need to take sym.inherits or isKind() into account here
                         // because we only want to see alternatives as specified in the parser productions.
                         // So a keyword:indent = "keyword". token spec will produce only an "ident" variant
                         // and not a "keyword" as well as an "ident".
                     }
                 }
-                if (c > 1) gen.Write("}");
-                gen.WriteLine("); // {0}", comment);
+                if (c > 1) Gen.Write(GW.Append, "}");
+                Gen.Write(GW.EndLine, "); // {0}", comment);
             }
-            Indent(indent);
         }
 
-        void GenAutocomplete(int kind, int indent, string comment)
+        void GenAutocomplete(int kind, string comment)
         {
             if (!GenerateAutocompleteInformation) return; // we don't want autocomplete information in the parser
-            gen.WriteLine("addAlt({0}); // {1}", kind, comment);
-            Indent(indent);
+            Gen.Write(GW.Line, "addAlt({0}); // {1}", kind, comment);
         }
 
 
         void GenCond(BitArray s, Node p)
         {
             if (p.typ == NodeKind.rslv)
-                CopySourcePart(p.pos);
+                CopySourcePart(p.pos, indent: false);
             else
             {
                 var n = s.ElementCount();
                 if (n == 0)
-                    gen.Write("false"); // happens if an ANY set matches no symbol
+                    Gen.Write(GW.Append, "false"); // happens if an ANY set matches no symbol
                 else if (n <= maxTerm)
                 {
-                    foreach (var sym in tab.terminals)
+                    foreach (var sym in Tab.terminals)
                     {
                         if (s[sym.n])
                         {
-                            gen.Write("isKind(la, {0})", sym.n);
+                            Gen.Write(GW.Append, "isKind(la, {0})", sym.n);
                             --n;
-                            if (n > 0) gen.Write(" || ");
+                            if (n > 0) Gen.Write(GW.Append, " || ");
                         }
                     }
                 }
                 else
                 {
-                    gen.Write("StartOf({0})", NewCondSet(s));
+                    Gen.Write(GW.Append, "StartOf({0})", NewCondSet(s));
                 }
             }
         }
 
-        void PutCaseLabels(BitArray s0, int indent)
+        void PutCaseLabels(BitArray s0)
         {
             var s = DerivationsOf(s0);
-            foreach (var sym in tab.terminals)
+            foreach (var sym in Tab.terminals)
                 if (s[sym.n])
-                {
-                    Indent(indent);
-                    gen.WriteLine("case {0}: // {1}", sym.n, sym.name);
-                }
-            Indent(indent);
+                    Gen.Write(GW.Line, "case {0}: // {1}", sym.n, sym.name);
         }
 
         BitArray DerivationsOf(BitArray s0)
@@ -266,11 +249,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             while (!done)
             {
                 done = true;
-                foreach (var sym in tab.terminals)
+                foreach (var sym in Tab.terminals)
                 {
                     if (s[sym.n])
                     {
-                        foreach (var baseSym in tab.terminals)
+                        foreach (var baseSym in Tab.terminals)
                         {
                             if (baseSym.inherits == sym && !s[baseSym.n])
                             {
@@ -284,45 +267,36 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             return s;
         }
 
-        void GenSymboltableCheck(Node p, int indent)
+        void GenSymboltableCheck(Node p)
         {
             if (!string.IsNullOrEmpty(p.declares))
             {
-                Indent(indent);
-                gen.WriteLine("if (!{0}.Add(la)) SemErr(71, string.Format(DuplicateSymbol, {1}, la.val, {0}.name), la);", p.declares, tab.Quoted(p.sym.name));
-                Indent(indent);
-                gen.WriteLine("alternatives.tdeclares = {0};", p.declares);
+                Gen.Write(GW.Line, "if (!{0}.Add(la)) SemErr(71, string.Format(DuplicateSymbol, {1}, la.val, {0}.name), la);", p.declares, Tab.Quoted(p.sym.name));
+                Gen.Write(GW.Line, "alternatives.tdeclares = {0};", p.declares);
             }
             else if (!string.IsNullOrEmpty(p.declared))
             {
-                Indent(indent);
-                gen.WriteLine("if (!{0}.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, {1}, la.val, {0}.name), la);", p.declared, tab.Quoted(p.sym.name));
+                Gen.Write(GW.Line, "if (!{0}.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, {1}, la.val, {0}.name), la);", p.declared, Tab.Quoted(p.sym.name));
             }
         }
 
-        void GenAutocompleteSymboltable(Node p, int indent, string comment)
+        void GenAutocompleteSymboltable(Node p, string comment)
         {
             if (!GenerateAutocompleteInformation) return;
             if (!string.IsNullOrEmpty(p.declared))
             {
-                gen.WriteLine("addAlt({0}, {1}); // {3} {2} uses symbol table '{1}'", p.sym.n, p.declared, p.sym.name, comment);
-                Indent(indent);
+                Gen.Write(GW.Line, "addAlt({0}, {1}); // {3} {2} uses symbol table '{1}'", p.sym.n, p.declared, p.sym.name, comment);
             }
         }
 
-        void GenAstBuilder(Node p, int indent)
+        void GenAstBuilder(Node p)
         {
             if (needsAST && p.asts != null)
-            {
                 foreach (var astOp in p.asts)
-                {
-                    gen.WriteLine("using(astbuilder.createMarker({0}, {1}, {2}, {3}, {4}))", tab.Quoted(astOp.name), tab.Quoted(astOp.literal), toTF(astOp.isList), toTF(astOp.ishatch), toTF(astOp.primed));
-                    Indent(indent);
-                }
-            }
+                    Gen.Write(GW.Line, "using(astbuilder.createMarker({0}, {1}, {2}, {3}, {4}))", Tab.Quoted(astOp.name), Tab.Quoted(astOp.literal), ToTF(astOp.isList), ToTF(astOp.ishatch), ToTF(astOp.primed));
         }
 
-        void GenCode(Node pn, int indent, BitArray isChecked)
+        void GenCode(Node pn, BitArray isChecked)
         {
             BitArray s1, s2;
             for (var p = pn; p != null; p = p.next)
@@ -331,155 +305,180 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 {
                     case NodeKind.nt:
                         // generate a production method call ...
-                        Indent(indent);
-                        GenAstBuilder(p, indent);
-                        gen.Write("{0}{1}(", p.sym.name, PROD_SUFFIX);
-                        CopySourcePart(p.pos); // ... with actual arguments
-                        gen.WriteLine(");");
+                        GenAstBuilder(p);
+                        Gen.Write(GW.Append, "{0}{1}(", p.sym.name, PROD_SUFFIX);
+                        CopySourcePart(p.pos, indent: false); // ... with actual arguments
+                        Gen.Write(GW.EndLine, ");");
                         break;
                     case NodeKind.t:
-                        GenSymboltableCheck(p, indent);
-                        Indent(indent);
+                        GenSymboltableCheck(p);
                         // assert: if isChecked[p.sym.n] is true, then isChecked contains only p.sym.n
                         if (isChecked[p.sym.n])
                         {
-                            GenAstBuilder(p, indent);
-                            gen.WriteLine("Get();");
+                            GenAstBuilder(p);
+                            Gen.Write(GW.Line, "Get();");
                         }
                         else
                         {
-                            GenAutocomplete(p.sym.n, indent, "T " + p.sym.name);
-                            GenAutocompleteSymboltable(p, indent, "T " + p.sym.name);
-                            GenAstBuilder(p, indent);
-                            gen.WriteLine("Expect({0}); // {1}", p.sym.n, p.sym.name);
+                            GenAutocomplete(p.sym.n, "T " + p.sym.name);
+                            GenAutocompleteSymboltable(p, "T " + p.sym.name);
+                            GenAstBuilder(p);
+                            Gen.Write(GW.Line, "Expect({0}); // {1}", p.sym.n, p.sym.name);
                         }
                         break;
                     case NodeKind.wt:
-                        GenSymboltableCheck(p, indent);
-                        Indent(indent);
-                        s1 = tab.Expected(p.next, CurrentNtSym);
-                        s1.Or(tab.allSyncSets);
-                        int ncs1 = NewCondSet(s1);
-                        Symbol ncs1sym = (Symbol)tab.terminals[ncs1];
-                        GenAutocomplete(p.sym.n, indent, "WT " + p.sym.name);
-                        GenAutocompleteSymboltable(p, indent, "WT " + p.sym.name);
-                        GenAstBuilder(p, indent);
-                        gen.WriteLine("ExpectWeak({0}, {1}); // {2} followed by {3}", p.sym.n, ncs1, p.sym.name, ncs1sym.name);
+                        GenSymboltableCheck(p);
+                        s1 = Tab.Expected(p.next, CurrentNtSym);
+                        s1.Or(Tab.allSyncSets);
+                        var ncs1 = NewCondSet(s1);
+                        var ncs1sym = Tab.terminals[ncs1];
+                        GenAutocomplete(p.sym.n, "WT " + p.sym.name);
+                        GenAutocompleteSymboltable(p, "WT " + p.sym.name);
+                        GenAstBuilder(p);
+                        Gen.Write(GW.Line, "ExpectWeak({0}, {1}); // {2} followed by {3}", p.sym.n, ncs1, p.sym.name, ncs1sym.name);
                         break;
                     case NodeKind.any:
-                        Indent(indent);
-                        int acc = p.set.ElementCount();
-                        if (tab.terminals.Count == (acc + 1) || (acc > 0 && Sets.Equals(p.set, isChecked)))
+                        var acc = p.set.ElementCount();
+                        if (Tab.terminals.Count == (acc + 1) || (acc > 0 && Sets.Equals(p.set, isChecked)))
                         {
                             // either this ANY accepts any terminal (the + 1 = end of file), or exactly what's allowed here
-                            gen.WriteLine("Get();");
+                            Gen.Write(GW.Line, "Get();");
                         }
                         else
                         {
                             GenErrorMsg(ErrorCodes.anyErr, CurrentNtSym);
                             if (acc > 0)
                             {
-                                GenAutocomplete(p.set, p, indent, "ANY");
-                                gen.Write("if ("); GenCond(p.set, p); gen.WriteLine(") Get(); else SynErr({0});", errorNr);
+                                GenAutocomplete(p.set, p, "ANY");
+                                Gen.Write(GW.StartLine, "if (");
+                                GenCond(p.set, p);
+                                Gen.Write(GW.EndLine, ")");
+                                Gen.Write(GW.LineIndent1, "Get();");
+                                Gen.Write(GW.Line, "else");
+                                Gen.Write(GW.LineIndent1, "SynErr({0});", Errors.Count);
                             }
-                            else gen.WriteLine("SynErr({0}); // ANY node that matches no symbol", errorNr);
+                            else
+                                Gen.Write(GW.Line, "SynErr({0}); // ANY node that matches no symbol", Errors.Count);
                         }
                         break;
                     case NodeKind.eps:
                         break; // nothing
                     case NodeKind.rslv:
                         break; // nothing
-                    case NodeKind.sem:
-                        CopySourcePart(p.pos, indent);
+                    case NodeKind.sem:                         
+                        CopySourcePart(p.pos, indent: true); // semantic action
                         break;
                     case NodeKind.sync:
-                        Indent(indent);
                         GenErrorMsg(ErrorCodes.syncErr, CurrentNtSym);
                         s1 = Clone(p.set);
-                        gen.Write("while (!("); GenCond(s1, p); gen.Write(")) {");
-                        gen.Write("SynErr({0}); Get();", errorNr); gen.WriteLine("}");
+                        Gen.Write(GW.StartLine, "while (!(");
+                        GenCond(s1, p);
+                        Gen.Write(GW.EndLine, "))");
+                        Gen.Write(GW.Line, "{");
+                        Gen.Write(GW.LineIndent1, "SynErr({0});", Errors.Count);
+                        Gen.Write(GW.LineIndent1, "Get();", Errors.Count);
+                        Gen.Write(GW.Line, "}");
                         break;
                     case NodeKind.alt:
-                        s1 = tab.First(p);
-                        bool equal = Sets.Equals(s1, isChecked);
+                        s1 = Tab.First(p);
+                        var equal = Sets.Equals(s1, isChecked);
 
-                        // intellisense
-                        Indent(indent);
+                        // intellisense / autocomplete
                         for (var pd = p; pd != null; pd = pd.down)
                         {
-                            s1 = tab.Expected(pd.sub, CurrentNtSym);
-                            GenAutocomplete(s1, pd.sub, indent, "ALT");
-                            GenAutocompleteSymboltable(pd.sub, indent, "ALT");
+                            s1 = Tab.Expected(pd.sub, CurrentNtSym);
+                            GenAutocomplete(s1, pd.sub, "ALT");
+                            GenAutocompleteSymboltable(pd.sub, "ALT");
                         }
                         // end intellisense
 
-                        bool useSwitch = UseSwitch(p);
+                        var useSwitch = UseSwitch(p);
                         if (useSwitch)
                         {
-                            gen.WriteLine("switch (la.kind) {");
+                            Gen.Write(GW.Line, "switch (la.kind)");
+                            Gen.Write(GW.Line, "{");
+                            Gen.Indentation++;
                         }
                         for (var pp = p; pp != null; pp = pp.down)
                         {
-                            s1 = tab.Expected(pp.sub, CurrentNtSym);
+                            s1 = Tab.Expected(pp.sub, CurrentNtSym);
                             if (useSwitch)
                             {
-                                PutCaseLabels(s1, indent);
-                                gen.WriteLine("{");
+                                PutCaseLabels(s1);   // case x:, case y:
+                                Gen.Indentation++;
                             }
                             else if (pp == p)
                             {
-                                gen.Write("if ("); GenCond(s1, pp.sub); gen.WriteLine(") {");
+                                Gen.Write(GW.StartLine, "if (");
+                                GenCond(s1, pp.sub);
+                                Gen.Write(GW.EndLine, ")");
+                                Gen.Write(GW.Line, "{");
+                                Gen.Indentation++;
                             }
                             else if (pp.down == null && equal)
                             {
-                                Indent(indent);
-                                gen.WriteLine("} else {");
+                                Gen.Indentation--;
+                                Gen.Write(GW.Line, "}");
+                                Gen.Write(GW.Line, "else");
+                                Gen.Write(GW.Line, "{");
+                                Gen.Indentation++;
                             }
                             else
                             {
-                                Indent(indent);
-                                gen.Write("} else if ("); GenCond(s1, pp.sub); gen.WriteLine(") {");
+                                Gen.Indentation--;
+                                Gen.Write(GW.Line, "}");
+                                Gen.Write(GW.Line, "else if (");
+                                GenCond(s1, pp.sub);
+                                Gen.Write(GW.EndLine, ")");
+                                Gen.Write(GW.Line, "{");
+                                Gen.Indentation++;
                             }
-                            GenCode(pp.sub, indent + 1, s1);
+                            GenCode(pp.sub, s1);
                             if (useSwitch)
                             {
-                                Indent(indent); gen.WriteLine("\tbreak;");
-                                Indent(indent); gen.WriteLine("}");
+                                Gen.Write(GW.Line, "break;");
+                                Gen.Indentation--;
                             }
                         }
-                        Indent(indent);
                         if (equal)
                         {
-                            gen.WriteLine("}");
+                            Gen.Write(GW.Line, "}");
+                            Gen.Indentation--;
                         }
                         else
                         {
                             GenAltErrorMsg(p);
                             if (useSwitch)
                             {
-                                gen.WriteLine("default: SynErr({0}); break;", errorNr);
-                                Indent(indent); gen.WriteLine("}");
+                                Gen.Write(GW.Line, "default:");
+                                Gen.Write(GW.LineIndent1, "SynErr({0});", Errors.Count);
+                                Gen.Write(GW.LineIndent1, "break;", Errors.Count);
+                                Gen.Indentation--; // is effectively two tabs back
+                                Gen.Write(GW.Line, "} // end switch");
+                                Gen.Indentation--;
                             }
                             else
                             {
-                                gen.Write("} "); gen.WriteLine("else SynErr({0});", errorNr);
+                                Gen.Indentation--;
+                                Gen.Write(GW.Line, "} // end if");
+                                Gen.Write(GW.Line, "else");
+                                Gen.Write(GW.LineIndent1, "SynErr({0});", Errors.Count);
                             }
                         }
                         break;
                     case NodeKind.iter:
-                        Indent(indent);
                         var p2 = p.sub;
                         var pac = p2;
-                        BitArray sac = (BitArray)tab.First(pac);
-                        GenAutocomplete(sac, pac, indent, "ITER start");
-                        GenAutocompleteSymboltable(pac, indent, "ITER start");
-                        gen.Write("while (");
+                        var sac = Tab.First(pac);
+                        GenAutocomplete(sac, pac, "ITER start");
+                        GenAutocompleteSymboltable(pac, "ITER start");
+                        Gen.Write(GW.StartLine, "while (");
                         if (p2.typ == NodeKind.wt)
                         {
-                            s1 = tab.Expected(p2.next, CurrentNtSym);
-                            s2 = tab.Expected(p.next, CurrentNtSym);
-                            gen.Write("WeakSeparator({0},{1},{2}) ", p2.sym.n, NewCondSet(s1), NewCondSet(s2));
-                            s1 = new BitArray(tab.terminals.Count);  // for inner structure
+                            s1 = Tab.Expected(p2.next, CurrentNtSym);
+                            s2 = Tab.Expected(p.next, CurrentNtSym);
+                            Gen.Write(GW.Append, "WeakSeparator({0},{1},{2}) ", p2.sym.n, NewCondSet(s1), NewCondSet(s2));
+                            s1 = new BitArray(Tab.terminals.Count);  // for inner structure
                             if (p2.up || p2.next == null)
                                 p2 = null;
                             else
@@ -487,90 +486,86 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         }
                         else
                         {
-                            s1 = tab.First(p2);
+                            s1 = Tab.First(p2);
                             GenCond(s1, p2);
                         }
-                        gen.WriteLine(") {");
-                        GenCode(p2, indent + 1, s1);
-                        Indent(indent + 1);
-                        GenAutocomplete(sac, pac, 0, "ITER end");
-                        GenAutocompleteSymboltable(pac, indent, "ITER end");
-                        Indent(indent); gen.WriteLine("}");
+                        Gen.Write(GW.EndLine, ")");
+                        Gen.Write(GW.Line, "{");
+                        Gen.Indentation++;
+                        GenCode(p2, s1);
+                        GenAutocomplete(sac, pac, "ITER end");
+                        GenAutocompleteSymboltable(pac, "ITER end");
+                        Gen.Indentation--;
+                        Gen.Write(GW.Line, "}");
                         break;
                     case NodeKind.opt:
-                        s1 = tab.First(p.sub);
-                        Indent(indent);
-                        GenAutocomplete(s1, p.sub, indent, "OPT");
-                        gen.Write("if ("); GenCond(s1, p.sub); gen.WriteLine(") {");
-                        GenCode(p.sub, indent + 1, s1);
-                        Indent(indent); gen.WriteLine("}");
+                        s1 = Tab.First(p.sub);
+                        GenAutocomplete(s1, p.sub, "OPT");
+                        Gen.Write(GW.StartLine, "if (");
+                        GenCond(s1, p.sub);
+                        Gen.Write(GW.EndLine, ")");
+                        Gen.Write(GW.Line, "{");
+                        Gen.Indentation++;
+                        GenCode(p.sub, s1);
+                        Gen.Indentation--;
+                        Gen.Write(GW.Line, "}");
                         break;
                 }
                 if (p.typ != NodeKind.eps && p.typ != NodeKind.sem && p.typ != NodeKind.sync)
                     isChecked.SetAll(false);  // = new BitArray(tab.terminals.Count);
-                if (p.up) 
+                if (p.up)
                     break;
             }
         }
 
         void GenTokens()
         {
-            foreach (var sym in tab.terminals)
+            foreach (var sym in Tab.terminals)
             {
-                if (Char.IsLetter(sym.name[0]) && sym.name != "EOF")
-                    gen.WriteLine("\tpublic const int _{0} = {1}; // TOKEN {0}{2}", sym.name, sym.n, sym.inherits != null ? " INHERITS " + sym.inherits.name : "");
+                if (char.IsLetter(sym.name[0]) && sym.name != "EOF")
+                    Gen.Write(GW.Line, "public const int _{0} = {1}; // TOKEN {0}{2}", sym.name, sym.n, " INHERITS " + sym.inherits?.name ?? "");
             }
         }
 
         void ForAllTerminals(Action<Symbol> write)
         {
-            int n = 0;
-            foreach (var sym in tab.terminals)
+            var n = 0;
+            foreach (var sym in Tab.terminals)
             {
                 if (n % 20 == 0)
-                    gen.Write("\t\t");
+                    Gen.Write(GW.StartLine, string.Empty);
                 else if (n % 4 == 0)
-                    gen.Write(" ");
+                    Gen.Write(GW.Append, "  ");
                 n++;
                 write(sym);
-                if (n < tab.terminals.Count) gen.Write(",");
-                if (n % 20 == 0) gen.WriteLine();
+                if (n < Tab.terminals.Count)
+                    Gen.Write(GW.Append, ",");
+                if (n % 20 == 0)
+                    Gen.Write(GW.EndLine, string.Empty);
             }
         }
 
-        void GenTokenBase()
-        {
-            ForAllTerminals(sym =>
-            {
-                if (sym.inherits == null)
-                    gen.Write("{0,2}", -1); // not inherited
-                else
-                    gen.Write("{0,2}", sym.inherits.n);
-            });
-        }
+        void GenTokenBase() => ForAllTerminals(sym => Gen.Write(GW.Append, "{0,2}", sym.inherits?.n ?? -1));
 
-        void GenTokenNames()
-        {
-            ForAllTerminals(sym =>
-                gen.Write("{0}", tab.Quoted(sym.VariantName))
-            );
-        }
+        void GenTokenNames() => ForAllTerminals(sym => Gen.Write(GW.Append, Tab.Quoted(sym.VariantName)));
+
 
         void GenPragmas()
         {
-            foreach (var sym in tab.pragmas)
-            {
-                gen.WriteLine("\tpublic const int _{0} = {1};", sym.name, sym.n);
-            }
+            foreach (var sym in Tab.pragmas)
+                Gen.Write(GW.Line, "public const int _{0} = {1};", sym.name, sym.n);
         }
 
         void GenCodePragmas()
         {
-            foreach (var sym in tab.pragmas)
-            {
-                gen.WriteLine("\t\t\t\tif (la.kind == {0}) {{", sym.n);
-                CopySourcePart(sym.semPos, 4);
-                gen.WriteLine("\t\t\t\t}");
+            foreach (var sym in Tab.pragmas)
+            {                
+                Gen.Write(GW.Line, "if (la.kind == {0}) // pragmas don't inherit kinds", sym.n);
+                Gen.Write(GW.Line, "{");
+                Gen.Indentation++;
+                CopySourcePart(sym.semPos, indent: true);
+                Gen.Indentation--;
+                Gen.Write(GW.Line, "}");
             }
         }
 
@@ -578,28 +573,33 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             if (list == null) return;
             foreach (var st in list)
-                gen.WriteLine("\t\tusing({0}.{1}({2})) {3}", st.name, method, param, comment); // intentionally no ; !
+                Gen.Write(GW.Line, "using({0}.{1}({2})) {3}", st.name, method, param, comment); // intentionally no ; !
         }
 
         void GenProductions()
         {
-            foreach (var sym in tab.nonterminals)
+            foreach (var sym in Tab.nonterminals)
             {
                 CurrentNtSym = sym;
-                gen.Write("\tvoid {0}{1}(", sym.name, PROD_SUFFIX);
-                CopySourcePart(sym.attrPos);
-                gen.WriteLine(") {");
+                Gen.Write(GW.StartLine, "void {0}{1}(", sym.name, PROD_SUFFIX);
+                CopySourcePart(sym.attrPos, indent: false);
+                Gen.Write(GW.EndLine, ")");
+                Gen.Write(GW.Line, "{");
+                Gen.Indentation++;
                 if (needsAST)
-                    gen.WriteLine("\t\tusing(astbuilder.createBarrier({0}))", tab.Quoted(sym.astjoinwith)); // intentionally no ; !
+                    Gen.Write(GW.Line, "using(astbuilder.createBarrier({0}))", Tab.Quoted(sym.astjoinwith)); // intentionally no ; !
                 GenUsingSymtabSomething(sym.scopes, "createScope", "", "");  // needs to be first
                 GenUsingSymtabSomething(sym.useonces, "createUsageCheck", "false, la", "// 0..1"); // needs to be after createScope 
                 GenUsingSymtabSomething(sym.usealls, "createUsageCheck", "true, la", "// 1..N");  // needs to be after createScope
-                gen.WriteLine("\t\t{");
-                CopySourcePart(sym.semPos, 2);
-                GenCode(sym.graph, 2, new BitArray(tab.terminals.Count));
-                gen.Write("\t}}");
-                gen.WriteLine();
-                gen.WriteLine();
+                Gen.Write(GW.Line, "{");
+                Gen.Indentation++;
+                CopySourcePart(sym.semPos, indent: true);
+                GenCode(sym.graph, new BitArray(Tab.terminals.Count));
+                Gen.Indentation--;
+                Gen.Write(GW.Line, "}");
+                Gen.Indentation--;
+                Gen.Write(GW.Line, "}");
+                Gen.Write(GW.Break, string.Empty);
             }
         }
 
@@ -607,17 +607,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             for (var i = 0; i < symSet.Count; i++)
             {
-                BitArray s = (BitArray)symSet[i];
-                gen.Write("\t\t{");
-                var j = 0;
-                foreach (var sym in tab.terminals)
-                {
-                    if (s[sym.n]) gen.Write("_T,"); else gen.Write("_x,");
-                    ++j;
-                    if (j % 4 == 0) gen.Write(" ");
-                }
-                // now write an elephant at the last position to not fiddle with the commas:
-                if (i == symSet.Count - 1) gen.WriteLine("_x}"); else gen.WriteLine("_x},");
+                var s = symSet[i];
+                var islast = (i == symSet.Count - 1);
+                WriteSetsLine(s, islast);
             }
         }
 
@@ -625,140 +617,172 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             for (var i = 0; i < symSet.Count; i++)
             {
-                BitArray s = DerivationsOf((BitArray)symSet[i]);
-                gen.Write("\t\t{");
-                var j = 0;
-                foreach (var sym in tab.terminals)
-                {
-                    if (s[sym.n]) gen.Write("_T,"); else gen.Write("_x,");
-                    ++j;
-                    if (j % 4 == 0) gen.Write(" ");
-                }
-                if (i == symSet.Count - 1) gen.WriteLine("_x}"); else gen.WriteLine("_x},");
+                var s = DerivationsOf(symSet[i]);
+                var islast = (i == symSet.Count - 1);
+                WriteSetsLine(s, islast);
             }
         }
 
-        static string toTF(bool b)
+        private void WriteSetsLine(BitArray s, bool islast)
         {
-            return b ? "true" : "false";
+            Gen.Write(GW.StartLine, "{");
+            var j = 0;
+            foreach (var sym in Tab.terminals)
+            {
+                if (s[sym.n])
+                    Gen.Write(GW.Append, "_T,");
+                else
+                    Gen.Write(GW.Append, "_x,");
+                ++j;
+                if (j % 4 == 0)
+                    Gen.Write(GW.Append, "  ");
+
+            }
+            // now write an elephant at the last position to not fiddle with the commas:
+            if (!islast)
+                Gen.Write(GW.EndLine, "_x},");
+            else
+                Gen.Write(GW.EndLine, "_x}");
         }
+
+        private static string ToTF(bool b) => b ? "true" : "false";
 
         void GenSymbolTables(bool declare)
         {
-            foreach (var st in tab.symtabs)
+            foreach (var st in Tab.symtabs)
             {
                 if (declare)
-                    gen.WriteLine("\tpublic readonly Symboltable {0};", st.name);
+                    Gen.Write(GW.Line, "public readonly Symboltable {0};", st.name);
                 else
-                    gen.WriteLine("\t\t{0} = new Symboltable(\"{0}\", {1}, {2}, this);", st.name, toTF(parser.dfa.ignoreCase), toTF(st.strict));
+                    Gen.Write(GW.Line, "{0} = new Symboltable(\"{0}\", {1}, {2}, this);", st.name, ToTF(parser.dfa.ignoreCase), ToTF(st.strict));
             }
             if (declare)
             {
-                gen.WriteLine("\tpublic Symboltable symbols(string name) {");
-                foreach (var st in tab.symtabs)
-                    gen.WriteLine("\t\tif (name == {1}) return {0};", st.name, tab.Quoted(st.name));
-                gen.WriteLine("\t\treturn null;");
-                gen.WriteLine("\t}\n");
+                Gen.Write(GW.Line, "public Symboltable symbols(string name)");
+                Gen.Write(GW.Line, "{");
+                Gen.Indentation++;
+                foreach (var st in Tab.symtabs)
+                    Gen.Write(GW.Line, "if (name == {1}) return {0};", st.name, Tab.Quoted(st.name));
+                Gen.Write(GW.Line, "return null;");
+                Gen.Indentation--;
+                Gen.Write(GW.Line, "}");
+                Gen.Write(GW.Break, string.Empty);
             }
         }
 
         void GenSymbolTablesPredfinedValues()
         {
-            foreach (var st in tab.symtabs)
+            foreach (var st in Tab.symtabs)
             {
                 foreach (var s in st.predefined)
-                    gen.WriteLine("\t\t{0}.Add({1});", st.name, tab.Quoted(s));
+                    Gen.Write(GW.Line, "{0}.Add({1});", st.name, Tab.Quoted(s));
             }
         }
 
         void GenSymbolTablesChecks()
         {
-            foreach (var st in tab.symtabs)
-                gen.WriteLine("\t\t{0}.CheckDeclared();", st.name);
+            foreach (var st in Tab.symtabs)
+                Gen.Write(GW.Line, "{0}.CheckDeclared();", st.name);
         }
 
         public void WriteParser()
         {
-            using (var g = new Generator(tab))
+            using (Gen = new Generator(Tab))
             {
-                symSet.Add(tab.allSyncSets);
+                Gen.OpenFrame("Parser.frame");
+                Gen.OpenGen("Parser.cs");
 
-                g.OpenFrame("Parser.frame");
-                gen = g.OpenGen("Parser.cs");
+                symSet.Add(Tab.allSyncSets);
+                Tab.terminals.ForEach(GenTerminalErrorMsg);
 
-                err = new StringWriter();
-                tab.terminals.ForEach(GenTerminalErrorMsg);
-
-                g.SkipFramePart("-->begin");
+                Gen.SkipFramePart("-->begin");
 
                 if (usingPos != null)
                 {
-                    CopySourcePart(usingPos);
-                    gen.WriteLine();
+                    CopySourcePart(usingPos, indent: false);
                 }
 
-                g.CopyFramePart("-->namespace");
+                Gen.CopyFramePart("-->namespace");
                 /* AW open namespace, if it exists */
-                if (tab.nsName != null && tab.nsName.Length > 0)
+                if (!string.IsNullOrWhiteSpace(Tab.nsName))
                 {
-                    gen.WriteLine("namespace {0} {{", tab.nsName);
-                    gen.WriteLine();
+                    Gen.Write(GW.Line, "namespace {0}", Tab.nsName);
+                    Gen.Write(GW.Line, "{");
+                    Gen.Indentation++;
                 }
 
-                g.CopyFramePart("-->constants");
+                Gen.CopyFramePart("-->constants");
                 GenTokens(); /* ML 2002/09/07 write the token kinds */
-                gen.WriteLine("\tprivate const int __maxT = {0};", tab.terminals.Count - 1);
+                Gen.Write(GW.Line, "private const int __maxT = {0};", Tab.terminals.Count - 1);
                 GenPragmas(); /* ML 2005/09/23 write the pragma kinds */
 
-                g.CopyFramePart("-->declarations");
-                GenSymbolTables(true);
-                CopySourcePart(tab.semDeclPos);
+                Gen.CopyFramePart("-->declarations");
+                GenSymbolTables(declare: true);
+                CopySourcePart(Tab.semDeclPos, indent: false);
 
-                g.CopyFramePart("-->constructor");
-                GenSymbolTables(false);
+                Gen.CopyFramePart("-->constructor");
+                GenSymbolTables(declare: false);
                 if (needsAST)
-                    gen.Write("\t\tastbuilder = new AST.Builder(this);");
-                g.CopyFramePart("-->beginalternatives");
-                g.CopyFramePart("-->endalternatives", GenerateAutocompleteInformation);
-                g.CopyFramePart("-->pragmas"); GenCodePragmas();
-                g.CopyFramePart("-->beginalternativescode");
-                g.CopyFramePart("-->endalternativescode", GenerateAutocompleteInformation);
-                g.CopyFramePart("-->productions"); GenProductions();
+                    Gen.Write(GW.Line, "astbuilder = new AST.Builder(this);");
 
-                g.CopyFramePart("-->parseRoot");
+                Gen.CopyFramePart("(((beginalternatives");
+                Gen.CopyFramePart(")))endalternatives", GenerateAutocompleteInformation);
+
+                Gen.CopyFramePart("-->pragmas");
+                GenCodePragmas();
+
+                Gen.CopyFramePart("-->productions"); GenProductions();
+
+                Gen.CopyFramePart("-->parseRoot");
+                Gen.Indentation++;
                 GenSymbolTablesPredfinedValues();
-                gen.WriteLine("\t\t{0}{1}();", tab.gramSy.name, PROD_SUFFIX);
-                if (tab.checkEOF)
-                    gen.WriteLine("\t\tExpect(0);");
+                Gen.Write(GW.Line, "{0}{1}();", Tab.gramSy.name, PROD_SUFFIX);
+                if (Tab.checkEOF)
+                    Gen.Write(GW.Line, "Expect(0);");
                 GenSymbolTablesChecks();
+                Gen.Indentation--;
 
-                g.CopyFramePart("-->tbase"); GenTokenBase(); // write all tokens base types
-                g.CopyFramePart("-->tname"); GenTokenNames(); // write all token names
-                g.CopyFramePart("-->initialization0"); InitSets0();
-                g.CopyFramePart("-->initialization"); InitSets();
-                g.CopyFramePart("-->beginastcode"); // class AST, only needed, if declarative AST is used.
-                g.CopyFramePart("-->endastcode", needsAST);
-                g.CopyFramePart("-->errors"); gen.Write(err.ToString());
-                g.CopyFramePart(null);
+                Gen.CopyFramePart("-->tbase");
+                GenTokenBase(); // write all tokens base types
+
+                Gen.CopyFramePart("-->tname");
+                GenTokenNames(); // write all token names
+
+                Gen.CopyFramePart("-->initialization0");
+                InitSets0();
+
+                Gen.CopyFramePart("-->initialization");
+                InitSets();
+
+                Gen.CopyFramePart("(((beginastcode"); // class AST, only needed, if declarative AST is used.
+                Gen.CopyFramePart(")))endastcode", needsAST);
+
+                Gen.CopyFramePart("-->errors");
+                foreach (var e in Errors)
+                    Gen.Write(GW.Line, e);
+
+                Gen.CopyFramePart(null);
                 /* AW 2002-12-20 close namespace, if it exists */
-                if (tab.nsName != null && tab.nsName.Length > 0)
-                    gen.Write("}");               
+                if (!string.IsNullOrWhiteSpace(Tab.nsName))
+                {
+                    Gen.Indentation--;
+                    Gen.Write(GW.Line, "}");
+                }
             }
         }
 
         public void WriteStatistics()
         {
-            trace.WriteLine();
-            trace.WriteLine("{0} terminals", tab.terminals.Count);
-            trace.WriteLine("{0} symbols", tab.terminals.Count + tab.pragmas.Count + tab.nonterminals.Count);
-            trace.WriteLine("{0} nodes", tab.nodes.Count);
-            trace.WriteLine("{0} sets", symSet.Count);
+            Trace.WriteLine();
+            Trace.WriteLine("{0} terminals", Tab.terminals.Count);
+            Trace.WriteLine("{0} symbols", Tab.terminals.Count + Tab.pragmas.Count + Tab.nonterminals.Count);
+            Trace.WriteLine("{0} nodes", Tab.nodes.Count);
+            Trace.WriteLine("{0} sets", symSet.Count);
         }
 
         public ParserGen(CocoRCore.CSharp.Parser parser)
         {
             this.parser = parser;
-            errorNr = -1;
             usingPos = null;
         }
 

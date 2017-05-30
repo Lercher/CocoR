@@ -3,6 +3,11 @@ using System.IO;
 
 namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 {
+    public enum GW
+    {
+        StartLine, Append, EndLine, Line, LineIndent1, Break
+    }
+
     //-----------------------------------------------------------------------------
     //  Generator
     //-----------------------------------------------------------------------------
@@ -14,6 +19,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         private StreamReader frameReader;
         private StreamWriter gen;
         private readonly Tab Tab;
+        public int Indentation = 2; // namespace + class
 
         public Generator(Tab tab) => Tab = tab;
 
@@ -44,7 +50,42 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             }
         }
 
+        public void Write(GW mode,  string fmt, params object[] args)
+        {
+            if (mode == GW.Break)
+            {
+                gen.WriteLine();
+                gen.WriteLine();
+                return;
+            }
+            if (mode == GW.StartLine || mode == GW.Line || mode == GW.LineIndent1)
+                WriteStart();
+            if (mode == GW.LineIndent1)
+                Indent1();
+            
+            if (args.Length == 0)
+                gen.Write(fmt);
+            else
+                gen.Write(fmt, args); // note to vb implementors: use WriteLine(string format, params object[] arg) instead of WriteLine(string format, object arg0) here
 
+            if (mode == GW.EndLine || mode == GW.Line || mode == GW.LineIndent1)
+                gen.WriteLine();
+        }
+
+        private void WriteStart()
+        {
+            for (var i = 0; i < Indentation; i++)
+                Indent1();
+        }
+
+        private void Indent1() => gen.Write("    ");
+
+        public int PushIndentation(int n)
+        {
+            var i = Indentation;
+            Indentation = n;
+            return i;
+        }
 
         public TextWriter OpenGen(string target)
         {
@@ -54,12 +95,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 if (Tab.createOld && File.Exists(fn))
                     File.Copy(fn, $"{fn}.old", true);
                 gen = new StreamWriter(new FileStream(fn, FileMode.Create)); /* pdt */
+                return gen;
             }
             catch (IOException ex)
             {
                 throw new FatalError($"Can't generate file {fn}: {ex.Message}", ex);
             }
-            return gen;
         }
 
 

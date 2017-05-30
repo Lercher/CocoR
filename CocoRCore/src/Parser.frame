@@ -1,5 +1,3 @@
--->begin
-
 using System;
 using System.Text;
 using System.Collections;
@@ -43,13 +41,13 @@ using CocoRCore;
 			for (;;) 
 			{
 				t = la;
--->beginalternatives
+(((beginalternatives
 				if (alternatives != null) 
 				{
 					tokens.Add(new Alternative(t, alternatives));
 				}
 				_newAlt();
--->endalternatives
+)))endalternatives
 				la = scanner.Scan();
 				if (la.kind <= maxT) 
 				{ 
@@ -121,8 +119,6 @@ using CocoRCore;
             }
         }
 
--->beginalternativescode
--->endalternativescode
 -->productions
 
 		public override void Parse() 
@@ -154,12 +150,11 @@ using CocoRCore;
 -->initialization
 		};
 
--->beginastcode
 
+(((beginastcode
         public readonly AST.Builder astbuilder; // can also be private  
         public AST ast { get { return astbuilder.current; }}
-
--->endastcode
+)))endastcode
 
 
 		public override string Syntaxerror(int n) 
