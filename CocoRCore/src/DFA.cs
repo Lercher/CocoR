@@ -745,9 +745,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
             if (state.firstAction != null)
                 Gen.Write(GW.Line, "else");
+
             Gen.Write(GW.Line, "{");
             Gen.Indentation++;
-
             if (ctxEnd)
             { // final context state: cut appendix
                 Gen.Write(GW.Line, "tval.Length -= apx;");
@@ -756,8 +756,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (endOf == null)
             {
                 Gen.Write(GW.Line, "goto case 0;");
-                Gen.Indentation--;
-                Gen.Write(GW.Line, "}");
             }
             else
             {
@@ -772,9 +770,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 {
                     Gen.Write(GW.Line, "break;");
                 }
-                Gen.Indentation--;
-                Gen.Write(GW.Line, "}");
             }
+            Gen.Indentation--;
+            Gen.Write(GW.Line, "}");
+            
+            Gen.Indentation++; // end case
         }
 
         void WriteStartTab()
@@ -867,7 +867,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 if (firstComment != null)
                 {
                     Gen.Write(GW.Line, "var bm = buffer.PositionM1; // comment(s)");
-                    Gen.Write(GW.Line, "if (");
+                    Gen.Write(GW.StartLine, "if (");
                     comIdx = 0;
                     for (var com = firstComment; com != null; com = com.next)
                     {
