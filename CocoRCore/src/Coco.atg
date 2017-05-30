@@ -20,7 +20,8 @@ COMPILER Coco
     string tokenString;         // used in declarations of literal tokens
     string noString = "-none-"; // used in declarations of literal tokens
 
-    public override void Dispose() {
+    public override void Dispose() 
+    {
         trace?.Dispose();
         base.Dispose();
     }
