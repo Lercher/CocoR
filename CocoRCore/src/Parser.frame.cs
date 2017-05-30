@@ -36,6 +36,7 @@ namespace CocoRCore
 
         public Token t;    // last recognized token
         public Token la;   // lookahead token
+        public Token lb;   // lookback token
         protected int errDist = minErrDist;
 
 

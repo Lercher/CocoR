@@ -41,6 +41,7 @@ using CocoRCore;
         {
             for (;;) 
             {
+                lb = t;
                 t = la;
 (((beginalternatives
                 if (alternatives != null) 
@@ -126,6 +127,7 @@ using CocoRCore;
         {
             if (scanner == null) throw new FatalError("This parser is not Initialize()-ed.");
             la = Token.Zero;
+            lb = Token.Zero;
             Get();
 -->parseRoot
         }
