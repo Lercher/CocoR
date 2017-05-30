@@ -710,6 +710,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 }
 
                 Gen.CopyFramePart("-->constants");
+                Gen.Indentation++; // now in class Parser
                 GenTokens(); /* ML 2002/09/07 write the token kinds */
                 Gen.Write(GW.Line, "private const int __maxT = {0};", Tab.terminals.Count - 1);
                 GenPragmas(); /* ML 2005/09/23 write the pragma kinds */
@@ -760,6 +761,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     Gen.Write(GW.Line, e);
 
                 Gen.CopyFramePart(null);
+                Gen.Indentation--; // now out of class Parser
+                
                 /* AW 2002-12-20 close namespace, if it exists */
                 if (!string.IsNullOrWhiteSpace(Tab.nsName))
                 {
