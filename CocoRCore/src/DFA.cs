@@ -773,8 +773,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             }
             Gen.Indentation--;
             Gen.Write(GW.Line, "}");
-            
-            Gen.Indentation++; // end case
+
+            Gen.Indentation--; // end case
         }
 
         void WriteStartTab()
