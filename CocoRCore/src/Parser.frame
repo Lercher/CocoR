@@ -105,7 +105,7 @@ using CocoRCore;
             if (isKind(la, n)) 
                 Get(); 
             else 
-                SynErr(n);
+                SynErr(n + 1); // error number starts at 1, expect at 0
         }
 
 
