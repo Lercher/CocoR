@@ -2,11 +2,13 @@
 // as a variant, you can reference the CocoRCore.dll,
 // that includes this classes in a compiled form.
 
+#pragma warning disable IDE1006 // Naming Styles
+
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Collections.Generic;
-using System.Collections;
 
 namespace CocoRCore
 {
@@ -124,9 +126,7 @@ namespace CocoRCore
             if (buffer == null)
                 throw new FatalError($"The Scanner {GetType().FullName} has to be Initialize()-ed before use");
             if (tokens.next == null)
-            {
                 return NextToken();
-            }
             else
             {
                 peekToken = tokens = tokens.next;
@@ -140,9 +140,7 @@ namespace CocoRCore
             do
             {
                 if (peekToken.next == null)
-                {
                     peekToken.next = NextToken();
-                }
                 peekToken = peekToken.next;
             } while (peekToken.kind > maxT); // skip pragmas
 
@@ -150,8 +148,7 @@ namespace CocoRCore
         }
 
         // make sure that peeking starts at the current scan position
-        public void ResetPeek() { peekToken = tokens; }
-
+        public void ResetPeek() => peekToken = tokens;
     } // end Scanner
 
 
@@ -239,10 +236,7 @@ namespace CocoRCore
                 val = casing(scanned);
             }
 
-            public Token Freeze()
-            {
-                return new Token(this);
-            }
+            public Token Freeze() => new Token(this);
 
             public Token Freeze(Position end, Position endM1)
             {
@@ -380,10 +374,7 @@ namespace CocoRCore
             NextCh();
         }
 
-        public string GetBufferedString(Range r)
-        {
-            return _slider.String(r.start.pos - 1, r.end.pos - 1);
-        }
+        public string GetBufferedString(Range r) => _slider.String(r.start.pos - 1, r.end.pos - 1);
 
         public int Read()
         {
@@ -454,9 +445,9 @@ namespace CocoRCore
 
         public bool Contains(T item)
         {
-            int bufferIndex = head;
+            var bufferIndex = head;
             var comparer = EqualityComparer<T>.Default;
-            for (int i = 0; i < size; i++, bufferIndex++)
+            for (var i = 0; i < size; i++, bufferIndex++)
             {
                 if (bufferIndex == capacity)
                     bufferIndex = 0;
@@ -478,18 +469,15 @@ namespace CocoRCore
             tail = 0;
         }
 
-        public int Put(T[] src)
-        {
-            return Put(src, 0, src.Length);
-        }
+        public int Put(T[] src) => Put(src, 0, src.Length);
 
         public int Put(T[] src, int offset, int count)
         {
             if (!AllowOverflow && count > capacity - size)
                 throw new InvalidOperationException("MessageBufferOverflow");
 
-            int srcIndex = offset;
-            for (int i = 0; i < count; i++, tail++, srcIndex++)
+            var srcIndex = offset;
+            for (var i = 0; i < count; i++, tail++, srcIndex++)
             {
                 if (tail == capacity)
                     tail = 0;
@@ -514,16 +502,13 @@ namespace CocoRCore
             return dst;
         }
 
-        public int Get(T[] dst)
-        {
-            return Get(dst, 0, dst.Length);
-        }
+        public int Get(T[] dst) => Get(dst, 0, dst.Length);
 
         public int Get(T[] dst, int offset, int count)
         {
-            int realCount = Math.Min(count, size);
-            int dstIndex = offset;
-            for (int i = 0; i < realCount; i++, head++, dstIndex++)
+            var realCount = Math.Min(count, size);
+            var dstIndex = offset;
+            for (var i = 0; i < realCount; i++, head++, dstIndex++)
             {
                 if (head == capacity)
                     head = 0;
@@ -534,23 +519,17 @@ namespace CocoRCore
         }
 
 
-        public void CopyTo(T[] array)
-        {
-            CopyTo(array, 0);
-        }
+        public void CopyTo(T[] array) => CopyTo(array, 0);
 
-        public void CopyTo(T[] array, int arrayIndex)
-        {
-            CopyTo(0, array, arrayIndex, size);
-        }
+        public void CopyTo(T[] array, int arrayIndex) => CopyTo(0, array, arrayIndex, size);
 
         public void CopyTo(int index, T[] array, int arrayIndex, int count)
         {
             if (count > size)
                 throw new ArgumentOutOfRangeException("count", "MessageReadCountTooLarge");
 
-            int bufferIndex = head;
-            for (int i = 0; i < count; i++, bufferIndex++, arrayIndex++)
+            var bufferIndex = head;
+            for (var i = 0; i < count; i++, bufferIndex++, arrayIndex++)
             {
                 if (bufferIndex == capacity)
                     bufferIndex = 0;
@@ -558,10 +537,11 @@ namespace CocoRCore
             }
         }
 
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         public IEnumerator<T> GetEnumerator()
         {
-            int bufferIndex = head;
-            for (int i = 0; i < size; i++, bufferIndex++)
+            var bufferIndex = head;
+            for (var i = 0; i < size; i++, bufferIndex++)
             {
                 if (bufferIndex == capacity)
                     bufferIndex = 0;
@@ -570,10 +550,7 @@ namespace CocoRCore
             }
         }
 
-        public T[] GetBuffer()
-        {
-            return buffer;
-        }
+        public T[] GetBuffer() => buffer;
 
         public T[] ToArray()
         {
@@ -582,15 +559,6 @@ namespace CocoRCore
             return dst;
         }
 
-        IEnumerator<T> IEnumerable<T>.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
 
         public void Put(T item)
         {
@@ -636,15 +604,12 @@ namespace CocoRCore
         public T[] Slice(int index, int count)
         {
             var ar = new T[count];
-            for (int i = 0; i < count; i++)
+            for (var i = 0; i < count; i++)
                 ar[i] = ItemAt(index + i);
             return ar;
         }
 
-        public void Dispose()
-        {
-            buffer = null;
-        }
+        public void Dispose() => buffer = null;
     }
 
     //-----------------------------------------------------------------------------------
@@ -675,7 +640,7 @@ namespace CocoRCore
             if (pos < end) throw new FatalError("This text is not yet buffered");
             if (start > end) throw new FatalError("Start can't be after end");
             var ar = _q.Slice(startInQ, end - start);
-            return new String(ar);
+            return new string(ar);
         }
 
         public void Dispose() => _q.Dispose();

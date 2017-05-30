@@ -2,8 +2,6 @@ using System.IO;
 
 
 
-//#define POSITIONS
-
 using System;
 using System.Text;
 using System.Collections;
@@ -11,7 +9,6 @@ using System.Collections.Generic;
 using CocoRCore;
 
 namespace CocoRCore.CSharp {
-
 
 
 	public class Parser : ParserBase 
@@ -25,7 +22,6 @@ namespace CocoRCore.CSharp {
 	private const int __maxT = 52;
 	public const int _ddtSym = 53;
 	public const int _optionSym = 54;
-
 		private const bool _T = true;
 		private const bool _x = false;
 	public Symboltable symbols(string name) {
@@ -52,10 +48,8 @@ const int id = 0;
 /*-------------------------------------------------------------------------*/
 
 
-
 		public Parser()
 		{
-
 		}
 
 		public static Parser Create(string fileName) 
@@ -81,7 +75,6 @@ const int id = 0;
 			for (;;) 
 			{
 				t = la;
-
 				la = scanner.Scan();
 				if (la.kind <= maxT) 
 				{ 
@@ -94,7 +87,6 @@ const int id = 0;
 				if (la.kind == 54) {
 				tab.SetOption(la.val);
 				}
-
 				la = t;
 			}
 		}
@@ -158,7 +150,6 @@ const int id = 0;
 					Get();
             }
         }
-
 
 	void Coco‿NT() {
 		{
@@ -937,7 +928,6 @@ const int id = 0;
 	}}
 
 
-
 		public override void Parse() 
 		{
 			if (scanner == null) throw new FatalError("This parser is not Initialize()-ed.");
@@ -945,22 +935,19 @@ const int id = 0;
 			Get();
 		Coco‿NT();
 		Expect(0);
-
 		}
 	
 		// a token's base type
 		public static readonly int[] tBase = {
 		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
 		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1,
-		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1
-		};
+		-1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1		};
 
 		// a token's name
 		public static readonly string[] varTName = {
 		"[EOF]","[ident]","[number]","[string]", "[badString]","[char]","\\\'","COMPILER", "IGNORECASE","CHARACTERS","TOKENS","PRAGMAS", "COMMENTS","FROM","TO","NESTED", "IGNORE","SYMBOLTABLES","PRODUCTIONS","END",
 		".","DELETEABLE","=","STRICT", "SCOPES","(",",",")", "USEONCE","USEALL","+","-", "..","ANY",":","<", ">","<.",".>","|",
-		"WEAK","[","]","{", "}","SYNC","^","#", "IF","CONTEXT","(.",".)", "[???]"
-		};
+		"WEAK","[","]","{", "}","SYNC","^","#", "IF","CONTEXT","(.",".)", "[???]"		};
 		public override string NameOfTokenKind(int tokenKind) => varTName[tokenKind];
 
 		// states that a particular production (1st index) can start with a particular token (2nd index)
@@ -989,7 +976,6 @@ const int id = 0;
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x},
 		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_T,_x,_T, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_T,_x, _x,_x},
 		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x}
-
 		};
 
 		// as set0 but with token inheritance taken into account
@@ -1018,9 +1004,7 @@ const int id = 0;
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_x,_x,_x, _x,_x},
 		{_x,_T,_x,_T, _x,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _T,_x,_x,_x, _x,_T,_x,_T, _x,_x,_x,_x, _x,_T,_x,_x, _x,_x,_x,_T, _T,_T,_T,_T, _T,_T,_x,_x, _x,_x,_T,_x, _x,_x},
 		{_x,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_x, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_T,_T,_T, _T,_x}
-
 		};
-
 
 
 
@@ -1092,8 +1076,7 @@ const int id = 0;
 				case 61: return "invalid Attribs, expected < <.";
 				case 62: return "invalid AST, expected ^ #";
 				case 63: return "invalid ASTVal, expected [ident] [string]";
-				case 64: return "invalid TokenFactor, expected [ident] [string] [char] ( [ {";
-				default: return $"error {n}";
+				case 64: return "invalid TokenFactor, expected [ident] [string] [char] ( [ {";				default: return $"error {n}";
 			}
 		}
 

@@ -1,11 +1,9 @@
-
 using System;
 using System.IO;
 using System.Collections.Generic;
 using CocoRCore;
 
 namespace CocoRCore.CSharp {
-
 
 
 	//-----------------------------------------------------------------------------------
@@ -15,7 +13,6 @@ namespace CocoRCore.CSharp {
 	{
 	private const int _maxT = 52;
 	const int noSym = 52;
-
 
 		protected override int maxT => _maxT;
 
@@ -47,12 +44,10 @@ namespace CocoRCore.CSharp {
 			start[94] = 31; 
 			start[35] = 32; 
 			start[EOF] = -1;
-
 		}
 	
 		public Scanner()
 		{
-
 		}
 				
 
@@ -104,7 +99,6 @@ namespace CocoRCore.CSharp {
 			return false;
 		}
 
-
 		protected override void CheckLiteral() 
 		{
 			// t.val is already lowercase if the scanner is ignorecase
@@ -133,14 +127,13 @@ namespace CocoRCore.CSharp {
 				case "IF": t.kind = 48; break;
 				case "CONTEXT": t.kind = 49; break;
 				default: break;
-
 			}
 		}
 
 		protected override Token NextToken() 
 		{
-			while (ch == ' ' ||
-				ch >= 9 && ch <= 10 || ch == 13
+			while (ch == ' '
+				|| 9 <= ch && ch <= 10 || ch == 13
 			) 
 				NextCh();
 			var bm = buffer.PositionM1; // comment(s)
@@ -168,11 +161,11 @@ namespace CocoRCore.CSharp {
 					// NextCh already done
 				case 1:
 					recEnd = buffer.Position; recKind = 1;
-					if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 1;}
+					if ('0' <= ch && ch <= '9' || 'A' <= ch && ch <= 'Z' || ch == '_' || 'a' <= ch && ch <= 'z') {AddCh(); goto case 1;}
 					else {t.kind = 1; t.setValue(tval.ToString(), casingString); CheckLiteral(); return t.Freeze(buffer.Position, buffer.PositionM1);}
 				case 2:
 					recEnd = buffer.Position; recKind = 2;
-					if (ch >= '0' && ch <= '9') {AddCh(); goto case 2;}
+					if ('0' <= ch && ch <= '9') {AddCh(); goto case 2;}
 					else {t.kind = 2; break;}
 				case 3:
 					{t.kind = 3; break;}
@@ -182,45 +175,45 @@ namespace CocoRCore.CSharp {
 					if (ch == 39) {AddCh(); goto case 8;}
 					else {goto case 0;}
 				case 6:
-					if (ch >= ' ' && ch <= '~') {AddCh(); goto case 7;}
+					if (' ' <= ch && ch <= '~') {AddCh(); goto case 7;}
 					else {goto case 0;}
 				case 7:
-					if (ch >= '0' && ch <= '9' || ch >= 'a' && ch <= 'f') {AddCh(); goto case 7;}
+					if ('0' <= ch && ch <= '9' || 'a' <= ch && ch <= 'f') {AddCh(); goto case 7;}
 					else if (ch == 39) {AddCh(); goto case 8;}
 					else {goto case 0;}
 				case 8:
 					{t.kind = 5; break;}
 				case 9:
 					recEnd = buffer.Position; recKind = 53;
-					if (ch >= '0' && ch <= '9' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 9;}
+					if ('0' <= ch && ch <= '9' || 'A' <= ch && ch <= 'Z' || ch == '_' || 'a' <= ch && ch <= 'z') {AddCh(); goto case 9;}
 					else {t.kind = 53; break;}
 				case 10:
 					recEnd = buffer.Position; recKind = 54;
-					if (ch >= '-' && ch <= '.' || ch >= '0' && ch <= ':' || ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 10;}
+					if ('-' <= ch && ch <= '.' || '0' <= ch && ch <= ':' || 'A' <= ch && ch <= 'Z' || ch == '_' || 'a' <= ch && ch <= 'z') {AddCh(); goto case 10;}
 					else {t.kind = 54; break;}
 				case 11:
-					if (ch <= 9 || ch >= 11 && ch <= 12 || ch >= 14 && ch <= '!' || ch >= '#' && ch <= '[' || ch >= ']' && ch <= 65535) {AddCh(); goto case 11;}
+					if (ch <= 9 || 11 <= ch && ch <= 12 || 14 <= ch && ch <= '!' || '#' <= ch && ch <= '[' || ']' <= ch && ch <= 65535) {AddCh(); goto case 11;}
 					else if (ch == 10 || ch == 13) {AddCh(); goto case 4;}
 					else if (ch == '"') {AddCh(); goto case 3;}
 					else if (ch == 92) {AddCh(); goto case 14;}
 					else {goto case 0;}
 				case 12:
 					recEnd = buffer.Position; recKind = 6;
-					if (ch <= 9 || ch >= 11 && ch <= 12 || ch >= 14 && ch <= '&' || ch >= '(' && ch <= '[' || ch >= ']' && ch <= 65535) {AddCh(); goto case 5;}
+					if (ch <= 9 || 11 <= ch && ch <= 12 || 14 <= ch && ch <= '&' || '(' <= ch && ch <= '[' || ']' <= ch && ch <= 65535) {AddCh(); goto case 5;}
 					else if (ch == 92) {AddCh(); goto case 6;}
 					else {t.kind = 6; break;}
 				case 13:
 					recEnd = buffer.Position; recKind = 53;
-					if (ch >= '0' && ch <= '9') {AddCh(); goto case 9;}
-					else if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 15;}
+					if ('0' <= ch && ch <= '9') {AddCh(); goto case 9;}
+					else if ('A' <= ch && ch <= 'Z' || ch == '_' || 'a' <= ch && ch <= 'z') {AddCh(); goto case 15;}
 					else {t.kind = 53; break;}
 				case 14:
-					if (ch >= ' ' && ch <= '~') {AddCh(); goto case 11;}
+					if (' ' <= ch && ch <= '~') {AddCh(); goto case 11;}
 					else {goto case 0;}
 				case 15:
 					recEnd = buffer.Position; recKind = 53;
-					if (ch >= '0' && ch <= '9') {AddCh(); goto case 9;}
-					else if (ch >= 'A' && ch <= 'Z' || ch == '_' || ch >= 'a' && ch <= 'z') {AddCh(); goto case 15;}
+					if ('0' <= ch && ch <= '9') {AddCh(); goto case 9;}
+					else if ('A' <= ch && ch <= 'Z' || ch == '_' || 'a' <= ch && ch <= 'z') {AddCh(); goto case 15;}
 					else if (ch == '=') {AddCh(); goto case 10;}
 					else {t.kind = 53; break;}
 				case 16:
@@ -275,7 +268,6 @@ namespace CocoRCore.CSharp {
 					recEnd = buffer.Position; recKind = 35;
 					if (ch == '.') {AddCh(); goto case 24;}
 					else {t.kind = 35; break;}
-
 			}
 			t.setValue(tval.ToString(), casingString);
 			return t.Freeze(buffer.Position, buffer.PositionM1);

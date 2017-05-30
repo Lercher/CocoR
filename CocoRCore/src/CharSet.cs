@@ -10,11 +10,19 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
     public class CharSet
     {
 
-        public class Range
+        public class CharactersRange
         {
-            public int from, to;
-            public Range next;
-            public Range(int from, int to) { this.from = from; this.to = to; }
+            public int from;
+            public int to;
+            public CharactersRange next;
+
+            public CharactersRange(int from, int to, CharactersRange next) : this(from, to) => this.next = next;
+
+
+            public CharactersRange(int from, int to)
+            {
+                this.from = from; this.to = to;
+            }
 
             public override string ToString()
             {
@@ -26,14 +34,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             }
         }
 
-        public Range head;
+        public CharactersRange head;
 
         public override string ToString()
         {
             if (head == null) return "[]";
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
             sb.Append('[');
-            for (Range cur = head; cur != null; cur = cur.next)
+            for (var cur = head; cur != null; cur = cur.next)
             {
                 if (cur != head) sb.Append('|');
                 sb.Append(cur.ToString());
@@ -46,44 +54,58 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             get
             {
-                for (Range p = head; p != null; p = p.next)
-                    if (i < p.from) return false;
-                    else if (i <= p.to) return true; // p.from <= i <= p.to
+                for (var p = head; p != null; p = p.next)
+                    if (i < p.from)
+                        return false;
+                    else if (i <= p.to)
+                        return true; // p.from <= i <= p.to
                 return false;
             }
         }
 
         public void Set(int i)
         {
-            Range cur = head, prev = null;
+            CharactersRange prev = null;
+            var cur = head;
             while (cur != null && i >= cur.from - 1)
             {
                 if (i <= cur.to + 1)
                 { // (cur.from-1) <= i <= (cur.to+1)
-                    if (i == cur.from - 1) cur.from--;
+                    if (i == cur.from - 1)
+                        cur.from--;
                     else if (i == cur.to + 1)
                     {
                         cur.to++;
-                        Range next = cur.next;
-                        if (next != null && cur.to == next.from - 1) { cur.to = next.to; cur.next = next.next; };
+                        var next = cur.next;
+                        if (next != null && cur.to == next.from - 1)
+                        {
+                            cur.to = next.to;
+                            cur.next = next.next;
+                        };
                     }
                     return;
                 }
                 prev = cur; cur = cur.next;
             }
-            Range n = new Range(i, i);
-            n.next = cur;
-            if (prev == null) head = n; else prev.next = n;
+            var n = new CharactersRange(i, i, next: cur);
+
+            if (prev == null)
+                head = n;
+            else
+                prev.next = n;
         }
 
         public CharSet Clone()
         {
-            CharSet s = new CharSet();
-            Range prev = null;
-            for (Range cur = head; cur != null; cur = cur.next)
+            var s = new CharSet();
+            CharactersRange prev = null;
+            for (var cur = head; cur != null; cur = cur.next)
             {
-                Range r = new Range(cur.from, cur.to);
-                if (prev == null) s.head = r; else prev.next = r;
+                var r = new CharactersRange(cur.from, cur.to);
+                if (prev == null)
+                    s.head = r;
+                else
+                    prev.next = r;
                 prev = r;
             }
             return s;
@@ -91,10 +113,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public bool Equals(CharSet s)
         {
-            Range p = head, q = s.head;
+            var p = head;
+            var q = s.head;
             while (p != null && q != null)
             {
-                if (p.from != q.from || p.to != q.to) return false;
+                if (p.from != q.from || p.to != q.to)
+                    return false;
                 p = p.next; q = q.next;
             }
             return p == q;
@@ -102,61 +126,60 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public int Elements()
         {
-            int n = 0;
-            for (Range p = head; p != null; p = p.next) n += p.to - p.from + 1;
+            var n = 0;
+            for (var p = head; p != null; p = p.next)
+                n += p.to - p.from + 1;
             return n;
         }
 
-        public int First()
-        {
-            if (head != null) return head.from;
-            return -1;
-        }
+        public int First() => head?.from ?? -1;
 
         public void Or(CharSet s)
         {
-            for (Range p = s.head; p != null; p = p.next)
-                for (var i = p.from; i <= p.to; i++) Set(i);
+            for (var p = s.head; p != null; p = p.next)
+                for (var i = p.from; i <= p.to; i++)
+                    Set(i);
         }
 
         public void And(CharSet s)
         {
-            CharSet x = new CharSet();
-            for (Range p = head; p != null; p = p.next)
+            var x = new CharSet();
+            for (var p = head; p != null; p = p.next)
                 for (var i = p.from; i <= p.to; i++)
-                    if (s[i]) x.Set(i);
+                    if (s[i])
+                        x.Set(i);
             head = x.head;
         }
 
         public void Subtract(CharSet s)
         {
-            CharSet x = new CharSet();
-            for (Range p = head; p != null; p = p.next)
+            var x = new CharSet();
+            for (var p = head; p != null; p = p.next)
                 for (var i = p.from; i <= p.to; i++)
-                    if (!s[i]) x.Set(i);
+                    if (!s[i])
+                        x.Set(i);
             head = x.head;
         }
 
         public bool Includes(CharSet s)
         {
-            for (Range p = s.head; p != null; p = p.next)
+            for (var p = s.head; p != null; p = p.next)
                 for (var i = p.from; i <= p.to; i++)
-                    if (!this[i]) return false;
+                    if (!this[i])
+                        return false;
             return true;
         }
 
         public bool Intersects(CharSet s)
         {
-            for (Range p = s.head; p != null; p = p.next)
+            for (var p = s.head; p != null; p = p.next)
                 for (var i = p.from; i <= p.to; i++)
-                    if (this[i]) return true;
+                    if (this[i])
+                        return true;
             return false;
         }
 
-        public void Fill()
-        {
-            head = new Range(Char.MinValue, Char.MaxValue);
-        }
+        public void Fill() => head = new CharactersRange(char.MinValue, char.MaxValue);
     }
 
 } // end namespace

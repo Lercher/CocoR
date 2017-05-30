@@ -6,132 +6,88 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
     //-----------------------------------------------------------------------------
     //  Generator
     //-----------------------------------------------------------------------------
-    public class Generator
+    public class Generator : IDisposable
     {
         private const int EOF = -1;
 
-        private FileStream fram;
-        private StreamWriter gen;
-        private readonly Tab tab;
         private string frameFile;
+        private StreamReader frameReader;
+        private StreamWriter gen;
+        private readonly Tab Tab;
 
-        public Generator(Tab tab)
+        public Generator(Tab tab) => Tab = tab;
+
+        public void Dispose()
         {
-            this.tab = tab;
+            frameReader?.Dispose();
+            gen?.Dispose();
         }
 
-        public FileStream OpenFrame(String frame)
+        public void OpenFrame(string frame)
         {
-            if (tab.frameDir != null) frameFile = Path.Combine(tab.frameDir, frame);
-            if (frameFile == null || !File.Exists(frameFile)) frameFile = Path.Combine(tab.srcDir, frame);
-            if (frameFile == null || !File.Exists(frameFile)) throw new FatalError("Can't find : " + frame);
+            if (Tab.frameDir != null)
+                frameFile = Path.Combine(Tab.frameDir, frame);
+            if (frameFile == null || !File.Exists(frameFile))
+                frameFile = Path.Combine(Tab.srcDir, frame);
+            if (frameFile == null || !File.Exists(frameFile))
+                frameFile = frame;
+            if (frameFile == null || !File.Exists(frameFile))
+                throw new FatalError($"Can't find frame file {frame}");
 
             try
             {
-                fram = new FileStream(frameFile, FileMode.Open, FileAccess.Read, FileShare.Read);
+                frameReader = File.OpenText(frameFile);
             }
-            catch (FileNotFoundException ex)
+            catch (IOException ex)
             {
-                throw new FatalError("Can't open frame file: " + frameFile, ex);
+                throw new FatalError($"Can't open frame file {frameFile}: {ex.Message}", ex);
             }
-            return fram;
         }
 
 
 
-        public StreamWriter OpenGen(string target)
+        public TextWriter OpenGen(string target)
         {
-            string fn = Path.Combine(tab.outDir, target);
+            var fn = Path.Combine(Tab.outDir, target);
             try
             {
-                if (tab.createOld && File.Exists(fn)) 
-                    File.Copy(fn, fn + ".old", true);
+                if (Tab.createOld && File.Exists(fn))
+                    File.Copy(fn, $"{fn}.old", true);
                 gen = new StreamWriter(new FileStream(fn, FileMode.Create)); /* pdt */
             }
             catch (IOException ex)
             {
-                throw new FatalError("Can't generate file: " + fn, ex);
+                throw new FatalError($"Can't generate file {fn}: {ex.Message}", ex);
             }
             return gen;
         }
 
 
-        public void GenCopyright()
-        {
-            string copyFr = null;
-            if (tab.frameDir != null) copyFr = Path.Combine(tab.frameDir, "Copyright.frame");
-            if (copyFr == null || !File.Exists(copyFr)) copyFr = Path.Combine(tab.srcDir, "Copyright.frame");
-            if (copyFr == null || !File.Exists(copyFr)) return;
-
-            try
-            {
-                FileStream scannerFram = fram;
-                fram = new FileStream(copyFr, FileMode.Open, FileAccess.Read, FileShare.Read);
-                CopyFramePart(null);
-                fram = scannerFram;
-            }
-            catch (FileNotFoundException)
-            {
-                throw new FatalError("Cannot open Copyright.frame");
-            }
-        }
-
-        public void SkipFramePart(String stop)
-        {
-            CopyFramePart(stop, false);
-        }
-
-
-        public void CopyFramePart(String stop)
-        {
-            CopyFramePart(stop, true);
-        }
+        public void SkipFramePart(string stop) => CopyFramePart(stop, generateOutput: false);
+        public void CopyFramePart(string stop) => CopyFramePart(stop, generateOutput: true);
 
         // if stop == null, copies until end of file
         public void CopyFramePart(string stop, bool generateOutput)
         {
-            char startCh = (char)0;
-            int endOfStopString = 0;
-
-            if (stop != null)
-            {
-                startCh = stop[0];
-                endOfStopString = stop.Length - 1;
-            }
-
-            int ch = framRead();
-            while (ch != EOF)
-            {
-                if (stop != null && ch == startCh)
-                {
-                    int i = 0;
-                    do
-                    {
-                        if (i == endOfStopString) return; // stop[0..i] found
-                        ch = framRead(); i++;
-                    } while (ch == stop[i]);
-                    // stop[0..i-1] found; continue with last read character
-                    if (generateOutput) gen.Write(stop.Substring(0, i));
-                }
-                else
-                {
-                    if (generateOutput) gen.Write((char)ch);
-                    ch = framRead();
-                }
-            }
-
-            if (stop != null) throw new FatalError("Incomplete or corrupt frame file: " + frameFile);
-        }
-
-        private int framRead()
-        {
             try
             {
-                return fram.ReadByte();
+                for (;;)
+                {
+                    var line = frameReader.ReadLine();
+                    if (line == null)
+                    {
+                        if (stop == null) return;
+                        throw new FatalError($"Incomplete or corrupt frame file {frameFile}");
+                    }
+                    if (line.Trim() == stop)
+                        return;
+                    if (generateOutput)
+                        gen.WriteLine(line);
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new FatalError("Error reading frame file: " + frameFile);
+                throw new FatalError($"Error reading frame file {frameFile}: {ex.Message}");
             }
         }
     }

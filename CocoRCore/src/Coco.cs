@@ -36,7 +36,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             var enableInfos = true;
             var useShort = false;
 
-            int retVal = 1;
+            var retVal = 1;
             for (var i = 0; i < arg.Length; i++)
             {
                 if (false) {}
@@ -98,7 +98,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     parser.Parse();
                     parser.Dispose();
 
-                    FileInfo trc = new FileInfo(traceFileName);
+                    var trc = new FileInfo(traceFileName);
                     if (trc.Length == 0) 
                         trc.Delete();
                     else 

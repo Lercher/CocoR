@@ -29,9 +29,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         int errorNr;      // highest parser error number
         private Symbol CurrentNtSym;     // symbol whose production is currently generated
-        FileStream fram;  // parser frame file
-        StreamWriter gen; // generated parser source file
-        StringWriter err; // generated parser error messages
+        private TextWriter gen; // generated parser source file
+        private TextWriter err; // generated parser error messages
         List<BitArray> symSet = new List<BitArray>();
 
         public readonly Parser parser;                    // other Coco objects
@@ -123,7 +122,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void GenTerminalErrorMsg(Symbol tSym)
         {            
-            var sn = tab.Escape(tSym.variantName);           
+            var sn = tab.Escape(tSym.VariantName);           
             GenErrorMsg($"{sn} expected");
         }
 
@@ -150,7 +149,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 // we probably don't need BitArray s = DerivationsOf(s0); here
                 foreach (var sym in tab.terminals)
                     if (s1[sym.n])
-                        ht.Add(sym.variantName);
+                        ht.Add(sym.VariantName);
             }
             var sb = new StringBuilder();
             var sn = tab.Escape(CurrentNtSym.name);
@@ -553,7 +552,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void GenTokenNames()
         {
             ForAllTerminals(sym =>
-                gen.Write("{0}", tab.Quoted(sym.variantName))
+                gen.Write("{0}", tab.Quoted(sym.VariantName))
             );
         }
 
@@ -680,70 +679,71 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public void WriteParser()
         {
-            Generator g = new Generator(tab);
-            symSet.Add(tab.allSyncSets);
-
-            fram = g.OpenFrame("Parser.frame");
-            gen = g.OpenGen("Parser.cs");
-
-            err = new StringWriter();
-            tab.terminals.ForEach(GenTerminalErrorMsg);
-
-            g.GenCopyright();
-            g.SkipFramePart("-->begin");
-
-            if (usingPos != null)
+            using (var g = new Generator(tab))
             {
-                CopySourcePart(usingPos);
-                gen.WriteLine();
+                symSet.Add(tab.allSyncSets);
+
+                g.OpenFrame("Parser.frame");
+                gen = g.OpenGen("Parser.cs");
+
+                err = new StringWriter();
+                tab.terminals.ForEach(GenTerminalErrorMsg);
+
+                g.SkipFramePart("-->begin");
+
+                if (usingPos != null)
+                {
+                    CopySourcePart(usingPos);
+                    gen.WriteLine();
+                }
+
+                g.CopyFramePart("-->namespace");
+                /* AW open namespace, if it exists */
+                if (tab.nsName != null && tab.nsName.Length > 0)
+                {
+                    gen.WriteLine("namespace {0} {{", tab.nsName);
+                    gen.WriteLine();
+                }
+
+                g.CopyFramePart("-->constants");
+                GenTokens(); /* ML 2002/09/07 write the token kinds */
+                gen.WriteLine("\tprivate const int __maxT = {0};", tab.terminals.Count - 1);
+                GenPragmas(); /* ML 2005/09/23 write the pragma kinds */
+
+                g.CopyFramePart("-->declarations");
+                GenSymbolTables(true);
+                CopySourcePart(tab.semDeclPos);
+
+                g.CopyFramePart("-->constructor");
+                GenSymbolTables(false);
+                if (needsAST)
+                    gen.Write("\t\tastbuilder = new AST.Builder(this);");
+                g.CopyFramePart("-->beginalternatives");
+                g.CopyFramePart("-->endalternatives", GenerateAutocompleteInformation);
+                g.CopyFramePart("-->pragmas"); GenCodePragmas();
+                g.CopyFramePart("-->beginalternativescode");
+                g.CopyFramePart("-->endalternativescode", GenerateAutocompleteInformation);
+                g.CopyFramePart("-->productions"); GenProductions();
+
+                g.CopyFramePart("-->parseRoot");
+                GenSymbolTablesPredfinedValues();
+                gen.WriteLine("\t\t{0}{1}();", tab.gramSy.name, PROD_SUFFIX);
+                if (tab.checkEOF)
+                    gen.WriteLine("\t\tExpect(0);");
+                GenSymbolTablesChecks();
+
+                g.CopyFramePart("-->tbase"); GenTokenBase(); // write all tokens base types
+                g.CopyFramePart("-->tname"); GenTokenNames(); // write all token names
+                g.CopyFramePart("-->initialization0"); InitSets0();
+                g.CopyFramePart("-->initialization"); InitSets();
+                g.CopyFramePart("-->beginastcode"); // class AST, only needed, if declarative AST is used.
+                g.CopyFramePart("-->endastcode", needsAST);
+                g.CopyFramePart("-->errors"); gen.Write(err.ToString());
+                g.CopyFramePart(null);
+                /* AW 2002-12-20 close namespace, if it exists */
+                if (tab.nsName != null && tab.nsName.Length > 0)
+                    gen.Write("}");               
             }
-
-            g.CopyFramePart("-->namespace");
-            /* AW open namespace, if it exists */
-            if (tab.nsName != null && tab.nsName.Length > 0)
-            {
-                gen.WriteLine("namespace {0} {{", tab.nsName);
-                gen.WriteLine();
-            }
-
-            g.CopyFramePart("-->constants");
-            GenTokens(); /* ML 2002/09/07 write the token kinds */
-            gen.WriteLine("\tprivate const int __maxT = {0};", tab.terminals.Count - 1);
-            GenPragmas(); /* ML 2005/09/23 write the pragma kinds */
-
-            g.CopyFramePart("-->declarations");
-            GenSymbolTables(true);
-            CopySourcePart(tab.semDeclPos);
-
-            g.CopyFramePart("-->constructor");
-            GenSymbolTables(false);
-            if (needsAST)
-                gen.Write("\t\tastbuilder = new AST.Builder(this);");
-            g.CopyFramePart("-->beginalternatives");
-            g.CopyFramePart("-->endalternatives", GenerateAutocompleteInformation);
-            g.CopyFramePart("-->pragmas"); GenCodePragmas();
-            g.CopyFramePart("-->beginalternativescode");
-            g.CopyFramePart("-->endalternativescode", GenerateAutocompleteInformation);
-            g.CopyFramePart("-->productions"); GenProductions();
-            
-            g.CopyFramePart("-->parseRoot"); 
-            GenSymbolTablesPredfinedValues();
-            gen.WriteLine("\t\t{0}{1}();", tab.gramSy.name, PROD_SUFFIX);
-            if (tab.checkEOF)
-                gen.WriteLine("\t\tExpect(0);");
-            GenSymbolTablesChecks();
-
-            g.CopyFramePart("-->tbase"); GenTokenBase(); // write all tokens base types
-            g.CopyFramePart("-->tname"); GenTokenNames(); // write all token names
-            g.CopyFramePart("-->initialization0"); InitSets0();
-            g.CopyFramePart("-->initialization"); InitSets();
-            g.CopyFramePart("-->beginastcode"); // class AST, only needed, if declarative AST is used.
-            g.CopyFramePart("-->endastcode", needsAST);
-            g.CopyFramePart("-->errors"); gen.Write(err.ToString());
-            g.CopyFramePart(null);
-            /* AW 2002-12-20 close namespace, if it exists */
-            if (tab.nsName != null && tab.nsName.Length > 0) gen.Write("}");
-            gen.Dispose();
         }
 
         public void WriteStatistics()

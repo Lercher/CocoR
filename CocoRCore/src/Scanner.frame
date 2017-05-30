@@ -40,7 +40,7 @@ using CocoRCore;
 
 		protected override Token NextToken() 
 		{
-			while (ch == ' ' ||
+			while (ch == ' '
 -->scan1
 			) 
 				NextCh();

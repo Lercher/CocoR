@@ -1,6 +1,8 @@
 // This file has to be compiled and linked to a Coco/R generated parser.
-// as a variant, you can reference the CocoRCore.dll,
-// that includes this classes in a compiled form.
+// as a variant, you can reference the CocoRCore.dll/exe,
+// that includes this classes in a precompiled form.
+
+//#define POSITIONS
 
 using System;
 using System.IO;

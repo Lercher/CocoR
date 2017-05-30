@@ -43,10 +43,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             this.typ = typ;
             this.name = name;
             this.pos = pos;  // mutates sometimes
-            this.definedAs = name; // mutates sometimes
+            definedAs = name; // mutates sometimes
         }
 
-        public string variantName
+        public string VariantName
         {
             get
             {

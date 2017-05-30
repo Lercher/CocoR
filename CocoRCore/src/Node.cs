@@ -62,7 +62,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public AstOp addAstOp()
         {
-            AstOp ao = new AstOp();
+            var ao = new AstOp();
             asts.Add(ao);
             return ao;
         }
