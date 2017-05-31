@@ -1,9 +1,4 @@
-/*-------------------------------------------------------------------------
- compile with (namespace was at.jku.ssw.Coco for .Net V2):
-   Coco Coco.ATG -namespace CocoRCore.CSharp    
--------------------------------------------------------------------------*/
 $namespace=CocoRCore.CSharp
-
 using System.IO;
 
 COMPILER Coco
@@ -20,7 +15,8 @@ COMPILER Coco
     string tokenString;         // used in declarations of literal tokens
     string noString = "-none-"; // used in declarations of literal tokens
 
-    public override void Dispose() {
+    public override void Dispose() 
+    {
         trace?.Dispose();
         base.Dispose();
     }
@@ -117,14 +113,12 @@ Coco                            (. string gramName; CharSet s; .)
                                      tab.CompSymbolSets();
                                      if (tab.ddt[7]) tab.XRef();
                                      if (tab.GrammarOk()) {
-                                       Information(2, "writing parser.", null);
                                        pgen.WriteParser();
                                        if (genScanner) {
-                                         Information(3, "writing scanner.", null);
                                          dfa.WriteScanner();
                                          if (tab.ddt[0]) dfa.PrintStates();
                                        }
-                                       Information(4, "parser and scanner generated.", null);
+                                       Information(2, "parser and scanner generated.", null);
                                        if (tab.ddt[8]) pgen.WriteStatistics();
                                      }
                                    }

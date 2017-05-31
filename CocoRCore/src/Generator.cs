@@ -3,135 +3,133 @@ using System.IO;
 
 namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 {
+    public enum GW
+    {
+        StartLine, Append, EndLine, Line, LineIndent1, Break
+    }
+
     //-----------------------------------------------------------------------------
     //  Generator
     //-----------------------------------------------------------------------------
-    public class Generator
+    public class Generator : IDisposable
     {
         private const int EOF = -1;
 
-        private FileStream fram;
-        private StreamWriter gen;
-        private readonly Tab tab;
         private string frameFile;
+        private StreamReader frameReader;
+        private StreamWriter gen;
+        private readonly Tab Tab;
+        public int Indentation = 0;
 
-        public Generator(Tab tab)
+        public Generator(Tab tab) => Tab = tab;
+
+        public void Dispose()
         {
-            this.tab = tab;
+            frameReader?.Dispose();
+            gen?.Dispose();
         }
 
-        public FileStream OpenFrame(String frame)
+        public FileInfo OpenFrame(string frame)
         {
-            if (tab.frameDir != null) frameFile = Path.Combine(tab.frameDir, frame);
-            if (frameFile == null || !File.Exists(frameFile)) frameFile = Path.Combine(tab.srcDir, frame);
-            if (frameFile == null || !File.Exists(frameFile)) throw new FatalError("Can't find : " + frame);
+            if (Tab.frameDir != null)
+                frameFile = Path.Combine(Tab.frameDir, frame);
+            if (frameFile == null || !File.Exists(frameFile))
+                frameFile = Path.Combine(Tab.srcDir, frame);
+            if (frameFile == null || !File.Exists(frameFile))
+                frameFile = frame;
+            if (frameFile == null || !File.Exists(frameFile))
+                throw new FatalError($"Can't find frame file {frame}");
 
             try
             {
-                fram = new FileStream(frameFile, FileMode.Open, FileAccess.Read, FileShare.Read);
-            }
-            catch (FileNotFoundException ex)
-            {
-                throw new FatalError("Can't open frame file: " + frameFile, ex);
-            }
-            return fram;
-        }
-
-
-
-        public StreamWriter OpenGen(string target)
-        {
-            string fn = Path.Combine(tab.outDir, target);
-            try
-            {
-                if (tab.createOld && File.Exists(fn)) 
-                    File.Copy(fn, fn + ".old", true);
-                gen = new StreamWriter(new FileStream(fn, FileMode.Create)); /* pdt */
+                frameReader = File.OpenText(frameFile);
+                return new FileInfo(frameFile);
             }
             catch (IOException ex)
             {
-                throw new FatalError("Can't generate file: " + fn, ex);
+                throw new FatalError($"Can't open frame file {frameFile}: {ex.Message}", ex);
             }
-            return gen;
         }
 
-
-        public void GenCopyright()
+        public void Write(GW mode,  string fmt, params object[] args)
         {
-            string copyFr = null;
-            if (tab.frameDir != null) copyFr = Path.Combine(tab.frameDir, "Copyright.frame");
-            if (copyFr == null || !File.Exists(copyFr)) copyFr = Path.Combine(tab.srcDir, "Copyright.frame");
-            if (copyFr == null || !File.Exists(copyFr)) return;
+            if (mode == GW.Break)
+            {
+                gen.WriteLine();
+                gen.WriteLine();
+                return;
+            }
+            if (mode == GW.StartLine || mode == GW.Line || mode == GW.LineIndent1)
+                WriteStart();
+            if (mode == GW.LineIndent1)
+                Indent1();
+            
+            if (args.Length == 0)
+                gen.Write(fmt);
+            else
+                gen.Write(fmt, args); // note to vb implementors: use WriteLine(string format, params object[] arg) instead of WriteLine(string format, object arg0) here
 
+            if (mode == GW.EndLine || mode == GW.Line || mode == GW.LineIndent1)
+                gen.WriteLine();
+        }
+
+        private void WriteStart()
+        {
+            for (var i = 0; i < Indentation; i++)
+                Indent1();
+        }
+
+        private void Indent1() => gen.Write("    ");
+
+        public int PushIndentation(int n)
+        {
+            var i = Indentation;
+            Indentation = n;
+            return i;
+        }
+
+        public FileInfo OpenGen(string target)
+        {
+            var fn = Path.Combine(Tab.outDir, target);
             try
             {
-                FileStream scannerFram = fram;
-                fram = new FileStream(copyFr, FileMode.Open, FileAccess.Read, FileShare.Read);
-                CopyFramePart(null);
-                fram = scannerFram;
+                if (Tab.createOld && File.Exists(fn))
+                    File.Copy(fn, $"{fn}.old", true);
+                gen = new StreamWriter(new FileStream(fn, FileMode.Create)); /* pdt */
+                return new FileInfo(fn);
             }
-            catch (FileNotFoundException)
+            catch (IOException ex)
             {
-                throw new FatalError("Cannot open Copyright.frame");
+                throw new FatalError($"Can't generate file {fn}: {ex.Message}", ex);
             }
         }
 
-        public void SkipFramePart(String stop)
-        {
-            CopyFramePart(stop, false);
-        }
 
-
-        public void CopyFramePart(String stop)
-        {
-            CopyFramePart(stop, true);
-        }
+        public void SkipFramePart(string stop) => CopyFramePart(stop, generateOutput: false);
+        public void CopyFramePart(string stop) => CopyFramePart(stop, generateOutput: true);
 
         // if stop == null, copies until end of file
         public void CopyFramePart(string stop, bool generateOutput)
         {
-            char startCh = (char)0;
-            int endOfStopString = 0;
-
-            if (stop != null)
-            {
-                startCh = stop[0];
-                endOfStopString = stop.Length - 1;
-            }
-
-            int ch = framRead();
-            while (ch != EOF)
-            {
-                if (stop != null && ch == startCh)
-                {
-                    int i = 0;
-                    do
-                    {
-                        if (i == endOfStopString) return; // stop[0..i] found
-                        ch = framRead(); i++;
-                    } while (ch == stop[i]);
-                    // stop[0..i-1] found; continue with last read character
-                    if (generateOutput) gen.Write(stop.Substring(0, i));
-                }
-                else
-                {
-                    if (generateOutput) gen.Write((char)ch);
-                    ch = framRead();
-                }
-            }
-
-            if (stop != null) throw new FatalError("Incomplete or corrupt frame file: " + frameFile);
-        }
-
-        private int framRead()
-        {
             try
             {
-                return fram.ReadByte();
+                for (;;)
+                {
+                    var line = frameReader.ReadLine();
+                    if (line == null)
+                    {
+                        if (stop == null) return;
+                        throw new FatalError($"Incomplete or corrupt frame file {frameFile}, expected {stop}");
+                    }
+                    if (line.Trim() == stop)
+                        return;
+                    if (generateOutput)
+                        gen.WriteLine(line);
+                }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                throw new FatalError("Error reading frame file: " + frameFile);
+                throw new FatalError($"Error reading frame file {frameFile}: {ex.Message}");
             }
         }
     }

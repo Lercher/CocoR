@@ -24,14 +24,34 @@ namespace CocoRCore.Samples
                     parser.errors.UseShortDiagnosticFormat();
                     // parser.errors.errorStream = Console.Out;
                     parser.Parse();
+                    parser.Dispose();
                     foreach (var e in parser.errors)
                         Console.Write(e.Format("", "")); // this is only to see if it compiles, it doesn't output anything
                     Console.WriteLine("{0}: {1:f}.", parser.scanner.uri, parser.errors);
                     if (parser.errors.CountError == 0)
                     {
-                        foreach(var t in parser.tokens.Take(10))
+                        foreach(var a in parser.AlternativeTokens.Take(10))
                         {
-                            Console.WriteLine($"  Token {t.t.Range()} = {t.t.valScanned}");
+                            Console.WriteLine($"  Token {a.t.Range()} = {a.t.valScanned}. Alternatives:");
+                            System.Console.Write("      keywords:");
+                            var n = 0;
+                            for (var kind = 0; kind < a.alt.Length; kind++)
+                            {
+                                if (a.alt[kind])
+                                {
+                                    n++; if (n >= 6) 
+                                    {
+                                        Console.Write(" ...");
+                                        break;
+                                    }
+                                    Console.Write($" {parser.NameOfTokenKind(kind)}");
+                                }
+                            }
+                            System.Console.WriteLine();
+                            foreach (var fst in a.symbols)
+                            {
+                                Console.WriteLine($"      {fst.Name}: {string.Join("|", fst.Items)}");
+                            }
                         }
                     }
                 }

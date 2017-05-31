@@ -6,14 +6,16 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
     public class Comment
     {                   // info about comment syntax
-        public string start;
-        public string stop;
-        public bool nested;
+        public readonly string start;
+        public readonly string stop;
+        public readonly bool nested;
         public Comment next;
 
         public Comment(string start, string stop, bool nested)
         {
-            this.start = start; this.stop = stop; this.nested = nested;
+            this.start = start;
+            this.stop = stop;
+            this.nested = nested;
         }
 
     }

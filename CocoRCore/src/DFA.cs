@@ -19,8 +19,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         private State firstState;
         private State lastState;   // last allocated state
         private int lastSimState;  // last non melted state
-        private FileStream fram;   // scanner frame input
-        private StreamWriter gen;  // generated scanner file
+        private Generator Gen;  // generated scanner file
         private Symbol curSy;      // current token to be recognized (in FindTrans)
         private bool dirtyDFA;     // DFA may become nondeterministic in MatchLiteral
 
@@ -28,29 +27,33 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public bool hasCtxMoves;  // DFA has context transitions
 
         // other Coco objects
-        public readonly Parser parser;                    // other Coco objects
-        private TextWriter trace => parser.trace;
-        private Errors errors => parser.errors;
-        private Tab tab => parser.tab;
+        public readonly Parser Parser;                    // other Coco objects
+        private TextWriter Trace => Parser.trace;
+        private Tab Tab => Parser.tab;
 
         //---------- Output primitives
-        private string Ch(int ch)
+        public static string Ch(int ch)
         {
-            if (ch < ' ' || ch >= 127 || ch == '\'' || ch == '\\') return Convert.ToString(ch);
-            else return String.Format("'{0}'", (char)ch);
+            if (ch < ' ' || ch >= 127 || ch == '\'' || ch == '\\')
+                return ch.ToString();
+            return $"'{(char)ch}'";
         }
 
-        private string ChCond(char ch) => String.Format("ch == {0}", Ch(ch));
-        private string ChCondNot(char ch) => String.Format("ch != {0}", Ch(ch));
+        private static string ChCond(char ch) => $"ch == {Ch(ch)}";
+        private static string ChCondNot(char ch) => $"ch != {Ch(ch)}";
 
         private void PutRange(CharSet s)
-        {
-            for (CharSet.Range r = s.head; r != null; r = r.next)
+        {            
+            for (var r = s.head; r != null; r = r.next)
             {
-                if (r.from == r.to) { gen.Write("ch == " + Ch(r.from)); }
-                else if (r.from == 0) { gen.Write("ch <= " + Ch(r.to)); }
-                else { gen.Write("ch >= " + Ch(r.from) + " && ch <= " + Ch(r.to)); }
-                if (r.next != null) gen.Write(" || ");
+                if (r.from == r.to)
+                    Gen.Write(GW.Append, $"ch == {Ch(r.from)}");
+                else if (r.from == 0)
+                    Gen.Write(GW.Append, $"ch <= {Ch(r.to)}"); 
+                else
+                    Gen.Write(GW.Append, $"{Ch(r.from)} <= ch && ch <= {Ch(r.to)}"); 
+                if (r.next != null)
+                    Gen.Write(GW.Append, " || ");
             }
         }
 
@@ -58,16 +61,19 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         State NewState()
         {
-            State s = new State(); s.nr = ++lastStateNr;
-            if (firstState == null) firstState = s; else lastState.next = s;
+            var s = new State( nr: ++lastStateNr );
+            if (firstState == null)
+                firstState = s;
+            else
+                lastState.next = s;
             lastState = s;
             return s;
         }
 
         void NewTransition(State from, State to, NodeKind typ, int sym, NodeTransition tc)
         {
-            Target t = new Target() { state = to };
-            Action a = new Action(typ, sym, tc) { target = t };
+            var t = new Target() { state = to };
+            var a = new Action(typ, sym, tc) { target = t };
             from.AddAction(a);
             if (typ == NodeKind.clas) curSy.tokenKind = TerminalTokenKind.classToken;
         }
@@ -85,9 +91,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     while (b != null)
                         if (a.target.state == b.target.state && a.tc == b.tc)
                         {
-                            seta = a.Symbols(tab); setb = b.Symbols(tab);
+                            seta = a.Symbols(Tab); setb = b.Symbols(Tab);
                             seta.Or(setb);
-                            a.ShiftWith(seta, tab);
+                            a.ShiftWith(seta, Tab);
                             c = b; b = b.next; state.DetachAction(c);
                         }
                         else b = b.next;
@@ -99,33 +105,42 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             if (used[state.nr]) return;
             used[state.nr] = true;
-            for (Action a = state.firstAction; a != null; a = a.next)
+            for (var a = state.firstAction; a != null; a = a.next)
                 FindUsedStates(a.target.state, used);
         }
 
         void DeleteRedundantStates()
         {
-            State[] newState = new State[lastStateNr + 1];
-            BitArray used = new BitArray(lastStateNr + 1);
+            var newState = new State[lastStateNr + 1];
+            var used = new BitArray(lastStateNr + 1);
             FindUsedStates(firstState, used);
             // combine equal final states
-            for (State s1 = firstState.next; s1 != null; s1 = s1.next) // firstState cannot be final
+            for (var s1 = firstState.next; s1 != null; s1 = s1.next) // firstState cannot be final
                 if (used[s1.nr] && s1.endOf != null && s1.firstAction == null && !s1.ctx)
-                    for (State s2 = s1.next; s2 != null; s2 = s2.next)
+                    for (var s2 = s1.next; s2 != null; s2 = s2.next)
                         if (used[s2.nr] && s1.endOf == s2.endOf && s2.firstAction == null & !s2.ctx)
                         {
-                            used[s2.nr] = false; newState[s2.nr] = s1;
+                            used[s2.nr] = false;
+                            newState[s2.nr] = s1;
                         }
-            for (State state = firstState; state != null; state = state.next)
+
+            for (var state = firstState; state != null; state = state.next)
                 if (used[state.nr])
-                    for (Action a = state.firstAction; a != null; a = a.next)
+                    for (var a = state.firstAction; a != null; a = a.next)
                         if (!used[a.target.state.nr])
                             a.target.state = newState[a.target.state.nr];
+
             // delete unused states
-            lastState = firstState; lastStateNr = 0; // firstState has number 0
-            for (State state = firstState.next; state != null; state = state.next)
-                if (used[state.nr]) { state.nr = ++lastStateNr; lastState = state; }
-                else lastState.next = state.next;
+            lastState = firstState;
+            lastStateNr = 0; // firstState has number 0
+            for (var state = firstState.next; state != null; state = state.next) // firstState cannot be final
+                if (used[state.nr])
+                {
+                    state.nr = ++lastStateNr;
+                    lastState = state;
+                }
+                else
+                    lastState.next = state.next;
         }
 
         State TheState(Node p)
@@ -156,14 +171,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     {
                         if (Tab.DelSubGraph(p.sub))
                         {
-                            parser.SemErr(61, "contents of {...} must not be deletable");
+                            Parser.SemErr(61, "contents of {...} must not be deletable");
                             return;
                         }
                         if (p.next != null && !stepped[p.next.n]) Step(from, p.next, stepped);
                         Step(from, p.sub, stepped);
                         if (p.state != from)
                         {
-                            Step(p.state, p, new BitArray(tab.nodes.Count));
+                            Step(p.state, p, new BitArray(Tab.nodes.Count));
                         }
                         break;
                     }
@@ -224,7 +239,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             if (p == null || marked[p.n]) return;
             marked[p.n] = true;
-            if (start) Step(p.state, p, new BitArray(tab.nodes.Count)); // start of group of equally numbered nodes
+            if (start) Step(p.state, p, new BitArray(Tab.nodes.Count)); // start of group of equally numbered nodes
             switch (p.typ)
             {
                 case NodeKind.clas:
@@ -256,43 +271,46 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             curSy = sym;
             if (Tab.DelGraph(p))
             {
-                parser.SemErr(62, "token might be empty");
+                Parser.SemErr(62, "token might be empty");
                 return;
             }
             NumberNodes(p, firstState, true);
-            FindTrans(p, true, new BitArray(tab.nodes.Count));
+            FindTrans(p, true, new BitArray(Tab.nodes.Count));
             if (p.typ == NodeKind.iter)
             {
-                Step(firstState, p, new BitArray(tab.nodes.Count));
+                Step(firstState, p, new BitArray(Tab.nodes.Count));
             }
         }
 
         // match string against current automaton; store it either as a fixedToken or as a litToken
         public void MatchLiteral(string s, Symbol sym)
         {
-            s = tab.Unescape(s.Substring(1, s.Length - 2));
+            s = Tab.Unescape(s.Substring(1, s.Length - 2));
             int i, len = s.Length;
-            State state = firstState;
+            var state = firstState;
             Action a = null;
             for (i = 0; i < len; i++)
             { // try to match s against existing DFA
                 a = FindAction(state, s[i]);
-                if (a == null) break;
+                if (a == null)
+                    break;
                 state = a.target.state;
             }
             // if s was not totally consumed or leads to a non-final state => make new DFA from it
             if (i != len || state.endOf == null)
             {
-                state = firstState; i = 0; a = null;
+                state = firstState;
+                i = 0;
+                a = null;
                 dirtyDFA = true;
             }
             for (; i < len; i++)
             { // make new DFA for s[i..len-1], ML: i is either 0 or len
-                State to = NewState();
+                var to = NewState();
                 NewTransition(state, to, NodeKind.chr, s[i], NodeTransition.normalTrans);
                 state = to;
             }
-            Symbol matchedSym = state.endOf;
+            var matchedSym = state.endOf;
             if (state.endOf == null)
             {
                 state.endOf = sym;
@@ -300,7 +318,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             else if (matchedSym.tokenKind == TerminalTokenKind.fixedToken || (a != null && a.tc == NodeTransition.contextTrans))
             {
                 // s matched a token with a fixed definition or a token with an appendix that will be cut off
-                parser.SemErr(63, "tokens " + sym.name + " and " + matchedSym.name + " cannot be distinguished");
+                Parser.SemErr(63, $"tokens {sym.name} and {matchedSym.name} cannot be distinguished");
             }
             else
             { // matchedSym == classToken || classLitToken
@@ -312,7 +330,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void SplitActions(State state, Action a, Action b)
         {
             Action c; CharSet seta, setb, setc;
-            seta = a.Symbols(tab); setb = b.Symbols(tab);
+            seta = a.Symbols(Tab); setb = b.Symbols(Tab);
             if (seta.Equals(setb))
             {
                 a.AddTargets(b);
@@ -322,25 +340,25 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             {
                 setc = seta.Clone(); setc.Subtract(setb);
                 b.AddTargets(a);
-                a.ShiftWith(setc, tab);
+                a.ShiftWith(setc, Tab);
             }
             else if (setb.Includes(seta))
             {
                 setc = setb.Clone(); setc.Subtract(seta);
                 a.AddTargets(b);
-                b.ShiftWith(setc, tab);
+                b.ShiftWith(setc, Tab);
             }
             else
             {
                 setc = seta.Clone(); setc.And(setb);
                 seta.Subtract(setc);
                 setb.Subtract(setc);
-                a.ShiftWith(seta, tab);
-                b.ShiftWith(setb, tab);
+                a.ShiftWith(seta, Tab);
+                b.ShiftWith(setb, Tab);
                 c = new Action(0, 0, NodeTransition.normalTrans);  // typ and sym are set in ShiftWith
                 c.AddTargets(a);
                 c.AddTargets(b);
-                c.ShiftWith(setc, tab);
+                c.ShiftWith(setc, Tab);
                 state.AddAction(c);
             }
         }
@@ -350,12 +368,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             CharSet seta, setb;
             if (a.typ == NodeKind.chr)
                 if (b.typ == NodeKind.chr) return a.sym == b.sym;
-                else { setb = tab.CharClassSet(b.sym); return setb[a.sym]; }
+                else { setb = Tab.CharClassSet(b.sym); return setb[a.sym]; }
             else
             {
-                seta = tab.CharClassSet(a.sym);
+                seta = Tab.CharClassSet(a.sym);
                 if (b.typ == NodeKind.chr) return seta[b.sym];
-                else { setb = tab.CharClassSet(b.sym); return seta.Intersects(setb); }
+                else { setb = Tab.CharClassSet(b.sym); return seta.Intersects(setb); }
             }
         }
 
@@ -365,27 +383,28 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             do
             {
                 changed = false;
-                for (Action a = state.firstAction; a != null; a = a.next)
-                    for (Action b = a.next; b != null; b = b.next)
-                        if (Overlap(a, b)) { SplitActions(state, a, b); changed = true; }
+                for (var a = state.firstAction; a != null; a = a.next)
+                    for (var b = a.next; b != null; b = b.next)
+                        if (Overlap(a, b))
+                        {
+                            SplitActions(state, a, b);
+                            changed = true;
+                        }
             } while (changed);
         }
 
         void MeltStates(State state)
         {
-            bool ctx;
-            BitArray targets;
-            Symbol endOf;
-            for (Action action = state.firstAction; action != null; action = action.next)
+            for (var action = state.firstAction; action != null; action = action.next)
             {
                 if (action.target.next != null)
                 {
-                    GetTargetStates(action, out targets, out endOf, out ctx);
-                    Melted melt = StateWithSet(targets);
+                    GetTargetStates(action, out var targets, out var endOf, out var ctx);
+                    var melt = StateWithSet(targets);
                     if (melt == null)
                     {
-                        State s = NewState(); s.endOf = endOf; s.ctx = ctx;
-                        for (Target targ = action.target; targ != null; targ = targ.next)
+                        var s = NewState(); s.endOf = endOf; s.ctx = ctx;
+                        for (var targ = action.target; targ != null; targ = targ.next)
                             s.MeltWith(targ.state);
                         MakeUnique(s);
                         melt = NewMelted(targets, s);
@@ -398,9 +417,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void FindCtxStates()
         {
-            for (State state = firstState; state != null; state = state.next)
-                for (Action a = state.firstAction; a != null; a = a.next)
-                    if (a.tc == NodeTransition.contextTrans) a.target.state.ctx = true;
+            for (var state = firstState; state != null; state = state.next)
+                for (var a = state.firstAction; a != null; a = a.next)
+                    if (a.tc == NodeTransition.contextTrans)
+                        a.target.state.ctx = true;
         }
 
         public void MakeDeterministic()
@@ -419,40 +439,55 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public void PrintStates()
         {
-            trace.WriteLine();
-            trace.WriteLine("---------- states ----------");
-            for (State state = firstState; state != null; state = state.next)
+            Trace.WriteLine();
+            Trace.WriteLine("---------- states ----------");
+            for (var state = firstState; state != null; state = state.next)
             {
-                bool first = true;
-                if (state.endOf == null) trace.Write("               ");
-                else trace.Write("E({0,12})", tab.Name(state.endOf.name));
-                trace.Write("{0,3}:", state.nr);
-                if (state.firstAction == null) trace.WriteLine();
-                for (Action action = state.firstAction; action != null; action = action.next)
+                var first = true;
+                if (state.endOf == null)
+                    Trace.Write("               ");
+                else
+                    Trace.Write("E({0,12})", Tab.Name12(state.endOf.name));
+                Trace.Write("{0,3}:", state.nr);
+                if (state.firstAction == null)
+                    Trace.WriteLine();
+                for (var action = state.firstAction; action != null; action = action.next)
                 {
-                    if (first) { trace.Write(" "); first = false; } else trace.Write("                    ");
-                    if (action.typ == NodeKind.clas) trace.Write(((CharClass)tab.classes[action.sym]).name);
-                    else trace.Write("{0, 3}", Ch(action.sym));
-                    for (Target targ = action.target; targ != null; targ = targ.next)
-                        trace.Write(" {0, 3}", targ.state.nr);
-                    if (action.tc == NodeTransition.contextTrans) trace.WriteLine(" context"); else trace.WriteLine();
+                    if (first)
+                    {
+                        Trace.Write(" ");
+                        first = false;
+                    }
+                    else
+                        Trace.Write("                    ");
+                    if (action.typ == NodeKind.clas)
+                        Trace.Write(Tab.classes[action.sym].name);
+                    else
+                        Trace.Write("{0, 3}", Ch(action.sym));
+                    for (var targ = action.target; targ != null; targ = targ.next)
+                        Trace.Write(" {0, 3}", targ.state.nr);
+                    if (action.tc == NodeTransition.contextTrans)
+                        Trace.Write(" context");
+                    Trace.WriteLine();
                 }
             }
-            trace.WriteLine();
-            trace.WriteLine("---------- character classes ----------");
-            tab.WriteCharClasses();
+            Trace.WriteLine();
+            Trace.WriteLine("---------- character classes ----------");
+            Tab.WriteCharClasses();
         }
 
         //---------------------------- actions --------------------------------
 
         public Action FindAction(State state, char ch)
         {
-            for (Action a = state.firstAction; a != null; a = a.next)
-                if (a.typ == NodeKind.chr && ch == a.sym) return a;
+            for (var a = state.firstAction; a != null; a = a.next)
+                if (a.typ == NodeKind.chr && ch == a.sym)
+                    return a;
                 else if (a.typ == NodeKind.clas)
                 {
-                    CharSet s = tab.CharClassSet(a.sym);
-                    if (s[ch]) return a;
+                    var s = Tab.CharClassSet(a.sym);
+                    if (s[ch])
+                        return a;
                 }
             return null;
         }
@@ -460,18 +495,21 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public void GetTargetStates(Action a, out BitArray targets, out Symbol endOf, out bool ctx)
         {
             // compute the set of target states
-            targets = new BitArray(maxStates); endOf = null;
+            targets = new BitArray(maxStates);
+            endOf = null;
             ctx = false;
-            for (Target t = a.target; t != null; t = t.next)
+            for (var t = a.target; t != null; t = t.next)
             {
-                int stateNr = t.state.nr;
-                if (stateNr <= lastSimState) targets[stateNr] = true;
-                else targets.Or(MeltedSet(stateNr));
+                var stateNr = t.state.nr;
+                if (stateNr <= lastSimState)
+                    targets[stateNr] = true;
+                else
+                    targets.Or(MeltedSet(stateNr));
                 if (t.state.endOf != null)
                     if (endOf == null || endOf == t.state.endOf)
                         endOf = t.state.endOf;
                     else
-                        parser.errors.SemErr(endOf.pos, "Tokens " + endOf.name + " and " + t.state.endOf.name + " cannot be distinguished", 67);
+                        Parser.errors.SemErr(endOf.pos, $"Tokens {endOf.name} and {t.state.endOf.name} cannot be distinguished", 67);
                 if (t.state.ctx)
                 {
                     ctx = true;
@@ -494,25 +532,25 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         Melted NewMelted(BitArray set, State state)
         {
-            Melted m = new Melted(set, state);
-            m.next = firstMelted; firstMelted = m;
+            var m = new Melted(set, state, next: firstMelted);
+            firstMelted = m;
             return m;
         }
 
         BitArray MeltedSet(int nr)
         {
-            Melted m = firstMelted;
-            while (m != null)
-            {
-                if (m.state.nr == nr) return m.set; else m = m.next;
-            }
+            
+            for (var m = firstMelted; m != null; m = m.next)
+                if (m.state.nr == nr)
+                    return m.set;
             throw new FatalError("compiler error in Melted.Set");
         }
 
         Melted StateWithSet(BitArray s)
         {
-            for (Melted m = firstMelted; m != null; m = m.next)
-                if (Sets.Equals(s, m.set)) return m;
+            for (var m = firstMelted; m != null; m = m.next)
+                if (Sets.Equals(s, m.set))
+                    return m;
             return null;
         }
 
@@ -522,7 +560,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         string CommentStr(Node p)
         {
-            StringBuilder s = new StringBuilder();
+            var s = new StringBuilder();
             while (p != null)
             {
                 if (p.typ == NodeKind.chr)
@@ -531,16 +569,17 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 }
                 else if (p.typ == NodeKind.clas)
                 {
-                    CharSet set = tab.CharClassSet(p.val);
-                    if (set.Elements() != 1) parser.SemErr(64, "character set contains more than 1 character");
+                    var set = Tab.CharClassSet(p.val);
+                    if (set.Elements() != 1)
+                        Parser.SemErr(64, "character set contains more than 1 character");
                     s.Append((char)set.First());
                 }
-                else parser.SemErr(65, "comment delimiters may not be structured");
+                else Parser.SemErr(65, "comment delimiters may not be structured");
                 p = p.next;
             }
             if (s.Length == 0 || s.Length > 2)
             {
-                parser.SemErr(66, "comment delimiters must be 1 or 2 characters long");
+                Parser.SemErr(66, "comment delimiters must be 1 or 2 characters long");
                 s = new StringBuilder("?");
             }
             return s.ToString();
@@ -548,8 +587,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public void NewComment(Node from, Node to, bool nested)
         {
-            Comment c = new Comment(CommentStr(from), CommentStr(to), nested);
-            c.next = firstComment; firstComment = c;
+            var c = new Comment(CommentStr(from), CommentStr(to), nested) { next = firstComment };
+            firstComment = c;
         }
 
 
@@ -557,71 +596,96 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void GenComBody(Comment com)
         {
-            gen.WriteLine("\t\t\t\tfor(;;) {");
-            gen.Write("\t\t\t\t\tif ({0}) ", ChCond(com.stop[0])); gen.WriteLine("{");
+            Gen.Write(GW.Line, "for(;;)");
+            Gen.Write(GW.Line, "{");
+            Gen.Indentation++;
+            Gen.Write(GW.Line, "if ({0})", ChCond(com.stop[0]));
+            Gen.Write(GW.Line, "{");
+            Gen.Indentation++;
             if (com.stop.Length == 1)
             {
-                gen.WriteLine("\t\t\t\t\t\tlevel--;");
-                gen.WriteLine("\t\t\t\t\t\tif (level == 0) { NextCh(); return true; }");
-                gen.WriteLine("\t\t\t\t\t\tNextCh();");
+                Gen.Write(GW.Line, "level--;");
+                Gen.Write(GW.Line, "if (level == 0) { NextCh(); return true; }");
+                Gen.Write(GW.Line, "NextCh();");
             }
             else
             {
-                gen.WriteLine("\t\t\t\t\t\tNextCh();");
-                gen.WriteLine("\t\t\t\t\t\tif ({0}) {{", ChCond(com.stop[1]));
-                gen.WriteLine("\t\t\t\t\t\t\tlevel--;");
-                gen.WriteLine("\t\t\t\t\t\t\tif (level == 0) { NextCh(); return true; }");
-                gen.WriteLine("\t\t\t\t\t\t\tNextCh();");
-                gen.WriteLine("\t\t\t\t\t\t}");
+                Gen.Write(GW.Line, "NextCh();");
+                Gen.Write(GW.Line, "if ({0})", ChCond(com.stop[1]));
+                Gen.Write(GW.Line, "{");
+                Gen.Write(GW.LineIndent1, "level--;");
+                Gen.Write(GW.LineIndent1, "if (level == 0) { NextCh(); return true; }");
+                Gen.Write(GW.LineIndent1, "NextCh();");
+                Gen.Write(GW.Line, "}");
             }
             if (com.nested)
             {
-                gen.Write("\t\t\t\t\t}"); gen.Write(" else if ({0}) ", ChCond(com.start[0])); gen.WriteLine("{");
+                Gen.Indentation--;
+                Gen.Write(GW.Line, "}");
+                Gen.Write(GW.Line, "else if ({0})", ChCond(com.start[0]));
+                Gen.Write(GW.Line, "{");
+                Gen.Indentation++;
                 if (com.start.Length == 1)
-                    gen.WriteLine("\t\t\t\t\t\tlevel++; NextCh();");
+                {
+                    Gen.Write(GW.Line, "level++;");
+                    Gen.Write(GW.Line, "NextCh();");
+                }
                 else
                 {
-                    gen.WriteLine("\t\t\t\t\t\tNextCh();");
-                    gen.Write("\t\t\t\t\t\tif ({0}) ", ChCond(com.start[1])); gen.WriteLine("{");
-                    gen.WriteLine("\t\t\t\t\t\t\tlevel++; NextCh();");
-                    gen.WriteLine("\t\t\t\t\t\t}");
+                    Gen.Write(GW.Line, "NextCh();");
+                    Gen.Write(GW.Line, "if ({0})", ChCond(com.start[1]));
+                    Gen.Write(GW.Line, "{");
+                    Gen.Write(GW.LineIndent1, "level++;");
+                    Gen.Write(GW.LineIndent1, "NextCh();");
+                    Gen.Write(GW.Line, "}");
                 }
             }
-            gen.WriteLine("\t\t\t\t\t} else if (ch == EOF) return false;");
-            gen.WriteLine("\t\t\t\t\telse NextCh();");
-            gen.WriteLine("\t\t\t\t}");
+            Gen.Indentation--;
+            Gen.Write(GW.Line, "}");
+            Gen.Write(GW.Line, "else if (ch == EOF)");
+            Gen.Write(GW.LineIndent1, "return false;");
+            Gen.Write(GW.Line, "else");
+            Gen.Write(GW.LineIndent1, "NextCh();");
+            Gen.Indentation--;
+            Gen.Write(GW.Line, "}");
         }
 
         void GenComment(Comment com, int i)
         {
-            gen.WriteLine();
-            gen.WriteLine("\t\tbool Cmt{0}(Position bm)", i);
-            gen.WriteLine("\t\t{");
-            gen.WriteLine("\t\t\tif ({0}) return false;", ChCondNot(com.start[0]));
-            gen.WriteLine("\t\t\tvar level = 1;");
+            Gen.Write(GW.Line, "bool Cmt{0}(Position bm)", i);
+            Gen.Write(GW.Line, "{");
+            Gen.Indentation++;
+            Gen.Write(GW.Line, "if ({0}) return false;", ChCondNot(com.start[0]));
+            Gen.Write(GW.Line, "var level = 1;");
             if (com.start.Length == 1)
             {
-                gen.WriteLine("\t\t\tNextCh();");
+                Gen.Write(GW.Line, "NextCh();");
                 GenComBody(com);
             }
             else
             {
-                gen.WriteLine("\t\t\tNextCh();");
-                gen.Write("\t\t\tif ({0}) ", ChCond(com.start[1])); gen.WriteLine("{");
-                gen.WriteLine("\t\t\t\tNextCh();");
+                Gen.Write(GW.Line, "NextCh();");
+                Gen.Write(GW.Line, "if ({0}) ", ChCond(com.start[1]));
+                Gen.Write(GW.Line, "{");
+                Gen.Indentation++;
+                Gen.Write(GW.Line, "NextCh();");
                 GenComBody(com);
-                gen.WriteLine("\t\t\t} else");
-                gen.WriteLine("\t\t\t\tbuffer.ResetPositionTo(bm);");
-                gen.WriteLine("\t\t\treturn false;");
+                Gen.Indentation--;
+                Gen.Write(GW.Line, "}");
+                Gen.Write(GW.Line, "else");
+                Gen.Write(GW.LineIndent1, "buffer.ResetPositionTo(bm);");
+                Gen.Write(GW.Line, "return false;");
             }
-            gen.WriteLine("\t\t}");
+            Gen.Indentation--;
+            Gen.Write(GW.Line, "}");
+            Gen.Write(GW.Break, string.Empty);
         }
 
         string SymName(Symbol sym)
         {
-            if (Char.IsLetter(sym.name[0]))
+            if (char.IsLetter(sym.name[0]))
             { // real name value is stored in Tab.literals
-                foreach (var e in tab.literals)
+                foreach (var e in Tab.literals)
                     if (e.Value == sym) return e.Key;
             }
             return sym.name;
@@ -629,183 +693,226 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void GenLiterals()
         {
-            foreach (var sym in tab.terminals.Concat(tab.pragmas))
+            foreach (var sym in Tab.terminals.Concat(Tab.pragmas))
             {
                 if (sym.tokenKind == TerminalTokenKind.litToken)
                 {
-                    string name = SymName(sym);
+                    var name = SymName(sym);
                     // sym.name stores literals with quotes, e.g. "\"Literal\""
-                    gen.WriteLine("\t\t\t\tcase {0}: t.kind = {1}; break;", parser.scanner.casingString(name), sym.n);
+                    Gen.Write(GW.Line, "case {0}: t.kind = {1}; break;", Parser.scanner.casingString(name), sym.n);
                 }
             }
-            gen.WriteLine("\t\t\t\tdefault: break;");
+            Gen.Write(GW.Line, "default: break;");
         }
 
         void WriteState(State state)
         {
-            Symbol endOf = state.endOf;
-            gen.WriteLine("\t\t\t\tcase {0}:", state.nr);
+            var endOf = state.endOf;
+            Gen.Write(GW.Line, "case {0}:", state.nr);
+            Gen.Indentation++;
             if (endOf != null && state.firstAction != null)
             {
-                gen.WriteLine("\t\t\t\t\trecEnd = buffer.Position; recKind = {0};", endOf.n);
+                Gen.Write(GW.Line, "recEnd = buffer.Position; recKind = {0};", endOf.n);
             }
-            bool ctxEnd = state.ctx;
-            for (Action action = state.firstAction; action != null; action = action.next)
+            var ctxEnd = state.ctx;
+            for (var action = state.firstAction; action != null; action = action.next)
             {
-                if (action == state.firstAction) gen.Write("\t\t\t\t\tif (");
-                else gen.Write("\t\t\t\t\telse if (");
-                if (action.typ == NodeKind.chr) gen.Write(ChCond((char)action.sym));
-                else PutRange(tab.CharClassSet(action.sym));
-                gen.Write(") {");
+                if (action == state.firstAction)
+                    Gen.Write(GW.StartLine, "if (");
+                else
+                    Gen.Write(GW.Append, " else if (");
+
+                if (action.typ == NodeKind.chr)
+                    Gen.Write(GW.Append, ChCond((char)action.sym));
+                else
+                    PutRange(Tab.CharClassSet(action.sym));
+                Gen.Write(GW.EndLine, ") {");
+                Gen.Indentation++;
+
                 if (action.tc == NodeTransition.contextTrans)
                 {
-                    gen.Write("apx++; "); ctxEnd = false;
+                    Gen.Write(GW.Line, "apx++; ");
+                    ctxEnd = false;
                 }
                 else if (state.ctx)
-                    gen.Write("apx = 0; ");
-                gen.Write("AddCh(); goto case {0};", action.target.state.nr);
-                gen.WriteLine("}");
+                    Gen.Write(GW.Line, "apx = 0; ");
+
+                Gen.Write(GW.Line, "AddCh(); goto case {0};", action.target.state.nr);
+                Gen.Indentation--;
+                Gen.Write(GW.StartLine, "}");
             }
+
             if (state.firstAction == null)
-                gen.Write("\t\t\t\t\t{");
+                Gen.Write(GW.Line, "{");
             else
-                gen.Write("\t\t\t\t\telse {");
+                Gen.Write(GW.EndLine, " else {");
+            Gen.Indentation++;
+
             if (ctxEnd)
             { // final context state: cut appendix
-                gen.WriteLine();
-                gen.WriteLine("\t\t\t\t\t\ttval.Length -= apx;");
-                gen.WriteLine("\t\t\t\t\t\tSetScannerBackBehindT();");
-                gen.Write("\t\t\t\t\t\t");
+                Gen.Write(GW.Line, "tval.Length -= apx;");
+                Gen.Write(GW.Line, "SetScannerBackBehindT();");
             }
             if (endOf == null)
             {
-                gen.WriteLine("goto case 0;}");
+                Gen.Write(GW.Line, "goto case 0;");
             }
             else
             {
-                gen.Write("t.kind = {0}; ", endOf.n);
                 if (endOf.tokenKind == TerminalTokenKind.classLitToken)
                 {
-                    gen.WriteLine("t.setValue(tval.ToString(), casingString); CheckLiteral(); return t.Freeze(buffer.Position, buffer.PositionM1);}");
+                    Gen.Write(GW.Line, "t.kind = {0};", endOf.n);
+                    Gen.Write(GW.Line, "t.setValue(tval.ToString(), casingString);");
+                    Gen.Write(GW.Line, "CheckLiteral();");
+                    Gen.Write(GW.Line, "return t.Freeze(buffer.Position, buffer.PositionM1);");
                 }
                 else
                 {
-                    gen.WriteLine("break;}");
+                    Gen.Write(GW.Line, "t.kind = {0}; break;", endOf.n);
                 }
             }
+            Gen.Indentation--;
+            Gen.Write(GW.Line, "}");
+
+            Gen.Indentation--; // end case
         }
 
         void WriteStartTab()
         {
-            for (Action action = firstState.firstAction; action != null; action = action.next)
+            for (var action = firstState.firstAction; action != null; action = action.next)
             {
-                int targetState = action.target.state.nr;
+                var targetState = action.target.state.nr;
                 if (action.typ == NodeKind.chr)
                 {
-                    gen.WriteLine($"\t\t\tstart[{action.sym}] = {targetState}; ");
+                    Gen.Write(GW.Line, $"start[{action.sym}] = {targetState}; ");
                 }
                 else
                 {
-                    CharSet s = tab.CharClassSet(action.sym);
-                    for (CharSet.Range r = s.head; r != null; r = r.next)
+                    var s = Tab.CharClassSet(action.sym);
+                    for (var r = s.head; r != null; r = r.next)
                     {
-                        gen.WriteLine($"\t\t\tfor (var i = {r.from}; i <= {r.to}; ++i) start[i] = {targetState};");
+                        Gen.Write(GW.Line, $"for (var i = {r.from}; i <= {r.to}; ++i) start[i] = {targetState};");
                     }
                 }
             }
-            gen.WriteLine("\t\t\tstart[EOF] = -1;");
+            Gen.Write(GW.Line, "start[EOF] = -1;");
         }
 
         public void WriteScanner()
         {
-            Generator g = new Generator(tab);
-            fram = g.OpenFrame("Scanner.frame");
-            gen = g.OpenGen("Scanner.cs");
-            if (dirtyDFA) MakeDeterministic();
-
-            g.GenCopyright();
-            g.SkipFramePart("-->begin");
-
-            g.CopyFramePart("-->namespace");
-            if (tab.nsName != null && tab.nsName.Length > 0)
+            using (Gen = new Generator(Tab))
             {
-                gen.Write("namespace ");
-                gen.Write(tab.nsName);
-                gen.Write(" {");
-            }
+                var frame = Gen.OpenFrame("Scanner.frame");
+                Parser.errors.Info(0, 0, $"using {frame.FullName}", 11);
+                var scan = Gen.OpenGen("Scanner.cs");
+                Parser.errors.Info(0, 0, $"generating scanner {scan.FullName}", 12);
 
-            g.CopyFramePart("-->declarations");
-            gen.WriteLine("\tprivate const int _maxT = {0};", tab.terminals.Count - 1);
-            gen.WriteLine("\tconst int noSym = {0};", tab.noSym.n);
+                if (dirtyDFA)
+                    MakeDeterministic();
 
-            g.CopyFramePart("-->staticinitialization");
-            WriteStartTab();
+                Gen.CopyFramePart("-->namespace");
+                if (!string.IsNullOrWhiteSpace(Tab.nsName))
+                {
+                    Gen.Write(GW.Line, "namespace ");
+                    Gen.Write(GW.EndLine, Tab.nsName);
+                    Gen.Write(GW.Line, "{");
+                    Gen.Indentation++;
+                }
 
-            g.CopyFramePart("-->initialization");
-            if (ignoreCase)
-            {
-                // defaults to identity if !ignoreCase
-                gen.WriteLine("\t\tcasing = char.ToLowerInvariant;");
-                gen.WriteLine("\t\tcasingString = ScannerBase.ToLower;");
-            }
+                Gen.CopyFramePart("-->declarations");
+                Gen.Indentation++; // in class Scanner now
+                Gen.Write(GW.Line, "private const int _maxT = {0};", Tab.terminals.Count - 1);
+                Gen.Write(GW.Line, "private const int noSym = {0};", Tab.noSym.n);
 
-            g.CopyFramePart("-->comments");
-            int comIdx = 0;
-            for (var com = firstComment; com != null; com = com.next)
-            {
-                comIdx++;
-                GenComment(com, comIdx);
-            }
+                Gen.CopyFramePart("-->staticinitialization");
+                Gen.Indentation++; // in static constructor
+                WriteStartTab();
+                Gen.Indentation--;
 
-            g.CopyFramePart("-->literals");
-            GenLiterals();
 
-            g.CopyFramePart("-->scan1");
-            gen.Write("\t\t\t\t");
-            if (tab.ignored.Elements() > 0)
-                PutRange(tab.ignored);
-            else
-                gen.Write("false");
+                Gen.CopyFramePart("-->initialization");
+                Gen.Indentation++; // in constructor
+                if (ignoreCase)
+                {
+                    // defaults to identity if !ignoreCase
+                    Gen.Write(GW.Line, "casing = char.ToLowerInvariant;");
+                    Gen.Write(GW.Line, "casingString = ScannerBase.ToLower;");
+                }
+                Gen.Indentation--;
 
-            g.CopyFramePart("-->scan2");
-            if (firstComment != null)
-            {
-                gen.WriteLine("\t\t\tvar bm = buffer.PositionM1; // comment(s)");
-                gen.Write("\t\t\tif (");
-                comIdx = 0;
+
+                Gen.CopyFramePart("-->comments");
+                var comIdx = 0;
                 for (var com = firstComment; com != null; com = com.next)
                 {
                     comIdx++;
-                    gen.Write("Cmt{0}(bm)", comIdx);
-                    if (com.next != null)
-                        gen.Write(" || ");
+                    GenComment(com, comIdx);
                 }
-                gen.WriteLine(")");
-                gen.Write("\t\t\t\treturn NextToken();");
+
+                Gen.CopyFramePart("-->literals");
+                Gen.Indentation += 2; // in CheckLiteral() / switch()
+                GenLiterals();
+                Gen.Indentation -= 2;
+
+                Gen.CopyFramePart("-->scan1");
+                Gen.Indentation += 2; // in NextToken() / while (
+                if (Tab.ignored.Elements() > 0) {
+                    Gen.Write(GW.StartLine, "|| ");
+                    PutRange(Tab.ignored);
+                    Gen.Write(GW.EndLine, string.Empty);
+                }
+                Gen.Indentation -= 2;
+
+
+                Gen.CopyFramePart("-->scan2");
+                Gen.Indentation++; // in NextToken()
+                if (firstComment != null)
+                {
+                    Gen.Write(GW.Line, "var bm = buffer.PositionM1; // comment(s)");
+                    Gen.Write(GW.StartLine, "if (");
+                    comIdx = 0;
+                    for (var com = firstComment; com != null; com = com.next)
+                    {
+                        comIdx++;
+                        Gen.Write(GW.Append, "Cmt{0}(bm)", comIdx);
+                        if (com.next != null)
+                            Gen.Write(GW.Append, " || ");
+                    }
+                    Gen.Write(GW.EndLine, ")");
+                    Gen.Write(GW.LineIndent1, "return NextToken();");
+                }
+
+                if (hasCtxMoves)
+                {
+                    Gen.Write(GW.Line, "var apx = 0;");
+                } /* pdt */
+
+                Gen.CopyFramePart("-->scan3");
+                Gen.Indentation++; // in NextToken / switch()
+                for (var state = firstState.next; state != null; state = state.next) // firstState cannot be final
+                    WriteState(state);
+                Gen.Indentation--; // end switch
+                Gen.Indentation--; // end NextToken()
+
+                // -->end   copy frame up to it's end
+                Gen.CopyFramePart(null);
+                if (!string.IsNullOrWhiteSpace(Tab.nsName))
+                {
+                    Gen.Indentation--;
+                    Gen.Write(GW.Line, "}");
+                }
             }
-
-            if (hasCtxMoves)
-            {
-                gen.WriteLine();
-                gen.Write("\t\tvar apx = 0;");
-            } /* pdt */
-
-            g.CopyFramePart("-->scan3");
-            for (State state = firstState.next; state != null; state = state.next)
-                WriteState(state);
-
-            // -->end   copy frame up to it's end
-            g.CopyFramePart(null);
-            if (tab.nsName != null && tab.nsName.Length > 0) gen.Write("}");
-            gen.Dispose();
         }
 
         public DFA(CocoRCore.CSharp.Parser parser)
         {
-            this.parser = parser;
-            firstState = null; lastState = null; lastStateNr = -1;
+            Parser = parser;
+            firstState = null;
+            lastState = null;
+            lastStateNr = -1;
             firstState = NewState();
-            firstMelted = null; firstComment = null;
+            firstMelted = null;
+            firstComment = null;
             ignoreCase = false;
             dirtyDFA = false;
             hasCtxMoves = false;

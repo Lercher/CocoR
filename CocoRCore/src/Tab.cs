@@ -1,9 +1,9 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Collections;
-using System.Collections.Generic;
 
 namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 {
@@ -39,8 +39,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         Symbol curSy;                     // current symbol in computation of sets
 
         public readonly Parser parser;                    // other Coco objects
-        private TextWriter trace => parser.trace;
-        private Errors errors => parser.errors;
+        private TextWriter Trace => parser.trace;
+        private Errors Errors => parser.errors;
 
 
         public Tab(CocoRCore.CSharp.Parser parser)
@@ -63,10 +63,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             if (name.Length == 2 && name[0] == '"')
             {
-                parser.SemErr(81, "empty token not allowed"); 
+                parser.SemErr(81, "empty token not allowed");
                 name = "???";
             }
-            Symbol sym = new Symbol(typ, name, pos);
+            var sym = new Symbol(typ, name, pos);
             switch (typ)
             {
                 case NodeKind.t:
@@ -97,36 +97,36 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             return qy.FirstOrDefault();
         }
 
-        int Num(Node p) => p?.n??0;
+        int Num(Node p) => p?.n ?? 0;
 
         void PrintSym(Symbol sym)
         {
-            trace.Write("{0,3} {1,-14} {2,-4}", sym.n, Name(sym.name), sym.typ);
-            if (sym.attrPos == null) trace.Write(" false "); else trace.Write(" true  ");
+            Trace.Write("{0,3} {1,-14} {2,-4}", sym.n, Name12(sym.name), sym.typ);
+            if (sym.attrPos == null) Trace.Write(" false "); else Trace.Write(" true  ");
             if (sym.typ == NodeKind.nt)
             {
-                trace.Write("{0,5}", Num(sym.graph));
-                if (sym.deletable) trace.Write(" true  "); else trace.Write(" false ");
+                Trace.Write("{0,5}", Num(sym.graph));
+                if (sym.deletable) Trace.Write(" true  "); else Trace.Write(" false ");
             }
             else
-                trace.Write("            ");
-            trace.WriteLine("{0,5} {1}", sym.pos, sym.tokenKind);
+                Trace.Write("            ");
+            Trace.WriteLine("{0,5} {1}", sym.pos, sym.tokenKind);
         }
 
         public void PrintSymbolTable()
         {
-            trace.WriteLine("Symbol Table:");
-            trace.WriteLine("------------"); trace.WriteLine();
-            trace.WriteLine(" nr name          typ  hasAt graph  del    line tokenKind");
+            Trace.WriteLine("Symbol Table:");
+            Trace.WriteLine("------------"); Trace.WriteLine();
+            Trace.WriteLine(" nr name          typ  hasAt graph  del    line tokenKind");
             terminals.ForEach(PrintSym);
             pragmas.ForEach(PrintSym);
             nonterminals.ForEach(PrintSym);
-            trace.WriteLine();
-            trace.WriteLine("Literal Tokens:");
-            trace.WriteLine("--------------");
+            Trace.WriteLine();
+            Trace.WriteLine("Literal Tokens:");
+            Trace.WriteLine("--------------");
             foreach (var e in literals)
-                trace.WriteLine("_" + e.Value.name + " = " + e.Key + ".");
-            trace.WriteLine();
+                Trace.WriteLine("_" + e.Value.name + " = " + e.Key + ".");
+            Trace.WriteLine();
         }
 
         public void PrintSet(BitArray s, int indent)
@@ -134,21 +134,19 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             int col, len;
             col = indent;
             foreach (var sym in terminals)
-            {
                 if (s[sym.n])
                 {
                     len = sym.name.Length;
                     if (col + len >= 80)
                     {
-                        trace.WriteLine();
-                        for (col = 1; col < indent; col++) trace.Write(" ");
+                        Trace.WriteLine();
+                        for (col = 1; col < indent; col++) Trace.Write(" ");
                     }
-                    trace.Write("{0} ", sym.name);
+                    Trace.Write("{0} ", sym.name);
                     col += len + 1;
                 }
-            }
-            if (col == indent) trace.Write("-- empty set --");
-            trace.WriteLine();
+            if (col == indent) Trace.Write("-- empty set --");
+            Trace.WriteLine();
         }
 
         //---------------------------------------------------------------------
@@ -160,22 +158,21 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public Node NewNode(NodeKind typ, Symbol sym, int line)
         {
-            Node node = new Node(typ, sym, line);
-            node.n = nodes.Count;
+            var node = new Node(typ, sym, line) { n = nodes.Count };
             nodes.Add(node);
             return node;
         }
 
         public Node NewNode(NodeKind typ, Node sub)
         {
-            Node node = NewNode(typ, null, 0);
+            var node = NewNode(typ, null, 0);
             node.sub = sub;
             return node;
         }
 
         public Node NewNode(NodeKind typ, int val, int line)
         {
-            Node node = NewNode(typ, null, line);
+            var node = NewNode(typ, null, line);
             node.val = val;
             return node;
         }
@@ -194,9 +191,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             g2.l = NewNode(NodeKind.alt, g2.l); g2.l.line = g2.l.sub.line;
             g2.l.up = true;
             g2.r.up = true;
-            Node p = g1.l; while (p.down != null) p = p.down;
+            var p = g1.l;
+            while (p.down != null)
+                p = p.down;
             p.down = g2.l;
-            p = g1.r; while (p.next != null) p = p.next;
+            p = g1.r;
+            while (p.next != null)
+                p = p.next;
             // append alternative to g1 end list
             p.next = g2.l;
             // append g2 end list to g1 end list
@@ -206,10 +207,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         // The result will be in g1
         public void MakeSequence(Graph g1, Graph g2)
         {
-            Node p = g1.r.next; g1.r.next = g2.l; // link head node
+            var p = g1.r.next;
+            g1.r.next = g2.l; // link head node
             while (p != null)
             {  // link substructure
-                Node q = p.next; p.next = g2.l;
+                var q = p.next;
+                p.next = g2.l;
                 p = q;
             }
             g1.r = g2.r;
@@ -219,11 +222,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             g.l = NewNode(NodeKind.iter, g.l);
             g.r.up = true;
-            Node p = g.r;
+            var p = g.r;
             g.r = g.l;
             while (p != null)
             {
-                Node q = p.next; p.next = g.l;
+                var q = p.next;
+                p.next = g.l;
                 p = q;
             }
         }
@@ -238,10 +242,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public void Finish(Graph g)
         {
-            Node p = g.r;
+            var p = g.r;
             while (p != null)
             {
-                Node q = p.next; p.next = null;
+                var q = p.next;
+                p.next = null;
                 p = q;
             }
         }
@@ -254,14 +259,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public Graph StrToGraph(string str)
         {
-            string s = Unstring(str);
-            if (s.Length == 0) parser.SemErr(82, "empty token not allowed");
-            Graph g = new Graph();
-            g.r = dummyNode;
+            var s = Unstring(str);
+            if (s.Length == 0)
+                parser.SemErr(82, "empty token not allowed");
+            var g = new Graph() { r = dummyNode };
             for (var i = 0; i < s.Length; i++)
             {
-                Node p = NewNode(NodeKind.chr, (int)s[i], 0);
-                g.r.next = p; g.r = p;
+                var p = NewNode(NodeKind.chr, (int)s[i], 0);
+                g.r.next = p;
+                g.r = p;
             }
             g.l = dummyNode.next; dummyNode.next = null;
             return g;
@@ -272,13 +278,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             while (p != null)
             {
                 if (p.typ == NodeKind.chr || p.typ == NodeKind.clas)
-                {
                     p.code = NodeTransition.contextTrans;
-                }
                 else if (p.typ == NodeKind.opt || p.typ == NodeKind.iter)
-                {
                     SetContextTrans(p.sub);
-                }
                 else if (p.typ == NodeKind.alt)
                 {
                     SetContextTrans(p.sub); SetContextTrans(p.down);
@@ -290,15 +292,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         //------------ graph deletability check -----------------
 
-        public static bool DelGraph(Node p)
-        {
-            return p == null || DelNode(p) && DelGraph(p.next);
-        }
+        public static bool DelGraph(Node p) => p == null || DelNode(p) && DelGraph(p.next);
 
-        public static bool DelSubGraph(Node p)
-        {
-            return p == null || DelNode(p) && (p.up || DelSubGraph(p.next));
-        }
+        public static bool DelSubGraph(Node p) => p == null || DelNode(p) && (p.up || DelSubGraph(p.next));
 
         public static bool DelNode(Node p)
         {
@@ -318,65 +314,60 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         //----------------- graph printing ----------------------
 
-        string Ptr(Node p, bool up)
+        private static string Ptr(Node p, bool up)
         {
-            string ptr = (p == null) ? "0" : p.n.ToString();
+            var ptr = (p == null) ? "0" : p.n.ToString();
             return (up) ? ("-" + ptr) : ptr;
         }
 
-        string Pos(Range pos) => string.Format("{0,5}", pos?.start.ToString() ?? string.Empty);
+        private static string Pos(Range pos) => string.Format("{0,5}", pos?.start.ToString() ?? string.Empty);
 
-        public string Name(string name)
-        {
-            return (name + "           ").Substring(0, 12);
-            // found no simpler way to get the first 12 characters of the name
-            // padded with blanks on the right
-        }
+        public static string Name12(string name) => name.Length > 12 ? name.Substring(0, 12) : name;
 
 
         public void PrintNodes()
         {
-            trace.WriteLine("Graph nodes:");
-            trace.WriteLine("----------------------------------------------------");
-            trace.WriteLine("   n type name          next  down   sub   pos  line");
-            trace.WriteLine("                               val  code");
-            trace.WriteLine("----------------------------------------------------");
+            Trace.WriteLine("Graph nodes:");
+            Trace.WriteLine("----------------------------------------------------");
+            Trace.WriteLine("   n type name          next  down   sub   pos  line");
+            Trace.WriteLine("                               val  code");
+            Trace.WriteLine("----------------------------------------------------");
             foreach (var p in nodes)
             {
-                trace.Write("{0,4} {1,-4} ", p.n, p.typ);
+                Trace.Write("{0,4} {1,-4} ", p.n, p.typ);
                 if (p.sym != null)
-                    trace.Write("{0,12} ", Name(p.sym.name));
+                    Trace.Write("{0,12} ", Name12(p.sym.name));
                 else if (p.typ == NodeKind.clas)
                 {
-                    CharClass c = (CharClass)classes[p.val];
-                    trace.Write("{0,12} ", Name(c.name));
+                    var c = classes[p.val];
+                    Trace.Write("{0,12} ", Name12(c.name));
                 }
-                else trace.Write("             ");
-                trace.Write("{0,5} ", Ptr(p.next, p.up));
+                else Trace.Write("             ");
+                Trace.Write("{0,5} ", Ptr(p.next, p.up));
                 switch (p.typ)
                 {
                     case NodeKind.t:
                     case NodeKind.nt:
                     case NodeKind.wt:
-                        trace.Write("             {0,5}", Pos(p.pos)); break;
+                        Trace.Write("             {0,5}", Pos(p.pos)); break;
                     case NodeKind.chr:
-                        trace.Write("{0,5} {1,5}       ", p.val, p.code); break;
+                        Trace.Write("{0,5} {1,5}       ", p.val, p.code); break;
                     case NodeKind.clas:
-                        trace.Write("      {0,5}       ", p.code); break;
+                        Trace.Write("      {0,5}       ", p.code); break;
                     case NodeKind.alt:
                     case NodeKind.iter:
                     case NodeKind.opt:
-                        trace.Write("{0,5} {1,5}       ", Ptr(p.down, false), Ptr(p.sub, false)); break;
+                        Trace.Write("{0,5} {1,5}       ", Ptr(p.down, false), Ptr(p.sub, false)); break;
                     case NodeKind.sem:
-                        trace.Write("             {0,5}", Pos(p.pos)); break;
+                        Trace.Write("             {0,5}", Pos(p.pos)); break;
                     case NodeKind.eps:
                     case NodeKind.any:
                     case NodeKind.sync:
-                        trace.Write("                  "); break;
+                        Trace.Write("                  "); break;
                 }
-                trace.WriteLine("{0,5}", p.line);
+                Trace.WriteLine("{0,5}", p.line);
             }
-            trace.WriteLine();
+            Trace.WriteLine();
         }
 
 
@@ -389,9 +380,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public CharClass NewCharClass(string name, CharSet s)
         {
-            if (name == "#") name = "#" + (char)dummyName++;
-            CharClass c = new CharClass(name, s);
-            c.n = classes.Count;
+            if (name == "#")
+                name = "#" + (char)dummyName++;
+            var c = new CharClass(name, s) { n = classes.Count };
             classes.Add(c);
             // System.Console.WriteLine("CharClass {0} = {1}", name, s);  // TODO - Trace Flag
             return c;
@@ -405,32 +396,25 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         //----------- character class printing
 
-        string Ch(int ch)
-        {
-            if (ch < ' ' || ch >= 127 || ch == '\'' || ch == '\\') 
-                return ch.ToString();
-            else 
-                return String.Format("'{0}'", (char)ch);
-        }
 
         void WriteCharSet(CharSet s)
         {
             for (var r = s.head; r != null; r = r.next)
-                if (r.from < r.to) 
-                    trace.Write(Ch(r.from) + ".." + Ch(r.to) + " "); 
-                else 
-                    trace.Write(Ch(r.from) + " "); 
+                if (r.from < r.to)
+                    Trace.Write(DFA.Ch(r.from) + ".." + DFA.Ch(r.to) + " ");
+                else
+                    Trace.Write(DFA.Ch(r.from) + " ");
         }
 
         public void WriteCharClasses()
         {
             foreach (var cc in classes)
             {
-                trace.Write("{0,-10}: ", cc.name);
+                Trace.Write("{0,-10}: ", cc.name);
                 WriteCharSet(cc.set);
-                trace.WriteLine();
+                Trace.WriteLine();
             }
-            trace.WriteLine();
+            Trace.WriteLine();
         }
 
 
@@ -441,15 +425,17 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         /* Computes the first set for the graph rooted at p */
         BitArray First0(Node p, BitArray mark)
         {
-            BitArray fs = new BitArray(terminals.Count);
+            var fs = new BitArray(terminals.Count);
             while (p != null && !mark[p.n])
             {
                 mark[p.n] = true;
                 switch (p.typ)
                 {
                     case NodeKind.nt:
-                        if (p.sym.firstReady) fs.Or(p.sym.first);
-                        else fs.Or(First0(p.sym.graph, mark));
+                        if (p.sym.firstReady)
+                            fs.Or(p.sym.first);
+                        else
+                            fs.Or(First0(p.sym.graph, mark));
                         break;
                     case NodeKind.t:
                     case NodeKind.wt:
@@ -476,12 +462,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public BitArray First(Node p)
         {
-            BitArray fs = First0(p, new BitArray(nodes.Count));
+            var fs = First0(p, new BitArray(nodes.Count));
             if (ddt[3])
             {
-                trace.WriteLine();
-                if (p != null) trace.WriteLine("First: node = {0}", p.n);
-                else trace.WriteLine("First: node = null");
+                Trace.WriteLine();
+                if (p != null)
+                    Trace.WriteLine("First: node = {0}", p.n);
+                else
+                    Trace.WriteLine("First: node = null");
                 PrintSet(fs, 0);
             }
             return fs;
@@ -508,15 +496,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 visited[p.n] = true;
                 if (p.typ == NodeKind.nt)
                 {
-                    BitArray s = First(p.next);
+                    var s = First(p.next);
                     p.sym.follow.Or(s);
                     if (DelGraph(p.next))
                         p.sym.nts[curSy.n] = true;
                 }
                 else if (p.typ == NodeKind.opt || p.typ == NodeKind.iter)
-                {
                     CompFollow(p.sub);
-                }
                 else if (p.typ == NodeKind.alt)
                 {
                     CompFollow(p.sub); CompFollow(p.down);
@@ -531,14 +517,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             {
                 visited[sym.n] = true;
                 foreach (var s in nonterminals)
-                {
                     if (sym.nts[s.n])
                     {
                         Complete(s);
                         sym.follow.Or(s.follow);
                         if (sym == curSy) sym.nts[s.n] = false;
                     }
-                }
             }
         }
 
@@ -568,17 +552,17 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             if (p == null) return null;
             Node a = null;
-            if (p.typ == NodeKind.any) 
+            if (p.typ == NodeKind.any)
                 a = p;
             else if (p.typ == NodeKind.alt)
             {
                 a = LeadingAny(p.sub);
-                if (a == null) 
+                if (a == null)
                     a = LeadingAny(p.down);
             }
-            else if (p.typ == NodeKind.opt || p.typ == NodeKind.iter) 
+            else if (p.typ == NodeKind.opt || p.typ == NodeKind.iter)
                 a = LeadingAny(p.sub);
-            if (a == null && DelNode(p) && !p.up) 
+            if (a == null && DelNode(p) && !p.up)
                 a = LeadingAny(p.next);
             return a;
         }
@@ -596,8 +580,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 }
                 else if (p.typ == NodeKind.alt)
                 {
-                    BitArray s1 = new BitArray(terminals.Count);
-                    Node q = p;
+                    var s1 = new BitArray(terminals.Count);
+                    var q = p;
                     while (q != null)
                     {
                         FindAS(q.sub);
@@ -619,7 +603,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     a = LeadingAny(p.next);
                     if (a != null)
                     {
-                        Node q = (p.typ == NodeKind.nt) ? p.sym.graph : p.sub;
+                        var q = (p.typ == NodeKind.nt) ? p.sym.graph : p.sub;
                         a.set.Subtract(First(q));
                     }
                 }
@@ -631,14 +615,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void CompAnySets()
         {
-            foreach (var sym in nonterminals) 
+            foreach (var sym in nonterminals)
                 FindAS(sym.graph);
         }
 
         public BitArray Expected(Node p, Symbol curSy)
         {
             var s = First(p);
-            if (DelGraph(p)) 
+            if (DelGraph(p))
                 s.Or(curSy.follow);
             return s;
         }
@@ -646,9 +630,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         // does not look behind resolvers; only called during LL(1) test and in CheckRes
         public BitArray Expected0(Node p, Symbol curSy)
         {
-            if (p.typ == NodeKind.rslv) 
+            if (p.typ == NodeKind.rslv)
                 return new BitArray(terminals.Count);
-            else 
+            else
                 return Expected(p, curSy);
         }
 
@@ -659,7 +643,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 visited[p.n] = true;
                 if (p.typ == NodeKind.sync)
                 {
-                    BitArray s = Expected(p.next, curSy);
+                    var s = Expected(p.next, curSy);
                     s[eofSy.n] = true;
                     allSyncSets.Or(s);
                     p.set = s;
@@ -676,8 +660,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         void CompSyncSets()
         {
-            allSyncSets = new BitArray(terminals.Count);
-            allSyncSets[eofSy.n] = true;
+            allSyncSets = new BitArray(terminals.Count)
+            {
+                [eofSy.n] = true
+            };
             visited = new BitArray(nodes.Count);
             foreach (var sym in nonterminals)
             {
@@ -691,8 +677,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             foreach (var p in nodes)
                 if (p.typ == NodeKind.any)
                 {
-                    p.set = new BitArray(terminals.Count, true);
-                    p.set[eofSy.n] = false;
+                    p.set = new BitArray(terminals.Count, true)
+                    {
+                        [eofSy.n] = false
+                    };
                 }
         }
 
@@ -705,19 +693,19 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 foreach (var sym in nonterminals)
                     if (!sym.deletable && sym.graph != null && DelGraph(sym.graph))
                     {
-                        sym.deletable = true; 
+                        sym.deletable = true;
                         changed = true;
                     }
             } while (changed);
             foreach (var sym in nonterminals)
-                if (sym.deletable && !sym.deletableOK) 
-                    errors.Warning(sym.pos, $"NT {sym.name} deletable", 11);
+                if (sym.deletable && !sym.deletableOK)
+                    Errors.Warning(sym.pos, $"NT {sym.name} deletable", 11);
         }
 
         public void RenumberPragmas()
         {
-            int n = terminals.Count;
-            foreach (var sym in pragmas) 
+            var n = terminals.Count;
+            foreach (var sym in pragmas)
                 sym.n = n++;
         }
 
@@ -730,26 +718,26 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             CompSyncSets();
             if (ddt[1])
             {
-                trace.WriteLine();
-                trace.WriteLine("First & follow symbols:");
-                trace.WriteLine("----------------------"); trace.WriteLine();
+                Trace.WriteLine();
+                Trace.WriteLine("First & follow symbols:");
+                Trace.WriteLine("----------------------"); Trace.WriteLine();
                 foreach (var sym in nonterminals)
                 {
-                    trace.WriteLine(sym.name);
-                    trace.Write("first:   "); PrintSet(sym.first, 10);
-                    trace.Write("follow:  "); PrintSet(sym.follow, 10);
-                    trace.WriteLine();
+                    Trace.WriteLine(sym.name);
+                    Trace.Write("first:   "); PrintSet(sym.first, 10);
+                    Trace.Write("follow:  "); PrintSet(sym.follow, 10);
+                    Trace.WriteLine();
                 }
             }
             if (ddt[4])
             {
-                trace.WriteLine();
-                trace.WriteLine("ANY and SYNC sets:");
-                trace.WriteLine("-----------------");
+                Trace.WriteLine();
+                Trace.WriteLine("ANY and SYNC sets:");
+                Trace.WriteLine("-----------------");
                 foreach (var p in nodes)
                     if (p.typ == NodeKind.any || p.typ == NodeKind.sync)
                     {
-                        trace.Write("{0,4} {1,-4}: ", p.n, p.typ);
+                        Trace.Write("{0,4} {1,-4}: ", p.n, p.typ);
                         PrintSet(p.set, 11);
                     }
             }
@@ -764,14 +752,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             var val = 0;
             for (var i = 0; i < s.Length; i++)
             {
-                char ch = s[i];
-                if ('0' <= ch && ch <= '9') 
+                var ch = s[i];
+                if ('0' <= ch && ch <= '9')
                     val = 16 * val + (ch - '0');
-                else if ('a' <= ch && ch <= 'f') 
+                else if ('a' <= ch && ch <= 'f')
                     val = 16 * val + (10 + ch - 'a');
-                else if ('A' <= ch && ch <= 'F') 
+                else if ('A' <= ch && ch <= 'F')
                     val = 16 * val + (10 + ch - 'A');
-                else 
+                else
                     parser.SemErr(83, "non hex escape sequence in string or character");
             }
             if (val > char.MaxValue)
@@ -786,7 +774,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public string Unstring(string s)
         {
-            if (s == null || s.Length < 2) 
+            if (s == null || s.Length < 2)
                 return s;
             return Unescape(s.Substring(1, s.Length - 2));
         }
@@ -794,38 +782,49 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public string Unescape(string s)
         {
             /* replaces escape sequences in s by their Unicode values. */
-            StringBuilder buf = new StringBuilder();
-            int i = 0;
+            var buf = new StringBuilder();
+            var i = 0;
             while (i < s.Length)
             {
                 if (s[i] == '\\')
-                {
-                    switch (s[i + 1])
+                    if (i + 1 < s.Length)
+                        switch (s[i + 1])
+                        {
+                            case '\\': buf.Append('\\'); i += 2; break;
+                            case '\'': buf.Append('\''); i += 2; break;
+                            case '\"': buf.Append('\"'); i += 2; break;
+                            case 'r': buf.Append('\r'); i += 2; break;
+                            case 'n': buf.Append('\n'); i += 2; break;
+                            case 't': buf.Append('\t'); i += 2; break;
+                            case '0': buf.Append('\0'); i += 2; break;
+                            case 'a': buf.Append('\a'); i += 2; break;
+                            case 'b': buf.Append('\b'); i += 2; break;
+                            case 'f': buf.Append('\f'); i += 2; break;
+                            case 'v': buf.Append('\v'); i += 2; break;
+                            case 'u':
+                            case 'x':
+                                if (i + 6 <= s.Length)
+                                {
+                                    buf.Append(Hex2Char(s.Substring(i + 2, 4)));
+                                    i += 6;
+                                    break;
+                                }
+                                else
+                                {
+                                    parser.SemErr(85, "bad escape sequence in string or character");
+                                    i = s.Length;
+                                    break;
+                                }
+                            default:
+                                parser.SemErr(86, "bad escape sequence in string or character");
+                                i += 2;
+                                break;
+                        }
+                    else
                     {
-                        case '\\': buf.Append('\\'); i += 2; break;
-                        case '\'': buf.Append('\''); i += 2; break;
-                        case '\"': buf.Append('\"'); i += 2; break;
-                        case 'r': buf.Append('\r'); i += 2; break;
-                        case 'n': buf.Append('\n'); i += 2; break;
-                        case 't': buf.Append('\t'); i += 2; break;
-                        case '0': buf.Append('\0'); i += 2; break;
-                        case 'a': buf.Append('\a'); i += 2; break;
-                        case 'b': buf.Append('\b'); i += 2; break;
-                        case 'f': buf.Append('\f'); i += 2; break;
-                        case 'v': buf.Append('\v'); i += 2; break;
-                        case 'u':
-                        case 'x':
-                            if (i + 6 <= s.Length)
-                            {
-                                buf.Append(Hex2Char(s.Substring(i + 2, 4))); i += 6; break;
-                            }
-                            else
-                            {
-                                parser.SemErr(85, "bad escape sequence in string or character"); i = s.Length; break;
-                            }
-                        default: parser.SemErr(86, "bad escape sequence in string or character"); i += 2; break;
+                        parser.SemErr(87, "bad escape sequence in string or character");
+                        i = s.Length;
                     }
-                }
                 else
                 {
                     buf.Append(s[i]);
@@ -843,9 +842,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public string Escape(string s)
         {
-            StringBuilder buf = new StringBuilder();
+            var buf = new StringBuilder();
             foreach (var ch in s)
-            {
                 switch (ch)
                 {
                     case '\\': buf.Append("\\\\"); break;
@@ -855,11 +853,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     case '\r': buf.Append("\\r"); break;
                     case '\n': buf.Append("\\n"); break;
                     default:
-                        if (ch < ' ' || ch > '\u007f') buf.Append(Char2Hex(ch));
-                        else buf.Append(ch);
+                        if (ch < ' ' || '\u007f' < ch)
+                            buf.Append(Char2Hex(ch));
+                        else
+                            buf.Append(ch);
                         break;
                 }
-            }
             return buf.ToString();
         }
 
@@ -869,14 +868,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public bool GrammarOk()
         {
-            bool ok = NtsComplete()
+            var ok = NtsComplete()
                 && AllNtReached()
                 && NoCircularProductions()
                 && AllNtToTerm();
-            if (ok) 
-            { 
-                CheckResolvers(); 
-                CheckLL1(); 
+            if (ok)
+            {
+                CheckResolvers();
+                CheckLL1();
             }
             return ok;
         }
@@ -889,7 +888,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
             public CNode(Symbol l, Symbol r)
             {
-                left = l; 
+                left = l;
                 right = r;
             }
         }
@@ -899,19 +898,17 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (p == null) return;  // end of graph
             if (p.typ == NodeKind.nt)
             {
-                if (p.up || DelGraph(p.next)) 
+                if (p.up || DelGraph(p.next))
                     singles.Add(p.sym);
             }
             else if (p.typ == NodeKind.alt || p.typ == NodeKind.iter || p.typ == NodeKind.opt)
-            {
                 if (p.up || DelGraph(p.next))
                 {
                     GetSingles(p.sub, singles);
-                    if (p.typ == NodeKind.alt) 
+                    if (p.typ == NodeKind.alt)
                         GetSingles(p.down, singles);
                 }
-            }
-            if (!p.up && DelNode(p)) 
+            if (!p.up && DelNode(p))
                 GetSingles(p.next, singles);
         }
 
@@ -923,7 +920,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             {
                 var singles = new List<Symbol>();
                 GetSingles(sym.graph, singles); // get nonterminals s such that sym-->s
-                foreach (var s in singles) 
+                foreach (var s in singles)
                     list.Add(new CNode(sym, s));
             }
             do
@@ -932,19 +929,19 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 for (var i = 0; i < list.Count; i++)
                 {
                     var n = list[i];
-                    onLeftSide = false; 
+                    onLeftSide = false;
                     onRightSide = false;
                     foreach (var m in list)
                     {
-                        if (n.left == m.right) 
+                        if (n.left == m.right)
                             onRightSide = true;
-                        if (n.right == m.left) 
+                        if (n.right == m.left)
                             onLeftSide = true;
                     }
                     if (!onLeftSide || !onRightSide)
                     {
-                        list.Remove(n); 
-                        i--; 
+                        list.Remove(n);
+                        i--;
                         changed = true;
                     }
                 }
@@ -953,7 +950,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             foreach (var n in list)
             {
                 ok = false;
-                errors.SemErr(n.left.pos, n.left.name + " --> " + n.right.name + n.right.pos.ToString(), 87);
+                Errors.SemErr(n.left.pos, n.left.name + " --> " + n.right.name + n.right.pos.ToString(), 87);
             }
             return ok;
         }
@@ -963,7 +960,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void LL1Error(int cond, Symbol sym)
         {
             var s = "LL1 warning in " + curSy.name + ": ";
-            if (sym != null) 
+            if (sym != null)
                 s += sym.name + sym.pos.ToString() + " is ";
             switch (cond)
             {
@@ -972,16 +969,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 case 3: s += "an ANY node that matches no symbol"; break;
                 case 4: s += "contents of [...] or {...} must not be deletable"; break;
             }
-            errors.Warning(curSy.pos, s, 20 + cond);
+            Errors.Warning(curSy.pos, s, 20 + cond);
         }
 
         void CheckOverlap(BitArray s1, BitArray s2, int cond)
         {
             foreach (var sym in terminals)
-            {
-                if (s1[sym.n] && s2[sym.n]) 
+                if (s1[sym.n] && s2[sym.n])
                     LL1Error(cond, sym);
-            }
         }
 
         void CheckAlts(Node p)
@@ -1014,10 +1009,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     CheckAlts(p.sub);
                 }
                 else if (p.typ == NodeKind.any)
-                {
                     if (!p.set.Any()) LL1Error(3, null);
-                    // e.g. {ANY} ANY or [ANY] ANY or ( ANY | ANY )
-                }
+                        // e.g. {ANY} ANY or [ANY] ANY or ( ANY | ANY )
                 if (p.up) break;
                 p = p.next;
             }
@@ -1034,10 +1027,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         //------------- check if resolvers are legal  --------------------
 
-        void ResErr(Node p, string msg)
-        {            
-            errors.Warning(p.pos.start, msg, 31);
-        }
+        void ResErr(Node p, string msg) => Errors.Warning(p.pos.start, msg, id: 31);
 
         void CheckRes(Node p, bool rslvAllowed)
         {
@@ -1047,10 +1037,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 {
                     case NodeKind.alt:
                         var expected = new BitArray(terminals.Count);
-                        for (Node q = p; q != null; q = q.down)
+                        for (var q = p; q != null; q = q.down)
                             expected.Or(Expected0(q.sub, curSy));
                         var soFar = new BitArray(terminals.Count);
-                        for (Node q = p; q != null; q = q.down)
+                        for (var q = p; q != null; q = q.down)
                         {
                             if (q.sub.typ == NodeKind.rslv)
                             {
@@ -1099,15 +1089,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public bool NtsComplete()
         {
-            bool complete = true;
+            var complete = true;
             foreach (var sym in nonterminals)
-            {
                 if (sym.graph == null)
                 {
                     complete = false;
-                    errors.SemErr(sym.pos, "No production for " + sym.name, 88);
+                    Errors.SemErr(sym.pos, "No production for " + sym.name, 88);
                 }
-            }
             return complete;
         }
 
@@ -1135,17 +1123,17 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public bool AllNtReached()
         {
             var ok = true;
-            visited = new BitArray(nonterminals.Count);
-            visited[gramSy.n] = true;
+            visited = new BitArray(nonterminals.Count)
+            {
+                [gramSy.n] = true
+            };
             MarkReachedNts(gramSy.graph);
             foreach (var sym in nonterminals)
-            {
                 if (!visited[sym.n])
                 {
                     ok = false;
-                    errors.Warning(sym.pos, sym.name + " cannot be reached", 41);
+                    Errors.Warning(sym.pos, sym.name + " cannot be reached", 41);
                 }
-            }
             return ok;
         }
 
@@ -1155,9 +1143,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         { // true if graph can be derived to terminals
             while (p != null)
             {
-                if (p.typ == NodeKind.nt && !mark[p.sym.n]) 
+                if (p.typ == NodeKind.nt && !mark[p.sym.n])
                     return false;
-                if (p.typ == NodeKind.alt 
+                if (p.typ == NodeKind.alt
                     && !IsTerm(p.sub, mark)
                     && (p.down == null || !IsTerm(p.down, mark))
                     ) return false;
@@ -1185,7 +1173,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 if (!mark[sym.n])
                 {
                     ok = false;
-                    errors.SemErr(sym.pos, sym.name + " cannot be derived to terminals", 89);
+                    Errors.SemErr(sym.pos, sym.name + " cannot be derived to terminals", 89);
                 }
             return ok;
         }
@@ -1196,10 +1184,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         private class SymbolComp : IComparer<Symbol>
         {
-            public int Compare(Symbol x, Symbol y)
-            {
-                return x.name.CompareTo(y.name);
-            }
+            public int Compare(Symbol x, Symbol y) => x.name.CompareTo(y.name);
         }
 
         public void XRef()
@@ -1217,7 +1202,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             }
             // collect lines where symbols have been referenced
             foreach (var n in nodes)
-            {
                 if (n.typ == NodeKind.t || n.typ == NodeKind.wt || n.typ == NodeKind.nt)
                 {
                     if (!xref.TryGetValue(n.sym, out var list))
@@ -1227,30 +1211,29 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     }
                     list.Add(n.line);
                 }
-            }
             // print cross reference list
-            trace.WriteLine();
-            trace.WriteLine("Cross reference list:");
-            trace.WriteLine("---------------------");
-            trace.WriteLine();
+            Trace.WriteLine();
+            Trace.WriteLine("Cross reference list:");
+            Trace.WriteLine("---------------------");
+            Trace.WriteLine();
             foreach (var sym in xref.Keys)
             {
-                trace.Write("  {0,-12}", Name(sym.name));
+                Trace.Write("  {0,-12}", Name12(sym.name));
                 var list = xref[sym];
-                int col = 14;
+                var col = 14;
                 foreach (var line in list)
                 {
                     if (col + 5 > 80)
                     {
-                        trace.WriteLine();
-                        for (col = 1; col <= 14; col++) trace.Write(" ");
+                        Trace.WriteLine();
+                        for (col = 1; col <= 14; col++) Trace.Write(" ");
                     }
-                    trace.Write("{0,5}", line); col += 5;
+                    Trace.Write("{0,5}", line); col += 5;
                 }
-                trace.WriteLine();
+                Trace.WriteLine();
             }
-            trace.WriteLine();
-            trace.WriteLine();
+            Trace.WriteLine();
+            Trace.WriteLine();
         }
 
         public void SetDDT(string s)
@@ -1258,8 +1241,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (string.IsNullOrWhiteSpace(s)) return;
             s = s.ToUpper();
             foreach (var ch in s)
-            {
-                if (char.IsDigit(ch)) 
+                if (char.IsDigit(ch))
                     ddt[ch - '0'] = true;
                 else switch (ch)
                     {
@@ -1273,7 +1255,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         case 'X': ddt[7] = true; break; // list cross reference table
                         default: break;
                     }
-            }
         }
 
         public void SetOption(string s)
@@ -1281,7 +1262,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             var option = s.Split('=');
             var name = option.First();
             var value = option.Last();
-            switch(name)
+            switch (name)
             {
                 case "$namespace":
                     nsName = value;

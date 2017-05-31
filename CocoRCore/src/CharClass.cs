@@ -12,7 +12,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public CharClass(string name, CharSet s)
         {
-            this.name = name; this.set = s;
+            this.name = name;
+            set = s;
         }
     }
 

@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 
 namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 {
@@ -41,9 +41,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public void AddTargets(Action a)
         { // add copy of a.targets to action.targets
-            for (Target p = a.target; p != null; p = p.next)
+            for (var p = a.target; p != null; p = p.next)
             {
-                Target t = new Target() { state = p.state };
+                var t = new Target() { state = p.state };
                 AddTarget(t);
             }
             if (a.tc == NodeTransition.contextTrans) tc = NodeTransition.contextTrans;
@@ -69,7 +69,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             }
             else
             {
-                CharClass c = tab.FindCharClass(s);
+                var c = tab.FindCharClass(s);
                 if (c == null) c = tab.NewCharClass("#", s); // class with dummy name
                 typ = NodeKind.clas; sym = c.n;
             }

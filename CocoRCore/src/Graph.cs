@@ -9,20 +9,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public Node l;  // left end of graph = head
         public Node r;  // right end of graph = list of nodes to be linked to successor graph
 
-        public Graph()
-        {
-            l = null; r = null;
-        }
-
         public Graph(Node left, Node right)
         {
-            l = left; r = right;
+            l = left;
+            r = right;
         }
 
-        public Graph(Node p)
-        {
-            l = p; r = p;
-        }
+        public Graph(Node p) : this(p, p) { }
+        public Graph() : this(null) { }
     }
 
 } // end namespace

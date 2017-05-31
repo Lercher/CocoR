@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using CocoRCore;
 
 namespace 
-CocoRCore.CSharp
+CocoRCore.Samples.Coco
 {
 
 
@@ -14,8 +14,8 @@ CocoRCore.CSharp
 	//-----------------------------------------------------------------------------------
 	public class Scanner : ScannerBase
 	{
-        private const int _maxT = 52;
-        private const int noSym = 52;
+        private const int _maxT = 51;
+        private const int noSym = 51;
 
 		protected override int maxT => _maxT;
 
@@ -29,8 +29,8 @@ CocoRCore.CSharp
             start[34] = 11; 
             start[39] = 12; 
             start[36] = 13; 
-            start[46] = 35; 
             start[61] = 16; 
+            start[46] = 35; 
             start[40] = 36; 
             start[44] = 17; 
             start[41] = 18; 
@@ -140,17 +140,16 @@ CocoRCore.CSharp
                 case "IGNORE": t.kind = 16; break;
                 case "SYMBOLTABLES": t.kind = 17; break;
                 case "PRODUCTIONS": t.kind = 18; break;
-                case "END": t.kind = 19; break;
-                case "DELETEABLE": t.kind = 21; break;
-                case "STRICT": t.kind = 23; break;
-                case "SCOPES": t.kind = 24; break;
-                case "USEONCE": t.kind = 28; break;
-                case "USEALL": t.kind = 29; break;
-                case "ANY": t.kind = 33; break;
-                case "WEAK": t.kind = 40; break;
-                case "SYNC": t.kind = 45; break;
-                case "IF": t.kind = 48; break;
-                case "CONTEXT": t.kind = 49; break;
+                case "END": t.kind = 21; break;
+                case "STRICT": t.kind = 22; break;
+                case "SCOPES": t.kind = 23; break;
+                case "USEONCE": t.kind = 27; break;
+                case "USEALL": t.kind = 28; break;
+                case "ANY": t.kind = 32; break;
+                case "WEAK": t.kind = 39; break;
+                case "SYNC": t.kind = 44; break;
+                case "IF": t.kind = 47; break;
+                case "CONTEXT": t.kind = 48; break;
                 default: break;
 			}
 		}
@@ -234,18 +233,18 @@ CocoRCore.CSharp
                         t.kind = 5; break;
                     }
                 case 9:
-                    recEnd = buffer.Position; recKind = 53;
+                    recEnd = buffer.Position; recKind = 52;
                     if ('0' <= ch && ch <= '9' || 'A' <= ch && ch <= 'Z' || ch == '_' || 'a' <= ch && ch <= 'z') {
                         AddCh(); goto case 9;
                     } else {
-                        t.kind = 53; break;
+                        t.kind = 52; break;
                     }
                 case 10:
-                    recEnd = buffer.Position; recKind = 54;
+                    recEnd = buffer.Position; recKind = 53;
                     if ('-' <= ch && ch <= '.' || '0' <= ch && ch <= ':' || 'A' <= ch && ch <= 'Z' || ch == '_' || 'a' <= ch && ch <= 'z') {
                         AddCh(); goto case 10;
                     } else {
-                        t.kind = 54; break;
+                        t.kind = 53; break;
                     }
                 case 11:
                     if (ch <= 9 || 11 <= ch && ch <= 12 || 14 <= ch && ch <= '!' || '#' <= ch && ch <= '[' || ']' <= ch && ch <= 65535) {
@@ -269,13 +268,13 @@ CocoRCore.CSharp
                         t.kind = 6; break;
                     }
                 case 13:
-                    recEnd = buffer.Position; recKind = 53;
+                    recEnd = buffer.Position; recKind = 52;
                     if ('0' <= ch && ch <= '9') {
                         AddCh(); goto case 9;
                     } else if ('A' <= ch && ch <= 'Z' || ch == '_' || 'a' <= ch && ch <= 'z') {
                         AddCh(); goto case 15;
                     } else {
-                        t.kind = 53; break;
+                        t.kind = 52; break;
                     }
                 case 14:
                     if (' ' <= ch && ch <= '~') {
@@ -284,7 +283,7 @@ CocoRCore.CSharp
                         goto case 0;
                     }
                 case 15:
-                    recEnd = buffer.Position; recKind = 53;
+                    recEnd = buffer.Position; recKind = 52;
                     if ('0' <= ch && ch <= '9') {
                         AddCh(); goto case 9;
                     } else if ('A' <= ch && ch <= 'Z' || ch == '_' || 'a' <= ch && ch <= 'z') {
@@ -292,83 +291,83 @@ CocoRCore.CSharp
                     } else if (ch == '=') {
                         AddCh(); goto case 10;
                     } else {
-                        t.kind = 53; break;
+                        t.kind = 52; break;
                     }
                 case 16:
                     {
-                        t.kind = 22; break;
+                        t.kind = 19; break;
                     }
                 case 17:
                     {
-                        t.kind = 26; break;
+                        t.kind = 25; break;
                     }
                 case 18:
                     {
-                        t.kind = 27; break;
+                        t.kind = 26; break;
                     }
                 case 19:
                     {
-                        t.kind = 30; break;
+                        t.kind = 29; break;
                     }
                 case 20:
                     {
-                        t.kind = 31; break;
+                        t.kind = 30; break;
                     }
                 case 21:
                     {
-                        t.kind = 32; break;
+                        t.kind = 31; break;
                     }
                 case 22:
                     {
-                        t.kind = 34; break;
+                        t.kind = 33; break;
                     }
                 case 23:
                     {
-                        t.kind = 36; break;
+                        t.kind = 35; break;
                     }
                 case 24:
                     {
-                        t.kind = 37; break;
+                        t.kind = 36; break;
                     }
                 case 25:
                     {
-                        t.kind = 38; break;
+                        t.kind = 37; break;
                     }
                 case 26:
                     {
-                        t.kind = 39; break;
+                        t.kind = 38; break;
                     }
                 case 27:
                     {
-                        t.kind = 41; break;
+                        t.kind = 40; break;
                     }
                 case 28:
                     {
-                        t.kind = 42; break;
+                        t.kind = 41; break;
                     }
                 case 29:
                     {
-                        t.kind = 43; break;
+                        t.kind = 42; break;
                     }
                 case 30:
                     {
-                        t.kind = 44; break;
+                        t.kind = 43; break;
                     }
                 case 31:
                     {
-                        t.kind = 46; break;
+                        t.kind = 45; break;
                     }
                 case 32:
                     {
-                        t.kind = 47; break;
+                        t.kind = 46; break;
                     }
                 case 33:
                     {
-                        t.kind = 50; break;
+                        t.kind = 49; break;
                     }
                 case 34:
                     {
-                        t.kind = 51; break;
+                        t.kind = 50; break;
                     }
                 case 35:
                     recEnd = buffer.Position; recKind = 20;
@@ -382,18 +381,18 @@ CocoRCore.CSharp
                         t.kind = 20; break;
                     }
                 case 36:
-                    recEnd = buffer.Position; recKind = 25;
+                    recEnd = buffer.Position; recKind = 24;
                     if (ch == '.') {
                         AddCh(); goto case 33;
                     } else {
-                        t.kind = 25; break;
+                        t.kind = 24; break;
                     }
                 case 37:
-                    recEnd = buffer.Position; recKind = 35;
+                    recEnd = buffer.Position; recKind = 34;
                     if (ch == '.') {
                         AddCh(); goto case 24;
                     } else {
-                        t.kind = 35; break;
+                        t.kind = 34; break;
                     }
 			}
 			t.setValue(tval.ToString(), casingString);

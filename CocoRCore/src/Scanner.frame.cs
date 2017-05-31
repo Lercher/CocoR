@@ -2,10 +2,13 @@
 // as a variant, you can reference the CocoRCore.dll,
 // that includes this classes in a compiled form.
 
+#pragma warning disable IDE1006 // Naming Styles
+
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Collections.Generic;
 
 namespace CocoRCore
 {
@@ -48,27 +51,27 @@ namespace CocoRCore
         }
 
         private readonly Stack<IDisposable> disposables = new Stack<IDisposable>();
-        public T Track<T>(T disposable) where T : IDisposable 
+        public T Track<T>(T disposable) where T : IDisposable
         {
             disposables.Push(disposable);
             return disposable;
         }
 
-        public void Dispose() 
+        public void Dispose()
         {
-            foreach(var d in disposables)
+            foreach (var d in disposables)
                 d.Dispose();
             disposables.Clear();
         }
 
         public ScannerBase Initialize(string fileName) => Initialize(new FileInfo(fileName));
 
-        public ScannerBase Initialize(FileInfo file)        
+        public ScannerBase Initialize(FileInfo file)
         {
             try
             {
                 var stream = Track(file.OpenRead());
-                var tr =  Track(new StreamReader(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 4096));
+                var tr = Track(new StreamReader(stream, System.Text.Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 4096));
                 return Initialize(tr, file.FullName);
             }
             catch (IOException ex)
@@ -92,7 +95,7 @@ namespace CocoRCore
         public ScannerBase Initialize(TextReader rd, string uri)
         {
             buffer = Track(new Reader(rd, uri, casing, PutCh));
-            return this;           
+            return this;
         }
 
         protected void NextCh() => buffer.NextCh();
@@ -123,9 +126,7 @@ namespace CocoRCore
             if (buffer == null)
                 throw new FatalError($"The Scanner {GetType().FullName} has to be Initialize()-ed before use");
             if (tokens.next == null)
-            {
                 return NextToken();
-            }
             else
             {
                 peekToken = tokens = tokens.next;
@@ -139,9 +140,7 @@ namespace CocoRCore
             do
             {
                 if (peekToken.next == null)
-                {
                     peekToken.next = NextToken();
-                }
                 peekToken = peekToken.next;
             } while (peekToken.kind > maxT); // skip pragmas
 
@@ -149,8 +148,7 @@ namespace CocoRCore
         }
 
         // make sure that peeking starts at the current scan position
-        public void ResetPeek() { peekToken = tokens; }
-
+        public void ResetPeek() => peekToken = tokens;
     } // end Scanner
 
 
@@ -203,6 +201,8 @@ namespace CocoRCore
             return $"{nm} '{valScanned}'";
         }
 
+        public override string ToString() => $"{kind}:{valScanned}{position}";
+
         public class Builder
         {
             public Builder(IBufferedReader buffer)
@@ -238,10 +238,7 @@ namespace CocoRCore
                 val = casing(scanned);
             }
 
-            public Token Freeze()
-            {
-                return new Token(this);
-            }
+            public Token Freeze() => new Token(this);
 
             public Token Freeze(Position end, Position endM1)
             {
@@ -345,7 +342,8 @@ namespace CocoRCore
             NextCh();
         }
 
-        public void Dispose() {
+        public void Dispose()
+        {
             _tr.Dispose();
             _slider.Dispose();
         }
@@ -360,7 +358,7 @@ namespace CocoRCore
                 _putCh(ch, '\0');
             else
             {
-                var valCh = (char) ch;
+                var valCh = (char)ch;
                 ch = _casing(valCh);
                 _putCh(ch, valCh);
             }
@@ -378,10 +376,7 @@ namespace CocoRCore
             NextCh();
         }
 
-        public string GetBufferedString(Range r)
-        {
-            return _slider.String(r.start.pos - 1, r.end.pos - 1);
-        }
+        public string GetBufferedString(Range r) => _slider.String(r.start.pos - 1, r.end.pos - 1);
 
         public int Read()
         {
@@ -421,42 +416,236 @@ namespace CocoRCore
     }
 
 
+    public class CircularBuffer<T> : IEnumerable<T>, IDisposable
+    {
+        private int capacity;
+        private int size;
+        private int head;
+        private int tail;
+        private T[] buffer;
+
+        public CircularBuffer(int capacity)
+            : this(capacity, false)
+        {
+        }
+
+        public CircularBuffer(int capacity, bool allowOverflow)
+        {
+            this.capacity = capacity;
+            size = 0;
+            head = 0;
+            tail = 0;
+            buffer = new T[capacity];
+            AllowOverflow = allowOverflow;
+        }
+
+        public readonly bool AllowOverflow;
+
+        public int Capacity => capacity;
+
+        public int Count => size;
+
+        public bool Contains(T item)
+        {
+            var bufferIndex = head;
+            var comparer = EqualityComparer<T>.Default;
+            for (var i = 0; i < size; i++, bufferIndex++)
+            {
+                if (bufferIndex == capacity)
+                    bufferIndex = 0;
+
+                if (item == null && buffer[bufferIndex] == null)
+                    return true;
+                else if ((buffer[bufferIndex] != null) &&
+                    comparer.Equals(buffer[bufferIndex], item))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public void Clear()
+        {
+            size = 0;
+            head = 0;
+            tail = 0;
+        }
+
+        public int Put(T[] src) => Put(src, 0, src.Length);
+
+        public int Put(T[] src, int offset, int count)
+        {
+            if (!AllowOverflow && count > capacity - size)
+                throw new InvalidOperationException("MessageBufferOverflow");
+
+            var srcIndex = offset;
+            for (var i = 0; i < count; i++, tail++, srcIndex++)
+            {
+                if (tail == capacity)
+                    tail = 0;
+                buffer[tail] = src[srcIndex];
+            }
+            size = Math.Min(size + count, capacity);
+            return count;
+        }
+
+
+        public void Skip(int count)
+        {
+            head += count;
+            if (head >= capacity)
+                head -= capacity;
+        }
+
+        public T[] Get(int count)
+        {
+            var dst = new T[count];
+            Get(dst);
+            return dst;
+        }
+
+        public int Get(T[] dst) => Get(dst, 0, dst.Length);
+
+        public int Get(T[] dst, int offset, int count)
+        {
+            var realCount = Math.Min(count, size);
+            var dstIndex = offset;
+            for (var i = 0; i < realCount; i++, head++, dstIndex++)
+            {
+                if (head == capacity)
+                    head = 0;
+                dst[dstIndex] = buffer[head];
+            }
+            size -= realCount;
+            return realCount;
+        }
+
+
+        public void CopyTo(T[] array) => CopyTo(array, 0);
+
+        public void CopyTo(T[] array, int arrayIndex) => CopyTo(0, array, arrayIndex, size);
+
+        public void CopyTo(int index, T[] array, int arrayIndex, int count)
+        {
+            if (count > size)
+                throw new ArgumentOutOfRangeException("count", "MessageReadCountTooLarge");
+
+            var bufferIndex = head;
+            for (var i = 0; i < count; i++, bufferIndex++, arrayIndex++)
+            {
+                if (bufferIndex == capacity)
+                    bufferIndex = 0;
+                array[arrayIndex] = buffer[bufferIndex];
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public IEnumerator<T> GetEnumerator()
+        {
+            var bufferIndex = head;
+            for (var i = 0; i < size; i++, bufferIndex++)
+            {
+                if (bufferIndex == capacity)
+                    bufferIndex = 0;
+
+                yield return buffer[bufferIndex];
+            }
+        }
+
+        public T[] GetBuffer() => buffer;
+
+        public T[] ToArray()
+        {
+            var dst = new T[size];
+            CopyTo(dst);
+            return dst;
+        }
+
+
+        public void Put(T item)
+        {
+            if (!AllowOverflow && size == capacity)
+                throw new InvalidOperationException("MessageBufferOverflow");
+
+            buffer[tail] = item;
+            if (++tail == capacity)
+                tail = 0;
+            size++;
+        }
+
+        public T Get()
+        {
+            if (size == 0)
+                throw new InvalidOperationException("MessageBufferEmpty");
+
+            var item = buffer[head];
+            if (++head == capacity)
+                head = 0;
+            size--;
+            return item;
+        }
+
+        public T ItemAt(int index)
+        {
+            if (index >= 0)
+            { // look up index items on the Get/head end
+                var i = index + head;
+                if (i > capacity)
+                    i -= capacity;
+                return buffer[i];
+            }
+            else
+            { // look up index items on the Put/tail end
+                var i = index + tail;
+                if (i < 0)
+                    i += capacity;
+                return buffer[i];
+            }
+        }
+
+        public T[] Slice(int index, int count)
+        {
+            var ar = new T[count];
+            for (var i = 0; i < count; i++)
+                ar[i] = ItemAt(index + i);
+            return ar;
+        }
+
+        public void Dispose() => buffer = null;
+    }
+
     //-----------------------------------------------------------------------------------
     // SlidingBuffer
     //-----------------------------------------------------------------------------------
     public class SlidingBuffer : IDisposable
     {
-        private readonly Queue<char> _q;
-        private int _remain;
+        private readonly CircularBuffer<char> _q;
         public int pos { get; private set; }
         public SlidingBuffer(int capacity)
         {
             pos = 0;
-            _remain = capacity;
-            _q = new Queue<char>(capacity);
+            _q = new CircularBuffer<char>(capacity, allowOverflow: true);
         }
 
         public void Put(char c)
         {
             pos++;
-            if (_remain == 0)
-                _q.Dequeue();
-            else
-                _remain--;
-            _q.Enqueue(c);
+            _q.Put(c);
         }
 
-        public char CharAt(int p) => _q.ToArray()[p - pos + _q.Count];
+        public char CharAt(int p) => _q.ItemAt(p - pos);
 
         public string String(int start, int end)
         {
-            var startInQ = start - pos + _q.Count;
-            if (startInQ < 0) throw new FatalError("This text is no more buffered");
+            var startInQ = start - pos; // is negative
+            if (-startInQ >= _q.Capacity) throw new FatalError("This text is no more buffered");
             if (pos < end) throw new FatalError("This text is not yet buffered");
-            return new string(_q.ToArray(), startInQ, end - start);
+            if (start > end) throw new FatalError("Start can't be after end");
+            var ar = _q.Slice(startInQ, end - start);
+            return new string(ar);
         }
 
-        public void Dispose() => _q.Clear();
+        public void Dispose() => _q.Dispose();
     }
 
 
@@ -506,8 +695,8 @@ namespace CocoRCore
     // --------------------------------
     public class FatalError : Exception
     {
-        public FatalError(string m) : base(m) 
-        {             
+        public FatalError(string m) : base(m)
+        {
         }
 
         public FatalError(string message, Exception innerException) : base(message, innerException)

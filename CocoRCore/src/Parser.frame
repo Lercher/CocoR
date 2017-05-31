@@ -1,6 +1,3 @@
--->begin
-//#define POSITIONS
-
 using System;
 using System.Text;
 using System.Collections;
@@ -9,169 +6,112 @@ using CocoRCore;
 
 -->namespace
 
-	public class Parser : ParserBase 
-	{
+    public class Parser : ParserBase 
+    {
 -->constants
-		private const bool _T = true;
-		private const bool _x = false;
+        private const bool _T = true;
+        private const bool _x = false;
+        
 -->declarations
 
-		public Parser()
-		{
+        public Parser()
+        {
 -->constructor
-		}
+        }
 
-		public static Parser Create(string fileName) 
-			=> Create(s => s.Initialize(fileName));
+        public static Parser Create(string fileName) 
+            => Create(s => s.Initialize(fileName));
 
-		public static Parser Create() 
-			=> Create(s => {});
+        public static Parser Create() 
+            => Create(s => { });
 
-		public static Parser Create(Action<Scanner> init)
-		{
-			var p = new Parser();
-			var scanner = new Scanner();
-			p.Initialize(scanner);
-			init(scanner);
-			return p;
-		}
-
-
-		public override int maxT => __maxT;
-
-		protected override void Get() 
-		{
-			for (;;) 
-			{
-				t = la;
--->beginalternatives
-				if (alternatives != null) 
-				{
-					tokens.Add(new Alternative(t, alternatives));
-				}
-				_newAlt();
--->endalternatives
-				la = scanner.Scan();
-				if (la.kind <= maxT) 
-				{ 
-					++errDist; 
-					break; 
-				}
--->pragmas
-				la = t;
-			}
-		}
-
-        private bool isKind(Token t, int n)
+        public static Parser Create(Action<Scanner> init)
         {
-            var k = t.kind;
-            while (k >= 0)
+            var p = new Parser();
+            var scanner = new Scanner();
+            p.Initialize(scanner);
+            init(scanner);
+            return p;
+        }
+
+
+        public override int maxT => __maxT;
+
+        protected override void Get() 
+        {
+            lb = t;
+            t = la;
+(((beginalternatives
+            if (alternatives != null) 
             {
-                if (k == n) return true;
-                k = tBase[k];
+                AlternativeTokens.Add(new Alternative(t, alternatives));
             }
-            return false;
-        }
-
-        // is the lookahead token la a start of the production s?
-        private bool StartOf(int s)
-        {
-            return set[s, la.kind];
-        }
-
-        private bool WeakSeparator(int n, int syFol, int repFol)
-        {
-            var kind = la.kind;
-            if (isKind(la, n)) 
-			{ 
-				Get(); 
-				return true; 
-			}
-            else if (StartOf(repFol)) 
-				return false;
-            else
+            _newAlt();
+)))endalternatives
+            for (;;) 
             {
-                SynErr(n);
-                while (!(set[syFol, kind] || set[repFol, kind] || set[0, kind]))
-                {
-                    Get();
-                    kind = la.kind;
+                la = scanner.Scan();
+                if (la.kind <= maxT) 
+                { 
+                    ++errDist; 
+                    break; // it's not a pragma
                 }
-                return StartOf(syFol);
+                // pragma code
+-->pragmas
             }
         }
 
-        protected void Expect(int n)
-        {
-            if (isKind(la, n)) 
-				Get(); 
-			else 
-				SynErr(n);
-        }
 
-
-        protected void ExpectWeak(int n, int follow)
-        {
-            if (isKind(la, n)) 
-				Get();
-            else
-            {
-                SynErr(n);
-                while (!StartOf(follow)) 
-					Get();
-            }
-        }
-
--->beginalternativescode
--->endalternativescode
 -->productions
 
-		public override void Parse() 
-		{
-			if (scanner == null) throw new FatalError("This parser is not Initialize()-ed.");
-			la = Token.Zero;
-			Get();
+        public override void Parse() 
+        {
+            if (scanner == null) throw new FatalError("This parser is not Initialize()-ed.");
+            lb = Token.Zero;
+            la = Token.Zero;
+            Get();
 -->parseRoot
-		}
-	
-		// a token's base type
-		public static readonly int[] tBase = {
+        }
+    
+        // a token's base type
+        public static readonly int[] tBase = {
 -->tbase
-		};
+        };
+		protected override int BaseKindOf(int kind) => tBase[kind];
 
-		// a token's name
-		public static readonly string[] varTName = {
+        // a token's name
+        public static readonly string[] varTName = {
 -->tname
-		};
-		public override string NameOfTokenKind(int tokenKind) => varTName[tokenKind];
+        };
+        public override string NameOfTokenKind(int tokenKind) => varTName[tokenKind];
 
-		// states that a particular production (1st index) can start with a particular token (2nd index)
+		// states that a particular production (1st index) can start with a particular token (2nd index). Needed by addAlt().
 		static readonly bool[,] set0 = {
 -->initialization0
 		};
 
-		// as set0 but with token inheritance taken into account
-		static readonly bool[,] set = {
+        // as set0 but with token inheritance taken into account
+        static readonly bool[,] set = {
 -->initialization
-		};
+        };
 
--->beginastcode
+        protected override bool StartOf(int s, int kind) => set[s, kind];
 
+(((beginastcode
         public readonly AST.Builder astbuilder; // can also be private  
         public AST ast { get { return astbuilder.current; }}
+)))endastcode
 
--->endastcode
 
-
-		public override string Syntaxerror(int n) 
-		{
-			switch (n) 
-			{
+        public override string Syntaxerror(int n) 
+        {
+            switch (n) 
+            {
 -->errors
-				default: return $"error {n}";
-			}
-		}
+                default: return $"error {n}";
+            }
+        }
 
-	} // end Parser
+    } // end Parser
 
 // end namespace implicit
