@@ -2,7 +2,7 @@
   <!-- https://docs.microsoft.com/en-us/dotnet/articles/core/tools/project-json-to-csproj -->
   <PropertyGroup>  
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp1.1;net40</TargetFrameworks>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
     <GenerateFullPaths>true</GenerateFullPaths>
   </PropertyGroup>
   
