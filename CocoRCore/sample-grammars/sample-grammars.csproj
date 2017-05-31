@@ -1,14 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <!-- https://docs.microsoft.com/en-us/dotnet/articles/core/tools/project-json-to-csproj -->
+  
   <PropertyGroup>  
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp1.1</TargetFramework>
     <GenerateFullPaths>true</GenerateFullPaths>
   </PropertyGroup>
-  
+  <!-- 
+  if <RuntimeIdentifier> or <RuntimeIdentifiers> are added
+  the bin/Debug folder structure is modified: so keep an eye on 
+  the "grammars" Target and on .vscode.launch files.
+  setting <TargetFrameworks>netcoreapp1.1;net40</TargetFrameworks> 
+  won't build on my ubuntu box, b/c there is no net40
+  -->
+
   <ItemGroup>
     <!-- https://github.com/OmniSharp/omnisharp-roslyn/issues/762 -->
     <ProjectReference Include="..\src\CocoRCore.csproj" /> 
     <!-- <Compile Include="../src/*.frame.cs"/> -->
   </ItemGroup>
+
 </Project>
