@@ -85,6 +85,10 @@ using CocoRCore;
         };
         public override string NameOfTokenKind(int tokenKind) => varTName[tokenKind];
 
+		// states that a particular production (1st index) can start with a particular token (2nd index). Needed by addAlt().
+		static readonly bool[,] set0 = {
+-->initialization0
+		};
 
         // as set0 but with token inheritance taken into account
         static readonly bool[,] set = {

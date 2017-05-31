@@ -221,7 +221,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     {
                         if (s[sym.n])
                         {
-                            Gen.Write(GW.Append, "isKind(la, {0})", sym.n);
+                            Gen.Write(GW.Append, "isKind(la, {0} {1})", sym.n, sym.CSharpCommentName);
                             --n;
                             if (n > 0) Gen.Write(GW.Append, " || ");
                         }
@@ -239,7 +239,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             var s = DerivationsOf(s0);
             foreach (var sym in Tab.terminals)
                 if (s[sym.n])
-                    Gen.Write(GW.Line, "case {0}: // {1}", sym.n, sym.name);
+                    Gen.Write(GW.Line, "case {0}: {1}", sym.n, sym.CSharpCommentName);
         }
 
         BitArray DerivationsOf(BitArray s0)
@@ -323,7 +323,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                             GenAutocomplete(p.sym.n, "T " + p.sym.name);
                             GenAutocompleteSymboltable(p, "T " + p.sym.name);
                             GenAstBuilder(p);
-                            Gen.Write(GW.Line, "Expect({0}); // {1}", p.sym.n, p.sym.name);
+                            Gen.Write(GW.Line, "Expect({0} {1});", p.sym.n, p.sym.CSharpCommentName);
                         }
                         break;
                     case NodeKind.wt:
@@ -335,7 +335,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         GenAutocomplete(p.sym.n, "WT " + p.sym.name);
                         GenAutocompleteSymboltable(p, "WT " + p.sym.name);
                         GenAstBuilder(p);
-                        Gen.Write(GW.Line, "ExpectWeak({0}, {1}); // {2} followed by {3}", p.sym.n, ncs1, p.sym.name, ncs1sym.name);
+                        Gen.Write(GW.Line, "ExpectWeak({0} {2}, {1} {3}); // {0} followed by {1}", p.sym.n, ncs1, p.sym.CSharpCommentName, ncs1sym.CSharpCommentName);
                         break;
                     case NodeKind.any:
                         var acc = p.set.ElementCount();
@@ -480,7 +480,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         {
                             s1 = Tab.Expected(p2.next, CurrentNtSym);
                             s2 = Tab.Expected(p.next, CurrentNtSym);
-                            Gen.Write(GW.Append, "WeakSeparator({0}, {1}, {2}) ", p2.sym.n, NewCondSet(s1), NewCondSet(s2));
+                            Gen.Write(GW.Append, "WeakSeparator({0} {3}, {1}, {2}) ", p2.sym.n, NewCondSet(s1), NewCondSet(s2), p2.sym.CSharpCommentName);
                             s1 = new BitArray(Tab.terminals.Count);  // for inner structure
                             if (p2.up || p2.next == null)
                                 p2 = null;
@@ -619,6 +619,16 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 Gen.Indentation--;
                 Gen.Write(GW.Line, "}");
                 Gen.Write(GW.Break, string.Empty);
+            }
+        }
+
+        void InitSets0()
+        {
+            for (var i = 0; i < symSet.Count; i++)
+            {
+                var s = symSet[i];
+                var islast = (i == symSet.Count - 1);
+                WriteSetsLine(s, islast);
             }
         }
 
@@ -763,6 +773,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 Gen.CopyFramePart("-->tname");
                 Gen.Indentation++;
                 GenTokenNames(); // write all token names
+                Gen.Indentation--;
+
+                Gen.CopyFramePart("-->initialization0");
+                Gen.Indentation++;
+                InitSets0();
                 Gen.Indentation--;
 
                 Gen.CopyFramePart("-->initialization");

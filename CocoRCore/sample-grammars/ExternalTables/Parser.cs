@@ -121,7 +121,7 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(12); // OPT
-                if (isKind(la, 12))
+                if (isKind(la, 12 /*prompt*/))
                 {
                     StarPrompt‿NT();
                     Slash‿NT();
@@ -135,7 +135,7 @@ void Diag(int n, string s, string kind) {
                     addAlt(set0, 1); // ITER end
                 }
                 addAlt(0); // T EOF
-                Expect(0); // EOF
+                Expect(0 /*[EOF]*/);
             }
         }
 
@@ -144,9 +144,9 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(12); // T prompt
-                Expect(12); // prompt
+                Expect(12 /*prompt*/);
                 addAlt(29); // T stars
-                Expect(29); // stars
+                Expect(29 /*[stars]*/);
                 addAlt(set0, 2); // ITER start
                 while (StartOf(2))
                 {
@@ -154,7 +154,7 @@ void Diag(int n, string s, string kind) {
                     addAlt(set0, 2); // ITER end
                 }
                 addAlt(29); // T stars
-                Expect(29); // stars
+                Expect(29 /*[stars]*/);
             }
         }
 
@@ -162,13 +162,13 @@ void Diag(int n, string s, string kind) {
         void Slash‿NT()
         {
             {
-                while (!(isKind(la, 0) || isKind(la, 23)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 23 /*/*/)))
                 {
                     SynErr(65);
                     Get();
                 }
                 addAlt(23); // T slash
-                Expect(23); // slash
+                Expect(23 /*/*/);
             }
         }
 
@@ -177,17 +177,17 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(3); // T set
-                Expect(3); // set
+                Expect(3 /*set*/);
                 addAlt(4); // T serveroutput
-                Expect(4); // serveroutput
+                Expect(4 /*serveroutput*/);
                 addAlt(5); // T on
-                Expect(5); // on
+                Expect(5 /*on*/);
                 addAlt(6); // T size
-                Expect(6); // size
+                Expect(6 /*size*/);
                 addAlt(1); // T number
-                Expect(1); // number
+                Expect(1 /*[number]*/);
                 addAlt(20); // T sc
-                Expect(20); // sc
+                Expect(20 /*;*/);
             }
         }
 
@@ -198,22 +198,22 @@ void Diag(int n, string s, string kind) {
                 addAlt(new int[] {3, 31}); // ALT
                 addAlt(12); // ALT
                 addAlt(30); // ALT
-                if (isKind(la, 3) || isKind(la, 31))
+                if (isKind(la, 3 /*set*/) || isKind(la, 31 /*begin*/))
                 {
                     ExceptionHandledBlock‿NT();
                 }
-                else if (isKind(la, 12))
+                else if (isKind(la, 12 /*prompt*/))
                 {
                     StarPrompt‿NT();
                 }
-                else if (isKind(la, 30))
+                else if (isKind(la, 30 /*declare*/))
                 {
                     DeclareBlock‿NT();
                 } // end if
                 else
                     SynErr(66);
                 addAlt(23); // ITER start
-                while (isKind(la, 23))
+                while (isKind(la, 23 /*/*/))
                 {
                     Slash‿NT();
                     addAlt(23); // ITER end
@@ -226,34 +226,34 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(3); // OPT
-                if (isKind(la, 3))
+                if (isKind(la, 3 /*set*/))
                 {
                     Get();
                     addAlt(4); // T serveroutput
-                    Expect(4); // serveroutput
+                    Expect(4 /*serveroutput*/);
                     addAlt(5); // T on
-                    Expect(5); // on
+                    Expect(5 /*on*/);
                     addAlt(20); // T sc
-                    Expect(20); // sc
+                    Expect(20 /*;*/);
                 }
                 addAlt(31); // T "begin"
-                Expect(31); // "begin"
+                Expect(31 /*begin*/);
                 InsertDeleteUpdate‿NT();
                 addAlt(new int[] {7, 8, 9}); // ITER start
-                while (isKind(la, 7) || isKind(la, 8) || isKind(la, 9))
+                while (isKind(la, 7 /*insert*/) || isKind(la, 8 /*update*/) || isKind(la, 9 /*delete*/))
                 {
                     InsertDeleteUpdate‿NT();
                     addAlt(new int[] {7, 8, 9}); // ITER end
                 }
                 addAlt(32); // ALT
                 addAlt(new int[] {33, 59}); // ALT
-                if (isKind(la, 32))
+                if (isKind(la, 32 /*commit*/))
                 {
                     Get();
                     addAlt(20); // T sc
-                    Expect(20); // sc
+                    Expect(20 /*;*/);
                 }
-                else if (isKind(la, 33) || isKind(la, 59))
+                else if (isKind(la, 33 /*exception*/) || isKind(la, 59 /*dbms_output*/))
                 {
                     Diag(2, "COMMIT in ExceptionHandledBlock missing", "CRIT");
                 } // end if
@@ -261,36 +261,36 @@ void Diag(int n, string s, string kind) {
                     SynErr(67);
                 addAlt(59); // ALT
                 addAlt(33); // ALT
-                if (isKind(la, 59))
+                if (isKind(la, 59 /*dbms_output*/))
                 {
                     PutLine‿NT();
                 }
-                else if (isKind(la, 33))
+                else if (isKind(la, 33 /*exception*/))
                 {
                     Diag(3, "COMMIT without dbms_output.PUT_LINE", "WARN");
                 } // end if
                 else
                     SynErr(68);
                 addAlt(33); // T "exception"
-                Expect(33); // "exception"
+                Expect(33 /*exception*/);
                 addAlt(34); // T "when"
-                Expect(34); // "when"
+                Expect(34 /*when*/);
                 addAlt(35); // T "others"
-                Expect(35); // "others"
+                Expect(35 /*others*/);
                 addAlt(36); // T "then"
-                Expect(36); // "then"
+                Expect(36 /*then*/);
                 addAlt(59); // OPT
-                if (isKind(la, 59))
+                if (isKind(la, 59 /*dbms_output*/))
                 {
                     PutLine‿NT();
                 }
                 addAlt(37); // ALT
                 addAlt(13); // ALT
-                if (isKind(la, 37))
+                if (isKind(la, 37 /*rollback*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 13))
+                else if (isKind(la, 13 /*null*/))
                 {
                     Get();
                     Diag(20, "Null instead of ROLLBACK in exception block", "WARN");
@@ -298,16 +298,16 @@ void Diag(int n, string s, string kind) {
                 else
                     SynErr(69);
                 addAlt(20); // T sc
-                Expect(20); // sc
+                Expect(20 /*;*/);
                 addAlt(59); // OPT
-                if (isKind(la, 59))
+                if (isKind(la, 59 /*dbms_output*/))
                 {
                     PutLine‿NT();
                 }
                 addAlt(38); // T "end"
-                Expect(38); // "end"
+                Expect(38 /*end*/);
                 addAlt(20); // T sc
-                Expect(20); // sc
+                Expect(20 /*;*/);
                 Slash‿NT();
             }
         }
@@ -317,7 +317,7 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(30); // T "declare"
-                Expect(30); // "declare"
+                Expect(30 /*declare*/);
                 Diag(1, "Mysterious DECLARE block detected", "TBD");
                 addAlt(set0, 3); // ITER start
                 while (StartOf(3))
@@ -336,15 +336,15 @@ void Diag(int n, string s, string kind) {
                 addAlt(7); // ALT
                 addAlt(9); // ALT
                 addAlt(8); // ALT
-                if (isKind(la, 7))
+                if (isKind(la, 7 /*insert*/))
                 {
                     Insert‿NT();
                 }
-                else if (isKind(la, 9))
+                else if (isKind(la, 9 /*delete*/))
                 {
                     Delete‿NT();
                 }
-                else if (isKind(la, 8))
+                else if (isKind(la, 8 /*update*/))
                 {
                     Update‿NT();
                 } // end if
@@ -358,18 +358,18 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(59); // T "dbms_output"
-                Expect(59); // "dbms_output"
+                Expect(59 /*dbms_output*/);
                 addAlt(24); // T dot
-                Expect(24); // dot
+                Expect(24 /*.*/);
                 addAlt(60); // T "put_line"
-                Expect(60); // "put_line"
+                Expect(60 /*put_line*/);
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 UncheckedString‿NT();
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(20); // T sc
-                Expect(20); // sc
+                Expect(20 /*;*/);
             }
         }
 
@@ -378,9 +378,9 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(7); // T insert
-                Expect(7); // insert
+                Expect(7 /*insert*/);
                 addAlt(10); // T into
-                Expect(10); // into
+                Expect(10 /*into*/);
                 addAlt(54); // ALT
                 addAlt(56); // ALT
                 addAlt(15); // ALT
@@ -391,42 +391,42 @@ void Diag(int n, string s, string kind) {
                 addAlt(51); // ALT
                 switch (la.kind)
                 {
-                    case 54: // "tuser"
+                    case 54: /*tuser*/
                         { // scoping
                             TUSER‿NT();
                         }
                         break;
-                    case 56: // "lantuser"
+                    case 56: /*lantuser*/
                         { // scoping
                             LANTUSER‿NT();
                         }
                         break;
-                    case 15: // tusparam
+                    case 15: /*tusparam*/
                         { // scoping
                             TUSPARAM‿NT();
                         }
                         break;
-                    case 14: // lantusparam
+                    case 14: /*lantusparam*/
                         { // scoping
                             LANTUSPARAM‿NT();
                         }
                         break;
-                    case 42: // "ttrparam"
+                    case 42: /*ttrparam*/
                         { // scoping
                             TTRPARAM‿NT();
                         }
                         break;
-                    case 45: // "lanttrparam"
+                    case 45: /*lanttrparam*/
                         { // scoping
                             LANTTRPARAM‿NT();
                         }
                         break;
-                    case 49: // "ttraitement"
+                    case 49: /*ttraitement*/
                         { // scoping
                             TTRAITEMENT‿NT();
                         }
                         break;
-                    case 51: // "lanttraitement"
+                    case 51: /*lanttraitement*/
                         { // scoping
                             LANTTRAITEMENT‿NT();
                         }
@@ -443,24 +443,24 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(9); // T delete
-                Expect(9); // delete
+                Expect(9 /*delete*/);
                 addAlt(41); // T "from"
-                Expect(41); // "from"
+                Expect(41 /*from*/);
                 if (!deletabletables.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "ident", la.val, deletabletables.name), la);
                 addAlt(2); // T ident
                 addAlt(2, deletabletables); // T ident ident uses symbol table 'deletabletables'
-                Expect(2); // ident
+                Expect(2 /*[ident]*/);
                 addAlt(39); // T "where"
-                Expect(39); // "where"
+                Expect(39 /*where*/);
                 if (!columns.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "ident", la.val, columns.name), la);
                 addAlt(2); // T ident
                 addAlt(2, columns); // T ident ident uses symbol table 'columns'
-                Expect(2); // ident
+                Expect(2 /*[ident]*/);
                 addAlt(26); // T equals
-                Expect(26); // equals
+                Expect(26 /*=*/);
                 String‿NT();
                 addAlt(40); // ITER start
-                while (isKind(la, 40))
+                while (isKind(la, 40 /*and*/))
                 {
                     Get();
                     Get();
@@ -473,7 +473,7 @@ void Diag(int n, string s, string kind) {
                     addAlt(40); // ITER end
                 }
                 addAlt(20); // T sc
-                Expect(20); // sc
+                Expect(20 /*;*/);
             }
         }
 
@@ -482,32 +482,32 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(8); // T update
-                Expect(8); // update
+                Expect(8 /*update*/);
                 if (!updatetables.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "ident", la.val, updatetables.name), la);
                 addAlt(2); // T ident
                 addAlt(2, updatetables); // T ident ident uses symbol table 'updatetables'
-                Expect(2); // ident
+                Expect(2 /*[ident]*/);
                 addAlt(3); // T set
-                Expect(3); // set
+                Expect(3 /*set*/);
                 if (!columns.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "ident", la.val, columns.name), la);
                 addAlt(2); // T ident
                 addAlt(2, columns); // T ident ident uses symbol table 'columns'
-                Expect(2); // ident
+                Expect(2 /*[ident]*/);
                 addAlt(26); // T equals
-                Expect(26); // equals
+                Expect(26 /*=*/);
                 addAlt(1); // ALT
                 addAlt(28); // ALT
                 addAlt(2); // ALT
                 addAlt(2, columns); // ALT ident uses symbol table 'columns'
-                if (isKind(la, 1))
+                if (isKind(la, 1 /*[number]*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 28))
+                else if (isKind(la, 28 /*[string]*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 2))
+                else if (isKind(la, 2 /*[ident]*/))
                 {
                     if (!columns.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "ident", la.val, columns.name), la);
                     Get();
@@ -515,16 +515,16 @@ void Diag(int n, string s, string kind) {
                 else
                     SynErr(72);
                 addAlt(39); // T "where"
-                Expect(39); // "where"
+                Expect(39 /*where*/);
                 if (!columns.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "ident", la.val, columns.name), la);
                 addAlt(2); // T ident
                 addAlt(2, columns); // T ident ident uses symbol table 'columns'
-                Expect(2); // ident
+                Expect(2 /*[ident]*/);
                 addAlt(26); // T equals
-                Expect(26); // equals
+                Expect(26 /*=*/);
                 String‿NT();
                 addAlt(40); // ITER start
-                while (isKind(la, 40))
+                while (isKind(la, 40 /*and*/))
                 {
                     Get();
                     Get();
@@ -537,7 +537,7 @@ void Diag(int n, string s, string kind) {
                     addAlt(40); // ITER end
                 }
                 addAlt(20); // T sc
-                Expect(20); // sc
+                Expect(20 /*;*/);
             }
         }
 
@@ -553,7 +553,7 @@ void Diag(int n, string s, string kind) {
                 Diag(17, "First string literal starts with a space: " + t.val, "WARN");
                 }
                 addAlt(27); // ITER start
-                while (isKind(la, 27))
+                while (isKind(la, 27 /*||*/))
                 {
                     Get();
                     StringFactor‿NT();
@@ -573,47 +573,47 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(54); // T "tuser"
-                Expect(54); // "tuser"
+                Expect(54 /*tuser*/);
                 addAlt(21); // ALT
                 addAlt(11); // ALT
-                if (isKind(la, 21))
+                if (isKind(la, 21 /*(*/))
                 {
                     Get();
                     addAlt(16); // T tusnom
-                    Expect(16); // tusnom
+                    Expect(16 /*tusnom*/);
                     addAlt(25); // T comma
-                    Expect(25); // comma
+                    Expect(25 /*,*/);
                     addAlt(55); // T "tuslongueur"
-                    Expect(55); // "tuslongueur"
+                    Expect(55 /*tuslongueur*/);
                     addAlt(22); // T closeparen
-                    Expect(22); // closeparen
+                    Expect(22 /*)*/);
                 }
-                else if (isKind(la, 11))
+                else if (isKind(la, 11 /*values*/))
                 {
                     Diag(10, "Insert into TUSER without column list", "WARN");
                 } // end if
                 else
                     SynErr(73);
                 addAlt(11); // T values
-                Expect(11); // values
+                Expect(11 /*values*/);
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(1); // ALT
                 addAlt(13); // ALT
                 addAlt(28); // ALT
-                if (isKind(la, 1))
+                if (isKind(la, 1 /*[number]*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 13))
+                else if (isKind(la, 13 /*null*/))
                 {
                     Get();
                     Diag(11, t.val + " as TUSLONGUEUR (a length) is invalid", "TBD");
                 }
-                else if (isKind(la, 28))
+                else if (isKind(la, 28 /*[string]*/))
                 {
                     Get();
                     Diag(12, t.val + " (string) as TUSLONGUEUR (a length) is invalid", "TBD");
@@ -621,9 +621,9 @@ void Diag(int n, string s, string kind) {
                 else
                     SynErr(74);
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(20); // T sc
-                Expect(20); // sc
+                Expect(20 /*;*/);
             }
         }
 
@@ -632,46 +632,46 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(56); // T "lantuser"
-                Expect(56); // "lantuser"
+                Expect(56 /*lantuser*/);
                 addAlt(21); // ALT
                 addAlt(11); // ALT
-                if (isKind(la, 21))
+                if (isKind(la, 21 /*(*/))
                 {
                     Get();
                     addAlt(16); // T tusnom
-                    Expect(16); // tusnom
+                    Expect(16 /*tusnom*/);
                     addAlt(25); // T comma
-                    Expect(25); // comma
+                    Expect(25 /*,*/);
                     addAlt(46); // ALT
                     addAlt(57); // ALT
-                    if (isKind(la, 46))
+                    if (isKind(la, 46 /*lancode*/))
                     {
                         LANTUSER_LANCODE‿NT();
                     }
-                    else if (isKind(la, 57))
+                    else if (isKind(la, 57 /*tuslibelle*/))
                     {
                         LANTUSER_TUSLIBELLE‿NT();
                     } // end if
                     else
                         SynErr(75);
                 }
-                else if (isKind(la, 11))
+                else if (isKind(la, 11 /*values*/))
                 {
                     Get();
                     addAlt(21); // T openparen
-                    Expect(21); // openparen
+                    Expect(21 /*(*/);
                     String‿NT();
                     Diag(13, "INSERT INTO LANTUSER without column list: " + t.val, "WARN");
                     addAlt(25); // T comma
-                    Expect(25); // comma
+                    Expect(25 /*,*/);
                     String‿NT();
                     addAlt(25); // T comma
-                    Expect(25); // comma
+                    Expect(25 /*,*/);
                     String‿NT();
                     addAlt(22); // T closeparen
-                    Expect(22); // closeparen
+                    Expect(22 /*)*/);
                     addAlt(20); // T sc
-                    Expect(20); // sc
+                    Expect(20 /*;*/);
                 } // end if
                 else
                     SynErr(76);
@@ -684,59 +684,59 @@ void Diag(int n, string s, string kind) {
             {
                 bool isOrfi = false;
                 addAlt(15); // T tusparam
-                Expect(15); // tusparam
+                Expect(15 /*tusparam*/);
                 addAlt(21); // ALT
                 addAlt(11); // ALT
-                if (isKind(la, 21))
+                if (isKind(la, 21 /*(*/))
                 {
                     Get();
                     addAlt(16); // T tusnom
-                    Expect(16); // tusnom
+                    Expect(16 /*tusnom*/);
                     addAlt(25); // T comma
-                    Expect(25); // comma
+                    Expect(25 /*,*/);
                     addAlt(17); // T tupcode
-                    Expect(17); // tupcode
+                    Expect(17 /*tupcode*/);
                     addAlt(25); // OPT
-                    if (isKind(la, 25))
+                    if (isKind(la, 25 /*,*/))
                     {
                         Get();
                         addAlt(18); // T tupflagorfi
-                        Expect(18); // tupflagorfi
+                        Expect(18 /*tupflagorfi*/);
                     }
                     addAlt(22); // T closeparen
-                    Expect(22); // closeparen
+                    Expect(22 /*)*/);
                 }
-                else if (isKind(la, 11))
+                else if (isKind(la, 11 /*values*/))
                 {
                     Diag(14, "INSERT INTO TUSPARAM without column list", "WARN");
                 } // end if
                 else
                     SynErr(77);
                 addAlt(11); // T values
-                Expect(11); // values
+                Expect(11 /*values*/);
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 String‿NT();
                 addAlt(25); // OPT
-                if (isKind(la, 25))
+                if (isKind(la, 25 /*,*/))
                 {
                     Get();
                     addAlt(1); // ALT
                     addAlt(13); // ALT
                     addAlt(28); // ALT
-                    if (isKind(la, 1))
+                    if (isKind(la, 1 /*[number]*/))
                     {
                         Get();
                         isOrfi = true;
                     }
-                    else if (isKind(la, 13))
+                    else if (isKind(la, 13 /*null*/))
                     {
                         Get();
                     }
-                    else if (isKind(la, 28))
+                    else if (isKind(la, 28 /*[string]*/))
                     {
                         Get();
                         Diag(15, "TUPFLAGORFI (a number) is assigned the string " + t.val, "CRIT");
@@ -745,9 +745,9 @@ void Diag(int n, string s, string kind) {
                         SynErr(78);
                 }
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(20); // T sc
-                Expect(20); // sc
+                Expect(20 /*;*/);
                 if (isOrfi)
                 Diag(21, "Suspicious INSERT to table TUSPARAM in externaltables with ORFI set", "WARN");
                 else
@@ -760,70 +760,70 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(14); // T lantusparam
-                Expect(14); // lantusparam
+                Expect(14 /*lantusparam*/);
                 addAlt(21); // ALT
                 addAlt(11); // ALT
-                if (isKind(la, 21))
+                if (isKind(la, 21 /*(*/))
                 {
                     Get();
                     addAlt(16); // T tusnom
-                    Expect(16); // tusnom
+                    Expect(16 /*tusnom*/);
                     addAlt(25); // T comma
-                    Expect(25); // comma
+                    Expect(25 /*,*/);
                     addAlt(17); // T tupcode
-                    Expect(17); // tupcode
+                    Expect(17 /*tupcode*/);
                     addAlt(25); // T comma
-                    Expect(25); // comma
+                    Expect(25 /*,*/);
                     addAlt(46); // ALT
                     addAlt(19); // ALT
-                    if (isKind(la, 46))
+                    if (isKind(la, 46 /*lancode*/))
                     {
                         LANTUSPARAM_LANCODE‿NT();
                     }
-                    else if (isKind(la, 19))
+                    else if (isKind(la, 19 /*tuplibelle*/))
                     {
                         LANTUSPARAM_TUPLIBELLE‿NT();
                     } // end if
                     else
                         SynErr(79);
                 }
-                else if (isKind(la, 11))
+                else if (isKind(la, 11 /*values*/))
                 {
                     Get();
                     addAlt(21); // T openparen
-                    Expect(21); // openparen
+                    Expect(21 /*(*/);
                     String‿NT();
                     Diag(16, "INSERT INTO LANTUSPARAM without column list: " + t.val, "WARN");
                     addAlt(25); // T comma
-                    Expect(25); // comma
+                    Expect(25 /*,*/);
                     String‿NT();
                     addAlt(25); // T comma
-                    Expect(25); // comma
+                    Expect(25 /*,*/);
                     if (!languages.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "string", la.val, languages.name), la);
                     addAlt(28); // T string
                     addAlt(28, languages); // T string string uses symbol table 'languages'
-                    Expect(28); // string
+                    Expect(28 /*[string]*/);
                     addAlt(25); // T comma
-                    Expect(25); // comma
+                    Expect(25 /*,*/);
                     String‿NT();
                     addAlt(25); // T comma
-                    Expect(25); // comma
+                    Expect(25 /*,*/);
                     addAlt(new int[] {28, 61, 62}); // ALT
                     addAlt(13); // ALT
-                    if (isKind(la, 28) || isKind(la, 61) || isKind(la, 62))
+                    if (isKind(la, 28 /*[string]*/) || isKind(la, 61 /*chr*/) || isKind(la, 62 /*sqlerrm*/))
                     {
                         String‿NT();
                     }
-                    else if (isKind(la, 13))
+                    else if (isKind(la, 13 /*null*/))
                     {
                         Get();
                     } // end if
                     else
                         SynErr(80);
                     addAlt(22); // T closeparen
-                    Expect(22); // closeparen
+                    Expect(22 /*)*/);
                     addAlt(20); // T sc
-                    Expect(20); // sc
+                    Expect(20 /*;*/);
                 } // end if
                 else
                     SynErr(81);
@@ -835,30 +835,30 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(42); // T "ttrparam"
-                Expect(42); // "ttrparam"
+                Expect(42 /*ttrparam*/);
                 Diag(4, "Forbidden insert into TTRPARAM in externaltables", "CRIT");
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 addAlt(43); // T "ttrnom"
-                Expect(43); // "ttrnom"
+                Expect(43 /*ttrnom*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(44); // T "ttpcode"
-                Expect(44); // "ttpcode"
+                Expect(44 /*ttpcode*/);
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(11); // T values
-                Expect(11); // values
+                Expect(11 /*values*/);
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 String‿NT();
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(20); // T sc
-                Expect(20); // sc
+                Expect(20 /*;*/);
             }
         }
 
@@ -867,25 +867,25 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(45); // T "lanttrparam"
-                Expect(45); // "lanttrparam"
+                Expect(45 /*lanttrparam*/);
                 Diag(5, "Forbidden insert into LANTTRPARAM in externaltables", "CRIT");
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 addAlt(43); // T "ttrnom"
-                Expect(43); // "ttrnom"
+                Expect(43 /*ttrnom*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(44); // T "ttpcode"
-                Expect(44); // "ttpcode"
+                Expect(44 /*ttpcode*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(46); // ALT
                 addAlt(47); // ALT
-                if (isKind(la, 46))
+                if (isKind(la, 46 /*lancode*/))
                 {
                     LANTTRPARAM_LANCODE‿NT();
                 }
-                else if (isKind(la, 47))
+                else if (isKind(la, 47 /*ttplibelle*/))
                 {
                     LANTTRPARAM_TTPLIBELLE‿NT();
                 } // end if
@@ -893,16 +893,16 @@ void Diag(int n, string s, string kind) {
                     SynErr(82);
                 addAlt(25); // ALT
                 addAlt(22); // ALT
-                if (isKind(la, 25))
+                if (isKind(la, 25 /*,*/))
                 {
                     Get();
                     addAlt(new int[] {28, 61, 62}); // ALT
                     addAlt(13); // ALT
-                    if (isKind(la, 28) || isKind(la, 61) || isKind(la, 62))
+                    if (isKind(la, 28 /*[string]*/) || isKind(la, 61 /*chr*/) || isKind(la, 62 /*sqlerrm*/))
                     {
                         String‿NT();
                     }
-                    else if (isKind(la, 13))
+                    else if (isKind(la, 13 /*null*/))
                     {
                         Get();
                         Diag(6, "LANTTRPARAM without Helptext (null)", "WARN");
@@ -910,16 +910,16 @@ void Diag(int n, string s, string kind) {
                     else
                         SynErr(83);
                 }
-                else if (isKind(la, 22))
+                else if (isKind(la, 22 /*)*/))
                 {
                     Diag(7, "LANTTRPARAM without Helptext (column missing)", "WARN");
                 } // end if
                 else
                     SynErr(84);
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(20); // T sc
-                Expect(20); // sc
+                Expect(20 /*;*/);
             }
         }
 
@@ -928,31 +928,31 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(49); // T "ttraitement"
-                Expect(49); // "ttraitement"
+                Expect(49 /*ttraitement*/);
                 Diag(8, "Forbidden insert into TTRAITEMENT in externaltables", "CRIT");
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 addAlt(43); // T "ttrnom"
-                Expect(43); // "ttrnom"
+                Expect(43 /*ttrnom*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(50); // T "ttrflagpref"
-                Expect(50); // "ttrflagpref"
+                Expect(50 /*ttrflagpref*/);
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(11); // T values
-                Expect(11); // values
+                Expect(11 /*values*/);
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(1); // T number
-                Expect(1); // number
+                Expect(1 /*[number]*/);
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(20); // T sc
-                Expect(20); // sc
+                Expect(20 /*;*/);
             }
         }
 
@@ -961,28 +961,28 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(51); // T "lanttraitement"
-                Expect(51); // "lanttraitement"
+                Expect(51 /*lanttraitement*/);
                 Diag(9, "Forbidden insert into LANTTRAITEMENT in externaltables", "CRIT");
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 addAlt(43); // T "ttrnom"
-                Expect(43); // "ttrnom"
+                Expect(43 /*ttrnom*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(46); // ALT
                 addAlt(52); // ALT
-                if (isKind(la, 46))
+                if (isKind(la, 46 /*lancode*/))
                 {
                     LANTTRAITEMENT_LANCODE‿NT();
                 }
-                else if (isKind(la, 52))
+                else if (isKind(la, 52 /*ttrlibelle*/))
                 {
                     LANTTRAITEMENT_TTRLIBELLE‿NT();
                 } // end if
                 else
                     SynErr(85);
                 addAlt(20); // T sc
-                Expect(20); // sc
+                Expect(20 /*;*/);
             }
         }
 
@@ -991,36 +991,36 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(46); // T "lancode"
-                Expect(46); // "lancode"
+                Expect(46 /*lancode*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(47); // T "ttplibelle"
-                Expect(47); // "ttplibelle"
+                Expect(47 /*ttplibelle*/);
                 addAlt(25); // OPT
-                if (isKind(la, 25))
+                if (isKind(la, 25 /*,*/))
                 {
                     Get();
                     addAlt(48); // T "ttphelptext"
-                    Expect(48); // "ttphelptext"
+                    Expect(48 /*ttphelptext*/);
                 }
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(11); // T values
-                Expect(11); // values
+                Expect(11 /*values*/);
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 if (!languages.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "string", la.val, languages.name), la);
                 addAlt(28); // T string
                 addAlt(28, languages); // T string string uses symbol table 'languages'
-                Expect(28); // string
+                Expect(28 /*[string]*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 String‿NT();
             }
         }
@@ -1030,37 +1030,37 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(47); // T "ttplibelle"
-                Expect(47); // "ttplibelle"
+                Expect(47 /*ttplibelle*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(46); // T "lancode"
-                Expect(46); // "lancode"
+                Expect(46 /*lancode*/);
                 addAlt(25); // OPT
-                if (isKind(la, 25))
+                if (isKind(la, 25 /*,*/))
                 {
                     Get();
                     addAlt(48); // T "ttphelptext"
-                    Expect(48); // "ttphelptext"
+                    Expect(48 /*ttphelptext*/);
                 }
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(11); // T values
-                Expect(11); // values
+                Expect(11 /*values*/);
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 if (!languages.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "string", la.val, languages.name), la);
                 addAlt(28); // T string
                 addAlt(28, languages); // T string string uses symbol table 'languages'
-                Expect(28); // string
+                Expect(28 /*[string]*/);
             }
         }
 
@@ -1069,36 +1069,36 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(46); // T "lancode"
-                Expect(46); // "lancode"
+                Expect(46 /*lancode*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(52); // T "ttrlibelle"
-                Expect(52); // "ttrlibelle"
+                Expect(52 /*ttrlibelle*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(53); // T "ttrcontext"
-                Expect(53); // "ttrcontext"
+                Expect(53 /*ttrcontext*/);
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(11); // T values
-                Expect(11); // values
+                Expect(11 /*values*/);
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 if (!languages.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "string", la.val, languages.name), la);
                 addAlt(28); // T string
                 addAlt(28, languages); // T string string uses symbol table 'languages'
-                Expect(28); // string
+                Expect(28 /*[string]*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 String‿NT();
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
             }
         }
 
@@ -1107,36 +1107,36 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(52); // T "ttrlibelle"
-                Expect(52); // "ttrlibelle"
+                Expect(52 /*ttrlibelle*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(53); // T "ttrcontext"
-                Expect(53); // "ttrcontext"
+                Expect(53 /*ttrcontext*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(46); // T "lancode"
-                Expect(46); // "lancode"
+                Expect(46 /*lancode*/);
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(11); // T values
-                Expect(11); // values
+                Expect(11 /*values*/);
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 if (!languages.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "string", la.val, languages.name), la);
                 addAlt(28); // T string
                 addAlt(28, languages); // T string string uses symbol table 'languages'
-                Expect(28); // string
+                Expect(28 /*[string]*/);
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
             }
         }
 
@@ -1145,31 +1145,31 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(46); // T "lancode"
-                Expect(46); // "lancode"
+                Expect(46 /*lancode*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(57); // T "tuslibelle"
-                Expect(57); // "tuslibelle"
+                Expect(57 /*tuslibelle*/);
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(11); // T values
-                Expect(11); // values
+                Expect(11 /*values*/);
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 if (!languages.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "string", la.val, languages.name), la);
                 addAlt(28); // T string
                 addAlt(28, languages); // T string string uses symbol table 'languages'
-                Expect(28); // string
+                Expect(28 /*[string]*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 String‿NT();
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(20); // T sc
-                Expect(20); // sc
+                Expect(20 /*;*/);
             }
         }
 
@@ -1178,31 +1178,31 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(57); // T "tuslibelle"
-                Expect(57); // "tuslibelle"
+                Expect(57 /*tuslibelle*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(46); // T "lancode"
-                Expect(46); // "lancode"
+                Expect(46 /*lancode*/);
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(11); // T values
-                Expect(11); // values
+                Expect(11 /*values*/);
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 if (!languages.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "string", la.val, languages.name), la);
                 addAlt(28); // T string
                 addAlt(28, languages); // T string string uses symbol table 'languages'
-                Expect(28); // string
+                Expect(28 /*[string]*/);
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(20); // T sc
-                Expect(20); // sc
+                Expect(20 /*;*/);
             }
         }
 
@@ -1211,48 +1211,48 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(46); // T "lancode"
-                Expect(46); // "lancode"
+                Expect(46 /*lancode*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(19); // T tuplibelle
-                Expect(19); // tuplibelle
+                Expect(19 /*tuplibelle*/);
                 addAlt(25); // OPT
-                if (isKind(la, 25))
+                if (isKind(la, 25 /*,*/))
                 {
                     Get();
                     addAlt(58); // T "tuphelptext"
-                    Expect(58); // "tuphelptext"
+                    Expect(58 /*tuphelptext*/);
                 }
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(11); // T values
-                Expect(11); // values
+                Expect(11 /*values*/);
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 if (!languages.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "string", la.val, languages.name), la);
                 addAlt(28); // T string
                 addAlt(28, languages); // T string string uses symbol table 'languages'
-                Expect(28); // string
+                Expect(28 /*[string]*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 String‿NT();
                 addAlt(25); // OPT
-                if (isKind(la, 25))
+                if (isKind(la, 25 /*,*/))
                 {
                     Get();
                     addAlt(new int[] {28, 61, 62}); // ALT
                     addAlt(13); // ALT
-                    if (isKind(la, 28) || isKind(la, 61) || isKind(la, 62))
+                    if (isKind(la, 28 /*[string]*/) || isKind(la, 61 /*chr*/) || isKind(la, 62 /*sqlerrm*/))
                     {
                         String‿NT();
                     }
-                    else if (isKind(la, 13))
+                    else if (isKind(la, 13 /*null*/))
                     {
                         Get();
                     } // end if
@@ -1260,9 +1260,9 @@ void Diag(int n, string s, string kind) {
                         SynErr(86);
                 }
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(20); // T sc
-                Expect(20); // sc
+                Expect(20 /*;*/);
             }
         }
 
@@ -1271,34 +1271,34 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(19); // T tuplibelle
-                Expect(19); // tuplibelle
+                Expect(19 /*tuplibelle*/);
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 addAlt(46); // T "lancode"
-                Expect(46); // "lancode"
+                Expect(46 /*lancode*/);
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(11); // T values
-                Expect(11); // values
+                Expect(11 /*values*/);
                 addAlt(21); // T openparen
-                Expect(21); // openparen
+                Expect(21 /*(*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 String‿NT();
                 addAlt(25); // T comma
-                Expect(25); // comma
+                Expect(25 /*,*/);
                 if (!languages.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "string", la.val, languages.name), la);
                 addAlt(28); // T string
                 addAlt(28, languages); // T string string uses symbol table 'languages'
-                Expect(28); // string
+                Expect(28 /*[string]*/);
                 addAlt(22); // T closeparen
-                Expect(22); // closeparen
+                Expect(22 /*)*/);
                 addAlt(20); // T sc
-                Expect(20); // sc
+                Expect(20 /*;*/);
             }
         }
 
@@ -1308,7 +1308,7 @@ void Diag(int n, string s, string kind) {
             {
                 StringFactor‿NT();
                 addAlt(27); // ITER start
-                while (isKind(la, 27))
+                while (isKind(la, 27 /*||*/))
                 {
                     Get();
                     StringFactor‿NT();
@@ -1324,7 +1324,7 @@ void Diag(int n, string s, string kind) {
                 addAlt(28); // ALT
                 addAlt(61); // ALT
                 addAlt(62); // ALT
-                if (isKind(la, 28))
+                if (isKind(la, 28 /*[string]*/))
                 {
                     Get();
                     if (t.val.Contains("\n"))
@@ -1332,19 +1332,19 @@ void Diag(int n, string s, string kind) {
                     if (t.val.Contains("Ã"))
                     Diag(23, "Suspicious UTF-8/ANSI char in string literal: " + t.val, "WARN");
                 }
-                else if (isKind(la, 61))
+                else if (isKind(la, 61 /*chr*/))
                 {
                     Get();
                     addAlt(21); // T openparen
-                    Expect(21); // openparen
+                    Expect(21 /*(*/);
                     if (!chrarguments.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "number", la.val, chrarguments.name), la);
                     addAlt(1); // T number
                     addAlt(1, chrarguments); // T number number uses symbol table 'chrarguments'
-                    Expect(1); // number
+                    Expect(1 /*[number]*/);
                     addAlt(22); // T closeparen
-                    Expect(22); // closeparen
+                    Expect(22 /*)*/);
                 }
-                else if (isKind(la, 62))
+                else if (isKind(la, 62 /*sqlerrm*/))
                 {
                     Get();
                 } // end if
@@ -1459,6 +1459,14 @@ void Diag(int n, string s, string kind) {
         };
         public override string NameOfTokenKind(int tokenKind) => varTName[tokenKind];
 
+		// states that a particular production (1st index) can start with a particular token (2nd index). Needed by addAlt().
+		static readonly bool[,] set0 = {
+            {_T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x},
+            {_x,_x,_x,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x},
+            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x},
+            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_x,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x},
+            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x}
+		};
 
         // as set0 but with token inheritance taken into account
         static readonly bool[,] set = {

@@ -83,11 +83,11 @@ const int // types
                 op = Op.ADD;
                 addAlt(4); // ALT
                 addAlt(5); // ALT
-                if (isKind(la, 4))
+                if (isKind(la, 4 /*+*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 5))
+                else if (isKind(la, 5 /*-*/))
                 {
                     Get();
                     op = Op.SUB;
@@ -104,7 +104,7 @@ const int // types
                 int type1; Op op;
                 SimExpr‿NT(out type);
                 addAlt(new int[] {15, 16, 17}); // OPT
-                if (isKind(la, 15) || isKind(la, 16) || isKind(la, 17))
+                if (isKind(la, 15 /*==*/) || isKind(la, 16 /*<*/) || isKind(la, 17 /*>*/))
                 {
                     RelOp‿NT(out op);
                     SimExpr‿NT(out type1);
@@ -121,7 +121,7 @@ const int // types
                 int type1; Op op;
                 Term‿NT(out type);
                 addAlt(new int[] {4, 5}); // ITER start
-                while (isKind(la, 4) || isKind(la, 5))
+                while (isKind(la, 4 /*+*/) || isKind(la, 5 /*-*/))
                 {
                     AddOp‿NT(out op);
                     Term‿NT(out type1);
@@ -141,16 +141,16 @@ const int // types
                 addAlt(15); // ALT
                 addAlt(16); // ALT
                 addAlt(17); // ALT
-                if (isKind(la, 15))
+                if (isKind(la, 15 /*==*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 16))
+                else if (isKind(la, 16 /*<*/))
                 {
                     Get();
                     op = Op.LSS;
                 }
-                else if (isKind(la, 17))
+                else if (isKind(la, 17 /*>*/))
                 {
                     Get();
                     op = Op.GTR;
@@ -171,7 +171,7 @@ const int // types
                 addAlt(5); // ALT
                 addAlt(6); // ALT
                 addAlt(7); // ALT
-                if (isKind(la, 1))
+                if (isKind(la, 1 /*[ident]*/))
                 {
                     Ident‿NT(out name);
                     obj = tab.Find(name); type = obj.type;
@@ -180,13 +180,13 @@ const int // types
                     else gen.Emit(Op.LOAD, obj.adr);
                     } else SemErr(2, "variable expected");
                 }
-                else if (isKind(la, 2))
+                else if (isKind(la, 2 /*[number]*/))
                 {
                     Get();
                     n = Convert.ToInt32(t.val);
                     gen.Emit(Op.CONST, n); type = integer;
                 }
-                else if (isKind(la, 5))
+                else if (isKind(la, 5 /*-*/))
                 {
                     Get();
                     Factor‿NT(out type);
@@ -195,12 +195,12 @@ const int // types
                     }
                     gen.Emit(Op.NEG);
                 }
-                else if (isKind(la, 6))
+                else if (isKind(la, 6 /*true*/))
                 {
                     Get();
                     gen.Emit(Op.CONST, 1); type = boolean;
                 }
-                else if (isKind(la, 7))
+                else if (isKind(la, 7 /*false*/))
                 {
                     Get();
                     gen.Emit(Op.CONST, 0); type = boolean;
@@ -215,7 +215,7 @@ const int // types
         {
             {
                 addAlt(1); // T ident
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 name = t.val;
             }
         }
@@ -227,11 +227,11 @@ const int // types
                 op = Op.MUL;
                 addAlt(8); // ALT
                 addAlt(9); // ALT
-                if (isKind(la, 8))
+                if (isKind(la, 8 /*_*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 9))
+                else if (isKind(la, 9 /*/*/))
                 {
                     Get();
                     op = Op.DIV;
@@ -247,24 +247,24 @@ const int // types
             {
                 string name; Obj obj; int adr;
                 addAlt(10); // T "void"
-                Expect(10); // "void"
+                Expect(10 /*void*/);
                 Ident‿NT(out name);
                 obj = tab.NewObj(name, proc, undef); obj.adr = gen.pc;
                 if (name == "Main") gen.progStart = gen.pc;
                 tab.OpenScope();
                 addAlt(11); // T "("
-                Expect(11); // "("
+                Expect(11 /*(*/);
                 addAlt(12); // T ")"
-                Expect(12); // ")"
+                Expect(12 /*)*/);
                 addAlt(13); // T "{"
-                Expect(13); // "{"
+                Expect(13 /*{*/);
                 gen.Emit(Op.ENTER, 0); adr = gen.pc - 2;
                 addAlt(set0, 1); // ITER start
                 while (StartOf(1))
                 {
                     addAlt(new int[] {27, 28}); // ALT
                     addAlt(set0, 2); // ALT
-                    if (isKind(la, 27) || isKind(la, 28))
+                    if (isKind(la, 27 /*int*/) || isKind(la, 28 /*bool*/))
                     {
                         VarDecl‿NT();
                     }
@@ -275,7 +275,7 @@ const int // types
                     addAlt(set0, 1); // ITER end
                 }
                 addAlt(14); // T "}"
-                Expect(14); // "}"
+                Expect(14 /*}*/);
                 gen.Emit(Op.LEAVE); gen.Emit(Op.RET);
                 gen.Patch(adr, tab.topScope.nextAdr);
                 tab.CloseScope();
@@ -291,7 +291,7 @@ const int // types
                 Ident‿NT(out name);
                 tab.NewObj(name, var, type);
                 addAlt(29); // ITER start
-                while (isKind(la, 29))
+                while (isKind(la, 29 /*,*/))
                 {
                     Get();
                     Ident‿NT(out name);
@@ -299,7 +299,7 @@ const int // types
                     addAlt(29); // ITER end
                 }
                 addAlt(19); // T ";"
-                Expect(19); // ";"
+                Expect(19 /*;*/);
             }
         }
 
@@ -318,30 +318,30 @@ const int // types
                 addAlt(13); // ALT
                 switch (la.kind)
                 {
-                    case 1: // ident
+                    case 1: /*[ident]*/
                         { // scoping
                             Ident‿NT(out name);
                             obj = tab.Find(name);
                             addAlt(18); // ALT
                             addAlt(11); // ALT
-                            if (isKind(la, 18))
+                            if (isKind(la, 18 /*=*/))
                             {
                                 Get();
                                 if (obj.kind != var) SemErr(5, "cannot assign to procedure");
                                 Expr‿NT(out type);
                                 addAlt(19); // T ";"
-                                Expect(19); // ";"
+                                Expect(19 /*;*/);
                                 if (type != obj.type) SemErr(6, "incompatible types");
                                 if (obj.level == 0) gen.Emit(Op.STOG, obj.adr);
                                 else gen.Emit(Op.STO, obj.adr);
                             }
-                            else if (isKind(la, 11))
+                            else if (isKind(la, 11 /*(*/))
                             {
                                 Get();
                                 addAlt(12); // T ")"
-                                Expect(12); // ")"
+                                Expect(12 /*)*/);
                                 addAlt(19); // T ";"
-                                Expect(19); // ";"
+                                Expect(19 /*;*/);
                                 if (obj.kind != proc) SemErr(7, "object is not a procedure");
                                 gen.Emit(Op.CALL, obj.adr);
                             } // end if
@@ -349,27 +349,27 @@ const int // types
                                 SynErr(36);
                         }
                         break;
-                    case 20: // "rel"
+                    case 20: /*rel*/
                         { // scoping
                             Get();
                             RelOp‿NT(out var op);
                             addAlt(19); // T ";"
-                            Expect(19); // ";"
+                            Expect(19 /*;*/);
                         }
                         break;
-                    case 21: // "if"
+                    case 21: /*if*/
                         { // scoping
                             Get();
                             addAlt(11); // T "("
-                            Expect(11); // "("
+                            Expect(11 /*(*/);
                             Expr‿NT(out type);
                             addAlt(12); // T ")"
-                            Expect(12); // ")"
+                            Expect(12 /*)*/);
                             if (type != boolean) SemErr(8, "boolean type expected");
                             gen.Emit(Op.FJMP, 0); adr = gen.pc - 2;
                             Stat‿NT();
                             addAlt(22); // OPT
-                            if (isKind(la, 22))
+                            if (isKind(la, 22 /*else*/))
                             {
                                 Get();
                                 gen.Emit(Op.JMP, 0); adr2 = gen.pc - 2;
@@ -380,27 +380,27 @@ const int // types
                             gen.Patch(adr, gen.pc);
                         }
                         break;
-                    case 23: // "while"
+                    case 23: /*while*/
                         { // scoping
                             Get();
                             loopstart = gen.pc;
                             addAlt(11); // T "("
-                            Expect(11); // "("
+                            Expect(11 /*(*/);
                             Expr‿NT(out type);
                             addAlt(12); // T ")"
-                            Expect(12); // ")"
+                            Expect(12 /*)*/);
                             if (type != boolean) SemErr(9, "boolean type expected");
                             gen.Emit(Op.FJMP, 0); adr = gen.pc - 2;
                             Stat‿NT();
                             gen.Emit(Op.JMP, loopstart); gen.Patch(adr, gen.pc);
                         }
                         break;
-                    case 24: // "read"
+                    case 24: /*read*/
                         { // scoping
                             Get();
                             Ident‿NT(out name);
                             addAlt(19); // T ";"
-                            Expect(19); // ";"
+                            Expect(19 /*;*/);
                             obj = tab.Find(name);
                             if (obj.type != integer) SemErr(10, "integer type expected");
                             gen.Emit(Op.READ);
@@ -408,17 +408,17 @@ const int // types
                             else gen.Emit(Op.STO, obj.adr);
                         }
                         break;
-                    case 25: // "write"
+                    case 25: /*write*/
                         { // scoping
                             Get();
                             Expr‿NT(out type);
                             addAlt(19); // T ";"
-                            Expect(19); // ";"
+                            Expect(19 /*;*/);
                             if (type != integer) SemErr(11, "integer type expected");
                             gen.Emit(Op.WRITE);
                         }
                         break;
-                    case 13: // "{"
+                    case 13: /*{*/
                         { // scoping
                             Get();
                             addAlt(set0, 1); // ITER start
@@ -437,7 +437,7 @@ const int // types
                                 addAlt(set0, 1); // ITER end
                             }
                             addAlt(14); // T "}"
-                            Expect(14); // "}"
+                            Expect(14 /*}*/);
                         }
                         break;
                     default:
@@ -454,7 +454,7 @@ const int // types
                 int type1; Op op;
                 Factor‿NT(out type);
                 addAlt(new int[] {8, 9}); // ITER start
-                while (isKind(la, 8) || isKind(la, 9))
+                while (isKind(la, 8 /*_*/) || isKind(la, 9 /*/*/))
                 {
                     MulOp‿NT(out op);
                     Factor‿NT(out type1);
@@ -472,17 +472,17 @@ const int // types
             {
                 string name;
                 addAlt(26); // T "program"
-                Expect(26); // "program"
+                Expect(26 /*program*/);
                 Ident‿NT(out name);
                 tab.OpenScope();
                 addAlt(13); // T "{"
-                Expect(13); // "{"
+                Expect(13 /*{*/);
                 addAlt(new int[] {10, 27, 28}); // ITER start
-                while (isKind(la, 10) || isKind(la, 27) || isKind(la, 28))
+                while (isKind(la, 10 /*void*/) || isKind(la, 27 /*int*/) || isKind(la, 28 /*bool*/))
                 {
                     addAlt(new int[] {27, 28}); // ALT
                     addAlt(10); // ALT
-                    if (isKind(la, 27) || isKind(la, 28))
+                    if (isKind(la, 27 /*int*/) || isKind(la, 28 /*bool*/))
                     {
                         VarDecl‿NT();
                     }
@@ -493,7 +493,7 @@ const int // types
                     addAlt(new int[] {10, 27, 28}); // ITER end
                 }
                 addAlt(14); // T "}"
-                Expect(14); // "}"
+                Expect(14 /*}*/);
                 tab.CloseScope();
                 if (gen.progStart == -1) SemErr(12, "main function never defined");
             }
@@ -506,12 +506,12 @@ const int // types
                 type = undef;
                 addAlt(27); // ALT
                 addAlt(28); // ALT
-                if (isKind(la, 27))
+                if (isKind(la, 27 /*int*/))
                 {
                     Get();
                     type = integer;
                 }
-                else if (isKind(la, 28))
+                else if (isKind(la, 28 /*bool*/))
                 {
                     Get();
                     type = boolean;
@@ -576,6 +576,12 @@ const int // types
         };
         public override string NameOfTokenKind(int tokenKind) => varTName[tokenKind];
 
+		// states that a particular production (1st index) can start with a particular token (2nd index). Needed by addAlt().
+		static readonly bool[,] set0 = {
+            {_T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x},
+            {_x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_x,  _T,_T,_x,_T,  _T,_T,_x,_T,  _T,_x,_x,_x},
+            {_x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_x,  _T,_T,_x,_T,  _T,_T,_x,_x,  _x,_x,_x,_x}
+		};
 
         // as set0 but with token inheritance taken into account
         static readonly bool[,] set = {

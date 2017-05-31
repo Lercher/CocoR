@@ -110,7 +110,7 @@ public override void Prime(ref Token t) {
                 using(astbuilder.createMarker("namespace", null, false, false, false))
                 Namespace‿NT();
                 addAlt(23); // OPT
-                if (isKind(la, 23))
+                if (isKind(la, 23 /*readerwriterprefix*/))
                 {
                     using(astbuilder.createMarker("readerwriterprefix", null, false, false, false))
                     ReaderWriterPrefix‿NT();
@@ -124,17 +124,17 @@ public override void Prime(ref Token t) {
                     addAlt(62); // ALT
                     addAlt(70); // ALT
                     addAlt(69); // ALT
-                    if (isKind(la, 26))
+                    if (isKind(la, 26 /*class*/))
                     {
                         using(astbuilder.createMarker("class", null, true, false, false))
                         Class‿NT();
                     }
-                    else if (isKind(la, 62))
+                    else if (isKind(la, 62 /*subsystem*/))
                     {
                         using(astbuilder.createMarker("subsystem", null, true, false, false))
                         SubSystem‿NT();
                     }
-                    else if (isKind(la, 70))
+                    else if (isKind(la, 70 /*enum*/))
                     {
                         using(astbuilder.createMarker("enum", null, true, false, false))
                         Enum‿NT();
@@ -156,10 +156,10 @@ public override void Prime(ref Token t) {
             using(astbuilder.createBarrier(null))
             {
                 addAlt(13); // T version
-                Expect(13); // version
+                Expect(13 /*version*/);
                 addAlt(12); // T versionnumber
                 using(astbuilder.createMarker(null, null, false, true, false))
-                Expect(12); // versionnumber
+                Expect(12 /*[versionnumber]*/);
             }
         }
 
@@ -168,13 +168,13 @@ public override void Prime(ref Token t) {
         {
             using(astbuilder.createBarrier(null))
             {
-                while (!(isKind(la, 0) || isKind(la, 22)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 22 /*namespace*/)))
                 {
                     SynErr(74);
                     Get();
                 }
                 addAlt(22); // T "namespace"
-                Expect(22); // "namespace"
+                Expect(22 /*namespace*/);
                 DottedIdent‿NT();
             }
         }
@@ -184,16 +184,16 @@ public override void Prime(ref Token t) {
         {
             using(astbuilder.createBarrier(null))
             {
-                while (!(isKind(la, 0) || isKind(la, 23)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 23 /*readerwriterprefix*/)))
                 {
                     SynErr(75);
                     Get();
                 }
                 addAlt(23); // T "readerwriterprefix"
-                Expect(23); // "readerwriterprefix"
+                Expect(23 /*readerwriterprefix*/);
                 addAlt(1); // T ident
                 using(astbuilder.createMarker(null, null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
             }
         }
 
@@ -202,23 +202,23 @@ public override void Prime(ref Token t) {
         {
             using(astbuilder.createBarrier(null))
             {
-                while (!(isKind(la, 0) || isKind(la, 24)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 24 /*rootclass*/)))
                 {
                     SynErr(76);
                     Get();
                 }
                 addAlt(24); // T "rootclass"
                 using(astbuilder.createMarker("typ", null, false, true, false))
-                Expect(24); // "rootclass"
+                Expect(24 /*rootclass*/);
                 addAlt(25); // T "data"
                 using(astbuilder.createMarker("name", null, false, true, false))
-                Expect(25); // "data"
+                Expect(25 /*data*/);
                 using(astbuilder.createMarker("properties", null, true, false, false))
                 Properties‿NT();
                 addAlt(8); // T end
-                Expect(8); // end
+                Expect(8 /*end*/);
                 addAlt(26); // T "class"
-                Expect(26); // "class"
+                Expect(26 /*class*/);
             }
         }
 
@@ -227,33 +227,33 @@ public override void Prime(ref Token t) {
         {
             using(astbuilder.createBarrier(null))
             {
-                while (!(isKind(la, 0) || isKind(la, 26)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 26 /*class*/)))
                 {
                     SynErr(77);
                     Get();
                 }
                 addAlt(26); // T "class"
                 using(astbuilder.createMarker("typ", null, false, true, false))
-                Expect(26); // "class"
+                Expect(26 /*class*/);
                 if (!types.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, types.name), la);
                 alternatives.tdeclares = types;
                 addAlt(1); // T ident
                 using(astbuilder.createMarker("name", null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 addAlt(6); // OPT
-                if (isKind(la, 6))
+                if (isKind(la, 6 /*[braced]*/))
                 {
                     using(astbuilder.createMarker("title", null, false, false, false))
                     Title‿NT();
                 }
                 addAlt(28); // OPT
-                if (isKind(la, 28))
+                if (isKind(la, 28 /*inherits*/))
                 {
                     using(astbuilder.createMarker("inherits", null, false, false, false))
                     Inherits‿NT();
                 }
                 addAlt(27); // OPT
-                if (isKind(la, 27))
+                if (isKind(la, 27 /*via*/))
                 {
                     using(astbuilder.createMarker("via", null, false, false, false))
                     Via‿NT();
@@ -261,9 +261,9 @@ public override void Prime(ref Token t) {
                 using(astbuilder.createMarker("properties", null, true, false, false))
                 Properties‿NT();
                 addAlt(8); // T end
-                Expect(8); // end
+                Expect(8 /*end*/);
                 addAlt(26); // T "class"
-                Expect(26); // "class"
+                Expect(26 /*class*/);
             }
         }
 
@@ -272,64 +272,64 @@ public override void Prime(ref Token t) {
         {
             using(astbuilder.createBarrier(null))
             {
-                while (!(isKind(la, 0) || isKind(la, 62)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 62 /*subsystem*/)))
                 {
                     SynErr(78);
                     Get();
                 }
                 addAlt(62); // T "subsystem"
-                Expect(62); // "subsystem"
+                Expect(62 /*subsystem*/);
                 if (!types.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, types.name), la);
                 alternatives.tdeclares = types;
                 addAlt(1); // T ident
                 using(astbuilder.createMarker("name", null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 addAlt(63); // T "ssname"
-                Expect(63); // "ssname"
+                Expect(63 /*ssname*/);
                 addAlt(1); // T ident
                 using(astbuilder.createMarker("ssname", null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 addAlt(64); // T "ssconfig"
-                Expect(64); // "ssconfig"
+                Expect(64 /*ssconfig*/);
                 addAlt(1); // T ident
                 using(astbuilder.createMarker("ssconfig", null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 addAlt(65); // T "sstyp"
-                Expect(65); // "sstyp"
+                Expect(65 /*sstyp*/);
                 addAlt(1); // T ident
                 using(astbuilder.createMarker("sstyp", null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 addAlt(66); // T "sscommands"
-                Expect(66); // "sscommands"
+                Expect(66 /*sscommands*/);
                 using(astbuilder.createMarker("sscommands", null, true, false, false))
                 SSCommands‿NT();
                 addAlt(67); // OPT
-                if (isKind(la, 67))
+                if (isKind(la, 67 /*sskey*/))
                 {
                     Get();
                     addAlt(5); // T string
                     using(astbuilder.createMarker("sskey", null, false, true, true))
-                    Expect(5); // string
+                    Expect(5 /*[string]*/);
                 }
                 addAlt(68); // OPT
-                if (isKind(la, 68))
+                if (isKind(la, 68 /*ssclear*/))
                 {
                     Get();
                     addAlt(5); // T string
                     using(astbuilder.createMarker("ssclear", null, false, true, true))
-                    Expect(5); // string
+                    Expect(5 /*[string]*/);
                 }
                 addAlt(30); // ITER start
-                while (isKind(la, 30))
+                while (isKind(la, 30 /*infoproperty*/))
                 {
                     using(astbuilder.createMarker("properties", null, true, false, false))
                     InfoProperty‿NT();
                     addAlt(30); // ITER end
                 }
                 addAlt(8); // T end
-                Expect(8); // end
+                Expect(8 /*end*/);
                 addAlt(62); // T "subsystem"
-                Expect(62); // "subsystem"
+                Expect(62 /*subsystem*/);
             }
         }
 
@@ -338,23 +338,23 @@ public override void Prime(ref Token t) {
         {
             using(astbuilder.createBarrier(null))
             {
-                while (!(isKind(la, 0) || isKind(la, 70)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 70 /*enum*/)))
                 {
                     SynErr(79);
                     Get();
                 }
                 addAlt(70); // T "enum"
-                Expect(70); // "enum"
+                Expect(70 /*enum*/);
                 if (!enumtypes.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, enumtypes.name), la);
                 alternatives.tdeclares = enumtypes;
                 addAlt(1); // T ident
                 using(astbuilder.createMarker(null, null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 EnumValues‿NT();
                 addAlt(8); // T end
-                Expect(8); // end
+                Expect(8 /*end*/);
                 addAlt(70); // T "enum"
-                Expect(70); // "enum"
+                Expect(70 /*enum*/);
             }
         }
 
@@ -363,28 +363,28 @@ public override void Prime(ref Token t) {
         {
             using(astbuilder.createBarrier(null))
             {
-                while (!(isKind(la, 0) || isKind(la, 69)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 69 /*flags*/)))
                 {
                     SynErr(80);
                     Get();
                 }
                 addAlt(69); // T "flags"
-                Expect(69); // "flags"
+                Expect(69 /*flags*/);
                 if (!types.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, types.name), la);
                 alternatives.tdeclares = types;
                 addAlt(1); // T ident
                 using(astbuilder.createMarker(null, null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 addAlt(1); // ITER start
-                while (isKind(la, 1))
+                while (isKind(la, 1 /*[ident]*/))
                 {
                     EnumValue‿NT();
                     addAlt(1); // ITER end
                 }
                 addAlt(8); // T end
-                Expect(8); // end
+                Expect(8 /*end*/);
                 addAlt(69); // T "flags"
-                Expect(69); // "flags"
+                Expect(69 /*flags*/);
             }
         }
 
@@ -394,9 +394,9 @@ public override void Prime(ref Token t) {
             using(astbuilder.createBarrier(null))
             {
                 addAlt(8); // T end
-                Expect(8); // end
+                Expect(8 /*end*/);
                 addAlt(22); // T "namespace"
-                Expect(22); // "namespace"
+                Expect(22 /*namespace*/);
             }
         }
 
@@ -406,25 +406,25 @@ public override void Prime(ref Token t) {
             using(astbuilder.createBarrier("."))
             {
                 addAlt(2); // OPT
-                if (isKind(la, 2))
+                if (isKind(la, 2 /*[dottedident]*/))
                 {
                     using(astbuilder.createMarker(null, null, false, true, false))
                     Get();
                     addAlt(9); // T dot
-                    Expect(9); // dot
+                    Expect(9 /*.*/);
                     addAlt(2); // ITER start
-                    while (isKind(la, 2))
+                    while (isKind(la, 2 /*[dottedident]*/))
                     {
                         using(astbuilder.createMarker(null, null, false, true, false))
                         Get();
                         addAlt(9); // T dot
-                        Expect(9); // dot
+                        Expect(9 /*.*/);
                         addAlt(2); // ITER end
                     }
                 }
                 addAlt(1); // T ident
                 using(astbuilder.createMarker(null, null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
             }
         }
 
@@ -434,22 +434,22 @@ public override void Prime(ref Token t) {
             using(astbuilder.createBarrier(null))
             {
                 addAlt(2); // OPT
-                if (isKind(la, 2))
+                if (isKind(la, 2 /*[dottedident]*/))
                 {
                     Get();
                     addAlt(9); // T dot
-                    Expect(9); // dot
+                    Expect(9 /*.*/);
                     addAlt(2); // ITER start
-                    while (isKind(la, 2))
+                    while (isKind(la, 2 /*[dottedident]*/))
                     {
                         Get();
                         addAlt(9); // T dot
-                        Expect(9); // dot
+                        Expect(9 /*.*/);
                         addAlt(2); // ITER end
                     }
                 }
                 addAlt(1); // T ident
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
             }
         }
 
@@ -474,7 +474,7 @@ public override void Prime(ref Token t) {
             {
                 addAlt(6); // T braced
                 using(astbuilder.createMarker(null, null, false, true, false))
-                Expect(6); // braced
+                Expect(6 /*[braced]*/);
             }
         }
 
@@ -484,7 +484,7 @@ public override void Prime(ref Token t) {
             using(astbuilder.createBarrier(null))
             {
                 addAlt(28); // T "inherits"
-                Expect(28); // "inherits"
+                Expect(28 /*inherits*/);
                 DottedIdent‿NT();
             }
         }
@@ -495,7 +495,7 @@ public override void Prime(ref Token t) {
             using(astbuilder.createBarrier(null))
             {
                 addAlt(27); // T "via"
-                Expect(27); // "via"
+                Expect(27 /*via*/);
                 DottedIdent‿NT();
             }
         }
@@ -520,42 +520,42 @@ public override void Prime(ref Token t) {
                 addAlt(36); // ALT
                 switch (la.kind)
                 {
-                    case 29: // "property"
+                    case 29: /*property*/
                         { // scoping
                             Property‿NT();
                         }
                         break;
-                    case 30: // "infoproperty"
+                    case 30: /*infoproperty*/
                         { // scoping
                             InfoProperty‿NT();
                         }
                         break;
-                    case 31: // "approperty"
+                    case 31: /*approperty*/
                         { // scoping
                             APProperty‿NT();
                         }
                         break;
-                    case 32: // "list"
+                    case 32: /*list*/
                         { // scoping
                             List‿NT();
                         }
                         break;
-                    case 33: // "selectlist"
+                    case 33: /*selectlist*/
                         { // scoping
                             SelectList‿NT();
                         }
                         break;
-                    case 34: // "flagslist"
+                    case 34: /*flagslist*/
                         { // scoping
                             FlagsList‿NT();
                         }
                         break;
-                    case 35: // "longproperty"
+                    case 35: /*longproperty*/
                         { // scoping
                             LongProperty‿NT();
                         }
                         break;
-                    case 36: // "infolongproperty"
+                    case 36: /*infolongproperty*/
                         { // scoping
                             InfoLongProperty‿NT();
                         }
@@ -574,10 +574,10 @@ public override void Prime(ref Token t) {
             {
                 addAlt(29); // T "property"
                 using(astbuilder.createMarker("writeable", "t", false, true, false))
-                Expect(29); // "property"
+                Expect(29 /*property*/);
                 addAlt(1); // T ident
                 using(astbuilder.createMarker("name", null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 using(astbuilder.createMarker("type", null, false, false, false))
                 Type‿NT();
             }
@@ -590,10 +590,10 @@ public override void Prime(ref Token t) {
             {
                 addAlt(30); // T "infoproperty"
                 using(astbuilder.createMarker("writeable", "f", false, true, false))
-                Expect(30); // "infoproperty"
+                Expect(30 /*infoproperty*/);
                 addAlt(1); // T ident
                 using(astbuilder.createMarker("name", null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 using(astbuilder.createMarker("type", null, false, false, false))
                 Type‿NT();
             }
@@ -607,10 +607,10 @@ public override void Prime(ref Token t) {
                 addAlt(31); // T "approperty"
                 using(astbuilder.createMarker("writeable", "t", false, true, false))
                 using(astbuilder.createMarker("autopostback", "t", false, true, false))
-                Expect(31); // "approperty"
+                Expect(31 /*approperty*/);
                 addAlt(1); // T ident
                 using(astbuilder.createMarker("name", null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 using(astbuilder.createMarker("type", null, false, false, false))
                 Type‿NT();
             }
@@ -623,12 +623,12 @@ public override void Prime(ref Token t) {
             {
                 addAlt(32); // T "list"
                 using(astbuilder.createMarker("list", "t", false, true, false))
-                Expect(32); // "list"
+                Expect(32 /*list*/);
                 addAlt(1); // T ident
                 using(astbuilder.createMarker("name", null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 addAlt(41); // OPT
-                if (isKind(la, 41))
+                if (isKind(la, 41 /*as*/))
                 {
                     using(astbuilder.createMarker("type", null, false, false, false))
                     As‿NT();
@@ -644,10 +644,10 @@ public override void Prime(ref Token t) {
                 addAlt(33); // T "selectlist"
                 using(astbuilder.createMarker("list", "t", false, true, false))
                 using(astbuilder.createMarker("select", "t", false, true, false))
-                Expect(33); // "selectlist"
+                Expect(33 /*selectlist*/);
                 addAlt(1); // T ident
                 using(astbuilder.createMarker("name", null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 using(astbuilder.createMarker("type", null, false, false, false))
                 As‿NT();
             }
@@ -661,10 +661,10 @@ public override void Prime(ref Token t) {
                 addAlt(34); // T "flagslist"
                 using(astbuilder.createMarker("list", "t", false, true, false))
                 using(astbuilder.createMarker("flags", "t", false, true, false))
-                Expect(34); // "flagslist"
+                Expect(34 /*flagslist*/);
                 addAlt(1); // T ident
                 using(astbuilder.createMarker("name", null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 using(astbuilder.createMarker("type", null, false, false, false))
                 Mimics‿NT();
             }
@@ -678,10 +678,10 @@ public override void Prime(ref Token t) {
                 addAlt(35); // T "longproperty"
                 using(astbuilder.createMarker("writeable", "t", false, true, false))
                 using(astbuilder.createMarker("long", "t", false, true, false))
-                Expect(35); // "longproperty"
+                Expect(35 /*longproperty*/);
                 addAlt(1); // T ident
                 using(astbuilder.createMarker("name", null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
             }
         }
 
@@ -693,10 +693,10 @@ public override void Prime(ref Token t) {
                 addAlt(36); // T "infolongproperty"
                 using(astbuilder.createMarker("writeable", "f", false, true, false))
                 using(astbuilder.createMarker("long", "t", false, true, false))
-                Expect(36); // "infolongproperty"
+                Expect(36 /*infolongproperty*/);
                 addAlt(1); // T ident
                 using(astbuilder.createMarker("name", null, false, true, false))
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
             }
         }
 
@@ -713,25 +713,25 @@ public override void Prime(ref Token t) {
                     using(astbuilder.createMarker("basic", "String", false, true, false))
                     EmptyType‿NT();
                 }
-                else if (isKind(la, 41))
+                else if (isKind(la, 41 /*as*/))
                 {
                     As‿NT();
                 }
-                else if (isKind(la, 57))
+                else if (isKind(la, 57 /*mimics*/))
                 {
                     Mimics‿NT();
                 } // end if
                 else
                     SynErr(83);
                 addAlt(37); // OPT
-                if (isKind(la, 37))
+                if (isKind(la, 37 /*=*/))
                 {
                     Get();
                     using(astbuilder.createMarker("initvalue", null, false, false, false))
                     InitValue‿NT();
                 }
                 addAlt(6); // OPT
-                if (isKind(la, 6))
+                if (isKind(la, 6 /*[braced]*/))
                 {
                     using(astbuilder.createMarker("samplevalue", null, false, false, false))
                     SampleValue‿NT();
@@ -745,7 +745,7 @@ public override void Prime(ref Token t) {
             using(astbuilder.createBarrier(null))
             {
                 addAlt(41); // T "as"
-                Expect(41); // "as"
+                Expect(41 /*as*/);
                 addAlt(set0, 5); // ALT
                 addAlt(1); // ALT
                 addAlt(1, types); // ALT ident uses symbol table 'types'
@@ -754,13 +754,13 @@ public override void Prime(ref Token t) {
                 {
                     BaseType‿NT();
                 }
-                else if (isKind(la, 1))
+                else if (isKind(la, 1 /*[ident]*/))
                 {
                     if (!types.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "ident", la.val, types.name), la);
                     using(astbuilder.createMarker("basic", null, false, true, false))
                     Get();
                 }
-                else if (isKind(la, 1) || isKind(la, 2))
+                else if (isKind(la, 1 /*[ident]*/) || isKind(la, 2 /*[dottedident]*/))
                 {
                     using(astbuilder.createMarker("basic", null, false, false, false))
                     DottedIdent‿NT();
@@ -777,7 +777,7 @@ public override void Prime(ref Token t) {
             {
                 addAlt(57); // T "mimics"
                 using(astbuilder.createMarker("basic", "String", false, true, false))
-                Expect(57); // "mimics"
+                Expect(57 /*mimics*/);
                 addAlt(set0, 6); // ALT
                 addAlt(1); // ALT
                 addAlt(1, enumtypes); // ALT ident uses symbol table 'enumtypes'
@@ -786,7 +786,7 @@ public override void Prime(ref Token t) {
                     using(astbuilder.createMarker("mimicsspec", null, false, false, false))
                     MimicsSpec‿NT();
                 }
-                else if (isKind(la, 1))
+                else if (isKind(la, 1 /*[ident]*/))
                 {
                     if (!enumtypes.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "ident", la.val, enumtypes.name), la);
                     using(astbuilder.createMarker("mimicsspec", null, false, true, false))
@@ -820,32 +820,32 @@ public override void Prime(ref Token t) {
                 addAlt(new int[] {1, 2}); // ALT
                 switch (la.kind)
                 {
-                    case 3: // number
+                    case 3: /*[number]*/
                         { // scoping
                             Get();
                         }
                         break;
-                    case 4: // int
+                    case 4: /*[int]*/
                         { // scoping
                             Get();
                         }
                         break;
-                    case 5: // string
+                    case 5: /*[string]*/
                         { // scoping
                             Get();
                         }
                         break;
-                    case 38: // "true"
+                    case 38: /*true*/
                         { // scoping
                             Get();
                         }
                         break;
-                    case 39: // "false"
+                    case 39: /*false*/
                         { // scoping
                             Get();
                         }
                         break;
-                    case 40: // "#"
+                    case 40: /*#*/
                         { // scoping
                             Get();
                             addAlt(set0, 7); // ITER start
@@ -855,20 +855,20 @@ public override void Prime(ref Token t) {
                                 addAlt(set0, 7); // ITER end
                             }
                             addAlt(40); // T "#"
-                            Expect(40); // "#"
+                            Expect(40 /*#*/);
                         }
                         break;
-                    case 1: // ident
-                    case 2: // dottedident
-                    case 13: // version
-                    case 14: // search
-                    case 15: // select
-                    case 16: // details
-                    case 17: // edit
-                    case 18: // clear
-                    case 19: // keys
-                    case 20: // displayname
-                    case 21: // vbident
+                    case 1: /*[ident]*/
+                    case 2: /*[dottedident]*/
+                    case 13: /*version*/
+                    case 14: /*search*/
+                    case 15: /*select*/
+                    case 16: /*details*/
+                    case 17: /*edit*/
+                    case 18: /*clear*/
+                    case 19: /*keys*/
+                    case 20: /*displayname*/
+                    case 21: /*[vbident]*/
                         { // scoping
                             FunctionCall‿NT();
                         }
@@ -887,7 +887,7 @@ public override void Prime(ref Token t) {
             {
                 addAlt(6); // T braced
                 using(astbuilder.createMarker(null, null, false, true, true))
-                Expect(6); // braced
+                Expect(6 /*[braced]*/);
             }
         }
 
@@ -898,7 +898,7 @@ public override void Prime(ref Token t) {
             {
                 DottedIdentBare‿NT();
                 addAlt(7); // T bracketed
-                Expect(7); // bracketed
+                Expect(7 /*[bracketed]*/);
             }
         }
 
@@ -924,101 +924,101 @@ public override void Prime(ref Token t) {
                 addAlt(56); // ALT
                 switch (la.kind)
                 {
-                    case 42: // "double"
+                    case 42: /*double*/
                         { // scoping
                             using(astbuilder.createMarker("basic", null, false, true, false))
                             using(astbuilder.createMarker("format", "c", false, true, false))
                             Get();
                         }
                         break;
-                    case 43: // "date"
+                    case 43: /*date*/
                         { // scoping
                             using(astbuilder.createMarker("basic", null, false, true, false))
                             using(astbuilder.createMarker("format", "d", false, true, false))
                             Get();
                         }
                         break;
-                    case 44: // "datetime"
+                    case 44: /*datetime*/
                         { // scoping
                             using(astbuilder.createMarker("basic", null, false, true, false))
                             using(astbuilder.createMarker("format", "{0:d} {0:t}", false, true, false))
                             Get();
                         }
                         break;
-                    case 45: // "integer"
+                    case 45: /*integer*/
                         { // scoping
                             using(astbuilder.createMarker("basic", null, false, true, false))
                             using(astbuilder.createMarker("format", "n0", false, true, false))
                             Get();
                         }
                         break;
-                    case 46: // "percent"
+                    case 46: /*percent*/
                         { // scoping
                             using(astbuilder.createMarker("basic", "double", false, true, false))
                             using(astbuilder.createMarker("format", "p", false, true, false))
                             Get();
                         }
                         break;
-                    case 47: // "percentwithdefault"
+                    case 47: /*percentwithdefault*/
                         { // scoping
                             using(astbuilder.createMarker("basic", null, false, true, false))
                             using(astbuilder.createMarker("format", "p", false, true, false))
                             Get();
                         }
                         break;
-                    case 48: // "doublewithdefault"
+                    case 48: /*doublewithdefault*/
                         { // scoping
                             using(astbuilder.createMarker("basic", null, false, true, false))
                             using(astbuilder.createMarker("format", "c", false, true, false))
                             Get();
                         }
                         break;
-                    case 49: // "integerwithdefault"
+                    case 49: /*integerwithdefault*/
                         { // scoping
                             using(astbuilder.createMarker("basic", null, false, true, false))
                             using(astbuilder.createMarker("format", "n0", false, true, false))
                             Get();
                         }
                         break;
-                    case 50: // "n2"
+                    case 50: /*n2*/
                         { // scoping
                             using(astbuilder.createMarker("basic", "double", false, true, false))
                             using(astbuilder.createMarker("format", "n2", false, true, false))
                             Get();
                         }
                         break;
-                    case 51: // "n0"
+                    case 51: /*n0*/
                         { // scoping
                             using(astbuilder.createMarker("basic", "integer", false, true, false))
                             using(astbuilder.createMarker("format", "n0", false, true, false))
                             Get();
                         }
                         break;
-                    case 52: // "string"
+                    case 52: /*string*/
                         { // scoping
                             using(astbuilder.createMarker("basic", null, false, true, false))
                             Get();
                         }
                         break;
-                    case 53: // "boolean"
+                    case 53: /*boolean*/
                         { // scoping
                             using(astbuilder.createMarker("basic", null, false, true, false))
                             Get();
                         }
                         break;
-                    case 54: // "guid"
+                    case 54: /*guid*/
                         { // scoping
                             using(astbuilder.createMarker("basic", null, false, true, false))
                             Get();
                         }
                         break;
-                    case 55: // "string()"
+                    case 55: /*string()*/
                         { // scoping
                             using(astbuilder.createMarker("basic", null, false, true, false))
                             Get();
                         }
                         break;
-                    case 56: // "xml"
+                    case 56: /*xml*/
                         { // scoping
                             using(astbuilder.createMarker("basic", null, false, true, false))
                             Get();
@@ -1040,19 +1040,19 @@ public override void Prime(ref Token t) {
                 addAlt(59); // ALT
                 addAlt(60); // ALT
                 addAlt(61); // ALT
-                if (isKind(la, 58))
+                if (isKind(la, 58 /*query*/))
                 {
                     Query‿NT();
                 }
-                else if (isKind(la, 59))
+                else if (isKind(la, 59 /*txt*/))
                 {
                     Txt‿NT();
                 }
-                else if (isKind(la, 60))
+                else if (isKind(la, 60 /*xl*/))
                 {
                     XL‿NT();
                 }
-                else if (isKind(la, 61))
+                else if (isKind(la, 61 /*ref*/))
                 {
                     Ref‿NT();
                 } // end if
@@ -1067,17 +1067,17 @@ public override void Prime(ref Token t) {
             using(astbuilder.createBarrier(null))
             {
                 addAlt(58); // T "query"
-                Expect(58); // "query"
+                Expect(58 /*query*/);
                 addAlt(11); // T colon
-                Expect(11); // colon
+                Expect(11 /*:*/);
                 addAlt(2); // T dottedident
-                Expect(2); // dottedident
+                Expect(2 /*[dottedident]*/);
                 addAlt(9); // T dot
-                Expect(9); // dot
+                Expect(9 /*.*/);
                 addAlt(1); // T ident
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 addAlt(11); // T colon
-                Expect(11); // colon
+                Expect(11 /*:*/);
                 StringOrIdent‿NT();
             }
         }
@@ -1088,17 +1088,17 @@ public override void Prime(ref Token t) {
             using(astbuilder.createBarrier(null))
             {
                 addAlt(59); // T "txt"
-                Expect(59); // "txt"
+                Expect(59 /*txt*/);
                 addAlt(11); // T colon
-                Expect(11); // colon
+                Expect(11 /*:*/);
                 addAlt(2); // T dottedident
-                Expect(2); // dottedident
+                Expect(2 /*[dottedident]*/);
                 addAlt(9); // T dot
-                Expect(9); // dot
+                Expect(9 /*.*/);
                 addAlt(1); // T ident
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 addAlt(11); // T colon
-                Expect(11); // colon
+                Expect(11 /*:*/);
                 StringOrIdent‿NT();
             }
         }
@@ -1109,17 +1109,17 @@ public override void Prime(ref Token t) {
             using(astbuilder.createBarrier(null))
             {
                 addAlt(60); // T "xl"
-                Expect(60); // "xl"
+                Expect(60 /*xl*/);
                 addAlt(11); // T colon
-                Expect(11); // colon
+                Expect(11 /*:*/);
                 addAlt(2); // T dottedident
-                Expect(2); // dottedident
+                Expect(2 /*[dottedident]*/);
                 addAlt(9); // T dot
-                Expect(9); // dot
+                Expect(9 /*.*/);
                 addAlt(1); // T ident
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 addAlt(11); // T colon
-                Expect(11); // colon
+                Expect(11 /*:*/);
                 StringOrIdent‿NT();
             }
         }
@@ -1130,23 +1130,23 @@ public override void Prime(ref Token t) {
             using(astbuilder.createBarrier(null))
             {
                 addAlt(61); // T "ref"
-                Expect(61); // "ref"
+                Expect(61 /*ref*/);
                 addAlt(11); // T colon
-                Expect(11); // colon
+                Expect(11 /*:*/);
                 addAlt(19); // ALT
                 addAlt(20); // ALT
-                if (isKind(la, 19))
+                if (isKind(la, 19 /*keys*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 20))
+                else if (isKind(la, 20 /*displayname*/))
                 {
                     Get();
                 } // end if
                 else
                     SynErr(89);
                 addAlt(11); // T colon
-                Expect(11); // colon
+                Expect(11 /*:*/);
                 StringOrIdent‿NT();
             }
         }
@@ -1158,11 +1158,11 @@ public override void Prime(ref Token t) {
             {
                 addAlt(5); // ALT
                 addAlt(new int[] {1, 2}); // ALT
-                if (isKind(la, 5))
+                if (isKind(la, 5 /*[string]*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 1) || isKind(la, 2))
+                else if (isKind(la, 1 /*[ident]*/) || isKind(la, 2 /*[dottedident]*/))
                 {
                     DottedIdentBare‿NT();
                 } // end if
@@ -1179,7 +1179,7 @@ public override void Prime(ref Token t) {
                 using(astbuilder.createMarker(null, null, true, true, false))
                 SSCommand‿NT();
                 addAlt(10); // ITER start
-                while (isKind(la, 10))
+                while (isKind(la, 10 /*|*/))
                 {
                     Get();
                     using(astbuilder.createMarker(null, null, true, true, false))
@@ -1199,23 +1199,23 @@ public override void Prime(ref Token t) {
                 addAlt(16); // ALT
                 addAlt(17); // ALT
                 addAlt(18); // ALT
-                if (isKind(la, 14))
+                if (isKind(la, 14 /*search*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 15))
+                else if (isKind(la, 15 /*select*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 16))
+                else if (isKind(la, 16 /*details*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 17))
+                else if (isKind(la, 17 /*edit*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 18))
+                else if (isKind(la, 18 /*clear*/))
                 {
                     Get();
                 } // end if
@@ -1230,9 +1230,9 @@ public override void Prime(ref Token t) {
             using(astbuilder.createBarrier(null))
             {
                 addAlt(1); // T ident
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 addAlt(37); // OPT
-                if (isKind(la, 37))
+                if (isKind(la, 37 /*=*/))
                 {
                     EnumIntValue‿NT();
                 }
@@ -1245,16 +1245,16 @@ public override void Prime(ref Token t) {
             using(astbuilder.createBarrier(null))
             {
                 addAlt(1); // ITER start
-                while (isKind(la, 1))
+                while (isKind(la, 1 /*[ident]*/))
                 {
                     EnumValue‿NT();
                     addAlt(1); // ITER end
                 }
                 addAlt(71); // T "default"
-                Expect(71); // "default"
+                Expect(71 /*default*/);
                 EnumValue‿NT();
                 addAlt(1); // ITER start
-                while (isKind(la, 1))
+                while (isKind(la, 1 /*[ident]*/))
                 {
                     EnumValue‿NT();
                     addAlt(1); // ITER end
@@ -1268,9 +1268,9 @@ public override void Prime(ref Token t) {
             using(astbuilder.createBarrier(null))
             {
                 addAlt(37); // T "="
-                Expect(37); // "="
+                Expect(37 /*=*/);
                 addAlt(4); // T int
-                Expect(4); // int
+                Expect(4 /*[int]*/);
             }
         }
 
@@ -1375,6 +1375,17 @@ public override void Prime(ref Token t) {
         };
         public override string NameOfTokenKind(int tokenKind) => varTName[tokenKind];
 
+		// states that a particular production (1st index) can start with a particular token (2nd index). Needed by addAlt().
+		static readonly bool[,] set0 = {
+            {_T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_T,  _T,_x,_T,_x,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _x,_x,_x,_x,  _x,_T,_T,_x,  _x,_x},
+            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _x,_x,_x,_x,  _x,_T,_T,_x,  _x,_x},
+            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x},
+            {_T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x},
+            {_x,_x,_x,_x,  _x,_x,_T,_x,  _T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x},
+            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x},
+            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_T,  _T,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x},
+            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x}
+		};
 
         // as set0 but with token inheritance taken into account
         static readonly bool[,] set = {

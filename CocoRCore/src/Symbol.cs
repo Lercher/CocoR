@@ -46,6 +46,16 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             definedAs = name; // mutates sometimes
         }
 
+        public string CSharpCommentName
+        {
+            get
+            {
+                var s = VariantName;
+                if (s.Contains("*")) s = s.Replace('*', '_');
+                return $"/*{s}*/";
+            }
+        }
+
         public string VariantName
         {
             get

@@ -93,9 +93,9 @@ namespace CocoRCore.Samples.Coco
                     }
                 }
                 addAlt(7); // T "COMPILER"
-                Expect(7); // "COMPILER"
+                Expect(7 /*COMPILER*/);
                 addAlt(1); // T ident
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 addAlt(set0, 2); // ITER start
                 while (StartOf(2))
                 {
@@ -103,132 +103,132 @@ namespace CocoRCore.Samples.Coco
                     addAlt(set0, 2); // ITER end
                 }
                 addAlt(8); // OPT
-                if (isKind(la, 8))
+                if (isKind(la, 8 /*IGNORECASE*/))
                 {
                     Get();
                 }
                 addAlt(9); // OPT
-                if (isKind(la, 9))
+                if (isKind(la, 9 /*CHARACTERS*/))
                 {
                     Get();
                     addAlt(1); // ITER start
-                    while (isKind(la, 1))
+                    while (isKind(la, 1 /*[ident]*/))
                     {
                         SetDecl‿NT();
                         addAlt(1); // ITER end
                     }
                 }
                 addAlt(10); // OPT
-                if (isKind(la, 10))
+                if (isKind(la, 10 /*TOKENS*/))
                 {
                     Get();
                     addAlt(new int[] {1, 3, 5}); // ITER start
-                    while (isKind(la, 1) || isKind(la, 3) || isKind(la, 5))
+                    while (isKind(la, 1 /*[ident]*/) || isKind(la, 3 /*[string]*/) || isKind(la, 5 /*[char]*/))
                     {
                         TokenDecl‿NT();
                         addAlt(new int[] {1, 3, 5}); // ITER end
                     }
                 }
                 addAlt(11); // OPT
-                if (isKind(la, 11))
+                if (isKind(la, 11 /*PRAGMAS*/))
                 {
                     Get();
                     addAlt(new int[] {1, 3, 5}); // ITER start
-                    while (isKind(la, 1) || isKind(la, 3) || isKind(la, 5))
+                    while (isKind(la, 1 /*[ident]*/) || isKind(la, 3 /*[string]*/) || isKind(la, 5 /*[char]*/))
                     {
                         TokenDecl‿NT();
                         addAlt(new int[] {1, 3, 5}); // ITER end
                     }
                 }
                 addAlt(12); // ITER start
-                while (isKind(la, 12))
+                while (isKind(la, 12 /*COMMENTS*/))
                 {
                     Get();
                     addAlt(13); // T "FROM"
-                    Expect(13); // "FROM"
+                    Expect(13 /*FROM*/);
                     TokenExpr‿NT();
                     addAlt(14); // T "TO"
-                    Expect(14); // "TO"
+                    Expect(14 /*TO*/);
                     TokenExpr‿NT();
                     addAlt(15); // OPT
-                    if (isKind(la, 15))
+                    if (isKind(la, 15 /*NESTED*/))
                     {
                         Get();
                     }
                     addAlt(12); // ITER end
                 }
                 addAlt(16); // ITER start
-                while (isKind(la, 16))
+                while (isKind(la, 16 /*IGNORE*/))
                 {
                     Get();
                     Set‿NT();
                     addAlt(16); // ITER end
                 }
                 addAlt(17); // OPT
-                if (isKind(la, 17))
+                if (isKind(la, 17 /*SYMBOLTABLES*/))
                 {
                     Get();
                     addAlt(1); // ITER start
-                    while (isKind(la, 1))
+                    while (isKind(la, 1 /*[ident]*/))
                     {
                         SymboltableDecl‿NT();
                         addAlt(1); // ITER end
                     }
                 }
-                while (!(isKind(la, 0) || isKind(la, 18)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 18 /*PRODUCTIONS*/)))
                 {
                     SynErr(53);
                     Get();
                 }
                 addAlt(18); // T "PRODUCTIONS"
-                Expect(18); // "PRODUCTIONS"
+                Expect(18 /*PRODUCTIONS*/);
                 addAlt(1); // ITER start
-                while (isKind(la, 1))
+                while (isKind(la, 1 /*[ident]*/))
                 {
                     Get();
                     addAlt(new int[] {34, 36}); // OPT
-                    if (isKind(la, 34) || isKind(la, 36))
+                    if (isKind(la, 34 /*<*/) || isKind(la, 36 /*<.*/))
                     {
                         AttrDecl‿NT();
                     }
                     addAlt(29); // OPT
-                    if (isKind(la, 29))
+                    if (isKind(la, 29 /*+*/))
                     {
                         ASTJoin‿NT();
                     }
                     addAlt(23); // OPT
-                    if (isKind(la, 23))
+                    if (isKind(la, 23 /*SCOPES*/))
                     {
                         ScopesDecl‿NT();
                     }
                     addAlt(27); // OPT
-                    if (isKind(la, 27))
+                    if (isKind(la, 27 /*USEONCE*/))
                     {
                         UseOnceDecl‿NT();
                     }
                     addAlt(28); // OPT
-                    if (isKind(la, 28))
+                    if (isKind(la, 28 /*USEALL*/))
                     {
                         UseAllDecl‿NT();
                     }
                     addAlt(49); // OPT
-                    if (isKind(la, 49))
+                    if (isKind(la, 49 /*(.*/))
                     {
                         SemText‿NT();
                     }
                     addAlt(19); // WT "="
-                    ExpectWeak(19, 3); // "=" followed by string
+                    ExpectWeak(19 /*=*/, 3 /*[string]*/); // 19 followed by 3
                     Expression‿NT();
                     addAlt(20); // WT "."
-                    ExpectWeak(20, 4); // "." followed by badString
+                    ExpectWeak(20 /*.*/, 4 /*[badString]*/); // 20 followed by 4
                     addAlt(1); // ITER end
                 }
                 addAlt(21); // T "END"
-                Expect(21); // "END"
+                Expect(21 /*END*/);
                 addAlt(1); // T ident
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 addAlt(20); // T "."
-                Expect(20); // "."
+                Expect(20 /*.*/);
             }
         }
 
@@ -237,12 +237,12 @@ namespace CocoRCore.Samples.Coco
         {
             {
                 addAlt(1); // T ident
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 addAlt(19); // T "="
-                Expect(19); // "="
+                Expect(19 /*=*/);
                 Set‿NT();
                 addAlt(20); // T "."
-                Expect(20); // "."
+                Expect(20 /*.*/);
             }
         }
 
@@ -252,7 +252,7 @@ namespace CocoRCore.Samples.Coco
             {
                 Sym‿NT();
                 addAlt(33); // OPT
-                if (isKind(la, 33))
+                if (isKind(la, 33 /*:*/))
                 {
                     Get();
                     Sym‿NT();
@@ -264,12 +264,12 @@ namespace CocoRCore.Samples.Coco
                 }
                 addAlt(19); // ALT
                 addAlt(set0, 6); // ALT
-                if (isKind(la, 19))
+                if (isKind(la, 19 /*=*/))
                 {
                     Get();
                     TokenExpr‿NT();
                     addAlt(20); // T "."
-                    Expect(20); // "."
+                    Expect(20 /*.*/);
                 }
                 else if (StartOf(6))
                 {
@@ -277,7 +277,7 @@ namespace CocoRCore.Samples.Coco
                 else
                     SynErr(55);
                 addAlt(49); // OPT
-                if (isKind(la, 49))
+                if (isKind(la, 49 /*(.*/))
                 {
                     SemText‿NT();
                 }
@@ -290,7 +290,7 @@ namespace CocoRCore.Samples.Coco
             {
                 TokenTerm‿NT();
                 addAlt(38); // ITER start
-                while (WeakSeparator(38, 7, 8) )
+                while (WeakSeparator(38 /*|*/, 7, 8) )
                 {
                     TokenTerm‿NT();
                     addAlt(38); // ITER end
@@ -304,11 +304,11 @@ namespace CocoRCore.Samples.Coco
             {
                 SimSet‿NT();
                 addAlt(new int[] {29, 30}); // ITER start
-                while (isKind(la, 29) || isKind(la, 30))
+                while (isKind(la, 29 /*+*/) || isKind(la, 30 /*-*/))
                 {
                     addAlt(29); // ALT
                     addAlt(30); // ALT
-                    if (isKind(la, 29))
+                    if (isKind(la, 29 /*+*/))
                     {
                         Get();
                         SimSet‿NT();
@@ -328,20 +328,20 @@ namespace CocoRCore.Samples.Coco
         {
             {
                 addAlt(1); // T ident
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 addAlt(22); // OPT
-                if (isKind(la, 22))
+                if (isKind(la, 22 /*STRICT*/))
                 {
                     Get();
                 }
                 addAlt(3); // ITER start
-                while (isKind(la, 3))
+                while (isKind(la, 3 /*[string]*/))
                 {
                     Get();
                     addAlt(3); // ITER end
                 }
                 addAlt(20); // T "."
-                Expect(20); // "."
+                Expect(20 /*.*/);
             }
         }
 
@@ -351,7 +351,7 @@ namespace CocoRCore.Samples.Coco
             {
                 addAlt(34); // ALT
                 addAlt(36); // ALT
-                if (isKind(la, 34))
+                if (isKind(la, 34 /*<*/))
                 {
                     Get();
                     addAlt(set0, 9); // ITER start
@@ -370,9 +370,9 @@ namespace CocoRCore.Samples.Coco
                         addAlt(set0, 9); // ITER end
                     }
                     addAlt(35); // T ">"
-                    Expect(35); // ">"
+                    Expect(35 /*>*/);
                 }
-                else if (isKind(la, 36))
+                else if (isKind(la, 36 /*<.*/))
                 {
                     Get();
                     addAlt(set0, 11); // ITER start
@@ -391,7 +391,7 @@ namespace CocoRCore.Samples.Coco
                         addAlt(set0, 11); // ITER end
                     }
                     addAlt(37); // T ".>"
-                    Expect(37); // ".>"
+                    Expect(37 /*.>*/);
                 } // end if
                 else
                     SynErr(56);
@@ -403,9 +403,9 @@ namespace CocoRCore.Samples.Coco
         {
             {
                 addAlt(29); // T "+"
-                Expect(29); // "+"
+                Expect(29 /*+*/);
                 addAlt(3); // OPT
-                if (isKind(la, 3))
+                if (isKind(la, 3 /*[string]*/))
                 {
                     Get();
                 }
@@ -417,19 +417,19 @@ namespace CocoRCore.Samples.Coco
         {
             {
                 addAlt(23); // T "SCOPES"
-                Expect(23); // "SCOPES"
+                Expect(23 /*SCOPES*/);
                 addAlt(24); // T "("
-                Expect(24); // "("
+                Expect(24 /*(*/);
                 Symboltable‿NT();
                 addAlt(25); // ITER start
-                while (isKind(la, 25))
+                while (isKind(la, 25 /*,*/))
                 {
                     Get();
                     Symboltable‿NT();
                     addAlt(25); // ITER end
                 }
                 addAlt(26); // T ")"
-                Expect(26); // ")"
+                Expect(26 /*)*/);
             }
         }
 
@@ -438,19 +438,19 @@ namespace CocoRCore.Samples.Coco
         {
             {
                 addAlt(27); // T "USEONCE"
-                Expect(27); // "USEONCE"
+                Expect(27 /*USEONCE*/);
                 addAlt(24); // T "("
-                Expect(24); // "("
+                Expect(24 /*(*/);
                 Symboltable‿NT();
                 addAlt(25); // ITER start
-                while (isKind(la, 25))
+                while (isKind(la, 25 /*,*/))
                 {
                     Get();
                     Symboltable‿NT();
                     addAlt(25); // ITER end
                 }
                 addAlt(26); // T ")"
-                Expect(26); // ")"
+                Expect(26 /*)*/);
             }
         }
 
@@ -459,19 +459,19 @@ namespace CocoRCore.Samples.Coco
         {
             {
                 addAlt(28); // T "USEALL"
-                Expect(28); // "USEALL"
+                Expect(28 /*USEALL*/);
                 addAlt(24); // T "("
-                Expect(24); // "("
+                Expect(24 /*(*/);
                 Symboltable‿NT();
                 addAlt(25); // ITER start
-                while (isKind(la, 25))
+                while (isKind(la, 25 /*,*/))
                 {
                     Get();
                     Symboltable‿NT();
                     addAlt(25); // ITER end
                 }
                 addAlt(26); // T ")"
-                Expect(26); // ")"
+                Expect(26 /*)*/);
             }
         }
 
@@ -480,7 +480,7 @@ namespace CocoRCore.Samples.Coco
         {
             {
                 addAlt(49); // T "(."
-                Expect(49); // "(."
+                Expect(49 /*(.*/);
                 addAlt(set0, 13); // ITER start
                 while (StartOf(13))
                 {
@@ -491,7 +491,7 @@ namespace CocoRCore.Samples.Coco
                     {
                         Get();
                     }
-                    else if (isKind(la, 4))
+                    else if (isKind(la, 4 /*[badString]*/))
                     {
                         Get();
                     }
@@ -502,7 +502,7 @@ namespace CocoRCore.Samples.Coco
                     addAlt(set0, 13); // ITER end
                 }
                 addAlt(50); // T ".)"
-                Expect(50); // ".)"
+                Expect(50 /*.)*/);
             }
         }
 
@@ -512,7 +512,7 @@ namespace CocoRCore.Samples.Coco
             {
                 Term‿NT();
                 addAlt(38); // ITER start
-                while (WeakSeparator(38, 15, 16) )
+                while (WeakSeparator(38 /*|*/, 15, 16) )
                 {
                     Term‿NT();
                     addAlt(38); // ITER end
@@ -525,7 +525,7 @@ namespace CocoRCore.Samples.Coco
         {
             {
                 addAlt(1); // T ident
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
             }
         }
 
@@ -537,25 +537,25 @@ namespace CocoRCore.Samples.Coco
                 addAlt(3); // ALT
                 addAlt(5); // ALT
                 addAlt(32); // ALT
-                if (isKind(la, 1))
+                if (isKind(la, 1 /*[ident]*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 3))
+                else if (isKind(la, 3 /*[string]*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 5))
+                else if (isKind(la, 5 /*[char]*/))
                 {
                     Char‿NT();
                     addAlt(31); // OPT
-                    if (isKind(la, 31))
+                    if (isKind(la, 31 /*..*/))
                     {
                         Get();
                         Char‿NT();
                     }
                 }
-                else if (isKind(la, 32))
+                else if (isKind(la, 32 /*ANY*/))
                 {
                     Get();
                 } // end if
@@ -569,7 +569,7 @@ namespace CocoRCore.Samples.Coco
         {
             {
                 addAlt(5); // T char
-                Expect(5); // char
+                Expect(5 /*[char]*/);
             }
         }
 
@@ -579,15 +579,15 @@ namespace CocoRCore.Samples.Coco
             {
                 addAlt(1); // ALT
                 addAlt(new int[] {3, 5}); // ALT
-                if (isKind(la, 1))
+                if (isKind(la, 1 /*[ident]*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 3) || isKind(la, 5))
+                else if (isKind(la, 3 /*[string]*/) || isKind(la, 5 /*[char]*/))
                 {
                     addAlt(3); // ALT
                     addAlt(5); // ALT
-                    if (isKind(la, 3))
+                    if (isKind(la, 3 /*[string]*/))
                     {
                         Get();
                     }
@@ -610,7 +610,7 @@ namespace CocoRCore.Samples.Coco
                 if (StartOf(17))
                 {
                     addAlt(47); // OPT
-                    if (isKind(la, 47))
+                    if (isKind(la, 47 /*IF*/))
                     {
                         Resolver‿NT();
                     }
@@ -635,9 +635,9 @@ namespace CocoRCore.Samples.Coco
         {
             {
                 addAlt(47); // T "IF"
-                Expect(47); // "IF"
+                Expect(47 /*IF*/);
                 addAlt(24); // T "("
-                Expect(24); // "("
+                Expect(24 /*(*/);
                 Condition‿NT();
             }
         }
@@ -655,13 +655,13 @@ namespace CocoRCore.Samples.Coco
                 addAlt(44); // ALT
                 switch (la.kind)
                 {
-                    case 1: // ident
-                    case 3: // string
-                    case 5: // char
-                    case 39: // "WEAK"
+                    case 1: /*[ident]*/
+                    case 3: /*[string]*/
+                    case 5: /*[char]*/
+                    case 39: /*WEAK*/
                         { // scoping
                             addAlt(39); // OPT
-                            if (isKind(la, 39))
+                            if (isKind(la, 39 /*WEAK*/))
                             {
                                 Get();
                             }
@@ -672,65 +672,65 @@ namespace CocoRCore.Samples.Coco
                                 addAlt(new int[] {34, 36}); // ALT
                                 addAlt(35); // ALT
                                 addAlt(33); // ALT
-                                if (isKind(la, 34) || isKind(la, 36))
+                                if (isKind(la, 34 /*<*/) || isKind(la, 36 /*<.*/))
                                 {
                                     Attribs‿NT();
                                 }
-                                else if (isKind(la, 35))
+                                else if (isKind(la, 35 /*>*/))
                                 {
                                     Get();
                                     addAlt(1); // T ident
-                                    Expect(1); // ident
+                                    Expect(1 /*[ident]*/);
                                 }
                                 else
                                 {
                                     Get();
                                     addAlt(1); // T ident
-                                    Expect(1); // ident
+                                    Expect(1 /*[ident]*/);
                                 }
                             }
                             addAlt(new int[] {45, 46}); // OPT
-                            if (isKind(la, 45) || isKind(la, 46))
+                            if (isKind(la, 45 /*^*/) || isKind(la, 46 /*#*/))
                             {
                                 AST‿NT();
                             }
                         }
                         break;
-                    case 24: // "("
+                    case 24: /*(*/
                         { // scoping
                             Get();
                             Expression‿NT();
                             addAlt(26); // T ")"
-                            Expect(26); // ")"
+                            Expect(26 /*)*/);
                         }
                         break;
-                    case 40: // "["
+                    case 40: /*[*/
                         { // scoping
                             Get();
                             Expression‿NT();
                             addAlt(41); // T "]"
-                            Expect(41); // "]"
+                            Expect(41 /*]*/);
                         }
                         break;
-                    case 42: // "{"
+                    case 42: /*{*/
                         { // scoping
                             Get();
                             Expression‿NT();
                             addAlt(43); // T "}"
-                            Expect(43); // "}"
+                            Expect(43 /*}*/);
                         }
                         break;
-                    case 49: // "(."
+                    case 49: /*(.*/
                         { // scoping
                             SemText‿NT();
                         }
                         break;
-                    case 32: // "ANY"
+                    case 32: /*ANY*/
                         { // scoping
                             Get();
                         }
                         break;
-                    case 44: // "SYNC"
+                    case 44: /*SYNC*/
                         { // scoping
                             Get();
                         }
@@ -748,7 +748,7 @@ namespace CocoRCore.Samples.Coco
             {
                 addAlt(34); // ALT
                 addAlt(36); // ALT
-                if (isKind(la, 34))
+                if (isKind(la, 34 /*<*/))
                 {
                     Get();
                     addAlt(set0, 9); // ITER start
@@ -767,9 +767,9 @@ namespace CocoRCore.Samples.Coco
                         addAlt(set0, 9); // ITER end
                     }
                     addAlt(35); // T ">"
-                    Expect(35); // ">"
+                    Expect(35 /*>*/);
                 }
-                else if (isKind(la, 36))
+                else if (isKind(la, 36 /*<.*/))
                 {
                     Get();
                     addAlt(set0, 11); // ITER start
@@ -788,7 +788,7 @@ namespace CocoRCore.Samples.Coco
                         addAlt(set0, 11); // ITER end
                     }
                     addAlt(37); // T ".>"
-                    Expect(37); // ".>"
+                    Expect(37 /*.>*/);
                 } // end if
                 else
                     SynErr(61);
@@ -801,15 +801,15 @@ namespace CocoRCore.Samples.Coco
             {
                 addAlt(45); // ALT
                 addAlt(46); // ALT
-                if (isKind(la, 45))
+                if (isKind(la, 45 /*^*/))
                 {
                     ASTSendUp‿NT();
                 }
-                else if (isKind(la, 46))
+                else if (isKind(la, 46 /*#*/))
                 {
                     ASTHatch‿NT();
                     addAlt(25); // ITER start
-                    while (WeakSeparator(25, 22, 23) )
+                    while (WeakSeparator(25 /*,*/, 22, 23) )
                     {
                         ASTHatch‿NT();
                         addAlt(25); // ITER end
@@ -825,14 +825,14 @@ namespace CocoRCore.Samples.Coco
         {
             {
                 addAlt(45); // T "^"
-                Expect(45); // "^"
+                Expect(45 /*^*/);
                 addAlt(45); // OPT
-                if (isKind(la, 45))
+                if (isKind(la, 45 /*^*/))
                 {
                     Get();
                 }
                 addAlt(33); // OPT
-                if (isKind(la, 33))
+                if (isKind(la, 33 /*:*/))
                 {
                     Get();
                     ASTVal‿NT();
@@ -845,25 +845,25 @@ namespace CocoRCore.Samples.Coco
         {
             {
                 addAlt(46); // T "#"
-                Expect(46); // "#"
+                Expect(46 /*#*/);
                 addAlt(46); // OPT
-                if (isKind(la, 46))
+                if (isKind(la, 46 /*#*/))
                 {
                     Get();
                 }
                 addAlt(6); // OPT
-                if (isKind(la, 6))
+                if (isKind(la, 6 /*\'*/))
                 {
                     ASTPrime‿NT();
                 }
                 addAlt(33); // OPT
-                if (isKind(la, 33))
+                if (isKind(la, 33 /*:*/))
                 {
                     Get();
                     ASTVal‿NT();
                 }
                 addAlt(19); // OPT
-                if (isKind(la, 19))
+                if (isKind(la, 19 /*=*/))
                 {
                     Get();
                     ASTConst‿NT();
@@ -877,11 +877,11 @@ namespace CocoRCore.Samples.Coco
             {
                 addAlt(1); // ALT
                 addAlt(3); // ALT
-                if (isKind(la, 1))
+                if (isKind(la, 1 /*[ident]*/))
                 {
                     Get();
                 }
-                else if (isKind(la, 3))
+                else if (isKind(la, 3 /*[string]*/))
                 {
                     Get();
                 } // end if
@@ -895,7 +895,7 @@ namespace CocoRCore.Samples.Coco
         {
             {
                 addAlt(6); // T prime
-                Expect(6); // prime
+                Expect(6 /*\'*/);
             }
         }
 
@@ -916,7 +916,7 @@ namespace CocoRCore.Samples.Coco
                 {
                     addAlt(24); // ALT
                     addAlt(set0, 25); // ALT
-                    if (isKind(la, 24))
+                    if (isKind(la, 24 /*(*/))
                     {
                         Get();
                         Condition‿NT();
@@ -928,7 +928,7 @@ namespace CocoRCore.Samples.Coco
                     addAlt(set0, 24); // ITER end
                 }
                 addAlt(26); // T ")"
-                Expect(26); // ")"
+                Expect(26 /*)*/);
             }
         }
 
@@ -944,14 +944,14 @@ namespace CocoRCore.Samples.Coco
                     addAlt(set0, 7); // ITER end
                 }
                 addAlt(48); // OPT
-                if (isKind(la, 48))
+                if (isKind(la, 48 /*CONTEXT*/))
                 {
                     Get();
                     addAlt(24); // T "("
-                    Expect(24); // "("
+                    Expect(24 /*(*/);
                     TokenExpr‿NT();
                     addAlt(26); // T ")"
-                    Expect(26); // ")"
+                    Expect(26 /*)*/);
                 }
             }
         }
@@ -964,30 +964,30 @@ namespace CocoRCore.Samples.Coco
                 addAlt(24); // ALT
                 addAlt(40); // ALT
                 addAlt(42); // ALT
-                if (isKind(la, 1) || isKind(la, 3) || isKind(la, 5))
+                if (isKind(la, 1 /*[ident]*/) || isKind(la, 3 /*[string]*/) || isKind(la, 5 /*[char]*/))
                 {
                     Sym‿NT();
                 }
-                else if (isKind(la, 24))
+                else if (isKind(la, 24 /*(*/))
                 {
                     Get();
                     TokenExpr‿NT();
                     addAlt(26); // T ")"
-                    Expect(26); // ")"
+                    Expect(26 /*)*/);
                 }
-                else if (isKind(la, 40))
+                else if (isKind(la, 40 /*[*/))
                 {
                     Get();
                     TokenExpr‿NT();
                     addAlt(41); // T "]"
-                    Expect(41); // "]"
+                    Expect(41 /*]*/);
                 }
-                else if (isKind(la, 42))
+                else if (isKind(la, 42 /*{*/))
                 {
                     Get();
                     TokenExpr‿NT();
                     addAlt(43); // T "}"
-                    Expect(43); // "}"
+                    Expect(43 /*}*/);
                 } // end if
                 else
                     SynErr(64);
@@ -1071,6 +1071,35 @@ namespace CocoRCore.Samples.Coco
         };
         public override string NameOfTokenKind(int tokenKind) => varTName[tokenKind];
 
+		// states that a particular production (1st index) can start with a particular token (2nd index). Needed by addAlt().
+		static readonly bool[,] set0 = {
+            {_T,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_x,_x,_x,  _T,_T,_T,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x},
+            {_x,_T,_T,_T,  _T,_T,_T,_x,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x},
+            {_x,_T,_T,_T,  _T,_T,_T,_T,  _x,_x,_x,_x,  _x,_T,_T,_T,  _x,_x,_x,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x},
+            {_T,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_x,_x,_x,  _T,_T,_T,_T,  _T,_x,_x,_x,  _T,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_x,_T,_T,  _T,_x,_T,_x,  _T,_x,_x,_T,  _x,_T,_x,_x,  _x},
+            {_T,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_x,_x,_x,  _T,_T,_T,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x},
+            {_T,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_x,_x,_x,  _T,_T,_T,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x},
+            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_x,_x,_x,  _T,_T,_T,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x},
+            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_T,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x},
+            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_T,_T,  _T,_T,_T,_x,  _T,_x,_x,_x,  _x,_x,_T,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x},
+            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_x,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x},
+            {_x,_T,_T,_T,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_x,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x},
+            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x},
+            {_x,_T,_T,_T,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x},
+            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_x,_T,  _x},
+            {_x,_T,_T,_T,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x,_x,_T,  _x},
+            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _T,_x,_T,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_x,_T,_T,  _T,_T,_T,_T,  _T,_x,_x,_T,  _x,_T,_x,_x,  _x},
+            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_x,_T,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x},
+            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_x,_x,_T,  _T,_x,_T,_x,  _T,_x,_x,_T,  _x,_T,_x,_x,  _x},
+            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_x,_T,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _x,_T,_x,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x},
+            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_x,_x,_T,  _T,_x,_T,_x,  _T,_x,_x,_x,  _x,_T,_x,_x,  _x},
+            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x},
+            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_T,_T,  _T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x},
+            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _x,_x,_x,_x,  _x},
+            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _T,_x,_T,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_x,_T,_T,  _T,_T,_T,_T,  _T,_x,_x,_x,  _x,_T,_x,_x,  _x},
+            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_x,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x},
+            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x,_T,_x,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x}
+		};
 
         // as set0 but with token inheritance taken into account
         static readonly bool[,] set = {

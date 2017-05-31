@@ -104,7 +104,7 @@ namespace CocoRCore.Samples.Inheritance
                     {
                         Ident‿NT();
                     }
-                    else if (isKind(la, 12))
+                    else if (isKind(la, 12 /*{*/))
                     {
                         Block‿NT();
                     }
@@ -124,10 +124,10 @@ namespace CocoRCore.Samples.Inheritance
             using(types.createScope()) 
             {
                 addAlt(12); // T "{"
-                Expect(12); // "{"
+                Expect(12 /*{*/);
                 Seq‿NT();
                 addAlt(13); // T "}"
-                Expect(13); // "}"
+                Expect(13 /*}*/);
             }
         }
 
@@ -139,13 +139,13 @@ namespace CocoRCore.Samples.Inheritance
                 if (!variables.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, variables.name), la);
                 alternatives.tdeclares = variables;
                 addAlt(2); // T ident
-                Expect(2); // ident
+                Expect(2 /*[ident]*/);
                 addAlt(new int[] {11, 15}); // OPT
-                if (isKind(la, 11) || isKind(la, 15))
+                if (isKind(la, 11 /*:*/) || isKind(la, 15 /*as*/))
                 {
                     addAlt(15); // ALT
                     addAlt(11); // ALT
-                    if (isKind(la, 15))
+                    if (isKind(la, 15 /*as*/))
                     {
                         Get();
                     }
@@ -156,15 +156,15 @@ namespace CocoRCore.Samples.Inheritance
                     if (!types.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "ident", la.val, types.name), la);
                     addAlt(2); // T ident
                     addAlt(2, types); // T ident ident uses symbol table 'types'
-                    Expect(2); // ident
+                    Expect(2 /*[ident]*/);
                 }
-                while (!(isKind(la, 0) || isKind(la, 16)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 16 /*;*/)))
                 {
                     SynErr(19);
                     Get();
                 }
                 addAlt(16); // T ";"
-                Expect(16); // ";"
+                Expect(16 /*;*/);
             }
         }
 
@@ -173,11 +173,11 @@ namespace CocoRCore.Samples.Inheritance
         {
             {
                 addAlt(14); // T "type"
-                Expect(14); // "type"
+                Expect(14 /*type*/);
                 if (!types.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, types.name), la);
                 alternatives.tdeclares = types;
                 addAlt(2); // T ident
-                Expect(2); // ident
+                Expect(2 /*[ident]*/);
             }
         }
 
@@ -194,37 +194,37 @@ namespace CocoRCore.Samples.Inheritance
                 addAlt(10); // ALT
                 switch (la.kind)
                 {
-                    case 4: // var
+                    case 4: /*var*/
                         { // scoping
                             Get();
                         }
                         break;
-                    case 5: // var1
+                    case 5: /*var1*/
                         { // scoping
                             Get();
                         }
                         break;
-                    case 6: // var2
+                    case 6: /*var2*/
                         { // scoping
                             Get();
                         }
                         break;
-                    case 7: // var3
+                    case 7: /*var3*/
                         { // scoping
                             Get();
                         }
                         break;
-                    case 8: // var4
+                    case 8: /*var4*/
                         { // scoping
                             Get();
                         }
                         break;
-                    case 9: // var5
+                    case 9: /*var5*/
                         { // scoping
                             Get();
                         }
                         break;
-                    case 10: // var6
+                    case 10: /*var6*/
                         { // scoping
                             Get();
                         }
@@ -282,6 +282,12 @@ namespace CocoRCore.Samples.Inheritance
         };
         public override string NameOfTokenKind(int tokenKind) => varTName[tokenKind];
 
+		// states that a particular production (1st index) can start with a particular token (2nd index). Needed by addAlt().
+		static readonly bool[,] set0 = {
+            {_T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x},
+            {_x,_x,_x,_x,  _T,_T,_T,_T,  _T,_T,_T,_x,  _T,_x,_T,_x,  _x,_x,_x},
+            {_x,_x,_x,_x,  _T,_T,_T,_T,  _T,_T,_T,_x,  _x,_x,_x,_x,  _x,_x,_x}
+		};
 
         // as set0 but with token inheritance taken into account
         static readonly bool[,] set = {

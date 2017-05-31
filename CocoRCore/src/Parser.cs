@@ -111,10 +111,10 @@ const int id = 0;
                     }
                     pgen.usingPos = usingPos.Range(la);
                 }
-                Expect(7); // "COMPILER"
+                Expect(7 /*COMPILER*/);
                 genScanner = true;
                 tab.ignored = new CharSet();
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 gramName = t.val;
                 var semDeclPos = la.position;
                 while (StartOf(2))
@@ -122,78 +122,78 @@ const int id = 0;
                     Get();
                 }
                 tab.semDeclPos = semDeclPos.Range(la);
-                if (isKind(la, 8))
+                if (isKind(la, 8 /*IGNORECASE*/))
                 {
                     Get();
                     dfa.ignoreCase = true;
                 }
-                if (isKind(la, 9))
+                if (isKind(la, 9 /*CHARACTERS*/))
                 {
                     Get();
-                    while (isKind(la, 1))
+                    while (isKind(la, 1 /*[ident]*/))
                     {
                         SetDecl‿NT();
                     }
                 }
-                if (isKind(la, 10))
+                if (isKind(la, 10 /*TOKENS*/))
                 {
                     Get();
-                    while (isKind(la, 1) || isKind(la, 3) || isKind(la, 5))
+                    while (isKind(la, 1 /*[ident]*/) || isKind(la, 3 /*[string]*/) || isKind(la, 5 /*[char]*/))
                     {
                         TokenDecl‿NT(NodeKind.t);
                     }
                 }
-                if (isKind(la, 11))
+                if (isKind(la, 11 /*PRAGMAS*/))
                 {
                     Get();
-                    while (isKind(la, 1) || isKind(la, 3) || isKind(la, 5))
+                    while (isKind(la, 1 /*[ident]*/) || isKind(la, 3 /*[string]*/) || isKind(la, 5 /*[char]*/))
                     {
                         TokenDecl‿NT(NodeKind.pr);
                     }
                 }
-                while (isKind(la, 12))
+                while (isKind(la, 12 /*COMMENTS*/))
                 {
                     Get();
                     bool nested = false;
-                    Expect(13); // "FROM"
+                    Expect(13 /*FROM*/);
                     TokenExpr‿NT(out var g1);
-                    Expect(14); // "TO"
+                    Expect(14 /*TO*/);
                     TokenExpr‿NT(out var g2);
-                    if (isKind(la, 15))
+                    if (isKind(la, 15 /*NESTED*/))
                     {
                         Get();
                         nested = true;
                     }
                     dfa.NewComment(g1.l, g2.l, nested);
                 }
-                while (isKind(la, 16))
+                while (isKind(la, 16 /*IGNORE*/))
                 {
                     Get();
                     Set‿NT(out s);
                     tab.ignored.Or(s);
                 }
-                if (isKind(la, 17))
+                if (isKind(la, 17 /*SYMBOLTABLES*/))
                 {
                     Get();
-                    while (isKind(la, 1))
+                    while (isKind(la, 1 /*[ident]*/))
                     {
                         SymboltableDecl‿NT();
                     }
                 }
-                while (!(isKind(la, 0) || isKind(la, 18)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 18 /*PRODUCTIONS*/)))
                 {
                     SynErr(54);
                     Get();
                 }
-                Expect(18); // "PRODUCTIONS"
+                Expect(18 /*PRODUCTIONS*/);
                 if (genScanner) dfa.MakeDeterministic();
                 tab.DeleteNodes();
-                while (isKind(la, 1) || isKind(la, 21))
+                while (isKind(la, 1 /*[ident]*/) || isKind(la, 21 /*DELETEABLE*/))
                 {
                     Production‿NT();
                 }
-                Expect(19); // "END"
-                Expect(1); // ident
+                Expect(19 /*END*/);
+                Expect(1 /*[ident]*/);
                 if (gramName != t.val)
                 SemErr(4, "name does not match grammar name");
                 tab.gramSy = tab.FindSym(gramName);
@@ -223,7 +223,7 @@ const int id = 0;
                 }
                 }
                 if (tab.ddt[6]) tab.PrintSymbolTable();
-                Expect(20); // "."
+                Expect(20 /*.*/);
             }
         }
 
@@ -232,15 +232,15 @@ const int id = 0;
         {
             {
                 CharSet s;
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 string name = t.val;
                 CharClass c = tab.FindCharClass(name);
                 if (c != null) SemErr(9, "name declared twice");
-                Expect(22); // "="
+                Expect(22 /*=*/);
                 Set‿NT(out s);
                 if (s.Elements() == 0) SemErr(10, "character set must not be empty");
                 tab.NewCharClass(name, s);
-                Expect(20); // "."
+                Expect(20 /*.*/);
             }
         }
 
@@ -256,7 +256,7 @@ const int id = 0;
                 sym.tokenKind = TerminalTokenKind.fixedToken;
                 }
                 tokenString = null;
-                if (isKind(la, 34))
+                if (isKind(la, 34 /*:*/))
                 {
                     Get();
                     Sym‿NT(out var inheritsName, out var inheritsKind);
@@ -271,11 +271,11 @@ const int id = 0;
                     SynErr(55);
                     Get();
                 }
-                if (isKind(la, 22))
+                if (isKind(la, 22 /*=*/))
                 {
                     Get();
                     TokenExpr‿NT(out var g);
-                    Expect(20); // "."
+                    Expect(20 /*.*/);
                     if (kind == str) SemErr(17, "a literal must not be declared with a structure");
                     tab.Finish(g);
                     if (tokenString == null || tokenString.Equals(noString))
@@ -295,7 +295,7 @@ const int id = 0;
                 } // end if
                 else
                     SynErr(56);
-                if (isKind(la, 50))
+                if (isKind(la, 50 /*(.*/))
                 {
                     SemText‿NT(out sym.semPos);
                     if (typ != NodeKind.pr) SemErr(19, "semantic action not allowed in a pragma context");
@@ -310,7 +310,7 @@ const int id = 0;
                 Graph g2;
                 TokenTerm‿NT(out g);
                 bool first = true;
-                while (WeakSeparator(39, 5, 6) )
+                while (WeakSeparator(39 /*|*/, 5, 6) )
                 {
                     TokenTerm‿NT(out g2);
                     if (first) { tab.MakeFirstAlt(g); first = false; }
@@ -325,9 +325,9 @@ const int id = 0;
             {
                 CharSet s2;
                 SimSet‿NT(out s);
-                while (isKind(la, 30) || isKind(la, 31))
+                while (isKind(la, 30 /*+*/) || isKind(la, 31 /*-*/))
                 {
-                    if (isKind(la, 30))
+                    if (isKind(la, 30 /*+*/))
                     {
                         Get();
                         SimSet‿NT(out s2);
@@ -348,25 +348,25 @@ const int id = 0;
         {
             {
                 SymTab st;
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 string name = t.val.ToLowerInvariant();
                 if (tab.FindSymtab(name) != null)
                 SemErr(7, "symbol table name declared twice");
                 st = new SymTab(name);
                 tab.symtabs.Add(st);
-                if (isKind(la, 23))
+                if (isKind(la, 23 /*STRICT*/))
                 {
                     Get();
                     st.strict = true;
                 }
-                while (isKind(la, 3))
+                while (isKind(la, 3 /*[string]*/))
                 {
                     Get();
                     string predef = tab.Unstring(t.val);
                     if (dfa.ignoreCase) predef = predef.ToLowerInvariant();
                     st.Add(predef);
                 }
-                Expect(20); // "."
+                Expect(20 /*.*/);
             }
         }
 
@@ -375,12 +375,12 @@ const int id = 0;
         {
             {
                 var deletableOK = false;
-                if (isKind(la, 21))
+                if (isKind(la, 21 /*DELETEABLE*/))
                 {
                     Get();
                     deletableOK = true;
                 }
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 var sym = tab.FindSym(t.val);
                 bool undef = sym == null;
                 if (undef) sym = tab.NewSym(NodeKind.nt, t.val, t.position);
@@ -393,38 +393,38 @@ const int id = 0;
                 bool noAttrs = sym.attrPos == null;
                 sym.attrPos = null;
                 sym.deletableOK = deletableOK;
-                if (isKind(la, 35) || isKind(la, 37))
+                if (isKind(la, 35 /*<*/) || isKind(la, 37 /*<.*/))
                 {
                     AttrDecl‿NT(sym);
                 }
                 if (!undef)
                 if (noAttrs != (sym.attrPos == null))
                 SemErr(3, "attribute mismatch between declaration and use of this symbol");
-                if (isKind(la, 30))
+                if (isKind(la, 30 /*+*/))
                 {
                     ASTJoin‿NT(sym);
                 }
-                if (isKind(la, 24))
+                if (isKind(la, 24 /*SCOPES*/))
                 {
                     ScopesDecl‿NT(sym);
                 }
-                if (isKind(la, 28))
+                if (isKind(la, 28 /*USEONCE*/))
                 {
                     UseOnceDecl‿NT(sym);
                 }
-                if (isKind(la, 29))
+                if (isKind(la, 29 /*USEALL*/))
                 {
                     UseAllDecl‿NT(sym);
                 }
-                if (isKind(la, 50))
+                if (isKind(la, 50 /*(.*/))
                 {
                     SemText‿NT(out sym.semPos);
                 }
-                ExpectWeak(22, 7); // "=" followed by "COMPILER"
+                ExpectWeak(22 /*=*/, 7 /*COMPILER*/); // 22 followed by 7
                 Expression‿NT(out var g);
                 sym.graph = g.l;
                 tab.Finish(g);
-                ExpectWeak(20, 8); // "." followed by "IGNORECASE"
+                ExpectWeak(20 /*.*/, 8 /*IGNORECASE*/); // 20 followed by 8
             }
         }
 
@@ -432,7 +432,7 @@ const int id = 0;
         void AttrDecl‿NT(Symbol sym)
         {
             {
-                if (isKind(la, 35))
+                if (isKind(la, 35 /*<*/))
                 {
                     Get();
                     var attrPos = la.position;
@@ -448,10 +448,10 @@ const int id = 0;
                             SemErr(20, "bad string in attributes");
                         }
                     }
-                    Expect(36); // ">"
+                    Expect(36 /*>*/);
                     sym.attrPos = attrPos.RangeIfNotEmpty(t);
                 }
-                else if (isKind(la, 37))
+                else if (isKind(la, 37 /*<.*/))
                 {
                     Get();
                     var attrPos = la.position;
@@ -467,7 +467,7 @@ const int id = 0;
                             SemErr(21, "bad string in attributes");
                         }
                     }
-                    Expect(38); // ".>"
+                    Expect(38 /*.>*/);
                     sym.attrPos = attrPos.RangeIfNotEmpty(t);
                 } // end if
                 else
@@ -479,9 +479,9 @@ const int id = 0;
         void ASTJoin‿NT(Symbol sym)
         {
             {
-                Expect(30); // "+"
+                Expect(30 /*+*/);
                 sym.astjoinwith = ""; pgen.needsAST = true;
-                if (isKind(la, 3))
+                if (isKind(la, 3 /*[string]*/))
                 {
                     Get();
                     sym.astjoinwith = tab.Unstring(t.val);
@@ -494,15 +494,15 @@ const int id = 0;
         {
             {
                 sym.scopes = new List<SymTab>();
-                Expect(24); // "SCOPES"
-                Expect(25); // "("
+                Expect(24 /*SCOPES*/);
+                Expect(25 /*(*/);
                 Symboltable‿NT(sym.scopes);
-                while (isKind(la, 26))
+                while (isKind(la, 26 /*,*/))
                 {
                     Get();
                     Symboltable‿NT(sym.scopes);
                 }
-                Expect(27); // ")"
+                Expect(27 /*)*/);
             }
         }
 
@@ -511,15 +511,15 @@ const int id = 0;
         {
             {
                 sym.useonces = new List<SymTab>();
-                Expect(28); // "USEONCE"
-                Expect(25); // "("
+                Expect(28 /*USEONCE*/);
+                Expect(25 /*(*/);
                 Symboltable‿NT(sym.useonces);
-                while (isKind(la, 26))
+                while (isKind(la, 26 /*,*/))
                 {
                     Get();
                     Symboltable‿NT(sym.useonces);
                 }
-                Expect(27); // ")"
+                Expect(27 /*)*/);
             }
         }
 
@@ -528,15 +528,15 @@ const int id = 0;
         {
             {
                 sym.usealls = new List<SymTab>();
-                Expect(29); // "USEALL"
-                Expect(25); // "("
+                Expect(29 /*USEALL*/);
+                Expect(25 /*(*/);
                 Symboltable‿NT(sym.usealls);
-                while (isKind(la, 26))
+                while (isKind(la, 26 /*,*/))
                 {
                     Get();
                     Symboltable‿NT(sym.usealls);
                 }
-                Expect(27); // ")"
+                Expect(27 /*)*/);
             }
         }
 
@@ -544,7 +544,7 @@ const int id = 0;
         void SemText‿NT(out Range pos)
         {
             {
-                Expect(50); // "(."
+                Expect(50 /*(.*/);
                 var p = la.position;
                 while (StartOf(13))
                 {
@@ -552,7 +552,7 @@ const int id = 0;
                     {
                         Get();
                     }
-                    else if (isKind(la, 4))
+                    else if (isKind(la, 4 /*[badString]*/))
                     {
                         Get();
                         SemErr(36, "bad string in semantic action");
@@ -563,7 +563,7 @@ const int id = 0;
                         SemErr(37, "missing end of previous semantic action");
                     }
                 }
-                Expect(51); // ".)"
+                Expect(51 /*.)*/);
                 pos = p.Range(t);
             }
         }
@@ -575,7 +575,7 @@ const int id = 0;
                 Graph g2;
                 Term‿NT(out g);
                 bool first = true;
-                while (WeakSeparator(39, 15, 16) )
+                while (WeakSeparator(39 /*|*/, 15, 16) )
                 {
                     Term‿NT(out g2);
                     if (first) { tab.MakeFirstAlt(g); first = false; }
@@ -588,7 +588,7 @@ const int id = 0;
         void Symboltable‿NT(List<SymTab> sts )
         {
             {
-                Expect(1); // ident
+                Expect(1 /*[ident]*/);
                 string stname = t.val.ToLowerInvariant();
                 SymTab st = tab.FindSymtab(stname);
                 if (st == null) SemErr(8, "undeclared symbol table " + t.val);
@@ -602,13 +602,13 @@ const int id = 0;
             {
                 int n1, n2;
                 s = new CharSet();
-                if (isKind(la, 1))
+                if (isKind(la, 1 /*[ident]*/))
                 {
                     Get();
                     CharClass c = tab.FindCharClass(t.val);
                     if (c == null) SemErr(11, "undefined name"); else s.Or(c.set);
                 }
-                else if (isKind(la, 3))
+                else if (isKind(la, 3 /*[string]*/))
                 {
                     Get();
                     string name = tab.Unstring(t.val);
@@ -616,18 +616,18 @@ const int id = 0;
                     if (dfa.ignoreCase) s.Set(char.ToLowerInvariant(ch));
                     else s.Set(ch);
                 }
-                else if (isKind(la, 5))
+                else if (isKind(la, 5 /*[char]*/))
                 {
                     Char‿NT(out n1);
                     s.Set(n1);
-                    if (isKind(la, 32))
+                    if (isKind(la, 32 /*..*/))
                     {
                         Get();
                         Char‿NT(out n2);
                         for (var i = n1; i <= n2; i++) s.Set(i);
                     }
                 }
-                else if (isKind(la, 33))
+                else if (isKind(la, 33 /*ANY*/))
                 {
                     Get();
                     s = new CharSet(); s.Fill();
@@ -641,7 +641,7 @@ const int id = 0;
         void Char‿NT(out int n)
         {
             {
-                Expect(5); // char
+                Expect(5 /*[char]*/);
                 string name = tab.Unstring(t.val); n = 0;
                 if (name.Length == 1) n = name[0];
                 else SemErr(12, "unacceptable character value");
@@ -654,14 +654,14 @@ const int id = 0;
         {
             {
                 name = "???"; kind = id;
-                if (isKind(la, 1))
+                if (isKind(la, 1 /*[ident]*/))
                 {
                     Get();
                     kind = id; name = t.val;
                 }
-                else if (isKind(la, 3) || isKind(la, 5))
+                else if (isKind(la, 3 /*[string]*/) || isKind(la, 5 /*[char]*/))
                 {
-                    if (isKind(la, 3))
+                    if (isKind(la, 3 /*[string]*/))
                     {
                         Get();
                         name = t.val;
@@ -688,7 +688,7 @@ const int id = 0;
                 Graph g2; Node rslv = null; g = null;
                 if (StartOf(17))
                 {
-                    if (isKind(la, 48))
+                    if (isKind(la, 48 /*IF*/))
                     {
                         rslv = tab.NewNode(NodeKind.rslv, null, la.line);
                         Resolver‿NT(out rslv.pos);
@@ -718,8 +718,8 @@ const int id = 0;
         void Resolver‿NT(out Range pos)
         {
             {
-                Expect(48); // "IF"
-                Expect(25); // "("
+                Expect(48 /*IF*/);
+                Expect(25 /*(*/);
                 var p = la.position;
                 Condition‿NT();
                 pos = p.Range(t);
@@ -734,12 +734,12 @@ const int id = 0;
                 g = null;
                 switch (la.kind)
                 {
-                    case 1: // ident
-                    case 3: // string
-                    case 5: // char
-                    case 40: // "WEAK"
+                    case 1: /*[ident]*/
+                    case 3: /*[string]*/
+                    case 5: /*[char]*/
+                    case 40: /*WEAK*/
                         { // scoping
-                            if (isKind(la, 40))
+                            if (isKind(la, 40 /*WEAK*/))
                             {
                                 Get();
                                 weak = true;
@@ -770,15 +770,15 @@ const int id = 0;
                             g = new Graph(p);
                             if (StartOf(20))
                             {
-                                if (isKind(la, 35) || isKind(la, 37))
+                                if (isKind(la, 35 /*<*/) || isKind(la, 37 /*<.*/))
                                 {
                                     Attribs‿NT(p);
                                     if (kind != id) SemErr(25, "a literal must not have attributes");
                                 }
-                                else if (isKind(la, 36))
+                                else if (isKind(la, 36 /*>*/))
                                 {
                                     Get();
-                                    Expect(1); // ident
+                                    Expect(1 /*[ident]*/);
                                     if (typ != NodeKind.t && typ != NodeKind.wt) SemErr(26, "only terminals or weak terminals can declare a name in a symbol table");
                                     p.declares = t.val.ToLowerInvariant();
                                     if (null == tab.FindSymtab(p.declares)) SemErr(27, string.Format("undeclared symbol table '{0}'", p.declares));
@@ -786,7 +786,7 @@ const int id = 0;
                                 else
                                 {
                                     Get();
-                                    Expect(1); // ident
+                                    Expect(1 /*[ident]*/);
                                     if (typ != NodeKind.t && typ != NodeKind.wt) SemErr(28, "only terminals or weak terminals can lookup a name in a symbol table");
                                     p.declared = t.val.ToLowerInvariant();
                                     if (null == tab.FindSymtab(p.declared)) SemErr(29, string.Format("undeclared symbol table '{0}'", p.declared));
@@ -796,36 +796,36 @@ const int id = 0;
                             sym.attrPos = p.pos;  // dummy
                             else if ((p.pos == null) != (sym.attrPos == null))
                             SemErr(30, "attribute mismatch between declaration and use of this symbol");
-                            if (isKind(la, 46) || isKind(la, 47))
+                            if (isKind(la, 46 /*^*/) || isKind(la, 47 /*#*/))
                             {
                                 AST‿NT(p);
                             }
                         }
                         break;
-                    case 25: // "("
+                    case 25: /*(*/
                         { // scoping
                             Get();
                             Expression‿NT(out g);
-                            Expect(27); // ")"
+                            Expect(27 /*)*/);
                         }
                         break;
-                    case 41: // "["
+                    case 41: /*[*/
                         { // scoping
                             Get();
                             Expression‿NT(out g);
-                            Expect(42); // "]"
+                            Expect(42 /*]*/);
                             tab.MakeOption(g);
                         }
                         break;
-                    case 43: // "{"
+                    case 43: /*{*/
                         { // scoping
                             Get();
                             Expression‿NT(out g);
-                            Expect(44); // "}"
+                            Expect(44 /*}*/);
                             tab.MakeIteration(g);
                         }
                         break;
-                    case 50: // "(."
+                    case 50: /*(.*/
                         { // scoping
                             SemText‿NT(out pos);
                             Node p = tab.NewNode(NodeKind.sem, null, 0);
@@ -833,14 +833,14 @@ const int id = 0;
                             g = new Graph(p);
                         }
                         break;
-                    case 33: // "ANY"
+                    case 33: /*ANY*/
                         { // scoping
                             Get();
                             Node p = tab.NewNode(NodeKind.any, null, 0);  // p.set is set in tab.SetupAnys
                             g = new Graph(p);
                         }
                         break;
-                    case 45: // "SYNC"
+                    case 45: /*SYNC*/
                         { // scoping
                             Get();
                             Node p = tab.NewNode(NodeKind.sync, null, 0);
@@ -860,7 +860,7 @@ const int id = 0;
         void Attribs‿NT(Node p)
         {
             {
-                if (isKind(la, 35))
+                if (isKind(la, 35 /*<*/))
                 {
                     Get();
                     var pos = la.position;
@@ -876,10 +876,10 @@ const int id = 0;
                             SemErr(34, "bad string in attributes");
                         }
                     }
-                    Expect(36); // ">"
+                    Expect(36 /*>*/);
                     p.pos = pos.RangeIfNotEmpty(t);
                 }
-                else if (isKind(la, 37))
+                else if (isKind(la, 37 /*<.*/))
                 {
                     Get();
                     var pos = la.position;
@@ -895,7 +895,7 @@ const int id = 0;
                             SemErr(35, "bad string in attributes");
                         }
                     }
-                    Expect(38); // ".>"
+                    Expect(38 /*.>*/);
                     p.pos = pos.RangeIfNotEmpty(t);
                 } // end if
                 else
@@ -908,14 +908,14 @@ const int id = 0;
         {
             {
                 p.asts = new List<AstOp>(); pgen.needsAST = true;
-                if (isKind(la, 46))
+                if (isKind(la, 46 /*^*/))
                 {
                     ASTSendUp‿NT(p);
                 }
-                else if (isKind(la, 47))
+                else if (isKind(la, 47 /*#*/))
                 {
                     ASTHatch‿NT(p);
-                    while (WeakSeparator(26, 21, 22) )
+                    while (WeakSeparator(26 /*,*/, 21, 22) )
                     {
                         ASTHatch‿NT(p);
                     }
@@ -930,17 +930,17 @@ const int id = 0;
         {
             {
                 AstOp ast = p.addAstOp();
-                Expect(46); // "^"
+                Expect(46 /*^*/);
                 ast.ishatch = false;
                 string n = p.sym.name;
                 if (n.StartsWith("\"")) n = n.Substring(1, n.Length - 2);
                 ast.name = n.ToLowerInvariant();
-                if (isKind(la, 46))
+                if (isKind(la, 46 /*^*/))
                 {
                     Get();
                     ast.isList = true;
                 }
-                if (isKind(la, 34))
+                if (isKind(la, 34 /*:*/))
                 {
                     Get();
                     ASTVal‿NT(out ast.name);
@@ -953,23 +953,23 @@ const int id = 0;
         {
             {
                 AstOp ast = p.addAstOp();
-                Expect(47); // "#"
+                Expect(47 /*#*/);
                 ast.ishatch = true;
-                if (isKind(la, 47))
+                if (isKind(la, 47 /*#*/))
                 {
                     Get();
                     ast.isList = true;
                 }
-                if (isKind(la, 6))
+                if (isKind(la, 6 /*\'*/))
                 {
                     ASTPrime‿NT(p, ast);
                 }
-                if (isKind(la, 34))
+                if (isKind(la, 34 /*:*/))
                 {
                     Get();
                     ASTVal‿NT(out ast.name);
                 }
-                if (isKind(la, 22))
+                if (isKind(la, 22 /*=*/))
                 {
                     Get();
                     ASTConst‿NT(ast);
@@ -982,12 +982,12 @@ const int id = 0;
         {
             {
                 val = "?";
-                if (isKind(la, 1))
+                if (isKind(la, 1 /*[ident]*/))
                 {
                     Get();
                     val = t.val;
                 }
-                else if (isKind(la, 3))
+                else if (isKind(la, 3 /*[string]*/))
                 {
                     Get();
                     val = tab.Unstring(t.val);
@@ -1001,7 +1001,7 @@ const int id = 0;
         void ASTPrime‿NT(Node p, AstOp ast)
         {
             {
-                Expect(6); // prime
+                Expect(6 /*\'*/);
                 ast.primed = true;
                 if (p.typ != NodeKind.t && p.typ != NodeKind.wt)
                 SemErr(31, "can only prime terminals");
@@ -1025,7 +1025,7 @@ const int id = 0;
             {
                 while (StartOf(23))
                 {
-                    if (isKind(la, 25))
+                    if (isKind(la, 25 /*(*/))
                     {
                         Get();
                         Condition‿NT();
@@ -1035,7 +1035,7 @@ const int id = 0;
                         Get();
                     }
                 }
-                Expect(27); // ")"
+                Expect(27 /*)*/);
             }
         }
 
@@ -1050,14 +1050,14 @@ const int id = 0;
                     TokenFactor‿NT(out g2);
                     tab.MakeSequence(g, g2);
                 }
-                if (isKind(la, 49))
+                if (isKind(la, 49 /*CONTEXT*/))
                 {
                     Get();
-                    Expect(25); // "("
+                    Expect(25 /*(*/);
                     TokenExpr‿NT(out g2);
                     tab.SetContextTrans(g2.l); dfa.hasCtxMoves = true;
                     tab.MakeSequence(g, g2);
-                    Expect(27); // ")"
+                    Expect(27 /*)*/);
                 }
             }
         }
@@ -1068,7 +1068,7 @@ const int id = 0;
             {
                 string name; int kind;
                 g = null;
-                if (isKind(la, 1) || isKind(la, 3) || isKind(la, 5))
+                if (isKind(la, 1 /*[ident]*/) || isKind(la, 3 /*[string]*/) || isKind(la, 5 /*[char]*/))
                 {
                     Sym‿NT(out name, out kind);
                     if (kind == id) {
@@ -1086,24 +1086,24 @@ const int id = 0;
                     else tokenString = noString;
                     }
                 }
-                else if (isKind(la, 25))
+                else if (isKind(la, 25 /*(*/))
                 {
                     Get();
                     TokenExpr‿NT(out g);
-                    Expect(27); // ")"
+                    Expect(27 /*)*/);
                 }
-                else if (isKind(la, 41))
+                else if (isKind(la, 41 /*[*/))
                 {
                     Get();
                     TokenExpr‿NT(out g);
-                    Expect(42); // "]"
+                    Expect(42 /*]*/);
                     tab.MakeOption(g); tokenString = noString;
                 }
-                else if (isKind(la, 43))
+                else if (isKind(la, 43 /*{*/))
                 {
                     Get();
                     TokenExpr‿NT(out g);
-                    Expect(44); // "}"
+                    Expect(44 /*}*/);
                     tab.MakeIteration(g); tokenString = noString;
                 } // end if
                 else
@@ -1191,6 +1191,33 @@ const int id = 0;
         };
         public override string NameOfTokenKind(int tokenKind) => varTName[tokenKind];
 
+		// states that a particular production (1st index) can start with a particular token (2nd index). Needed by addAlt().
+		static readonly bool[,] set0 = {
+            {_T,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_x,_x,_x,  _T,_T,_T,_x,  _x,_x,_T,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _x,_x},
+            {_x,_T,_T,_T,  _T,_T,_T,_x,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x},
+            {_x,_T,_T,_T,  _T,_T,_T,_T,  _x,_x,_x,_x,  _x,_T,_T,_T,  _x,_x,_x,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x},
+            {_T,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_x,_x,_x,  _T,_T,_T,_x,  _x,_x,_T,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _x,_x},
+            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_x,_x,_x,  _T,_T,_T,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _x,_x},
+            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x},
+            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_T,_T,  _T,_T,_T,_x,  _T,_x,_x,_x,  _x,_x,_x,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x},
+            {_T,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_x,_x,_x,  _T,_T,_T,_x,  _T,_x,_T,_x,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_T,_x,_T,  _x,_T,_x,_x,  _T,_x,_T,_x,  _x,_x},
+            {_T,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_x,_x,_x,  _T,_T,_T,_T,  _x,_T,_T,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _x,_x},
+            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x},
+            {_x,_T,_T,_T,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x},
+            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_x,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x},
+            {_x,_T,_T,_T,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_x,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x},
+            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_x,  _T,_x},
+            {_x,_T,_T,_T,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_x,_x,  _T,_x},
+            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_T,_x,_T,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_T,_T,_T,  _T,_T,_x,_x,  _T,_x,_T,_x,  _x,_x},
+            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_x,_x,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x},
+            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_x,  _T,_T,_x,_T,  _x,_T,_x,_x,  _T,_x,_T,_x,  _x,_x},
+            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_x,  _T,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_T,_x,  _x,_x},
+            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_x,_x,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_T,  _x,_x,_T,_x,  _T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x},
+            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_T,  _T,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x},
+            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_T,  _x,_x,_x,_x,  _x,_x},
+            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_T,_x,_T,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_T,_T,_T,  _T,_T,_x,_x,  _x,_x,_T,_x,  _x,_x},
+            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_x,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x}
+		};
 
         // as set0 but with token inheritance taken into account
         static readonly bool[,] set = {
