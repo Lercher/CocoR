@@ -5,12 +5,11 @@
 //#define POSITIONS
 
 using System;
-using System.IO;
-using System.Text;
-using System.Collections.Generic;
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 #pragma warning disable IDE1006 // Naming Styles
 
@@ -36,7 +35,7 @@ namespace CocoRCore
         protected const int minErrDist = 2;
         public ScannerBase scanner { get; private set; }
         public readonly Errors errors;
-        public readonly List<Alternative> tokens = new List<Alternative>();
+        public readonly List<Alternative> AlternativeTokens = new List<Alternative>();
 
         public Token t;    // last recognized token
         public Token la;   // lookahead token
@@ -55,7 +54,7 @@ namespace CocoRCore
         // disposes only buffers and readers, normally no vital structures
         public virtual void Dispose() => scanner?.Dispose();
 
-        protected void SynErr(int n) 
+        protected void SynErr(int n)
             => DiagnosticMessage(errors.SynErr, la, $"{Syntaxerror(n)}, found {la.ToString(this)}.", n, true);
 
         public void SemErr(int n, string msg) => SemErr(n, msg, t);
@@ -321,8 +320,8 @@ namespace CocoRCore
     {
         public BitArray alt = null;
         public Symboltable[] altst = null;
-        public Symboltable tdeclares = null;
-        public Symboltable tdeclared = null;
+        public Symboltable stdeclares = null;
+        public Symboltable streferences = null;
         public Token declaration = null;
 
         public Alt(int size)
@@ -333,28 +332,33 @@ namespace CocoRCore
     }
 
     //-----------------------------------------------------------------------------------
-    // Alternative
+    // Alternative, non mutatable and frozen symbols
     //-----------------------------------------------------------------------------------
-    // non mutatable
     public class Alternative
     {
-        public readonly Token t;
-        public readonly string declares = null;
-        public readonly string declared = null;
-        public readonly BitArray alt;
-        public readonly Symboltable[] st;
-        public Token declaration = null;
+        public readonly Token t; // the scanned token
+        public readonly string declares = null; // the name of the symboltable that t declares an item in
+        public readonly string references = null; // the name of the symboltable that t references an item in
+        public Token declaration = null; // the token where the declaration of t is
+        public readonly BitArray alt; // alternative T indexed by kind, only Ts that are not represented by a symbol table are true
+        public readonly FrozenSymboltable[] symbols; // symbol tables with alternative entries, usually 0..1 item
 
         public Alternative(Token t, Alt alternatives)
         {
             this.t = t;
-            if (alternatives.tdeclares != null)
-                declares = alternatives.tdeclares.name;
-            if (alternatives.tdeclared != null)
-                declared = alternatives.tdeclared.name;
-            alt = alternatives.alt;
-            st = alternatives.altst;
+            declares = alternatives.stdeclares?.name;
+            references = alternatives.streferences?.name;
             declaration = alternatives.declaration;
+            alt = new BitArray(alternatives.alt);
+
+            var symbolsByKind = new List<FrozenSymboltable>();
+            for (var kind = 0; kind < alt.Length; kind++)
+                if (alt[kind] && alternatives.altst[kind] != null)
+                    symbolsByKind.Add(alternatives.altst[kind].Freeze(kind));
+            symbols = symbolsByKind.ToArray();
+
+            foreach (var st in symbols)
+                alt[st.Kind] = false;
         }
     }
 
@@ -364,6 +368,23 @@ namespace CocoRCore
     //-----------------------------------------------------------------------------------
     public delegate void TokenEventHandler(Token t);
 
+
+    //-----------------------------------------------------------------------------------
+    // FrozenSymboltable
+    //-----------------------------------------------------------------------------------
+    public class FrozenSymboltable
+    {
+        public readonly int Kind;
+        public readonly string Name;
+        public readonly string[] Items;
+
+        public FrozenSymboltable(int kind, string name, IEnumerable<string> items)
+        {
+            Kind = kind;
+            Name = name;
+            Items = items.ToArray();
+        }
+    }
 
     //-----------------------------------------------------------------------------------
     // Symboltable
@@ -403,12 +424,10 @@ namespace CocoRCore
             scopes = new Stack<List<Token>>();
             var reverse = new Stack<List<Token>>(st.scopes);
             foreach (var list in reverse)
-            {
                 if (strict)
                     scopes.Push(new List<Token>(list)); // strict: copy the list values
                 else
                     scopes.Push(list); // non strict: copy the list reference
-            }
         }
 
         // We can keep the clone until we push/pop of the stack, or add a new item. 
@@ -419,7 +438,9 @@ namespace CocoRCore
             return clone;
         }
 
-        private List<Alternative> fixuplist => parser.tokens;
+        public FrozenSymboltable Freeze(int kind) => new FrozenSymboltable(kind, name, from t in items select t.valScanned);
+
+        private List<Alternative> fixuplist => parser.AlternativeTokens;
 
         private StringComparer comparer => ignoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
 
@@ -433,7 +454,7 @@ namespace CocoRCore
         public bool Use(Token t, Alt a)
         {
             TokenUsed?.Invoke(t);
-            a.tdeclared = this;
+            a.streferences = this;
             if (strict)
             {
                 a.declaration = Find(t);
@@ -465,7 +486,8 @@ namespace CocoRCore
 
         public void Add(string s)
         {
-            var t = new Token.Builder() {
+            var t = new Token.Builder()
+            {
                 kind = -1,
                 position = Position.MinusOne
             };
@@ -535,7 +557,7 @@ namespace CocoRCore
             return new Popper(this);
         }
 
-        public IDisposable createUsageCheck(bool oneOrMore, Token scopeToken) 
+        public IDisposable createUsageCheck(bool oneOrMore, Token scopeToken)
             => new UseCounter(this, oneOrMore, scopeToken);
 
         public List<Token> currentScope => scopes.Peek();
@@ -607,7 +629,6 @@ namespace CocoRCore
                 {
                     var list = counter[s];
                     if (!isValid(list))
-                    {
                         if (oneOrMore)
                         {
                             var msg = string.Format("token '{0}' has to be used in this scope.", s);
@@ -625,7 +646,6 @@ namespace CocoRCore
                                 st.parser.errors.SemErr(t.position, msgN, 96);
                             }
                         }
-                    }
                 }
             }
         }
@@ -661,7 +681,6 @@ namespace CocoRCore
             // see Mark Amery's comment in
             // http://stackoverflow.com/questions/19176024/how-to-escape-special-characters-in-building-a-json-string
             foreach (var ch in s)
-            {
                 switch (ch)
                 {
                     case '\\': sb.Append("\\\\"); break;
@@ -674,12 +693,12 @@ namespace CocoRCore
                         else sb.Append(ch);
                         break;
                 }
-            }
         }
 
         public override string ToString()
         {
-            var at0 = new Token.Builder() {
+            var at0 = new Token.Builder()
+            {
                 position = Position.MinusOne
             };
             return ToString(at0.Freeze());
@@ -926,7 +945,8 @@ namespace CocoRCore
                     //if (name == null) Console.WriteLine(" [merge two unnamed to a single list]"); else Console.WriteLine(" [merge two named {0} to a single list]", name);
                     var list = new ASTList(ast);
                     list.merge(e.ast);
-                    var ret = new E() {
+                    var ret = new E()
+                    {
                         ast = list,
                         name = name
                     };
@@ -938,16 +958,15 @@ namespace CocoRCore
                     var obj = new ASTObject();
                     obj.add(this);
                     obj.add(e);
-                    var ret = new E() {
+                    var ret = new E()
+                    {
                         ast = obj
                     };
                     return ret;
                 }
                 else if (ast.merge(e))
-                {
                     //Console.WriteLine(" [merged {1} into object {0}]", name, e.name);
                     return this;
-                }
                 //Console.WriteLine(" [no merge available for {0}+{1}]", name, e.name);
                 return null;
             }
@@ -1009,7 +1028,8 @@ namespace CocoRCore
             public void hatch(Token s, Token t, string literal, string name, bool islist)
             {
                 //System.Console.WriteLine(">> hatch token {0,-20} as {2,-10}, islist {3}, literal:{1} at {4},{5}.", t.val, literal, name, islist, t.line, t.col);
-                var e = new E() {
+                var e = new E()
+                {
                     ast = new ASTLiteral(literal ?? t.val)
                 };
                 e.ast.mergeStart(s);
@@ -1038,7 +1058,6 @@ namespace CocoRCore
                 e.ast.mergeEnd(t);
                 //if (islist) System.Console.WriteLine(">> send up as [{0}]: {1}", name, e); else System.Console.WriteLine(">> send up as {0}: {1}", name, e);
                 if (name != e.name)
-                {
                     if (islist)
                     {
                         var merge = (e.name == null);
@@ -1046,7 +1065,6 @@ namespace CocoRCore
                     }
                     else if (e.name != null)
                         e.wrapinobject();
-                }
                 e.name = name;
                 //System.Console.WriteLine("-------------> top {0}", e);
             }
@@ -1080,7 +1098,8 @@ namespace CocoRCore
                     e = new E();
                     var source = parser.scanner.buffer.GetBufferedString(s.position.Range(la));
                     source = source.Trim();
-                    e.ast = new ASTLiteral(source) {
+                    e.ast = new ASTLiteral(source)
+                    {
                         startToken = s,
                         endToken = t
                     };
@@ -1153,7 +1172,7 @@ namespace CocoRCore
             }
 
 
-            public IDisposable createMarker(string name, string literal, bool islist, bool ishatch, bool primed) 
+            public IDisposable createMarker(string name, string literal, bool islist, bool ishatch, bool primed)
                 => new Marker(this, name, literal, islist, ishatch, primed);
 
             private class Marker : IDisposable
@@ -1179,7 +1198,6 @@ namespace CocoRCore
                     if (ishatch)
                     {
                         if (primed)
-                        {
                             try
                             {
                                 builder.parser.Prime(ref t);
@@ -1188,13 +1206,10 @@ namespace CocoRCore
                             {
                                 builder.parser.SemErr(92, string.Format("unexpected error in Prime(t): {0}", ex.Message));
                             }
-                        }
                         builder.hatch(t, t, literal, name, islist);
                     }
                     else
-                    {
                         builder.stack.Push(null); // push a marker
-                    }
                 }
 
                 public void Dispose()

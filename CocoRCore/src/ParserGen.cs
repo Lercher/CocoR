@@ -272,7 +272,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (!string.IsNullOrEmpty(p.declares))
             {
                 Gen.Write(GW.Line, "if (!{0}.Add(la)) SemErr(71, string.Format(DuplicateSymbol, {1}, la.val, {0}.name), la);", p.declares, Tab.Quoted(p.sym.name));
-                Gen.Write(GW.Line, "alternatives.tdeclares = {0};", p.declares);
+                Gen.Write(GW.Line, "alternatives.stdeclares = {0};", p.declares);
             }
             else if (!string.IsNullOrEmpty(p.declared))
             {
