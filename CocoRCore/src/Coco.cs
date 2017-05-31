@@ -25,7 +25,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public static int Main(string[] arg)
         {
-            Console.Write("Coco/R Core (May 29, 2017)");
+            Console.Write("Coco/R Core (May 31, 2017)");
             string srcName = null, nsName = null, frameDir = null, ddtString = null,
             traceFileName = null, outDir = null;
             var emitLines = false;
@@ -61,7 +61,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (useShort) Console.Write(" [short message format]");
             if (!enableWarnings) Console.Write(" [no WARN]");
             if (!enableInfos) Console.Write(" [no INFO]");
-            Console.WriteLine();
 
             if (arg.Length > 0 && srcName != null)
             {
@@ -79,7 +78,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     parser.pgen = new ParserGen(parser);
                     parser.pgen.GenerateAutocompleteInformation = generateAutocompleteInformation;
                     parser.pgen.IgnoreSemanticActions = ignoreSemanticActions;
-                    parser.errors.errorStream = Console.Out;
+                    parser.errors.Writer = Console.Out;
                     parser.errors.DiagnosticIdPrefix = "ATG";
                     parser.errors.EnableWarnings = enableWarnings;
                     parser.errors.EnableInfos = enableInfos;
@@ -93,10 +92,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     parser.tab.createOld = createOld;
                     parser.tab.SetDDT(ddtString);
 
+                    Console.Write("  ");
+                    Console.WriteLine(src.Name);
                     parser.scanner.Initialize(src);
-                    Console.WriteLine($"{parser.scanner.uri} -> {outDir}");
                     parser.Parse();
                     parser.Dispose();
+                    Console.WriteLine(parser.errors);
 
                     var trc = new FileInfo(traceFileName);
                     if (trc.Length == 0) 
@@ -104,17 +105,12 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     else 
                         Console.WriteLine("trace output is in " + trc.FullName);
                     
-                    Console.WriteLine(parser.errors);
                     if (parser.errors.CountError == 0) 
                         retVal = 0;
                 }
-                catch (IOException ex)
+                catch (Exception ex)
                 {
-                    Console.WriteLine("-- " + ex.Message);
-                }
-                catch (FatalError e)
-                {
-                    Console.WriteLine("-- " + e.Message);
+                    Console.WriteLine("*** " + ex.Message);
                 }
             }
             else

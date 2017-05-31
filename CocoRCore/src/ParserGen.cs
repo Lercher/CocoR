@@ -698,8 +698,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             using (Gen = new Generator(Tab))
             {
-                Gen.OpenFrame("Parser.frame");
-                Gen.OpenGen("Parser.cs");
+                var frame = Gen.OpenFrame("Parser.frame");
+                parser.errors.Info(0, 0, $"using {frame.FullName}", 21);
+                var pars = Gen.OpenGen("Parser.cs");
+                parser.errors.Info(0, 0, $"generating parser {pars.FullName}", 22);
 
                 symSet.Add(Tab.allSyncSets);
                 Tab.terminals.ForEach(GenTerminalErrorMsg);

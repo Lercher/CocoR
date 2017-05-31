@@ -802,8 +802,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         {
             using (Gen = new Generator(Tab))
             {
-                Gen.OpenFrame("Scanner.frame");
-                Gen.OpenGen("Scanner.cs");
+                var frame = Gen.OpenFrame("Scanner.frame");
+                Parser.errors.Info(0, 0, $"using {frame.FullName}", 11);
+                var scan = Gen.OpenGen("Scanner.cs");
+                Parser.errors.Info(0, 0, $"generating scanner {scan.FullName}", 12);
 
                 if (dirtyDFA)
                     MakeDeterministic();

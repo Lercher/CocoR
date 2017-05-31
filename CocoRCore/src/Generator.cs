@@ -29,7 +29,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             gen?.Dispose();
         }
 
-        public void OpenFrame(string frame)
+        public FileInfo OpenFrame(string frame)
         {
             if (Tab.frameDir != null)
                 frameFile = Path.Combine(Tab.frameDir, frame);
@@ -43,6 +43,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             try
             {
                 frameReader = File.OpenText(frameFile);
+                return new FileInfo(frameFile);
             }
             catch (IOException ex)
             {
@@ -87,7 +88,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             return i;
         }
 
-        public void OpenGen(string target)
+        public FileInfo OpenGen(string target)
         {
             var fn = Path.Combine(Tab.outDir, target);
             try
@@ -95,7 +96,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 if (Tab.createOld && File.Exists(fn))
                     File.Copy(fn, $"{fn}.old", true);
                 gen = new StreamWriter(new FileStream(fn, FileMode.Create)); /* pdt */
-                // return gen;
+                return new FileInfo(fn);
             }
             catch (IOException ex)
             {

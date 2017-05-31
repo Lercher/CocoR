@@ -197,7 +197,7 @@ namespace CocoRCore
     public class Errors : List<Diagnostic>, IFormattable
     {
         private readonly ParserBase parser;
-        public System.IO.TextWriter errorStream = null;
+        public System.IO.TextWriter Writer = null;
 
         public int InfoOffset = 4000; // Infos start at 4000, 1 based
         public int WarningOffset = 3000; // Warnings start at 3000, 1 based
@@ -256,7 +256,7 @@ namespace CocoRCore
             _diagnosticsCounts.AddOrUpdate(id, 1, (_, j) => j + 1);
             var error = new Diagnostic(id, level, line, col, message, DiagnosticIdPrefix);
             Add(error);
-            errorStream?.WriteLine(error.Format(line == 0 ? DiagnosticFormat0 : DiagnosticFormat, parser?.scanner?.uri));
+            Writer?.WriteLine(error.Format(line == 0 ? DiagnosticFormat0 : DiagnosticFormat, parser?.scanner?.uri));
         }
 
         public void SynErr(int line, int col, string s, int id) => Add(SynErrOffset + id, ErrorLevel, line, col, s);
