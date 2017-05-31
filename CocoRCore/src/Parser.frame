@@ -39,25 +39,25 @@ using CocoRCore;
 
         protected override void Get() 
         {
+            lb = t;
+            t = la;
+(((beginalternatives
+            if (alternatives != null) 
+            {
+                tokens.Add(new Alternative(t, alternatives));
+            }
+            _newAlt();
+)))endalternatives
             for (;;) 
             {
-                lb = t;
-                t = la;
-(((beginalternatives
-                if (alternatives != null) 
-                {
-                    tokens.Add(new Alternative(t, alternatives));
-                }
-                _newAlt();
-)))endalternatives
                 la = scanner.Scan();
                 if (la.kind <= maxT) 
                 { 
                     ++errDist; 
-                    break; 
+                    break; // it's not a pragma
                 }
+                // pragma code
 -->pragmas
-                la = t;
             }
         }
 

@@ -1,9 +1,4 @@
-/*-------------------------------------------------------------------------
- compile with (namespace was at.jku.ssw.Coco for .Net V2):
-   Coco Coco.ATG -namespace CocoRCore.CSharp    
--------------------------------------------------------------------------*/
 $namespace=CocoRCore.CSharp
-
 using System.IO;
 
 COMPILER Coco

@@ -74,16 +74,17 @@ const int id = 0;
 
         protected override void Get() 
         {
+            lb = t;
+            t = la;
             for (;;) 
             {
-                lb = t;
-                t = la;
                 la = scanner.Scan();
                 if (la.kind <= maxT) 
                 { 
                     ++errDist; 
-                    break; 
+                    break; // it's not a pragma
                 }
+                // pragma code
                 if (la.kind == 53) // pragmas don't inherit kinds
                 {
                     tab.SetDDT(la.val);
@@ -92,7 +93,6 @@ const int id = 0;
                 {
                     tab.SetOption(la.val);
                 }
-                la = t;
             }
         }
 
