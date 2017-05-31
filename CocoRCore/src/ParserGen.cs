@@ -68,7 +68,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 var s2 = Tab.Expected0(pp.sub, CurrentNtSym);
                 // must not optimize with switch statement, if there are ll1 warnings
                 if (Overlaps(s1, s2))
-                    return false; 
+                    return false;
                 s1.Or(s2);
                 ++nAlts;
                 // must not optimize with switch-statement, if alt uses a resolver expression
@@ -365,7 +365,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         break; // nothing
                     case NodeKind.rslv:
                         break; // nothing
-                    case NodeKind.sem:                         
+                    case NodeKind.sem:
                         CopySourcePart(p.pos, indent: true); // semantic action
                         break;
                     case NodeKind.sync:
@@ -530,27 +530,43 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             }
         }
 
-        void ForAllTerminals(Action<Symbol> write)
+        void ForAllTerminals(bool group, Action<Symbol> write)
         {
             var n = 0;
             foreach (var sym in Tab.terminals)
             {
-                if (n % 20 == 0)
+                if (group)
+                {
+                    if (n % 20 == 0)
+                        Gen.Write(GW.StartLine, string.Empty);
+                    else if (n % 4 == 0)
+                        Gen.Write(GW.Append, "  ");
+                    n++;
+                    write(sym);
+                    if (n == Tab.terminals.Count)
+                        Gen.Write(GW.EndLine, string.Empty);
+                    else
+                    {
+                        Gen.Write(GW.Append, ",");
+                        if (n % 20 == 0)
+                            Gen.Write(GW.EndLine, string.Empty);
+                    }
+                }
+                else
+                {
                     Gen.Write(GW.StartLine, string.Empty);
-                else if (n % 4 == 0)
-                    Gen.Write(GW.Append, "  ");
-                n++;
-                write(sym);
-                if (n < Tab.terminals.Count)
-                    Gen.Write(GW.Append, ",");
-                if (n % 20 == 0)
+                    n++;
+                    write(sym);
+                    if (n < Tab.terminals.Count)
+                        Gen.Write(GW.Append, ",");
                     Gen.Write(GW.EndLine, string.Empty);
+                }
             }
         }
 
-        void GenTokenBase() => ForAllTerminals(sym => Gen.Write(GW.Append, "{0,2}", sym.inherits?.n ?? -1));
+        void GenTokenBase() => ForAllTerminals(true, sym => Gen.Write(GW.Append, "{0,2}", sym.inherits?.n ?? -1));
 
-        void GenTokenNames() => ForAllTerminals(sym => Gen.Write(GW.Append, Tab.Quoted(sym.VariantName)));
+        void GenTokenNames() => ForAllTerminals(false, sym => Gen.Write(GW.Append, Tab.Quoted(sym.VariantName)));
 
 
         void GenPragmas()
@@ -562,7 +578,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         void GenCodePragmas()
         {
             foreach (var sym in Tab.pragmas)
-            {                
+            {
                 Gen.Write(GW.Line, "if (la.kind == {0}) // pragmas don't inherit kinds", sym.n);
                 Gen.Write(GW.Line, "{");
                 Gen.Indentation++;
@@ -603,16 +619,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 Gen.Indentation--;
                 Gen.Write(GW.Line, "}");
                 Gen.Write(GW.Break, string.Empty);
-            }
-        }
-
-        void InitSets0()
-        {
-            for (var i = 0; i < symSet.Count; i++)
-            {
-                var s = symSet[i];
-                var islast = (i == symSet.Count - 1);
-                WriteSetsLine(s, islast);
             }
         }
 
@@ -757,11 +763,6 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 GenTokenNames(); // write all token names
                 Gen.Indentation--;
 
-                Gen.CopyFramePart("-->initialization0");
-                Gen.Indentation++;
-                InitSets0();
-                Gen.Indentation--;
-
                 Gen.CopyFramePart("-->initialization");
                 Gen.Indentation++;
                 InitSets();
@@ -775,7 +776,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 foreach (var e in Errors)
                     Gen.Write(GW.Line, e);
                 Gen.Indentation -= 2;
-                
+
                 Gen.CopyFramePart(null);
                 Gen.Indentation--; // now out of class Parser
 

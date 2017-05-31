@@ -96,65 +96,6 @@ const int id = 0;
             }
         }
 
-        private bool isKind(Token t, int n)
-        {
-            var k = t.kind;
-            while (k >= 0)
-            {
-                if (k == n) return true;
-                k = tBase[k];
-            }
-            return false;
-        }
-
-        // is the lookahead token la a start of the production s?
-        private bool StartOf(int s)
-        {
-            return set[s, la.kind];
-        }
-
-        private bool WeakSeparator(int n, int syFol, int repFol)
-        {
-            var kind = la.kind;
-            if (isKind(la, n)) 
-            { 
-                Get(); 
-                return true; 
-            }
-            else if (StartOf(repFol)) 
-                return false;
-            else
-            {
-                SynErr(n);
-                while (!(set[syFol, kind] || set[repFol, kind] || set[0, kind]))
-                {
-                    Get();
-                    kind = la.kind;
-                }
-                return StartOf(syFol);
-            }
-        }
-
-        protected void Expect(int n)
-        {
-            if (isKind(la, n)) 
-                Get(); 
-            else 
-                SynErr(n + 1); // error number starts at 1, expect at 0
-        }
-
-
-        protected void ExpectWeak(int n, int follow)
-        {
-            if (isKind(la, n)) 
-                Get();
-            else
-            {
-                SynErr(n);
-                while (!StartOf(follow)) 
-                    Get();
-            }
-        }
 
         void Coco‿NT()
         {
@@ -1179,8 +1120,8 @@ const int id = 0;
         public override void Parse() 
         {
             if (scanner == null) throw new FatalError("This parser is not Initialize()-ed.");
-            la = Token.Zero;
             lb = Token.Zero;
+            la = Token.Zero;
             Get();
             Coco‿NT();
             Expect(0);
@@ -1190,42 +1131,68 @@ const int id = 0;
         public static readonly int[] tBase = {
             -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,
             -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,
-            -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,  -1        };
+            -1,-1,-1,-1,  -1,-1,-1,-1,  -1,-1,-1,-1,  -1
+        };
+		protected override int BaseKindOf(int kind) => tBase[kind];
 
         // a token's name
         public static readonly string[] varTName = {
-            "[EOF]","[ident]","[number]","[string]",  "[badString]","[char]","\\\'","COMPILER",  "IGNORECASE","CHARACTERS","TOKENS","PRAGMAS",  "COMMENTS","FROM","TO","NESTED",  "IGNORE","SYMBOLTABLES","PRODUCTIONS","END",
-            ".","DELETEABLE","=","STRICT",  "SCOPES","(",",",")",  "USEONCE","USEALL","+","-",  "..","ANY",":","<",  ">","<.",".>","|",
-            "WEAK","[","]","{",  "}","SYNC","^","#",  "IF","CONTEXT","(.",".)",  "[???]"        };
+            "[EOF]",
+            "[ident]",
+            "[number]",
+            "[string]",
+            "[badString]",
+            "[char]",
+            "\\\'",
+            "COMPILER",
+            "IGNORECASE",
+            "CHARACTERS",
+            "TOKENS",
+            "PRAGMAS",
+            "COMMENTS",
+            "FROM",
+            "TO",
+            "NESTED",
+            "IGNORE",
+            "SYMBOLTABLES",
+            "PRODUCTIONS",
+            "END",
+            ".",
+            "DELETEABLE",
+            "=",
+            "STRICT",
+            "SCOPES",
+            "(",
+            ",",
+            ")",
+            "USEONCE",
+            "USEALL",
+            "+",
+            "-",
+            "..",
+            "ANY",
+            ":",
+            "<",
+            ">",
+            "<.",
+            ".>",
+            "|",
+            "WEAK",
+            "[",
+            "]",
+            "{",
+            "}",
+            "SYNC",
+            "^",
+            "#",
+            "IF",
+            "CONTEXT",
+            "(.",
+            ".)",
+            "[???]"
+        };
         public override string NameOfTokenKind(int tokenKind) => varTName[tokenKind];
 
-        // states that a particular production (1st index) can start with a particular token (2nd index)
-        static readonly bool[,] set0 = {
-            {_T,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_x,_x,_x,  _T,_T,_T,_x,  _x,_x,_T,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _x,_x},
-            {_x,_T,_T,_T,  _T,_T,_T,_x,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x},
-            {_x,_T,_T,_T,  _T,_T,_T,_T,  _x,_x,_x,_x,  _x,_T,_T,_T,  _x,_x,_x,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x},
-            {_T,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_x,_x,_x,  _T,_T,_T,_x,  _x,_x,_T,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _x,_x},
-            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_x,_x,_x,  _T,_T,_T,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _x,_x},
-            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x},
-            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_T,_T,  _T,_T,_T,_x,  _T,_x,_x,_x,  _x,_x,_x,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x},
-            {_T,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_x,_x,_x,  _T,_T,_T,_x,  _T,_x,_T,_x,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_T,_x,_T,  _x,_T,_x,_x,  _T,_x,_T,_x,  _x,_x},
-            {_T,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_x,_x,_x,  _T,_T,_T,_T,  _x,_T,_T,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _x,_x},
-            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x},
-            {_x,_T,_T,_T,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x},
-            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_x,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x},
-            {_x,_T,_T,_T,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_x,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x},
-            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_x,  _T,_x},
-            {_x,_T,_T,_T,  _x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_x,_x,  _T,_x},
-            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_T,_x,_T,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_T,_T,_T,  _T,_T,_x,_x,  _T,_x,_T,_x,  _x,_x},
-            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_x,_x,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_x,  _T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x},
-            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_x,  _T,_T,_x,_T,  _x,_T,_x,_x,  _T,_x,_T,_x,  _x,_x},
-            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_x,  _T,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_T,_x,  _x,_x},
-            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_x,_x,_T,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_T,  _x,_x,_T,_x,  _T,_x,_x,_x,  _x,_x,_x,_x,  _x,_x},
-            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_T,_T,  _T,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x},
-            {_x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_T,  _x,_x,_x,_x,  _x,_x},
-            {_x,_T,_x,_T,  _x,_T,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _x,_x,_x,_x,  _T,_x,_x,_x,  _x,_T,_x,_T,  _x,_x,_x,_x,  _x,_T,_x,_x,  _x,_x,_x,_T,  _T,_T,_T,_T,  _T,_T,_x,_x,  _x,_x,_T,_x,  _x,_x},
-            {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_x,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x}
-        };
 
         // as set0 but with token inheritance taken into account
         static readonly bool[,] set = {
@@ -1255,6 +1222,7 @@ const int id = 0;
             {_x,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_x,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_T,_T,_T,  _T,_x}
         };
 
+        protected override bool StartOf(int s, int kind) => set[s, kind];
 
 
 

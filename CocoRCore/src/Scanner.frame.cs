@@ -201,6 +201,8 @@ namespace CocoRCore
             return $"{nm} '{valScanned}'";
         }
 
+        public override string ToString() => $"{kind}:{valScanned}{position}";
+
         public class Builder
         {
             public Builder(IBufferedReader buffer)

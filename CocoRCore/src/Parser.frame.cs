@@ -12,6 +12,8 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Linq;
 
+#pragma warning disable IDE1006 // Naming Styles
+
 namespace CocoRCore
 {
 
@@ -24,6 +26,8 @@ namespace CocoRCore
         public abstract string NameOfTokenKind(int tokenKind);
         public abstract int maxT { get; }
         protected abstract void Get();
+        protected abstract bool StartOf(int s, int kind);  // is the lookahead token la a start of the production s?
+        protected abstract int BaseKindOf(int kind);
         public abstract void Parse();
         public abstract string Syntaxerror(int n);
 
@@ -49,9 +53,7 @@ namespace CocoRCore
         }
 
         // disposes only buffers and readers, normally no vital structures
-        public virtual void Dispose() {
-            scanner?.Dispose();
-        }
+        public virtual void Dispose() => scanner?.Dispose();
 
         protected void SynErr(int n) 
             => DiagnosticMessage(errors.SynErr, la, $"{Syntaxerror(n)}, found {la.ToString(this)}.", n, true);
@@ -78,25 +80,73 @@ namespace CocoRCore
             }
         }
 
+        protected bool StartOf(int s) => StartOf(s, la.kind);
+
+        protected bool isKind(Token t, int n)
+        {
+            var k = t.kind;
+            while (k >= 0)
+            {
+                if (k == n) return true;
+                k = BaseKindOf(k);
+            }
+            return false;
+        }
+
+        protected bool WeakSeparator(int n, int syFol, int repFol)
+        {
+            var kind = la.kind;
+            if (isKind(la, n))
+            {
+                Get();
+                return true;
+            }
+            else if (StartOf(repFol))
+                return false;
+            else
+            {
+                SynErr(n + 1); // error number starts at 1, expect at 0
+                while (!(StartOf(syFol, kind) || StartOf(repFol, kind) || StartOf(0, kind)))
+                {
+                    Get();
+                    kind = la.kind;
+                }
+                return StartOf(syFol);
+            }
+        }
+
+        protected void Expect(int n)
+        {
+            if (isKind(la, n))
+                Get();
+            else
+                SynErr(n + 1); // error number starts at 1, expect at 0
+        }
+
+
+        protected void ExpectWeak(int n, int follow)
+        {
+            if (isKind(la, n))
+                Get();
+            else
+            {
+                SynErr(n + 1); // error number starts at 1, expect at 0
+                while (!StartOf(follow))
+                    Get();
+            }
+        }
+
+
         protected Alt alternatives = null;
 
-        protected void _newAlt()
-        {
-            alternatives = new Alt(maxT + 1);
-        }
+        protected void _newAlt() => alternatives = new Alt(maxT + 1);
 
-        protected void addAlt(int kind)
-        {
-            alternatives.alt[kind] = true;
-        }
+        protected void addAlt(int kind) => alternatives.alt[kind] = true;
 
         // a terminal tokenclass of kind kind is restricted to this symbol table 
-        protected void addAlt(int kind, Symboltable st)
-        {
-            // take the root scope, if it is the only scope,
-            // make a copy of the scope stack otherwise, but preserve the list references
-            alternatives.altst[kind] = st.CloneScopes();
-        }
+        // take the root scope, if it is the only scope,
+        // make a copy of the scope stack otherwise, but preserve the list references
+        protected void addAlt(int kind, Symboltable st) => alternatives.altst[kind] = st.CloneScopes();
 
         protected void addAlt(int[] range)
         {
@@ -425,10 +475,7 @@ namespace CocoRCore
 
         // ----------------------------------- for Parser use end --------------------	
 
-        public bool Contains(Token t)
-        {
-            return (Find(t) != null);
-        }
+        public bool Contains(Token t) => (Find(t) != null);
 
         void RemoveFromAndFixupList(List<Token> undeclared, Token declaration)
         {
@@ -488,15 +535,10 @@ namespace CocoRCore
             return new Popper(this);
         }
 
-        public IDisposable createUsageCheck(bool oneOrMore, Token scopeToken)
-        {
-            return new UseCounter(this, oneOrMore, scopeToken);
-        }
+        public IDisposable createUsageCheck(bool oneOrMore, Token scopeToken) 
+            => new UseCounter(this, oneOrMore, scopeToken);
 
-        public List<Token> currentScope
-        {
-            get { return scopes.Peek(); }
-        }
+        public List<Token> currentScope => scopes.Peek();
 
         public IEnumerable<Token> items
         {
@@ -512,19 +554,13 @@ namespace CocoRCore
             }
         }
 
-        public int CountScopes
-        {
-            get { return scopes.Count; }
-        }
+        public int CountScopes => scopes.Count;
 
         private class Popper : IDisposable
         {
             private readonly Symboltable st;
 
-            public Popper(Symboltable st)
-            {
-                this.st = st;
-            }
+            public Popper(Symboltable st) => this.st = st;
 
             public void Dispose()
             {
@@ -608,7 +644,7 @@ namespace CocoRCore
         public abstract int count { get; }
         public static readonly AST empty = new ASTLiteral(string.Empty);
         protected abstract void serialize(StringBuilder sb, int indent, Token at);
-        public virtual bool merge(E e) { return false; }
+        public virtual bool merge(E e) => false;
         public Token startToken = null;
         public Token endToken = null;
 
@@ -656,10 +692,7 @@ namespace CocoRCore
             return sb.ToString();
         }
 
-        protected bool inOrder(Token at)
-        {
-            return inOrder(startToken, at, endToken);
-        }
+        protected bool inOrder(Token at) => inOrder(startToken, at, endToken);
 
         protected static bool inOrder(Token t1, Token at, Token t2)
         {
@@ -703,18 +736,18 @@ namespace CocoRCore
 
         private abstract class ASTThrows : AST
         {
-            public override AST this[int i] { get { throw new FatalError("not a list"); } }
-            public override AST this[string s] { get { throw new FatalError("not an object"); } }
-            public override string val { get { return count.ToString(); } }
+            public override AST this[int i] => throw new FatalError("not a list");
+            public override AST this[string s] => throw new FatalError("not an object");
+            public override string val => count.ToString();
         }
 
 
         private class ASTLiteral : ASTThrows
         {
-            public ASTLiteral(string s) { _val = s; }
+            public ASTLiteral(string s) => _val = s;
             private readonly string _val;
-            public override string val { get { return _val; } }
-            public override int count { get { return -1; } }
+            public override string val => _val;
+            public override int count => -1;
 
             protected override void serialize(StringBuilder sb, int indent, Token at)
             {
@@ -730,10 +763,7 @@ namespace CocoRCore
         {
             public readonly List<AST> list;
 
-            public ASTList()
-            {
-                list = new List<AST>();
-            }
+            public ASTList() => list = new List<AST>();
 
             public ASTList(AST a, int i) : this()
             {
@@ -751,8 +781,7 @@ namespace CocoRCore
                     endToken = li.endToken;
                     return;
                 }
-                list = new List<AST>();
-                list.Add(a);
+                list = new List<AST> { a };
                 startToken = a.startToken;
                 endToken = a.endToken;
             }
@@ -766,8 +795,7 @@ namespace CocoRCore
                     return list[i];
                 }
             }
-            public override int count { get { return list.Count; } }
-
+            public override int count => list.Count;
             public AST merge(AST a)
             {
                 if (a is ASTList li)
@@ -822,7 +850,7 @@ namespace CocoRCore
                 }
             }
 
-            public override int count { get { return ht.Keys.Count; } }
+            public override int count => ht.Keys.Count;
 
             public void add(E e)
             {
@@ -963,15 +991,9 @@ namespace CocoRCore
 
             public Builder(ParserBase parser) => this.parser = parser;
 
-            public E currentE { get { return stack.Peek(); } }
+            public E currentE => stack.Peek();
 
-            public AST current
-            {
-                get
-                {
-                    return stack.Count > 0 ? currentE.ast : new ASTObject();
-                }
-            }
+            public AST current => stack.Count > 0 ? currentE.ast : new ASTObject();
 
             public override string ToString()
             {
@@ -981,11 +1003,7 @@ namespace CocoRCore
                 return sb.ToString();
             }
 
-            private void push(E e)
-            {
-                stack.Push(e);
-                //System.Console.WriteLine("-> push {0}, size {1}", e, stack.Count);
-            }
+            private void push(E e) => stack.Push(e);
 
             // that's what we call for #/##, built from an AstOp
             public void hatch(Token s, Token t, string literal, string name, bool islist)
@@ -1135,10 +1153,8 @@ namespace CocoRCore
             }
 
 
-            public IDisposable createMarker(string name, string literal, bool islist, bool ishatch, bool primed)
-            {
-                return new Marker(this, name, literal, islist, ishatch, primed);
-            }
+            public IDisposable createMarker(string name, string literal, bool islist, bool ishatch, bool primed) 
+                => new Marker(this, name, literal, islist, ishatch, primed);
 
             private class Marker : IDisposable
             {
@@ -1194,10 +1210,7 @@ namespace CocoRCore
             }
 
 
-            public IDisposable createBarrier(string joinwith)
-            {
-                return new Barrier(this, joinwith);
-            }
+            public IDisposable createBarrier(string joinwith) => new Barrier(this, joinwith);
 
             private class Barrier : IDisposable
             {
