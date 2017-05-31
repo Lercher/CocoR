@@ -11,5 +11,4 @@
     <ProjectReference Include="..\src\CocoRCore.csproj" /> 
     <!-- <Compile Include="../src/*.frame.cs"/> -->
   </ItemGroup>
-
 </Project>
