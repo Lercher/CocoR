@@ -54,13 +54,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 else if (!arg[i].StartsWith("-")) srcName = arg[i];
                 else Console.Write($" [arg{i}: {arg[i]} ignored]");
             }
+            if (!enableWarnings) Console.Write(" [no WARN]");
+            if (!enableInfos) Console.Write(" [no INFO]");
             if (emitLines) Console.Write(" [emit #line directives]");
             if (generateAutocompleteInformation) Console.Write(" [with autocomplete]");
             if (ignoreSemanticActions) Console.Write(" [ignore semantic actions]");
             if (createOld) Console.Write(" [*.old files]");
             if (useShort) Console.Write(" [short message format]");
-            if (!enableWarnings) Console.Write(" [no WARN]");
-            if (!enableInfos) Console.Write(" [no INFO]");
 
             if (arg.Length > 0 && srcName != null)
             {
@@ -93,7 +93,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     parser.tab.SetDDT(ddtString);
 
                     Console.Write("  ");
-                    Console.WriteLine(src.Name);
+                    Console.WriteLine(src.FullName);
                     parser.scanner.Initialize(src);
                     parser.Parse();
                     parser.Dispose();
