@@ -65,7 +65,7 @@ namespace CocoRCore.Samples.Inheritance
             t = la;
             if (alternatives != null) 
             {
-                tokens.Add(new Alternative(t, alternatives));
+                AlternativeTokens.Add(new Alternative(t, alternatives));
             }
             _newAlt();
             for (;;) 
@@ -137,7 +137,7 @@ namespace CocoRCore.Samples.Inheritance
             {
                 Var‿NT();
                 if (!variables.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, variables.name), la);
-                alternatives.tdeclares = variables;
+                alternatives.stdeclares = variables;
                 addAlt(2); // T ident
                 Expect(2 /*[ident]*/);
                 addAlt(new int[] {11, 15}); // OPT
@@ -175,7 +175,7 @@ namespace CocoRCore.Samples.Inheritance
                 addAlt(14); // T "type"
                 Expect(14 /*type*/);
                 if (!types.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, types.name), la);
-                alternatives.tdeclares = types;
+                alternatives.stdeclares = types;
                 addAlt(2); // T ident
                 Expect(2 /*[ident]*/);
             }

@@ -61,7 +61,7 @@ const int // types
             t = la;
             if (alternatives != null) 
             {
-                tokens.Add(new Alternative(t, alternatives));
+                AlternativeTokens.Add(new Alternative(t, alternatives));
             }
             _newAlt();
             for (;;) 

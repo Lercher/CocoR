@@ -85,7 +85,7 @@ public override void Prime(ref Token t) {
             t = la;
             if (alternatives != null) 
             {
-                tokens.Add(new Alternative(t, alternatives));
+                AlternativeTokens.Add(new Alternative(t, alternatives));
             }
             _newAlt();
             for (;;) 
@@ -236,7 +236,7 @@ public override void Prime(ref Token t) {
                 using(astbuilder.createMarker("typ", null, false, true, false))
                 Expect(26 /*class*/);
                 if (!types.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, types.name), la);
-                alternatives.tdeclares = types;
+                alternatives.stdeclares = types;
                 addAlt(1); // T ident
                 using(astbuilder.createMarker("name", null, false, true, false))
                 Expect(1 /*[ident]*/);
@@ -280,7 +280,7 @@ public override void Prime(ref Token t) {
                 addAlt(62); // T "subsystem"
                 Expect(62 /*subsystem*/);
                 if (!types.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, types.name), la);
-                alternatives.tdeclares = types;
+                alternatives.stdeclares = types;
                 addAlt(1); // T ident
                 using(astbuilder.createMarker("name", null, false, true, false))
                 Expect(1 /*[ident]*/);
@@ -346,7 +346,7 @@ public override void Prime(ref Token t) {
                 addAlt(70); // T "enum"
                 Expect(70 /*enum*/);
                 if (!enumtypes.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, enumtypes.name), la);
-                alternatives.tdeclares = enumtypes;
+                alternatives.stdeclares = enumtypes;
                 addAlt(1); // T ident
                 using(astbuilder.createMarker(null, null, false, true, false))
                 Expect(1 /*[ident]*/);
@@ -371,7 +371,7 @@ public override void Prime(ref Token t) {
                 addAlt(69); // T "flags"
                 Expect(69 /*flags*/);
                 if (!types.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, types.name), la);
-                alternatives.tdeclares = types;
+                alternatives.stdeclares = types;
                 addAlt(1); // T ident
                 using(astbuilder.createMarker(null, null, false, true, false))
                 Expect(1 /*[ident]*/);
