@@ -376,13 +376,16 @@ namespace CocoRCore
     {
         public readonly int Kind;
         public readonly string Name;
-        public readonly string[] Items;
+        public IEnumerable<string> Items;
 
-        public FrozenSymboltable(int kind, string name, IEnumerable<string> items)
+        public FrozenSymboltable(int kind, string name, bool strict, IEnumerable<string> items)
         {
             Kind = kind;
             Name = name;
-            Items = items.ToArray();
+            if (strict)
+                Items = items.ToArray();
+            else
+                Items = items;
         }
     }
 
@@ -438,7 +441,7 @@ namespace CocoRCore
             return clone;
         }
 
-        public FrozenSymboltable Freeze(int kind) => new FrozenSymboltable(kind, name, from t in items select t.valScanned);
+        public FrozenSymboltable Freeze(int kind) => new FrozenSymboltable(kind, name, strict, from t in items select t.valScanned);
 
         private List<Alternative> fixuplist => parser.AlternativeTokens;
 
