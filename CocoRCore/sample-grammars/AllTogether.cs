@@ -22,8 +22,11 @@ namespace CocoRCore.Samples
                 var parser = pgen();
                 try
                 {
-                    parser.errors.UseShortDiagnosticFormat();
-                    // parser.errors.errorStream = Console.Out;
+
+                    if (parser is CodeLens.Parser)
+                        parser.errors.Writer = Console.Error;
+                    else
+                        parser.errors.UseShortDiagnosticFormat();
                     parser.Parse();
                     parser.Dispose();
                     foreach (var e in parser.errors)
@@ -31,7 +34,7 @@ namespace CocoRCore.Samples
                     Console.WriteLine("{0}: {1:f}.", parser.scanner.uri, parser.errors);
                     if (parser.errors.CountError == 0)
                     {
-                        foreach(var a in parser.AlternativeTokens.Take(10))
+                        foreach (var a in parser.AlternativeTokens.Take(10))
                         {
                             Console.WriteLine($"  Token {a.t.Range()} = {a.t.valScanned}. Alternatives:");
                             System.Console.Write("      keywords:");
@@ -40,7 +43,7 @@ namespace CocoRCore.Samples
                             {
                                 if (a.alt[kind])
                                 {
-                                    n++; if (n >= 6) 
+                                    n++; if (n >= 6)
                                     {
                                         Console.Write(" ...");
                                         break;
