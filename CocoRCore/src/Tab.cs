@@ -12,6 +12,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
     // Tab
     //=====================================================================
 
+    public enum LL1Condition
+    {
+        StartOfSeveralAlternatives_W21 = 21,
+        StartAndSuccessorOfDeleteableStructure_W22 = 22,
+        AnyNodeThatMatchesNoSymbol_W23 = 23,
+        ContentsOfOptOrAltMustNotBeDeleteable_W24 = 24
+    }
+
     public class Tab
     {
         public Range semDeclPos;       // position of global semantic declarations
@@ -957,61 +965,70 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         //--------------- check for LL(1) errors ----------------------
 
-        void LL1Error(int cond, Symbol sym)
+        void LL1Warning(LL1Condition cond, Symbol sym)
         {
-            var s = "LL1 warning in " + curSy.name + ": ";
+            var s = $"LL1 warning in NT '{curSy.name}': ";
             if (sym != null)
-                s += sym.name + sym.pos.ToString() + " is ";
+                s += $"{sym.name}{sym.pos} is ";
             switch (cond)
             {
-                case 1: s += "start of several alternatives"; break;
-                case 2: s += "start & successor of deletable structure"; break;
-                case 3: s += "an ANY node that matches no symbol"; break;
-                case 4: s += "contents of [...] or {...} must not be deletable"; break;
+                case LL1Condition.StartOfSeveralAlternatives_W21:
+                    s += "start of several alternatives";
+                    break;
+                case LL1Condition.StartAndSuccessorOfDeleteableStructure_W22:
+                    s += "start and successor of deletable structure";
+                    break;
+                case LL1Condition.AnyNodeThatMatchesNoSymbol_W23:
+                    s += "an ANY node that matches no symbol";
+                    break;
+                case LL1Condition.ContentsOfOptOrAltMustNotBeDeleteable_W24:
+                    s += "contents of [...] or {...} must not be deletable";
+                    break;
             }
-            Errors.Warning(curSy.pos, s, 20 + cond);
+            Errors.Warning(curSy.pos, s, (int)cond); // warning 21, 22, 23, 24
         }
 
-        void CheckOverlap(BitArray s1, BitArray s2, int cond)
+
+        void CheckOverlap(BitArray s1, BitArray s2, LL1Condition cond)
         {
             foreach (var sym in terminals)
                 if (s1[sym.n] && s2[sym.n])
-                    LL1Error(cond, sym);
+                    LL1Warning(cond, sym);
         }
 
         void CheckAlts(Node p)
         {
-            BitArray s1, s2;
             while (p != null)
             {
                 if (p.typ == NodeKind.alt)
                 {
-                    var q = p;
-                    s1 = new BitArray(terminals.Count);
-                    while (q != null)
+                    
+                    var s1 = new BitArray(terminals.Count); // start at: all false
+                    for (var q = p; q != null; q = q.down)
                     { // for all alternatives
-                        s2 = Expected0(q.sub, curSy);
-                        CheckOverlap(s1, s2, 1);
-                        s1.Or(s2);
+                        var s2 = Expected0(q.sub, curSy);
+                        CheckOverlap(s1, s2, LL1Condition.StartOfSeveralAlternatives_W21);
+                        s1.Or(s2); // mutates s1
                         CheckAlts(q.sub);
-                        q = q.down;
                     }
                 }
                 else if (p.typ == NodeKind.opt || p.typ == NodeKind.iter)
                 {
-                    if (DelSubGraph(p.sub)) LL1Error(4, null); // e.g. [[...]]
+                    if (DelSubGraph(p.sub))
+                        LL1Warning(LL1Condition.ContentsOfOptOrAltMustNotBeDeleteable_W24, null); // e.g. [[...]]
                     else
                     {
-                        s1 = Expected0(p.sub, curSy);
-                        s2 = Expected(p.next, curSy);
-                        CheckOverlap(s1, s2, 2);
+                        var s1 = Expected0(p.sub, curSy);
+                        var s2 = Expected(p.next, curSy);
+                        CheckOverlap(s1, s2, LL1Condition.StartAndSuccessorOfDeleteableStructure_W22);
                     }
                     CheckAlts(p.sub);
                 }
                 else if (p.typ == NodeKind.any)
-                    if (!p.set.Any()) LL1Error(3, null);
-                        // e.g. {ANY} ANY or [ANY] ANY or ( ANY | ANY )
-                if (p.up) break;
+                    if (!p.set.Any())
+                        LL1Warning(LL1Condition.AnyNodeThatMatchesNoSymbol_W23, null); // e.g. {ANY} ANY or [ANY] ANY or ( ANY | ANY )
+                if (p.up)
+                    break;
                 p = p.next;
             }
         }
