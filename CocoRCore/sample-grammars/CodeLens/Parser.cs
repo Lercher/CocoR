@@ -47,9 +47,8 @@ namespace CocoRCore.Samples.CodeLens
 
         public Parser()
         {
-        types = new Symboltable("types", true, false, this);
-        enumtypes = new Symboltable("enumtypes", true, false, this);
-        astbuilder = new AST.Builder(this);
+            types = new Symboltable("types", true, false, this);
+            enumtypes = new Symboltable("enumtypes", true, false, this);
         }
 
         public static Parser Create(string fileName) 
@@ -94,7 +93,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void CodeLens‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 Version‿NT();
                 Namespace‿NT();
@@ -136,7 +134,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void Version‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(13); // T version
                 Expect(13 /*version*/);
@@ -148,7 +145,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void Namespace‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 22 /*Namespace*/)))
                 {
@@ -164,7 +160,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void ReaderWriterPrefix‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 23 /*ReaderWriterPrefix*/)))
                 {
@@ -181,7 +176,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void RootClass‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 24 /*RootClass*/)))
                 {
@@ -203,7 +197,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void Class‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 26 /*Class*/)))
                 {
@@ -242,7 +235,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void SubSystem‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 62 /*SubSystem*/)))
                 {
@@ -300,7 +292,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void Enum‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 70 /*Enum*/)))
                 {
@@ -324,7 +315,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void Flags‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 69 /*Flags*/)))
                 {
@@ -353,7 +343,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void EndNamespace‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(8); // T end
                 Expect(8 /*end*/);
@@ -365,7 +354,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void DottedIdent‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(2); // OPT
                 if (isKind(la, 2 /*[dottedident]*/))
@@ -390,7 +378,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void Properties‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(set0, 2); // ITER start
                 while (StartOf(2))
@@ -404,7 +391,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void Title‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(6); // T braced
                 Expect(6 /*[braced]*/);
@@ -414,7 +400,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void Inherits‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(28); // T "inherits"
                 Expect(28 /*Inherits*/);
@@ -425,7 +410,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void Via‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(27); // T "via"
                 Expect(27 /*Via*/);
@@ -436,7 +420,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void Prop‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 while (!(StartOf(3)))
                 {
@@ -503,7 +486,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void Property‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(29); // T "property"
                 Expect(29 /*Property*/);
@@ -516,7 +498,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void InfoProperty‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(30); // T "infoproperty"
                 Expect(30 /*InfoProperty*/);
@@ -529,7 +510,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void APProperty‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(31); // T "approperty"
                 Expect(31 /*APProperty*/);
@@ -542,7 +522,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void List‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(32); // T "list"
                 Expect(32 /*List*/);
@@ -559,7 +538,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void SelectList‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(33); // T "selectlist"
                 Expect(33 /*SelectList*/);
@@ -572,7 +550,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void FlagsList‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(34); // T "flagslist"
                 Expect(34 /*FlagsList*/);
@@ -585,7 +562,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void LongProperty‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(35); // T "longproperty"
                 Expect(35 /*LongProperty*/);
@@ -597,7 +573,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void InfoLongProperty‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(36); // T "infolongproperty"
                 Expect(36 /*InfoLongProperty*/);
@@ -609,7 +584,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void Type‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(41); // ALT
                 addAlt(57); // ALT
@@ -644,7 +618,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void As‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(41); // T "as"
                 Expect(41 /*As*/);
@@ -673,7 +646,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void Mimics‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(57); // T "mimics"
                 Expect(57 /*Mimics*/);
@@ -697,7 +669,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void InitValue‿NT()
         {
-            using(astbuilder.createBarrier(""))
             {
                 addAlt(3); // ALT
                 addAlt(4); // ALT
@@ -771,7 +742,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void SampleValue‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(6); // T braced
                 Expect(6 /*[braced]*/);
@@ -781,7 +751,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void FunctionCall‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 DottedIdent‿NT();
                 addAlt(7); // T bracketed
@@ -792,7 +761,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void BaseType‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(42); // ALT
                 addAlt(43); // ALT
@@ -896,7 +864,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void MimicsSpec‿NT()
         {
-            using(astbuilder.createBarrier(""))
             {
                 addAlt(58); // ALT
                 addAlt(59); // ALT
@@ -926,7 +893,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void Query‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(58); // T "query"
                 Expect(58 /*query*/);
@@ -947,7 +913,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void Txt‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(59); // T "txt"
                 Expect(59 /*txt*/);
@@ -968,7 +933,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void XL‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(60); // T "xl"
                 Expect(60 /*xl*/);
@@ -989,7 +953,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void Ref‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(61); // T "ref"
                 Expect(61 /*ref*/);
@@ -1016,7 +979,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void StringOrIdent‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(5); // ALT
                 addAlt(new int[] {1, 2}); // ALT
@@ -1036,7 +998,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void SSCommands‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 SSCommand‿NT();
                 addAlt(10); // ITER start
@@ -1052,7 +1013,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void SSCommand‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(14); // ALT
                 addAlt(15); // ALT
@@ -1087,7 +1047,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void EnumValue‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(1); // T ident
                 Expect(1 /*[ident]*/);
@@ -1102,7 +1061,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void EnumValues‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(1); // ITER start
                 while (isKind(la, 1 /*[ident]*/))
@@ -1125,7 +1083,6 @@ namespace CocoRCore.Samples.CodeLens
 
         void EnumIntValue‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(37); // T "="
                 Expect(37 /*=*/);
@@ -1261,8 +1218,6 @@ namespace CocoRCore.Samples.CodeLens
 
         protected override bool StartOf(int s, int kind) => set[s, kind];
 
-        public readonly AST.Builder astbuilder; // can also be private  
-        public AST ast { get { return astbuilder.current; }}
 
 
         public override string Syntaxerror(int n) 

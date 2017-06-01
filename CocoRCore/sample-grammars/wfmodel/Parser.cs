@@ -56,9 +56,9 @@ public override void Prime(ref Token t) {
 
         public Parser()
         {
-        types = new Symboltable("types", true, false, this);
-        enumtypes = new Symboltable("enumtypes", true, false, this);
-        astbuilder = new AST.Builder(this);
+            types = new Symboltable("types", true, false, this);
+            enumtypes = new Symboltable("enumtypes", true, false, this);
+            astbuilder = new AST.Builder(this);
         }
 
         public static Parser Create(string fileName) 

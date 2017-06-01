@@ -70,11 +70,11 @@ void Diag(int n, string s, string kind) {
 
         public Parser()
         {
-        languages = new Symboltable("languages", true, true, this);
-        deletabletables = new Symboltable("deletabletables", true, true, this);
-        updatetables = new Symboltable("updatetables", true, true, this);
-        columns = new Symboltable("columns", true, true, this);
-        chrarguments = new Symboltable("chrarguments", true, true, this);
+            languages = new Symboltable("languages", true, true, this);
+            deletabletables = new Symboltable("deletabletables", true, true, this);
+            updatetables = new Symboltable("updatetables", true, true, this);
+            columns = new Symboltable("columns", true, true, this);
+            chrarguments = new Symboltable("chrarguments", true, true, this);
         }
 
         public static Parser Create(string fileName) 
