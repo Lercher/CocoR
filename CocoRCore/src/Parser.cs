@@ -31,7 +31,7 @@ namespace CocoRCore.CSharp
 
 const int id = 0;
     const int str = 1;
-    
+
     public TextWriter trace;    // other Coco objects referenced in this ATG
     public Tab tab;
     public DFA dfa;
@@ -41,7 +41,7 @@ const int id = 0;
     string tokenString;         // used in declarations of literal tokens
     string noString = "-none-"; // used in declarations of literal tokens
 
-    public override void Dispose() 
+    public override void Dispose()
     {
         trace?.Dispose();
         base.Dispose();
@@ -589,7 +589,7 @@ const int id = 0;
         }
 
 
-        void Symboltable‿NT(List<SymTab> sts )
+        void Symboltable‿NT(List<SymTab> sts)
         {
             {
                 Expect(1 /*[ident]*/);

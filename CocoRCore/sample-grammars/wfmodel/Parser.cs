@@ -44,10 +44,10 @@ namespace CocoRCore.Samples.WFModel
         }
 
 
-public override void Prime(ref Token t) { 
+public override void Prime(ref Token t) {
 		if (t.kind == _string || t.kind == _braced || t.kind == _bracketed)
 		{
-			var tb = t.Copy(); 
+			var tb = t.Copy();
 			tb.setValue(t.valScanned.Substring(1, t.val.Length - 2), scanner.casingString);
 			t = tb.Freeze();
 		}

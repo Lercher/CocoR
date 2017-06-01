@@ -84,7 +84,18 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 return;
             var s = parser.scanner.buffer.GetBufferedString(range);
             if (!indent)
-                Gen.Write(GW.Append, s);
+            {
+                // s only contains LFs (0x0A). For Windows we need "\n", i.e. CRLF (0x0D, 0x0A)
+                // so we split s as LFs, trim trailing spaces and CRs
+                var lines = s.Split((char)ScannerBase.EOL);
+                for (var i = 0; i < lines.Length; i++)
+                {
+                    if (i > 0)
+                        Gen.Write(GW.EndLine, string.Empty);
+                    var line = lines[i].TrimEnd();
+                    Gen.Write(GW.Append, line);
+                }
+            }
             else
             {
                 if (string.IsNullOrWhiteSpace(s))
