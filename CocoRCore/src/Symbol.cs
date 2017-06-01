@@ -72,5 +72,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 }
             }
         }
+
+        public override string ToString() 
+            => $"{VariantName}{pos}";
     }
 }

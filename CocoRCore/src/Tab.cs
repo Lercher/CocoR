@@ -37,14 +37,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public string nsName;             // namespace for generated files
         public string frameDir;           // directory containing the frame files
         public string outDir;             // directory for generated files
-        public bool checkEOF = true;      // should coco generate a check for EOF at
-                                          //   the end of Parser.Parse():
-        public bool emitLines;            // emit #line pragmas for semantic actions
-                                          //   in the generated parser
+        public bool checkEOF = true;      // should coco generate a check for EOF at the end of Parser.Parse():
+        public bool emitLines;            // emit #line pragmas for semantic actions in the generated parser
         public bool createOld;              // omit scanner.cs.old and parser.cs.old
-
-        BitArray visited;                 // mark list for graph traversals
-        Symbol curSy;                     // current symbol in computation of sets
 
         public readonly Parser parser;                    // other Coco objects
         private TextWriter Trace => parser.trace;
@@ -282,7 +277,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         }
 
         public void SetContextTrans(Node p)
-        { // set transition code in the graph rooted at p
+        {
+            // set transition code in the graph rooted at p
             while (p != null)
             {
                 if (p.typ == NodeKind.chr || p.typ == NodeKind.clas)
@@ -497,9 +493,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             }
         }
 
-        void CompFollow(Node p)
+        void CompFollow(Node pp, Symbol curSy, BitArray visited)
         {
-            while (p != null && !visited[p.n])
+            for (var p = pp;  p != null && !visited[p.n]; p = p.next)
             {
                 visited[p.n] = true;
                 if (p.typ == NodeKind.nt)
@@ -510,16 +506,16 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                         p.sym.nts[curSy.n] = true;
                 }
                 else if (p.typ == NodeKind.opt || p.typ == NodeKind.iter)
-                    CompFollow(p.sub);
+                    CompFollow(p.sub, curSy, visited);
                 else if (p.typ == NodeKind.alt)
                 {
-                    CompFollow(p.sub); CompFollow(p.down);
+                    CompFollow(p.sub, curSy, visited);
+                    CompFollow(p.down, curSy, visited);
                 }
-                p = p.next;
             }
         }
 
-        void Complete(Symbol sym)
+        private void Complete(Symbol sym, Symbol curSy, BitArray visited)
         {
             if (!visited[sym.n])
             {
@@ -527,9 +523,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 foreach (var s in nonterminals)
                     if (sym.nts[s.n])
                     {
-                        Complete(s);
+                        Complete(s, curSy, visited);
                         sym.follow.Or(s.follow);
-                        if (sym == curSy) sym.nts[s.n] = false;
+                        if (sym == curSy)
+                            sym.nts[s.n] = false;
                     }
             }
         }
@@ -542,17 +539,19 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 sym.nts = new BitArray(nonterminals.Count);
             }
             gramSy.follow[eofSy.n] = true;
-            visited = new BitArray(nodes.Count);
-            foreach (var sym in nonterminals)
-            { // get direct successors of nonterminals
-                curSy = sym;
-                CompFollow(sym.graph);
+            {
+                var visited = new BitArray(nodes.Count);
+                foreach (var sym in nonterminals)
+                { 
+                    // get direct successors of nonterminals
+                    CompFollow(sym.graph, sym, visited);
+                }
             }
             foreach (var sym in nonterminals)
-            { // add indirect successors to followers
-                visited = new BitArray(nonterminals.Count);
-                curSy = sym;
-                Complete(sym);
+            { 
+                // add indirect successors to followers
+                var visited = new BitArray(nonterminals.Count);
+                Complete(sym, sym, visited);
             }
         }
 
@@ -576,7 +575,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         }
 
         void FindAS(Node p)
-        { // find ANY sets
+        { 
+            // find ANY sets
             Node a;
             while (p != null)
             {
@@ -644,7 +644,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 return Expected(p, curSy);
         }
 
-        void CompSync(Node p)
+        void CompSync(Node p, Symbol curSy, BitArray visited)
         {
             while (p != null && !visited[p.n])
             {
@@ -658,10 +658,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 }
                 else if (p.typ == NodeKind.alt)
                 {
-                    CompSync(p.sub); CompSync(p.down);
+                    CompSync(p.sub, curSy, visited);
+                    CompSync(p.down, curSy, visited);
                 }
                 else if (p.typ == NodeKind.opt || p.typ == NodeKind.iter)
-                    CompSync(p.sub);
+                    CompSync(p.sub, curSy, visited);
                 p = p.next;
             }
         }
@@ -672,11 +673,10 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             {
                 [eofSy.n] = true
             };
-            visited = new BitArray(nodes.Count);
+            var visited = new BitArray(nodes.Count);
             foreach (var sym in nonterminals)
             {
-                curSy = sym;
-                CompSync(curSy.graph);
+                CompSync(sym.graph, sym, visited);
             }
         }
 
@@ -965,11 +965,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         //--------------- check for LL(1) errors ----------------------
 
-        void LL1Warning(LL1Condition cond, Symbol sym)
+        private void LL1Warning(LL1Condition cond, Symbol sym, Node p, Node q, Symbol curSy)
         {
-            var s = $"LL1 warning in NT '{curSy.name}': ";
+            var s = $"LL1 warning in production {curSy.name}: ";
             if (sym != null)
-                s += $"{sym.name}{sym.pos} is ";
+                s += $"{sym} is ";
             switch (cond)
             {
                 case LL1Condition.StartOfSeveralAlternatives_W21:
@@ -979,24 +979,26 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     s += "start and successor of deletable structure";
                     break;
                 case LL1Condition.AnyNodeThatMatchesNoSymbol_W23:
-                    s += "an ANY node that matches no symbol";
+                    s += "there is an ANY node that matches no symbol";
                     break;
                 case LL1Condition.ContentsOfOptOrAltMustNotBeDeleteable_W24:
                     s += "contents of [...] or {...} must not be deletable";
                     break;
             }
+            if (p != null) s += $" [{p}]";
+            if (q != null) s += $" [{q}]";
             Errors.Warning(curSy.pos, s, (int)cond); // warning 21, 22, 23, 24
         }
 
 
-        void CheckOverlap(BitArray s1, BitArray s2, LL1Condition cond)
+        private void CheckOverlap(BitArray s1, BitArray s2, Node p, Node q, Symbol curSy, LL1Condition cond)
         {
             foreach (var sym in terminals)
                 if (s1[sym.n] && s2[sym.n])
-                    LL1Warning(cond, sym);
+                    LL1Warning(cond, sym, p, q, curSy);
         }
 
-        void CheckAlts(Node p)
+        void CheckAlts(Node p, Symbol curSy)
         {
             while (p != null)
             {
@@ -1005,28 +1007,29 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     
                     var s1 = new BitArray(terminals.Count); // start at: all false
                     for (var q = p; q != null; q = q.down)
-                    { // for all alternatives
+                    { 
+                        // for all alternatives
                         var s2 = Expected0(q.sub, curSy);
-                        CheckOverlap(s1, s2, LL1Condition.StartOfSeveralAlternatives_W21);
+                        CheckOverlap(s1, s2, p, q, curSy, LL1Condition.StartOfSeveralAlternatives_W21);
                         s1.Or(s2); // mutates s1
-                        CheckAlts(q.sub);
+                        CheckAlts(q.sub, curSy);
                     }
                 }
                 else if (p.typ == NodeKind.opt || p.typ == NodeKind.iter)
                 {
                     if (DelSubGraph(p.sub))
-                        LL1Warning(LL1Condition.ContentsOfOptOrAltMustNotBeDeleteable_W24, null); // e.g. [[...]]
+                        LL1Warning(LL1Condition.ContentsOfOptOrAltMustNotBeDeleteable_W24, null, p, null, curSy); // e.g. [[...]]
                     else
                     {
                         var s1 = Expected0(p.sub, curSy);
                         var s2 = Expected(p.next, curSy);
-                        CheckOverlap(s1, s2, LL1Condition.StartAndSuccessorOfDeleteableStructure_W22);
+                        CheckOverlap(s1, s2, null, null, curSy, LL1Condition.StartAndSuccessorOfDeleteableStructure_W22);
                     }
-                    CheckAlts(p.sub);
+                    CheckAlts(p.sub, curSy);
                 }
                 else if (p.typ == NodeKind.any)
                     if (!p.set.Any())
-                        LL1Warning(LL1Condition.AnyNodeThatMatchesNoSymbol_W23, null); // e.g. {ANY} ANY or [ANY] ANY or ( ANY | ANY )
+                        LL1Warning(LL1Condition.AnyNodeThatMatchesNoSymbol_W23, null, null, null, curSy); // e.g. {ANY} ANY or [ANY] ANY or ( ANY | ANY )
                 if (p.up)
                     break;
                 p = p.next;
@@ -1036,17 +1039,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public void CheckLL1()
         {
             foreach (var sym in nonterminals)
-            {
-                curSy = sym;
-                CheckAlts(curSy.graph);
-            }
+                CheckAlts(sym.graph, sym);
         }
 
         //------------- check if resolvers are legal  --------------------
 
         void ResErr(Node p, string msg) => Errors.Warning(p.pos.start, msg, id: 31);
 
-        void CheckRes(Node p, bool rslvAllowed)
+        void CheckRes(Node p, bool rslvAllowed, Symbol curSy)
         {
             while (p != null)
             {
@@ -1068,7 +1068,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                                     ResErr(q.sub, "Warning: Misplaced resolver: no LL(1) conflict.");
                             }
                             else soFar.Or(Expected(q.sub, curSy));
-                            CheckRes(q.sub, true);
+                            CheckRes(q.sub, true, curSy);
                         }
                         break;
                     case NodeKind.iter:
@@ -1080,7 +1080,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                             if (!fs.Intersects(fsNext))
                                 ResErr(p.sub, "Warning: Misplaced resolver: no LL(1) conflict.");
                         }
-                        CheckRes(p.sub, true);
+                        CheckRes(p.sub, true, curSy);
                         break;
                     case NodeKind.rslv:
                         if (!rslvAllowed)
@@ -1096,10 +1096,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public void CheckResolvers()
         {
             foreach (var sym in nonterminals)
-            {
-                curSy = sym;
-                CheckRes(curSy.graph, false);
-            }
+                CheckRes(sym.graph, false, sym);
         }
 
         //------------- check if every nts has a production --------------------
@@ -1118,38 +1115,40 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         //-------------- check if every nts can be reached  -----------------
 
-        void MarkReachedNts(Node p)
+        void MarkReachedNts(Node pp, BitArray visited)
         {
-            while (p != null)
+            for (var p = pp; p != null; p = p.next)
             {
                 if (p.typ == NodeKind.nt && !visited[p.sym.n])
-                { // new nt reached
+                { 
+                    // new nt reached
                     visited[p.sym.n] = true;
-                    MarkReachedNts(p.sym.graph);
+                    MarkReachedNts(p.sym.graph, visited);
                 }
                 else if (p.typ == NodeKind.alt || p.typ == NodeKind.iter || p.typ == NodeKind.opt)
                 {
-                    MarkReachedNts(p.sub);
-                    if (p.typ == NodeKind.alt) MarkReachedNts(p.down);
+                    MarkReachedNts(p.sub, visited);
+                    if (p.typ == NodeKind.alt)
+                        MarkReachedNts(p.down, visited);
                 }
-                if (p.up) break;
-                p = p.next;
+                if (p.up)
+                    break;
             }
         }
 
         public bool AllNtReached()
         {
             var ok = true;
-            visited = new BitArray(nonterminals.Count)
+            var visited = new BitArray(nonterminals.Count)
             {
                 [gramSy.n] = true
             };
-            MarkReachedNts(gramSy.graph);
+            MarkReachedNts(gramSy.graph, visited);
             foreach (var sym in nonterminals)
                 if (!visited[sym.n])
                 {
                     ok = false;
-                    Errors.Warning(sym.pos, sym.name + " cannot be reached", 41);
+                    Errors.Warning(sym.pos, $"{sym.name} cannot be reached", 41);
                 }
             return ok;
         }
@@ -1157,7 +1156,8 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         //--------- check if every nts can be derived to terminals  ------------
 
         bool IsTerm(Node p, BitArray mark)
-        { // true if graph can be derived to terminals
+        { 
+            // true if graph can be derived to terminals
             while (p != null)
             {
                 if (p.typ == NodeKind.nt && !mark[p.sym.n])
