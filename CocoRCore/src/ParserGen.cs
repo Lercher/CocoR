@@ -752,9 +752,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 CopySourcePart(Tab.semDeclPos, indent: false);
 
                 Gen.CopyFramePart("-->constructor");
+                Gen.Indentation++;
                 GenSymbolTables(declare: false);
                 if (needsAST)
                     Gen.Write(GW.Line, "astbuilder = new AST.Builder(this);");
+                Gen.Indentation--;
 
                 Gen.CopyFramePart("(((beginalternatives");
                 Gen.Indentation += 2; // in Get()/for()
