@@ -18,16 +18,16 @@ will be the one to choose.
 
 The main intention is to enable Coco/R to play well in a .Net core ecosystem and to allow
 multiple different parsers to live efficently in the same compile unit, 
-scanning strings, stringbuilders *and* streams. And maybe even have a way to dynamicly produce the 
-code for a parser and compile it on the fly within the Roslyn compiler architecture.
+scanning strings, stringbuilders and char streams. And maybe even have a way to dynamicly produce the code for a parser and compile it on the fly within the Roslyn compiler architecture.
 
 In particular:
 
 * Getting rid of non-generic collections such as `ArrayList` and `Hashtable`
 * Getting rid of enum kind `int`s
+* getting rid of problematic CRLF handling. Should be normalized to unix file convention to only have linefeeds \n out of the scanner
 * One class per file for Coco/R
-* Putting some common `Scanner.frame` and `Parser.frame` classes in a seperate source file each, bute these will contain many classes per file
-* Refactoring the scanner to accept `IEnumerable<char>` in addition to `Stream`
+* Putting some common `Scanner.frame` and `Parser.frame` classes in a separate source file each, bute these will contain many classes per file
+* Refactoring the scanner to accept `TextReader` instead of `Stream`
 * Factoring out `Scanner` code to a common base class
 * Factoring out `Parser` code to a common base class
 * Getting rid of huge *.frame files, without loosing the flexibility they provide. Maybe become linked resources.
@@ -35,6 +35,10 @@ In particular:
 * using `Func<X,Y>` etc. instead of frame file code.
 * remove/replace scanner buffer spaghetti code
 * better diagnostic messages (e.g. on alternatives)
+* better LL1 warnings
+* Scanner comment handling could be a method call with parameters, instead of generated code
+* comments should be made available to the parser just like pragmas
+* better Parser/Scanner creation and initialization, i.e. getting rid of myriad new() variants
 
 ## Howto install the dotnet SDK on ubuntu 17.04
 
@@ -145,7 +149,7 @@ We recommend to use Visual Studio Code to build this version. First open this di
 * If it won't run, try `F1` plus `task restore` first.
 
 
-## Status: incubating / stabilizing
+## Status: alpha / stabilizing API
 
 * compiles to be run as a process
 * generates mixed V2 and core code
@@ -159,7 +163,7 @@ We recommend to use Visual Studio Code to build this version. First open this di
 * ... including `src/*.frame.cs` works
 * API unstable
 * switch -ac (autocomplete) unstable: removes initialization but not the calls
-* more new C# code
+* more new C#7 code, var, lambdas etc.
 * no more Buffer but a TextReader facade
 * due to a buffer constraint, ATGs with semantic actions cannot be longer than aprox. 128k characters currently
 * targets core and net40 now
