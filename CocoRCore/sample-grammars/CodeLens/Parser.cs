@@ -99,7 +99,7 @@ namespace CocoRCore.Samples.CodeLens
                 Version‿NT();
                 Namespace‿NT();
                 addAlt(23); // OPT
-                if (isKind(la, 23 /*readerwriterprefix*/))
+                if (isKind(la, 23 /*ReaderWriterPrefix*/))
                 {
                     ReaderWriterPrefix‿NT();
                 }
@@ -111,15 +111,15 @@ namespace CocoRCore.Samples.CodeLens
                     addAlt(62); // ALT
                     addAlt(70); // ALT
                     addAlt(69); // ALT
-                    if (isKind(la, 26 /*class*/))
+                    if (isKind(la, 26 /*Class*/))
                     {
                         Class‿NT();
                     }
-                    else if (isKind(la, 62 /*subsystem*/))
+                    else if (isKind(la, 62 /*SubSystem*/))
                     {
                         SubSystem‿NT();
                     }
-                    else if (isKind(la, 70 /*enum*/))
+                    else if (isKind(la, 70 /*Enum*/))
                     {
                         Enum‿NT();
                     }
@@ -150,13 +150,13 @@ namespace CocoRCore.Samples.CodeLens
         {
             using(astbuilder.createBarrier(null))
             {
-                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 22 /*namespace*/)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 22 /*Namespace*/)))
                 {
                     SynErr(74);
                     Get();
                 }
                 addAlt(22); // T "namespace"
-                Expect(22 /*namespace*/);
+                Expect(22 /*Namespace*/);
                 DottedIdent‿NT();
             }
         }
@@ -166,13 +166,13 @@ namespace CocoRCore.Samples.CodeLens
         {
             using(astbuilder.createBarrier(null))
             {
-                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 23 /*readerwriterprefix*/)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 23 /*ReaderWriterPrefix*/)))
                 {
                     SynErr(75);
                     Get();
                 }
                 addAlt(23); // T "readerwriterprefix"
-                Expect(23 /*readerwriterprefix*/);
+                Expect(23 /*ReaderWriterPrefix*/);
                 addAlt(1); // T ident
                 Expect(1 /*[ident]*/);
             }
@@ -183,20 +183,20 @@ namespace CocoRCore.Samples.CodeLens
         {
             using(astbuilder.createBarrier(null))
             {
-                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 24 /*rootclass*/)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 24 /*RootClass*/)))
                 {
                     SynErr(76);
                     Get();
                 }
                 addAlt(24); // T "rootclass"
-                Expect(24 /*rootclass*/);
+                Expect(24 /*RootClass*/);
                 addAlt(25); // T "data"
-                Expect(25 /*data*/);
+                Expect(25 /*Data*/);
                 Properties‿NT();
                 addAlt(8); // T end
                 Expect(8 /*end*/);
                 addAlt(26); // T "class"
-                Expect(26 /*class*/);
+                Expect(26 /*Class*/);
             }
         }
 
@@ -205,13 +205,13 @@ namespace CocoRCore.Samples.CodeLens
         {
             using(astbuilder.createBarrier(null))
             {
-                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 26 /*class*/)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 26 /*Class*/)))
                 {
                     SynErr(77);
                     Get();
                 }
                 addAlt(26); // T "class"
-                Expect(26 /*class*/);
+                Expect(26 /*Class*/);
                 if (!types.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, types.name), la);
                 alternatives.stdeclares = types;
                 addAlt(1); // T ident
@@ -222,12 +222,12 @@ namespace CocoRCore.Samples.CodeLens
                     Title‿NT();
                 }
                 addAlt(28); // OPT
-                if (isKind(la, 28 /*inherits*/))
+                if (isKind(la, 28 /*Inherits*/))
                 {
                     Inherits‿NT();
                 }
                 addAlt(27); // OPT
-                if (isKind(la, 27 /*via*/))
+                if (isKind(la, 27 /*Via*/))
                 {
                     Via‿NT();
                 }
@@ -235,7 +235,7 @@ namespace CocoRCore.Samples.CodeLens
                 addAlt(8); // T end
                 Expect(8 /*end*/);
                 addAlt(26); // T "class"
-                Expect(26 /*class*/);
+                Expect(26 /*Class*/);
             }
         }
 
@@ -244,48 +244,48 @@ namespace CocoRCore.Samples.CodeLens
         {
             using(astbuilder.createBarrier(null))
             {
-                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 62 /*subsystem*/)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 62 /*SubSystem*/)))
                 {
                     SynErr(78);
                     Get();
                 }
                 addAlt(62); // T "subsystem"
-                Expect(62 /*subsystem*/);
+                Expect(62 /*SubSystem*/);
                 if (!types.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, types.name), la);
                 alternatives.stdeclares = types;
                 addAlt(1); // T ident
                 Expect(1 /*[ident]*/);
                 addAlt(63); // T "ssname"
-                Expect(63 /*ssname*/);
+                Expect(63 /*SSName*/);
                 addAlt(1); // T ident
                 Expect(1 /*[ident]*/);
                 addAlt(64); // T "ssconfig"
-                Expect(64 /*ssconfig*/);
+                Expect(64 /*SSConfig*/);
                 addAlt(1); // T ident
                 Expect(1 /*[ident]*/);
                 addAlt(65); // T "sstyp"
-                Expect(65 /*sstyp*/);
+                Expect(65 /*SSTyp*/);
                 addAlt(1); // T ident
                 Expect(1 /*[ident]*/);
                 addAlt(66); // T "sscommands"
-                Expect(66 /*sscommands*/);
+                Expect(66 /*SSCommands*/);
                 SSCommands‿NT();
                 addAlt(67); // OPT
-                if (isKind(la, 67 /*sskey*/))
+                if (isKind(la, 67 /*SSKey*/))
                 {
                     Get();
                     addAlt(5); // T string
                     Expect(5 /*[string]*/);
                 }
                 addAlt(68); // OPT
-                if (isKind(la, 68 /*ssclear*/))
+                if (isKind(la, 68 /*SSClear*/))
                 {
                     Get();
                     addAlt(5); // T string
                     Expect(5 /*[string]*/);
                 }
                 addAlt(30); // ITER start
-                while (isKind(la, 30 /*infoproperty*/))
+                while (isKind(la, 30 /*InfoProperty*/))
                 {
                     InfoProperty‿NT();
                     addAlt(30); // ITER end
@@ -293,7 +293,7 @@ namespace CocoRCore.Samples.CodeLens
                 addAlt(8); // T end
                 Expect(8 /*end*/);
                 addAlt(62); // T "subsystem"
-                Expect(62 /*subsystem*/);
+                Expect(62 /*SubSystem*/);
             }
         }
 
@@ -302,13 +302,13 @@ namespace CocoRCore.Samples.CodeLens
         {
             using(astbuilder.createBarrier(null))
             {
-                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 70 /*enum*/)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 70 /*Enum*/)))
                 {
                     SynErr(79);
                     Get();
                 }
                 addAlt(70); // T "enum"
-                Expect(70 /*enum*/);
+                Expect(70 /*Enum*/);
                 if (!enumtypes.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, enumtypes.name), la);
                 alternatives.stdeclares = enumtypes;
                 addAlt(1); // T ident
@@ -317,7 +317,7 @@ namespace CocoRCore.Samples.CodeLens
                 addAlt(8); // T end
                 Expect(8 /*end*/);
                 addAlt(70); // T "enum"
-                Expect(70 /*enum*/);
+                Expect(70 /*Enum*/);
             }
         }
 
@@ -326,13 +326,13 @@ namespace CocoRCore.Samples.CodeLens
         {
             using(astbuilder.createBarrier(null))
             {
-                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 69 /*flags*/)))
+                while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 69 /*Flags*/)))
                 {
                     SynErr(80);
                     Get();
                 }
                 addAlt(69); // T "flags"
-                Expect(69 /*flags*/);
+                Expect(69 /*Flags*/);
                 if (!types.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, types.name), la);
                 alternatives.stdeclares = types;
                 addAlt(1); // T ident
@@ -346,7 +346,7 @@ namespace CocoRCore.Samples.CodeLens
                 addAlt(8); // T end
                 Expect(8 /*end*/);
                 addAlt(69); // T "flags"
-                Expect(69 /*flags*/);
+                Expect(69 /*Flags*/);
             }
         }
 
@@ -358,7 +358,7 @@ namespace CocoRCore.Samples.CodeLens
                 addAlt(8); // T end
                 Expect(8 /*end*/);
                 addAlt(22); // T "namespace"
-                Expect(22 /*namespace*/);
+                Expect(22 /*Namespace*/);
             }
         }
 
@@ -417,7 +417,7 @@ namespace CocoRCore.Samples.CodeLens
             using(astbuilder.createBarrier(null))
             {
                 addAlt(28); // T "inherits"
-                Expect(28 /*inherits*/);
+                Expect(28 /*Inherits*/);
                 DottedIdent‿NT();
             }
         }
@@ -428,7 +428,7 @@ namespace CocoRCore.Samples.CodeLens
             using(astbuilder.createBarrier(null))
             {
                 addAlt(27); // T "via"
-                Expect(27 /*via*/);
+                Expect(27 /*Via*/);
                 DottedIdent‿NT();
             }
         }
@@ -453,42 +453,42 @@ namespace CocoRCore.Samples.CodeLens
                 addAlt(36); // ALT
                 switch (la.kind)
                 {
-                    case 29: /*property*/
+                    case 29: /*Property*/
                         { // scoping
                             Property‿NT();
                         }
                         break;
-                    case 30: /*infoproperty*/
+                    case 30: /*InfoProperty*/
                         { // scoping
                             InfoProperty‿NT();
                         }
                         break;
-                    case 31: /*approperty*/
+                    case 31: /*APProperty*/
                         { // scoping
                             APProperty‿NT();
                         }
                         break;
-                    case 32: /*list*/
+                    case 32: /*List*/
                         { // scoping
                             List‿NT();
                         }
                         break;
-                    case 33: /*selectlist*/
+                    case 33: /*SelectList*/
                         { // scoping
                             SelectList‿NT();
                         }
                         break;
-                    case 34: /*flagslist*/
+                    case 34: /*FlagsList*/
                         { // scoping
                             FlagsList‿NT();
                         }
                         break;
-                    case 35: /*longproperty*/
+                    case 35: /*LongProperty*/
                         { // scoping
                             LongProperty‿NT();
                         }
                         break;
-                    case 36: /*infolongproperty*/
+                    case 36: /*InfoLongProperty*/
                         { // scoping
                             InfoLongProperty‿NT();
                         }
@@ -506,7 +506,7 @@ namespace CocoRCore.Samples.CodeLens
             using(astbuilder.createBarrier(null))
             {
                 addAlt(29); // T "property"
-                Expect(29 /*property*/);
+                Expect(29 /*Property*/);
                 addAlt(1); // T ident
                 Expect(1 /*[ident]*/);
                 Type‿NT();
@@ -519,7 +519,7 @@ namespace CocoRCore.Samples.CodeLens
             using(astbuilder.createBarrier(null))
             {
                 addAlt(30); // T "infoproperty"
-                Expect(30 /*infoproperty*/);
+                Expect(30 /*InfoProperty*/);
                 addAlt(1); // T ident
                 Expect(1 /*[ident]*/);
                 Type‿NT();
@@ -532,7 +532,7 @@ namespace CocoRCore.Samples.CodeLens
             using(astbuilder.createBarrier(null))
             {
                 addAlt(31); // T "approperty"
-                Expect(31 /*approperty*/);
+                Expect(31 /*APProperty*/);
                 addAlt(1); // T ident
                 Expect(1 /*[ident]*/);
                 Type‿NT();
@@ -545,11 +545,11 @@ namespace CocoRCore.Samples.CodeLens
             using(astbuilder.createBarrier(null))
             {
                 addAlt(32); // T "list"
-                Expect(32 /*list*/);
+                Expect(32 /*List*/);
                 addAlt(1); // T ident
                 Expect(1 /*[ident]*/);
                 addAlt(41); // OPT
-                if (isKind(la, 41 /*as*/))
+                if (isKind(la, 41 /*As*/))
                 {
                     As‿NT();
                 }
@@ -562,7 +562,7 @@ namespace CocoRCore.Samples.CodeLens
             using(astbuilder.createBarrier(null))
             {
                 addAlt(33); // T "selectlist"
-                Expect(33 /*selectlist*/);
+                Expect(33 /*SelectList*/);
                 addAlt(1); // T ident
                 Expect(1 /*[ident]*/);
                 As‿NT();
@@ -575,7 +575,7 @@ namespace CocoRCore.Samples.CodeLens
             using(astbuilder.createBarrier(null))
             {
                 addAlt(34); // T "flagslist"
-                Expect(34 /*flagslist*/);
+                Expect(34 /*FlagsList*/);
                 addAlt(1); // T ident
                 Expect(1 /*[ident]*/);
                 Mimics‿NT();
@@ -588,7 +588,7 @@ namespace CocoRCore.Samples.CodeLens
             using(astbuilder.createBarrier(null))
             {
                 addAlt(35); // T "longproperty"
-                Expect(35 /*longproperty*/);
+                Expect(35 /*LongProperty*/);
                 addAlt(1); // T ident
                 Expect(1 /*[ident]*/);
             }
@@ -600,7 +600,7 @@ namespace CocoRCore.Samples.CodeLens
             using(astbuilder.createBarrier(null))
             {
                 addAlt(36); // T "infolongproperty"
-                Expect(36 /*infolongproperty*/);
+                Expect(36 /*InfoLongProperty*/);
                 addAlt(1); // T ident
                 Expect(1 /*[ident]*/);
             }
@@ -614,11 +614,11 @@ namespace CocoRCore.Samples.CodeLens
                 addAlt(41); // ALT
                 addAlt(57); // ALT
                 addAlt(set0, 4); // ALT
-                if (isKind(la, 41 /*as*/))
+                if (isKind(la, 41 /*As*/))
                 {
                     As‿NT();
                 }
-                else if (isKind(la, 57 /*mimics*/))
+                else if (isKind(la, 57 /*Mimics*/))
                 {
                     Mimics‿NT();
                 }
@@ -647,7 +647,7 @@ namespace CocoRCore.Samples.CodeLens
             using(astbuilder.createBarrier(null))
             {
                 addAlt(41); // T "as"
-                Expect(41 /*as*/);
+                Expect(41 /*As*/);
                 addAlt(set0, 5); // ALT
                 addAlt(1); // ALT
                 addAlt(1, types); // ALT ident uses symbol table 'types'
@@ -676,7 +676,7 @@ namespace CocoRCore.Samples.CodeLens
             using(astbuilder.createBarrier(null))
             {
                 addAlt(57); // T "mimics"
-                Expect(57 /*mimics*/);
+                Expect(57 /*Mimics*/);
                 addAlt(set0, 6); // ALT
                 addAlt(1); // ALT
                 addAlt(1, enumtypes); // ALT ident uses symbol table 'enumtypes'
@@ -861,7 +861,7 @@ namespace CocoRCore.Samples.CodeLens
                             Get();
                         }
                         break;
-                    case 52: /*string*/
+                    case 52: /*String*/
                         { // scoping
                             Get();
                         }
@@ -871,17 +871,17 @@ namespace CocoRCore.Samples.CodeLens
                             Get();
                         }
                         break;
-                    case 54: /*guid*/
+                    case 54: /*Guid*/
                         { // scoping
                             Get();
                         }
                         break;
-                    case 55: /*string()*/
+                    case 55: /*String()*/
                         { // scoping
                             Get();
                         }
                         break;
-                    case 56: /*xml*/
+                    case 56: /*XML*/
                         { // scoping
                             Get();
                         }
@@ -1111,7 +1111,7 @@ namespace CocoRCore.Samples.CodeLens
                     addAlt(1); // ITER end
                 }
                 addAlt(71); // T "default"
-                Expect(71 /*default*/);
+                Expect(71 /*DEFAULT*/);
                 EnumValue‿NT();
                 addAlt(1); // ITER start
                 while (isKind(la, 1 /*[ident]*/))
@@ -1181,26 +1181,26 @@ namespace CocoRCore.Samples.CodeLens
             "keys",
             "displayname",
             "[vbident]",
-            "namespace",
-            "readerwriterprefix",
-            "rootclass",
-            "data",
-            "class",
-            "via",
-            "inherits",
-            "property",
-            "infoproperty",
-            "approperty",
-            "list",
-            "selectlist",
-            "flagslist",
-            "longproperty",
-            "infolongproperty",
+            "Namespace",
+            "ReaderWriterPrefix",
+            "RootClass",
+            "Data",
+            "Class",
+            "Via",
+            "Inherits",
+            "Property",
+            "InfoProperty",
+            "APProperty",
+            "List",
+            "SelectList",
+            "FlagsList",
+            "LongProperty",
+            "InfoLongProperty",
             "=",
             "true",
             "false",
             "#",
-            "as",
+            "As",
             "double",
             "date",
             "datetime",
@@ -1211,26 +1211,26 @@ namespace CocoRCore.Samples.CodeLens
             "integerwithdefault",
             "n2",
             "n0",
-            "string",
+            "String",
             "boolean",
-            "guid",
-            "string()",
-            "xml",
-            "mimics",
+            "Guid",
+            "String()",
+            "XML",
+            "Mimics",
             "query",
             "txt",
             "xl",
             "ref",
-            "subsystem",
-            "ssname",
-            "ssconfig",
-            "sstyp",
-            "sscommands",
-            "sskey",
-            "ssclear",
-            "flags",
-            "enum",
-            "default",
+            "SubSystem",
+            "SSName",
+            "SSConfig",
+            "SSTyp",
+            "SSCommands",
+            "SSKey",
+            "SSClear",
+            "Flags",
+            "Enum",
+            "DEFAULT",
             "[???]"
         };
         public override string NameOfTokenKind(int tokenKind) => varTName[tokenKind];
@@ -1291,26 +1291,26 @@ namespace CocoRCore.Samples.CodeLens
                 case 20: return "keys expected";
                 case 21: return "displayname expected";
                 case 22: return "[vbident] expected";
-                case 23: return "namespace expected";
-                case 24: return "readerwriterprefix expected";
-                case 25: return "rootclass expected";
-                case 26: return "data expected";
-                case 27: return "class expected";
-                case 28: return "via expected";
-                case 29: return "inherits expected";
-                case 30: return "property expected";
-                case 31: return "infoproperty expected";
-                case 32: return "approperty expected";
-                case 33: return "list expected";
-                case 34: return "selectlist expected";
-                case 35: return "flagslist expected";
-                case 36: return "longproperty expected";
-                case 37: return "infolongproperty expected";
+                case 23: return "Namespace expected";
+                case 24: return "ReaderWriterPrefix expected";
+                case 25: return "RootClass expected";
+                case 26: return "Data expected";
+                case 27: return "Class expected";
+                case 28: return "Via expected";
+                case 29: return "Inherits expected";
+                case 30: return "Property expected";
+                case 31: return "InfoProperty expected";
+                case 32: return "APProperty expected";
+                case 33: return "List expected";
+                case 34: return "SelectList expected";
+                case 35: return "FlagsList expected";
+                case 36: return "LongProperty expected";
+                case 37: return "InfoLongProperty expected";
                 case 38: return "= expected";
                 case 39: return "true expected";
                 case 40: return "false expected";
                 case 41: return "# expected";
-                case 42: return "as expected";
+                case 42: return "As expected";
                 case 43: return "double expected";
                 case 44: return "date expected";
                 case 45: return "datetime expected";
@@ -1321,26 +1321,26 @@ namespace CocoRCore.Samples.CodeLens
                 case 50: return "integerwithdefault expected";
                 case 51: return "n2 expected";
                 case 52: return "n0 expected";
-                case 53: return "string expected";
+                case 53: return "String expected";
                 case 54: return "boolean expected";
-                case 55: return "guid expected";
-                case 56: return "string() expected";
-                case 57: return "xml expected";
-                case 58: return "mimics expected";
+                case 55: return "Guid expected";
+                case 56: return "String() expected";
+                case 57: return "XML expected";
+                case 58: return "Mimics expected";
                 case 59: return "query expected";
                 case 60: return "txt expected";
                 case 61: return "xl expected";
                 case 62: return "ref expected";
-                case 63: return "subsystem expected";
-                case 64: return "ssname expected";
-                case 65: return "ssconfig expected";
-                case 66: return "sstyp expected";
-                case 67: return "sscommands expected";
-                case 68: return "sskey expected";
-                case 69: return "ssclear expected";
-                case 70: return "flags expected";
-                case 71: return "enum expected";
-                case 72: return "default expected";
+                case 63: return "SubSystem expected";
+                case 64: return "SSName expected";
+                case 65: return "SSConfig expected";
+                case 66: return "SSTyp expected";
+                case 67: return "SSCommands expected";
+                case 68: return "SSKey expected";
+                case 69: return "SSClear expected";
+                case 70: return "Flags expected";
+                case 71: return "Enum expected";
+                case 72: return "DEFAULT expected";
                 case 73: return "[???] expected";
                 case 74: return "symbol not expected in Namespace (SYNC error)";
                 case 75: return "symbol not expected in ReaderWriterPrefix (SYNC error)";
@@ -1350,12 +1350,12 @@ namespace CocoRCore.Samples.CodeLens
                 case 79: return "symbol not expected in Enum (SYNC error)";
                 case 80: return "symbol not expected in Flags (SYNC error)";
                 case 81: return "symbol not expected in Prop (SYNC error)";
-                case 82: return "invalid Prop, expected property infoproperty approperty list selectlist flagslist longproperty infolongproperty";
-                case 83: return "invalid Type, expected as mimics [braced] end property infoproperty approperty list selectlist flagslist longproperty infolongproperty =";
-                case 84: return "invalid As, expected double date datetime integer percent percentwithdefault doublewithdefault integerwithdefault n2 n0 string boolean guid string() xml [ident] [dottedident]";
+                case 82: return "invalid Prop, expected Property InfoProperty APProperty List SelectList FlagsList LongProperty InfoLongProperty";
+                case 83: return "invalid Type, expected As Mimics [braced] end Property InfoProperty APProperty List SelectList FlagsList LongProperty InfoLongProperty =";
+                case 84: return "invalid As, expected double date datetime integer percent percentwithdefault doublewithdefault integerwithdefault n2 n0 String boolean Guid String() XML [ident] [dottedident]";
                 case 85: return "invalid Mimics, expected query txt xl ref [ident]";
                 case 86: return "invalid InitValue, expected [number] [int] [string] true false # [ident] [dottedident]";
-                case 87: return "invalid BaseType, expected double date datetime integer percent percentwithdefault doublewithdefault integerwithdefault n2 n0 string boolean guid string() xml";
+                case 87: return "invalid BaseType, expected double date datetime integer percent percentwithdefault doublewithdefault integerwithdefault n2 n0 String boolean Guid String() XML";
                 case 88: return "invalid MimicsSpec, expected query txt xl ref";
                 case 89: return "invalid Ref, expected keys displayname";
                 case 90: return "invalid StringOrIdent, expected [string] [ident] [dottedident]";

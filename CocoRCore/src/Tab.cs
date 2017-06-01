@@ -49,7 +49,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public Tab(CocoRCore.CSharp.Parser parser)
         {
             this.parser = parser;
-            eofSy = NewSym(NodeKind.t, "EOF", Position.Zero);
+            eofSy = NewSym(NodeKind.t, "EOF", Token.Zero);
             dummyNode = NewNode(NodeKind.eps, null, 0);
             literals = new Dictionary<string, Symbol>();
         }
@@ -62,14 +62,14 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public List<Symbol> pragmas = new List<Symbol>();
         public List<Symbol> nonterminals = new List<Symbol>();
 
-        public Symbol NewSym(NodeKind typ, string name, Position pos)
+        public Symbol NewSym(NodeKind typ, string name, Token declared)
         {
             if (name.Length == 2 && name[0] == '"')
             {
                 parser.SemErr(81, "empty token not allowed");
                 name = "???";
             }
-            var sym = new Symbol(typ, name, pos);
+            var sym = new Symbol(typ, name, declared);
             switch (typ)
             {
                 case NodeKind.t:
@@ -88,17 +88,9 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             return sym;
         }
 
-        public Symbol FindSym(string name)
-        {
-            var qy = from s in terminals.Concat(nonterminals) where s.name == name select s;
-            return qy.FirstOrDefault();
-        }
+        public Symbol FindSym(string name) => terminals.Concat(nonterminals).FirstOrDefault(sy => sy.name == name);
 
-        public SymTab FindSymtab(string name)
-        {
-            var qy = from st in symtabs where st.name == name select st;
-            return qy.FirstOrDefault();
-        }
+        public SymTab FindSymtab(string name) => symtabs.FirstOrDefault(st => st.name == name);
 
         int Num(Node p) => p?.n ?? 0;
 

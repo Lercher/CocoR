@@ -362,7 +362,7 @@ void Diag(int n, string s, string kind) {
                 addAlt(24); // T dot
                 Expect(24 /*.*/);
                 addAlt(60); // T "put_line"
-                Expect(60 /*put_line*/);
+                Expect(60 /*PUT_LINE*/);
                 addAlt(21); // T openparen
                 Expect(21 /*(*/);
                 UncheckedString‿NT();
@@ -391,12 +391,12 @@ void Diag(int n, string s, string kind) {
                 addAlt(51); // ALT
                 switch (la.kind)
                 {
-                    case 54: /*tuser*/
+                    case 54: /*TUSER*/
                         { // scoping
                             TUSER‿NT();
                         }
                         break;
-                    case 56: /*lantuser*/
+                    case 56: /*LANTUSER*/
                         { // scoping
                             LANTUSER‿NT();
                         }
@@ -411,22 +411,22 @@ void Diag(int n, string s, string kind) {
                             LANTUSPARAM‿NT();
                         }
                         break;
-                    case 42: /*ttrparam*/
+                    case 42: /*TTRPARAM*/
                         { // scoping
                             TTRPARAM‿NT();
                         }
                         break;
-                    case 45: /*lanttrparam*/
+                    case 45: /*LANTTRPARAM*/
                         { // scoping
                             LANTTRPARAM‿NT();
                         }
                         break;
-                    case 49: /*ttraitement*/
+                    case 49: /*TTRAITEMENT*/
                         { // scoping
                             TTRAITEMENT‿NT();
                         }
                         break;
-                    case 51: /*lanttraitement*/
+                    case 51: /*LANTTRAITEMENT*/
                         { // scoping
                             LANTTRAITEMENT‿NT();
                         }
@@ -573,7 +573,7 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(54); // T "tuser"
-                Expect(54 /*tuser*/);
+                Expect(54 /*TUSER*/);
                 addAlt(21); // ALT
                 addAlt(11); // ALT
                 if (isKind(la, 21 /*(*/))
@@ -584,7 +584,7 @@ void Diag(int n, string s, string kind) {
                     addAlt(25); // T comma
                     Expect(25 /*,*/);
                     addAlt(55); // T "tuslongueur"
-                    Expect(55 /*tuslongueur*/);
+                    Expect(55 /*TUSLONGUEUR*/);
                     addAlt(22); // T closeparen
                     Expect(22 /*)*/);
                 }
@@ -632,7 +632,7 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(56); // T "lantuser"
-                Expect(56 /*lantuser*/);
+                Expect(56 /*LANTUSER*/);
                 addAlt(21); // ALT
                 addAlt(11); // ALT
                 if (isKind(la, 21 /*(*/))
@@ -644,11 +644,11 @@ void Diag(int n, string s, string kind) {
                     Expect(25 /*,*/);
                     addAlt(46); // ALT
                     addAlt(57); // ALT
-                    if (isKind(la, 46 /*lancode*/))
+                    if (isKind(la, 46 /*LANCODE*/))
                     {
                         LANTUSER_LANCODE‿NT();
                     }
-                    else if (isKind(la, 57 /*tuslibelle*/))
+                    else if (isKind(la, 57 /*TUSLIBELLE*/))
                     {
                         LANTUSER_TUSLIBELLE‿NT();
                     } // end if
@@ -776,7 +776,7 @@ void Diag(int n, string s, string kind) {
                     Expect(25 /*,*/);
                     addAlt(46); // ALT
                     addAlt(19); // ALT
-                    if (isKind(la, 46 /*lancode*/))
+                    if (isKind(la, 46 /*LANCODE*/))
                     {
                         LANTUSPARAM_LANCODE‿NT();
                     }
@@ -810,7 +810,7 @@ void Diag(int n, string s, string kind) {
                     Expect(25 /*,*/);
                     addAlt(new int[] {28, 61, 62}); // ALT
                     addAlt(13); // ALT
-                    if (isKind(la, 28 /*[string]*/) || isKind(la, 61 /*chr*/) || isKind(la, 62 /*sqlerrm*/))
+                    if (isKind(la, 28 /*[string]*/) || isKind(la, 61 /*chr*/) || isKind(la, 62 /*SQLERRM*/))
                     {
                         String‿NT();
                     }
@@ -835,16 +835,16 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(42); // T "ttrparam"
-                Expect(42 /*ttrparam*/);
+                Expect(42 /*TTRPARAM*/);
                 Diag(4, "Forbidden insert into TTRPARAM in externaltables", "CRIT");
                 addAlt(21); // T openparen
                 Expect(21 /*(*/);
                 addAlt(43); // T "ttrnom"
-                Expect(43 /*ttrnom*/);
+                Expect(43 /*TTRNOM*/);
                 addAlt(25); // T comma
                 Expect(25 /*,*/);
                 addAlt(44); // T "ttpcode"
-                Expect(44 /*ttpcode*/);
+                Expect(44 /*TTPCODE*/);
                 addAlt(22); // T closeparen
                 Expect(22 /*)*/);
                 addAlt(11); // T values
@@ -867,25 +867,25 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(45); // T "lanttrparam"
-                Expect(45 /*lanttrparam*/);
+                Expect(45 /*LANTTRPARAM*/);
                 Diag(5, "Forbidden insert into LANTTRPARAM in externaltables", "CRIT");
                 addAlt(21); // T openparen
                 Expect(21 /*(*/);
                 addAlt(43); // T "ttrnom"
-                Expect(43 /*ttrnom*/);
+                Expect(43 /*TTRNOM*/);
                 addAlt(25); // T comma
                 Expect(25 /*,*/);
                 addAlt(44); // T "ttpcode"
-                Expect(44 /*ttpcode*/);
+                Expect(44 /*TTPCODE*/);
                 addAlt(25); // T comma
                 Expect(25 /*,*/);
                 addAlt(46); // ALT
                 addAlt(47); // ALT
-                if (isKind(la, 46 /*lancode*/))
+                if (isKind(la, 46 /*LANCODE*/))
                 {
                     LANTTRPARAM_LANCODE‿NT();
                 }
-                else if (isKind(la, 47 /*ttplibelle*/))
+                else if (isKind(la, 47 /*TTPLIBELLE*/))
                 {
                     LANTTRPARAM_TTPLIBELLE‿NT();
                 } // end if
@@ -898,7 +898,7 @@ void Diag(int n, string s, string kind) {
                     Get();
                     addAlt(new int[] {28, 61, 62}); // ALT
                     addAlt(13); // ALT
-                    if (isKind(la, 28 /*[string]*/) || isKind(la, 61 /*chr*/) || isKind(la, 62 /*sqlerrm*/))
+                    if (isKind(la, 28 /*[string]*/) || isKind(la, 61 /*chr*/) || isKind(la, 62 /*SQLERRM*/))
                     {
                         String‿NT();
                     }
@@ -928,16 +928,16 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(49); // T "ttraitement"
-                Expect(49 /*ttraitement*/);
+                Expect(49 /*TTRAITEMENT*/);
                 Diag(8, "Forbidden insert into TTRAITEMENT in externaltables", "CRIT");
                 addAlt(21); // T openparen
                 Expect(21 /*(*/);
                 addAlt(43); // T "ttrnom"
-                Expect(43 /*ttrnom*/);
+                Expect(43 /*TTRNOM*/);
                 addAlt(25); // T comma
                 Expect(25 /*,*/);
                 addAlt(50); // T "ttrflagpref"
-                Expect(50 /*ttrflagpref*/);
+                Expect(50 /*TTRFLAGPREF*/);
                 addAlt(22); // T closeparen
                 Expect(22 /*)*/);
                 addAlt(11); // T values
@@ -961,21 +961,21 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(51); // T "lanttraitement"
-                Expect(51 /*lanttraitement*/);
+                Expect(51 /*LANTTRAITEMENT*/);
                 Diag(9, "Forbidden insert into LANTTRAITEMENT in externaltables", "CRIT");
                 addAlt(21); // T openparen
                 Expect(21 /*(*/);
                 addAlt(43); // T "ttrnom"
-                Expect(43 /*ttrnom*/);
+                Expect(43 /*TTRNOM*/);
                 addAlt(25); // T comma
                 Expect(25 /*,*/);
                 addAlt(46); // ALT
                 addAlt(52); // ALT
-                if (isKind(la, 46 /*lancode*/))
+                if (isKind(la, 46 /*LANCODE*/))
                 {
                     LANTTRAITEMENT_LANCODE‿NT();
                 }
-                else if (isKind(la, 52 /*ttrlibelle*/))
+                else if (isKind(la, 52 /*TTRLIBELLE*/))
                 {
                     LANTTRAITEMENT_TTRLIBELLE‿NT();
                 } // end if
@@ -991,17 +991,17 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(46); // T "lancode"
-                Expect(46 /*lancode*/);
+                Expect(46 /*LANCODE*/);
                 addAlt(25); // T comma
                 Expect(25 /*,*/);
                 addAlt(47); // T "ttplibelle"
-                Expect(47 /*ttplibelle*/);
+                Expect(47 /*TTPLIBELLE*/);
                 addAlt(25); // OPT
                 if (isKind(la, 25 /*,*/))
                 {
                     Get();
                     addAlt(48); // T "ttphelptext"
-                    Expect(48 /*ttphelptext*/);
+                    Expect(48 /*TTPHELPTEXT*/);
                 }
                 addAlt(22); // T closeparen
                 Expect(22 /*)*/);
@@ -1030,17 +1030,17 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(47); // T "ttplibelle"
-                Expect(47 /*ttplibelle*/);
+                Expect(47 /*TTPLIBELLE*/);
                 addAlt(25); // T comma
                 Expect(25 /*,*/);
                 addAlt(46); // T "lancode"
-                Expect(46 /*lancode*/);
+                Expect(46 /*LANCODE*/);
                 addAlt(25); // OPT
                 if (isKind(la, 25 /*,*/))
                 {
                     Get();
                     addAlt(48); // T "ttphelptext"
-                    Expect(48 /*ttphelptext*/);
+                    Expect(48 /*TTPHELPTEXT*/);
                 }
                 addAlt(22); // T closeparen
                 Expect(22 /*)*/);
@@ -1069,15 +1069,15 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(46); // T "lancode"
-                Expect(46 /*lancode*/);
+                Expect(46 /*LANCODE*/);
                 addAlt(25); // T comma
                 Expect(25 /*,*/);
                 addAlt(52); // T "ttrlibelle"
-                Expect(52 /*ttrlibelle*/);
+                Expect(52 /*TTRLIBELLE*/);
                 addAlt(25); // T comma
                 Expect(25 /*,*/);
                 addAlt(53); // T "ttrcontext"
-                Expect(53 /*ttrcontext*/);
+                Expect(53 /*TTRCONTEXT*/);
                 addAlt(22); // T closeparen
                 Expect(22 /*)*/);
                 addAlt(11); // T values
@@ -1107,15 +1107,15 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(52); // T "ttrlibelle"
-                Expect(52 /*ttrlibelle*/);
+                Expect(52 /*TTRLIBELLE*/);
                 addAlt(25); // T comma
                 Expect(25 /*,*/);
                 addAlt(53); // T "ttrcontext"
-                Expect(53 /*ttrcontext*/);
+                Expect(53 /*TTRCONTEXT*/);
                 addAlt(25); // T comma
                 Expect(25 /*,*/);
                 addAlt(46); // T "lancode"
-                Expect(46 /*lancode*/);
+                Expect(46 /*LANCODE*/);
                 addAlt(22); // T closeparen
                 Expect(22 /*)*/);
                 addAlt(11); // T values
@@ -1145,11 +1145,11 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(46); // T "lancode"
-                Expect(46 /*lancode*/);
+                Expect(46 /*LANCODE*/);
                 addAlt(25); // T comma
                 Expect(25 /*,*/);
                 addAlt(57); // T "tuslibelle"
-                Expect(57 /*tuslibelle*/);
+                Expect(57 /*TUSLIBELLE*/);
                 addAlt(22); // T closeparen
                 Expect(22 /*)*/);
                 addAlt(11); // T values
@@ -1178,11 +1178,11 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(57); // T "tuslibelle"
-                Expect(57 /*tuslibelle*/);
+                Expect(57 /*TUSLIBELLE*/);
                 addAlt(25); // T comma
                 Expect(25 /*,*/);
                 addAlt(46); // T "lancode"
-                Expect(46 /*lancode*/);
+                Expect(46 /*LANCODE*/);
                 addAlt(22); // T closeparen
                 Expect(22 /*)*/);
                 addAlt(11); // T values
@@ -1211,7 +1211,7 @@ void Diag(int n, string s, string kind) {
         {
             {
                 addAlt(46); // T "lancode"
-                Expect(46 /*lancode*/);
+                Expect(46 /*LANCODE*/);
                 addAlt(25); // T comma
                 Expect(25 /*,*/);
                 addAlt(19); // T tuplibelle
@@ -1221,7 +1221,7 @@ void Diag(int n, string s, string kind) {
                 {
                     Get();
                     addAlt(58); // T "tuphelptext"
-                    Expect(58 /*tuphelptext*/);
+                    Expect(58 /*TUPHELPTEXT*/);
                 }
                 addAlt(22); // T closeparen
                 Expect(22 /*)*/);
@@ -1248,7 +1248,7 @@ void Diag(int n, string s, string kind) {
                     Get();
                     addAlt(new int[] {28, 61, 62}); // ALT
                     addAlt(13); // ALT
-                    if (isKind(la, 28 /*[string]*/) || isKind(la, 61 /*chr*/) || isKind(la, 62 /*sqlerrm*/))
+                    if (isKind(la, 28 /*[string]*/) || isKind(la, 61 /*chr*/) || isKind(la, 62 /*SQLERRM*/))
                     {
                         String‿NT();
                     }
@@ -1275,7 +1275,7 @@ void Diag(int n, string s, string kind) {
                 addAlt(25); // T comma
                 Expect(25 /*,*/);
                 addAlt(46); // T "lancode"
-                Expect(46 /*lancode*/);
+                Expect(46 /*LANCODE*/);
                 addAlt(22); // T closeparen
                 Expect(22 /*)*/);
                 addAlt(11); // T values
@@ -1344,7 +1344,7 @@ void Diag(int n, string s, string kind) {
                     addAlt(22); // T closeparen
                     Expect(22 /*)*/);
                 }
-                else if (isKind(la, 62 /*sqlerrm*/))
+                else if (isKind(la, 62 /*SQLERRM*/))
                 {
                     Get();
                 } // end if
@@ -1434,27 +1434,27 @@ void Diag(int n, string s, string kind) {
             "where",
             "and",
             "from",
-            "ttrparam",
-            "ttrnom",
-            "ttpcode",
-            "lanttrparam",
-            "lancode",
-            "ttplibelle",
-            "ttphelptext",
-            "ttraitement",
-            "ttrflagpref",
-            "lanttraitement",
-            "ttrlibelle",
-            "ttrcontext",
-            "tuser",
-            "tuslongueur",
-            "lantuser",
-            "tuslibelle",
-            "tuphelptext",
+            "TTRPARAM",
+            "TTRNOM",
+            "TTPCODE",
+            "LANTTRPARAM",
+            "LANCODE",
+            "TTPLIBELLE",
+            "TTPHELPTEXT",
+            "TTRAITEMENT",
+            "TTRFLAGPREF",
+            "LANTTRAITEMENT",
+            "TTRLIBELLE",
+            "TTRCONTEXT",
+            "TUSER",
+            "TUSLONGUEUR",
+            "LANTUSER",
+            "TUSLIBELLE",
+            "TUPHELPTEXT",
             "dbms_output",
-            "put_line",
+            "PUT_LINE",
             "chr",
-            "sqlerrm",
+            "SQLERRM",
             "[???]"
         };
         public override string NameOfTokenKind(int tokenKind) => varTName[tokenKind];
@@ -1527,27 +1527,27 @@ void Diag(int n, string s, string kind) {
                 case 40: return "where expected";
                 case 41: return "and expected";
                 case 42: return "from expected";
-                case 43: return "ttrparam expected";
-                case 44: return "ttrnom expected";
-                case 45: return "ttpcode expected";
-                case 46: return "lanttrparam expected";
-                case 47: return "lancode expected";
-                case 48: return "ttplibelle expected";
-                case 49: return "ttphelptext expected";
-                case 50: return "ttraitement expected";
-                case 51: return "ttrflagpref expected";
-                case 52: return "lanttraitement expected";
-                case 53: return "ttrlibelle expected";
-                case 54: return "ttrcontext expected";
-                case 55: return "tuser expected";
-                case 56: return "tuslongueur expected";
-                case 57: return "lantuser expected";
-                case 58: return "tuslibelle expected";
-                case 59: return "tuphelptext expected";
+                case 43: return "TTRPARAM expected";
+                case 44: return "TTRNOM expected";
+                case 45: return "TTPCODE expected";
+                case 46: return "LANTTRPARAM expected";
+                case 47: return "LANCODE expected";
+                case 48: return "TTPLIBELLE expected";
+                case 49: return "TTPHELPTEXT expected";
+                case 50: return "TTRAITEMENT expected";
+                case 51: return "TTRFLAGPREF expected";
+                case 52: return "LANTTRAITEMENT expected";
+                case 53: return "TTRLIBELLE expected";
+                case 54: return "TTRCONTEXT expected";
+                case 55: return "TUSER expected";
+                case 56: return "TUSLONGUEUR expected";
+                case 57: return "LANTUSER expected";
+                case 58: return "TUSLIBELLE expected";
+                case 59: return "TUPHELPTEXT expected";
                 case 60: return "dbms_output expected";
-                case 61: return "put_line expected";
+                case 61: return "PUT_LINE expected";
                 case 62: return "chr expected";
-                case 63: return "sqlerrm expected";
+                case 63: return "SQLERRM expected";
                 case 64: return "[???] expected";
                 case 65: return "symbol not expected in Slash (SYNC error)";
                 case 66: return "invalid Block, expected set begin prompt declare";
@@ -1555,23 +1555,23 @@ void Diag(int n, string s, string kind) {
                 case 68: return "invalid ExceptionHandledBlock, expected dbms_output exception";
                 case 69: return "invalid ExceptionHandledBlock, expected rollback null";
                 case 70: return "invalid InsertDeleteUpdate, expected insert delete update";
-                case 71: return "invalid Insert, expected tuser lantuser tusparam lantusparam ttrparam lanttrparam ttraitement lanttraitement";
+                case 71: return "invalid Insert, expected TUSER LANTUSER tusparam lantusparam TTRPARAM LANTTRPARAM TTRAITEMENT LANTTRAITEMENT";
                 case 72: return "invalid Update, expected [number] [string] [ident]";
                 case 73: return "invalid TUSER, expected ( values";
                 case 74: return "invalid TUSER, expected [number] null [string]";
-                case 75: return "invalid LANTUSER, expected lancode tuslibelle";
+                case 75: return "invalid LANTUSER, expected LANCODE TUSLIBELLE";
                 case 76: return "invalid LANTUSER, expected ( values";
                 case 77: return "invalid TUSPARAM, expected ( values";
                 case 78: return "invalid TUSPARAM, expected [number] null [string]";
-                case 79: return "invalid LANTUSPARAM, expected lancode tuplibelle";
-                case 80: return "invalid LANTUSPARAM, expected [string] chr sqlerrm null";
+                case 79: return "invalid LANTUSPARAM, expected LANCODE tuplibelle";
+                case 80: return "invalid LANTUSPARAM, expected [string] chr SQLERRM null";
                 case 81: return "invalid LANTUSPARAM, expected ( values";
-                case 82: return "invalid LANTTRPARAM, expected lancode ttplibelle";
-                case 83: return "invalid LANTTRPARAM, expected [string] chr sqlerrm null";
+                case 82: return "invalid LANTTRPARAM, expected LANCODE TTPLIBELLE";
+                case 83: return "invalid LANTTRPARAM, expected [string] chr SQLERRM null";
                 case 84: return "invalid LANTTRPARAM, expected , )";
-                case 85: return "invalid LANTTRAITEMENT, expected lancode ttrlibelle";
-                case 86: return "invalid LANTUSPARAM_LANCODE, expected [string] chr sqlerrm null";
-                case 87: return "invalid StringFactor, expected [string] chr sqlerrm";
+                case 85: return "invalid LANTTRAITEMENT, expected LANCODE TTRLIBELLE";
+                case 86: return "invalid LANTUSPARAM_LANCODE, expected [string] chr SQLERRM null";
+                case 87: return "invalid StringFactor, expected [string] chr SQLERRM";
                 default: return $"error {n}";
             }
         }

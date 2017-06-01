@@ -19,7 +19,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public int n;           // symbol number
         public readonly NodeKind typ;         // t, nt, pr, unknown, rslv /* ML 29_11_2002 slv added */ /* AW slv --> rslv */
         public readonly string name;        // symbol name
-        public string definedAs;     // t:  the definition of this terminal or its name (from parser.tokenString)
+        public string definedAs;     // t:  the declaration name as scanned of this terminal or "stringValue" (from parser.tokenString)
         public Node graph;       // nt: to first node of syntax graph
         public TerminalTokenKind tokenKind;   // t:  token kind (fixedToken, classToken, ...)
         public bool deletable;   // nt: true if nonterminal is deletable
@@ -38,12 +38,16 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
         public List<SymTab> useonces; // nt: optional, list of SymTabs that all symbols must be used at most once within
         public string astjoinwith;  // nt: optional, join a stack top list of ASTLiterals to a single ASTLiteral (+".")
 
+        public Symbol(NodeKind typ, string name, Token declaration) 
+            : this(typ, name, declaration.position) 
+            => definedAs = string.IsNullOrWhiteSpace(declaration.valScanned) ? name : declaration.valScanned; // ?? for "EOF" and other constant symbols
+
         public Symbol(NodeKind typ, string name, Position pos)
         {
             this.typ = typ;
             this.name = name;
-            this.pos = pos;  // mutates sometimes
-            definedAs = name; // mutates sometimes
+            this.pos = pos;  // mutates, if a forward NT symbol table entry finds it's declaration
+            definedAs = name; // mutates, if a T/WT Token is defined as = "someString", in this case it will be "someString" including the quotes
         }
 
         public string CSharpCommentName
@@ -51,7 +55,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             get
             {
                 var s = VariantName;
-                if (s.Contains("*")) s = s.Replace('*', '_');
+                if (s.Contains("*")) s = s.Replace('*', '_'); // so that it can't escape a comment
                 return $"/*{s}*/";
             }
         }
@@ -64,7 +68,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 {
                     case NodeKind.t:
                     case NodeKind.wt:
-                        if (definedAs.StartsWith("\""))
+                        if (definedAs.StartsWith("\"") || definedAs.StartsWith("\'"))
                             return definedAs.Substring(1, definedAs.Length - 2);
                         return $"[{definedAs}]";
                     default:
