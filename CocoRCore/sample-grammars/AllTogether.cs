@@ -8,13 +8,14 @@ namespace CocoRCore.Samples
     {
         public static int Main(string[] arg)
         {
-            Console.WriteLine("Coco/R Core Samples (May 29, 2017)");
+            Console.WriteLine("Coco/R Core Samples (June 01, 2017)");
             var all = new Func<CocoRCore.ParserBase>[] {
                 () => Coco.Parser.Create(s => s.Initialize("Coco/Coco.atg")),
                 () => Taste.Taste.Create("Taste/Test.tas"),
                 () => Inheritance.Parser.Create("Inheritance/SampleInheritance.txt"),
                 () => WFModel.Parser.Create("wfmodel/SampleWfModel.txt"),
                 () => ExternalTables.Parser.Create("ExternalTables/ExternalTables.txt"),
+                () => CodeLens.Parser.Create("CodeLens/CodeLens.txt")
             };
             foreach (var pgen in all)
             {

@@ -27,5 +27,6 @@
     <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -frames . -noinfo -nowarn -ac -is ../sample-grammars/Coco/Coco.atg" />
     <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -frames . -noinfo -nowarn -ac     ../sample-grammars/wfmodel/WFModel.atg" />
     <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -frames . -noinfo -nowarn -ac     ../sample-grammars/ExternalTables/ExternalTables.atg" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -frames . -noinfo         -ac     ../sample-grammars/CodeLens/CodeLens.atg" />
   </Target>
 </Project>
