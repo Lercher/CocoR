@@ -203,7 +203,7 @@ Type =
 	[ SampleValue ]
 	.
 
-InitValue+ =
+InitValue =
 	number 
 	| int 
 	| string
@@ -254,7 +254,7 @@ Mimics =
 	)
 	.
 
-MimicsSpec+ =
+MimicsSpec =
 	(
 	Query
 	| Txt
