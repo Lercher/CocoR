@@ -37,8 +37,8 @@ namespace CocoRCore.Samples.Inheritance
 
         public Parser()
         {
-        variables = new Symboltable("variables", true, false, this);
-        types = new Symboltable("types", true, true, this);
+            variables = new Symboltable("variables", true, false, this);
+            types = new Symboltable("types", true, true, this);
         }
 
         public static Parser Create(string fileName) 

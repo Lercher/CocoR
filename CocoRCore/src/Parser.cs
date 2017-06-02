@@ -31,7 +31,7 @@ namespace CocoRCore.CSharp
 
 const int id = 0;
     const int str = 1;
-    
+
     public TextWriter trace;    // other Coco objects referenced in this ATG
     public Tab tab;
     public DFA dfa;
@@ -41,7 +41,7 @@ const int id = 0;
     string tokenString;         // used in declarations of literal tokens
     string noString = "-none-"; // used in declarations of literal tokens
 
-    public override void Dispose() 
+    public override void Dispose()
     {
         trace?.Dispose();
         base.Dispose();
@@ -204,7 +204,7 @@ const int id = 0;
                 if (sym.attrPos != null)
                 SemErr(6, "grammar symbol must not have attributes");
                 }
-                tab.noSym = tab.NewSym(NodeKind.t, "???", Position.Zero); // noSym gets highest number
+                tab.noSym = tab.NewSym(NodeKind.t, "???", Token.Zero); // noSym gets highest number
                 tab.SetupAnys();
                 tab.RenumberPragmas();
                 if (tab.ddt[2]) tab.PrintNodes();
@@ -248,18 +248,18 @@ const int id = 0;
         void TokenDecl‿NT(NodeKind typ)
         {
             {
-                Sym‿NT(out var name, out var kind);
+                Sym‿NT(out var name, out var kind, out var tsym);
                 var sym = tab.FindSym(name);
                 if (sym != null) SemErr(13, "name declared twice");
                 else {
-                sym = tab.NewSym(typ, name, t.position);
+                sym = tab.NewSym(typ, name, tsym);
                 sym.tokenKind = TerminalTokenKind.fixedToken;
                 }
                 tokenString = null;
                 if (isKind(la, 34 /*:*/))
                 {
                     Get();
-                    Sym‿NT(out var inheritsName, out var inheritsKind);
+                    Sym‿NT(out var inheritsName, out var inheritsKind, out var _);
                     var inheritsSym = tab.FindSym(inheritsName);
                     if (inheritsSym == null) SemErr(14, string.Format("token '{0}' can't inherit from '{1}', name not declared", sym.name, inheritsName));
                     else if (inheritsSym == sym) SemErr(15, string.Format("token '{0}' must not inherit from self", sym.name));
@@ -383,12 +383,16 @@ const int id = 0;
                 Expect(1 /*[ident]*/);
                 var sym = tab.FindSym(t.val);
                 bool undef = sym == null;
-                if (undef) sym = tab.NewSym(NodeKind.nt, t.val, t.position);
+                if (undef)
+                sym = tab.NewSym(NodeKind.nt, t.val, t);
                 else {
+                sym.pos = t.position; // fixup the forward NT entry in the symbol table
                 if (sym.typ == NodeKind.nt) {
-                if (sym.graph != null) SemErr(1, "name declared twice");
-                } else SemErr(2, "this symbol kind not allowed on left side of production");
-                sym.pos = t.position;
+                if (sym.graph != null)
+                SemErr(1, "name declared twice");
+                }
+                else
+                SemErr(2, "this symbol kind not allowed on left side of production");
                 }
                 bool noAttrs = sym.attrPos == null;
                 sym.attrPos = null;
@@ -585,7 +589,7 @@ const int id = 0;
         }
 
 
-        void Symboltable‿NT(List<SymTab> sts )
+        void Symboltable‿NT(List<SymTab> sts)
         {
             {
                 Expect(1 /*[ident]*/);
@@ -650,10 +654,10 @@ const int id = 0;
         }
 
 
-        void Sym‿NT(out string name, out int kind)
+        void Sym‿NT(out string name, out int kind, out Token tsym)
         {
             {
-                name = "???"; kind = id;
+                name = "???"; kind = id; tsym = la;
                 if (isKind(la, 1 /*[ident]*/))
                 {
                     Get();
@@ -730,7 +734,7 @@ const int id = 0;
         void Factor‿NT(out Graph g)
         {
             {
-                string name; int kind; Range pos; bool weak = false;
+                string name; int kind; Token tsym; Range pos; bool weak = false;
                 g = null;
                 switch (la.kind)
                 {
@@ -744,16 +748,17 @@ const int id = 0;
                                 Get();
                                 weak = true;
                             }
-                            Sym‿NT(out name, out kind);
+                            Sym‿NT(out name, out kind, out tsym);
                             Symbol sym = tab.FindSym(name);
                             if (sym == null && kind == str)
                             tab.literals.TryGetValue(name, out sym);
                             bool undef = sym == null;
                             if (undef) {
                             if (kind == id)
-                            sym = tab.NewSym(NodeKind.nt, name, Position.Zero);  // forward nt
+                            // at a NT use point here. So we forward declare an NT symbol.
+                            sym = tab.NewSym(NodeKind.nt, name, tsym);
                             else if (genScanner) {
-                            sym = tab.NewSym(NodeKind.t, name, t.position);
+                            sym = tab.NewSym(NodeKind.t, name, tsym);
                             dfa.MatchLiteral(sym.name, sym);
                             } else {  // undefined string in production
                             SemErr(22, "undefined string in production");
@@ -1066,18 +1071,18 @@ const int id = 0;
         void TokenFactor‿NT(out Graph g)
         {
             {
-                string name; int kind;
+                string name; int kind; Token tsym;
                 g = null;
                 if (isKind(la, 1 /*[ident]*/) || isKind(la, 3 /*[string]*/) || isKind(la, 5 /*[char]*/))
                 {
-                    Sym‿NT(out name, out kind);
+                    Sym‿NT(out name, out kind, out tsym);
                     if (kind == id) {
                     CharClass c = tab.FindCharClass(name);
                     if (c == null) {
                     SemErr(32, "undefined name");
                     c = tab.NewCharClass(name, new CharSet());
                     }
-                    Node p = tab.NewNode(NodeKind.clas, null, 0); p.val = c.n;
+                    Node p = tab.NewNode(NodeKind.clas, null, 0);  p.val = c.n;
                     g = new Graph(p);
                     tokenString = noString;
                     } else { // str

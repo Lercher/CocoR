@@ -104,7 +104,7 @@ Coco                            (. string gramName; CharSet s; .)
                                      if (sym.attrPos != null)
                                        SemErr(6, "grammar symbol must not have attributes");
                                    }
-                                   tab.noSym = tab.NewSym(NodeKind.t, "???", Position.Zero); // noSym gets highest number
+                                   tab.noSym = tab.NewSym(NodeKind.t, "???", Token.Zero); // noSym gets highest number
                                    tab.SetupAnys();
                                    tab.RenumberPragmas();
                                    if (tab.ddt[2]) tab.PrintNodes();
@@ -134,12 +134,16 @@ Production                      (. var deletableOK = false; .)
     ]
     ident                       (. var sym = tab.FindSym(t.val);
                                    bool undef = sym == null;
-                                   if (undef) sym = tab.NewSym(NodeKind.nt, t.val, t.position);
+                                   if (undef) 
+								       sym = tab.NewSym(NodeKind.nt, t.val, t);
                                    else {
+                                     sym.pos = t.position; // fixup the forward NT entry in the symbol table
                                      if (sym.typ == NodeKind.nt) {
-                                       if (sym.graph != null) SemErr(1, "name declared twice");
-                                   	 } else SemErr(2, "this symbol kind not allowed on left side of production");
-                                   	 sym.pos = t.position;
+                                       if (sym.graph != null) 
+									      SemErr(1, "name declared twice");
+                                   	 } 
+									 else 
+										SemErr(2, "this symbol kind not allowed on left side of production");                                   	 
                                    }
                                    bool noAttrs = sym.attrPos == null;
                                    sym.attrPos = null;
@@ -274,16 +278,16 @@ Char<out int n>
 
 TokenDecl<NodeKind typ>
 =
-  Sym<out var name, out var kind> 
+  Sym<out var name, out var kind, out var tsym> 
                                 (. var sym = tab.FindSym(name);
                                    if (sym != null) SemErr(13, "name declared twice");
                                    else {
-                                     sym = tab.NewSym(typ, name, t.position);
+                                     sym = tab.NewSym(typ, name, tsym);
                                      sym.tokenKind = TerminalTokenKind.fixedToken;
                                    }
                                    tokenString = null;
                                  .)
-  [ ':' Sym<out var inheritsName, out var inheritsKind>
+  [ ':' Sym<out var inheritsName, out var inheritsKind, out var _>
                                 (. var inheritsSym = tab.FindSym(inheritsName);
                                    if (inheritsSym == null) SemErr(14, string.Format("token '{0}' can't inherit from '{1}', name not declared", sym.name, inheritsName));
                                    else if (inheritsSym == sym) SemErr(15, string.Format("token '{0}' must not inherit from self", sym.name));
@@ -364,21 +368,24 @@ Term<out Graph g>               (. Graph g2; Node rslv = null; g = null; .)
 
 /*------------------------------------------------------------------------------------*/
 
-Factor<out Graph g>             (. string name; int kind; Range pos; bool weak = false; 
+Factor<out Graph g>             
+								(. string name; int kind; Token tsym; Range pos; bool weak = false; 
                                    g = null;
                                  .)
 =
 ( [ "WEAK"                      (. weak = true; .)
   ]
-  Sym<out name, out kind>       (. Symbol sym = tab.FindSym(name);
+  Sym<out name, out kind, out tsym>
+                                (. Symbol sym = tab.FindSym(name);
                                    if (sym == null && kind == str)
                                      tab.literals.TryGetValue(name, out sym);
                                    bool undef = sym == null;
                                    if (undef) {
                                      if (kind == id)
-                                       sym = tab.NewSym(NodeKind.nt, name, Position.Zero);  // forward nt
+                                       // at a NT use point here. So we forward declare an NT symbol.
+                                       sym = tab.NewSym(NodeKind.nt, name, tsym);  
                                      else if (genScanner) { 
-                                       sym = tab.NewSym(NodeKind.t, name, t.position);
+                                       sym = tab.NewSym(NodeKind.t, name, tsym);
                                        dfa.MatchLiteral(sym.name, sym);
                                      } else {  // undefined string in production
                                        SemErr(22, "undefined string in production");
@@ -530,16 +537,17 @@ TokenTerm<out Graph g>          (. Graph g2; .)
 
 /*------------------------------------------------------------------------------------*/
 
-TokenFactor<out Graph g>        (. string name; int kind; .)
+TokenFactor<out Graph g>        (. string name; int kind; Token tsym; .)
 =
                                 (. g = null; .)
-( Sym<out name, out kind>       (. if (kind == id) {
+( Sym<out name, out kind, out tsym>
+                                (. if (kind == id) {
                                      CharClass c = tab.FindCharClass(name);
                                      if (c == null) {
                                        SemErr(32, "undefined name");
                                        c = tab.NewCharClass(name, new CharSet());
                                      }
-                                     Node p = tab.NewNode(NodeKind.clas, null, 0); p.val = c.n;
+                                     Node p = tab.NewNode(NodeKind.clas, null, 0);  p.val = c.n;
                                      g = new Graph(p);
                                      tokenString = noString;
                                    } else { // str
@@ -557,8 +565,8 @@ TokenFactor<out Graph g>        (. string name; int kind; .)
 
 /*------------------------------------------------------------------------------------*/
 
-Sym<out string name, out int kind>
-=                               (. name = "???"; kind = id; .)
+Sym<out string name, out int kind, out Token tsym>
+=                               (. name = "???"; kind = id; tsym = la; .)
 ( ident                         (. kind = id; name = t.val; .)
 | (string                       (. name = t.val; .)
   | char                        (. name = "\"" + t.val.Substring(1, t.val.Length-2) + "\""; .)

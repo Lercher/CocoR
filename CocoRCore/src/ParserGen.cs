@@ -84,7 +84,18 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 return;
             var s = parser.scanner.buffer.GetBufferedString(range);
             if (!indent)
-                Gen.Write(GW.Append, s);
+            {
+                // s only contains LFs (0x0A). For Windows we need "\n", i.e. CRLF (0x0D, 0x0A)
+                // so we split s as LFs, trim trailing spaces and CRs
+                var lines = s.Split((char)ScannerBase.EOL);
+                for (var i = 0; i < lines.Length; i++)
+                {
+                    if (i > 0)
+                        Gen.Write(GW.EndLine, string.Empty);
+                    var line = lines[i].TrimEnd();
+                    Gen.Write(GW.Append, line);
+                }
+            }
             else
             {
                 if (string.IsNullOrWhiteSpace(s))
@@ -741,9 +752,11 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 CopySourcePart(Tab.semDeclPos, indent: false);
 
                 Gen.CopyFramePart("-->constructor");
+                Gen.Indentation++;
                 GenSymbolTables(declare: false);
                 if (needsAST)
                     Gen.Write(GW.Line, "astbuilder = new AST.Builder(this);");
+                Gen.Indentation--;
 
                 Gen.CopyFramePart("(((beginalternatives");
                 Gen.Indentation += 2; // in Get()/for()

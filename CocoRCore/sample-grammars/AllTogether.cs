@@ -8,21 +8,25 @@ namespace CocoRCore.Samples
     {
         public static int Main(string[] arg)
         {
-            Console.WriteLine("Coco/R Core Samples (May 29, 2017)");
+            Console.WriteLine("Coco/R Core Samples (June 01, 2017)");
             var all = new Func<CocoRCore.ParserBase>[] {
                 () => Coco.Parser.Create(s => s.Initialize("Coco/Coco.atg")),
                 () => Taste.Taste.Create("Taste/Test.tas"),
                 () => Inheritance.Parser.Create("Inheritance/SampleInheritance.txt"),
                 () => WFModel.Parser.Create("wfmodel/SampleWfModel.txt"),
                 () => ExternalTables.Parser.Create("ExternalTables/ExternalTables.txt"),
+                () => CodeLens.Parser.Create("CodeLens/CodeLens.txt")
             };
             foreach (var pgen in all)
             {
                 var parser = pgen();
                 try
                 {
-                    parser.errors.UseShortDiagnosticFormat();
-                    // parser.errors.errorStream = Console.Out;
+
+                    if (parser is CodeLens.Parser)
+                        parser.errors.Writer = Console.Error;
+                    else
+                        parser.errors.UseShortDiagnosticFormat();
                     parser.Parse();
                     parser.Dispose();
                     foreach (var e in parser.errors)
@@ -30,7 +34,7 @@ namespace CocoRCore.Samples
                     Console.WriteLine("{0}: {1:f}.", parser.scanner.uri, parser.errors);
                     if (parser.errors.CountError == 0)
                     {
-                        foreach(var a in parser.AlternativeTokens.Take(10))
+                        foreach (var a in parser.AlternativeTokens.Take(10))
                         {
                             Console.WriteLine($"  Token {a.t.Range()} = {a.t.valScanned}. Alternatives:");
                             System.Console.Write("      keywords:");
@@ -39,7 +43,7 @@ namespace CocoRCore.Samples
                             {
                                 if (a.alt[kind])
                                 {
-                                    n++; if (n >= 6) 
+                                    n++; if (n >= 6)
                                     {
                                         Console.Write(" ...");
                                         break;
