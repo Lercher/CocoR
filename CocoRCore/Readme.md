@@ -36,6 +36,35 @@ In particular:
 * remove/replace scanner buffer spaghetti code
 * better diagnostic messages (e.g. on alternatives)
 
+## Using the DLR (aka dynamic) for ASTs
+
+As in
+
+````
+        static void Main(string[] args)
+        {
+            dynamic d = new ExpandoObject();
+            d.Name = "dynamic ";
+            SetName(d, "Name");
+            Console.WriteLine($"Hello {d.Name}!");
+        }
+
+        private static void SetName(dynamic d, string v)
+        {
+            var e = (IDictionary<string, dynamic>)(ExpandoObject)d;
+            e[v] += "World";
+        }
+````
+
+The idea is to have a `Stack<dynamic>` and an ATG syntax extension
+`$name=some.csharp.code(); $newobject; $newarray[];`,
+where `$` is the current stack top,
+and pass either `$` implicitly on the stack or explicitly as
+ `Production<$newwobject><out var otherClrObj>` to a Production method. Inside the method you can replace `$` by e.g. `$=t.val;` or set ExpandoObject properties of `$` by e.g. `$value=t.valScanned;` or adding values to a list `$Add(t.val)`.
+
+ Each new ExpandoObject created by '$ident;" will have a property `parent` that points to it's container for easy navigation. Not sure about how lists handle this, yet.
+
+
 ## Howto install the dotnet SDK on ubuntu 17.04
 
 [Doku on microsoft.com](https://www.microsoft.com/net/core#linuxubuntu)
