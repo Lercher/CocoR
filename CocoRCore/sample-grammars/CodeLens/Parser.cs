@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using CocoRCore;
 
-namespace CocoRCore.Samples.WFModel
+namespace CocoRCore.Samples.CodeLens
 {
 
     public class Parser : ParserBase 
@@ -44,21 +44,11 @@ namespace CocoRCore.Samples.WFModel
         }
 
 
-public override void Prime(ref Token t) {
-		if (t.kind == _string || t.kind == _braced || t.kind == _bracketed)
-		{
-			var tb = t.Copy();
-			tb.setValue(t.valScanned.Substring(1, t.val.Length - 2), scanner.casingString);
-			t = tb.Freeze();
-		}
-	}
-
 
         public Parser()
         {
             types = new Symboltable("types", true, false, this);
             enumtypes = new Symboltable("enumtypes", true, false, this);
-            astbuilder = new AST.Builder(this);
         }
 
         public static Parser Create(string fileName) 
@@ -101,21 +91,16 @@ public override void Prime(ref Token t) {
         }
 
 
-        void WFModel‿NT()
+        void CodeLens‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
-                using(astbuilder.createMarker("version", null, false, false, false))
                 Version‿NT();
-                using(astbuilder.createMarker("namespace", null, false, false, false))
                 Namespace‿NT();
                 addAlt(23); // OPT
                 if (isKind(la, 23 /*ReaderWriterPrefix*/))
                 {
-                    using(astbuilder.createMarker("readerwriterprefix", null, false, false, false))
                     ReaderWriterPrefix‿NT();
                 }
-                using(astbuilder.createMarker("rootclass", null, false, false, false))
                 RootClass‿NT();
                 addAlt(set0, 1); // ITER start
                 while (StartOf(1))
@@ -126,22 +111,18 @@ public override void Prime(ref Token t) {
                     addAlt(69); // ALT
                     if (isKind(la, 26 /*Class*/))
                     {
-                        using(astbuilder.createMarker("class", null, true, false, false))
                         Class‿NT();
                     }
                     else if (isKind(la, 62 /*SubSystem*/))
                     {
-                        using(astbuilder.createMarker("subsystem", null, true, false, false))
                         SubSystem‿NT();
                     }
                     else if (isKind(la, 70 /*Enum*/))
                     {
-                        using(astbuilder.createMarker("enum", null, true, false, false))
                         Enum‿NT();
                     }
                     else
                     {
-                        using(astbuilder.createMarker("flags", null, true, false, false))
                         Flags‿NT();
                     }
                     addAlt(set0, 1); // ITER end
@@ -153,12 +134,10 @@ public override void Prime(ref Token t) {
 
         void Version‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(13); // T version
                 Expect(13 /*version*/);
                 addAlt(12); // T versionnumber
-                using(astbuilder.createMarker(null, null, false, true, false))
                 Expect(12 /*[versionnumber]*/);
             }
         }
@@ -166,7 +145,6 @@ public override void Prime(ref Token t) {
 
         void Namespace‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 22 /*Namespace*/)))
                 {
@@ -182,7 +160,6 @@ public override void Prime(ref Token t) {
 
         void ReaderWriterPrefix‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 23 /*ReaderWriterPrefix*/)))
                 {
@@ -192,7 +169,6 @@ public override void Prime(ref Token t) {
                 addAlt(23); // T "readerwriterprefix"
                 Expect(23 /*ReaderWriterPrefix*/);
                 addAlt(1); // T ident
-                using(astbuilder.createMarker(null, null, false, true, false))
                 Expect(1 /*[ident]*/);
             }
         }
@@ -200,7 +176,6 @@ public override void Prime(ref Token t) {
 
         void RootClass‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 24 /*RootClass*/)))
                 {
@@ -208,12 +183,9 @@ public override void Prime(ref Token t) {
                     Get();
                 }
                 addAlt(24); // T "rootclass"
-                using(astbuilder.createMarker("typ", null, false, true, false))
                 Expect(24 /*RootClass*/);
                 addAlt(25); // T "data"
-                using(astbuilder.createMarker("name", null, false, true, false))
                 Expect(25 /*Data*/);
-                using(astbuilder.createMarker("properties", null, true, false, false))
                 Properties‿NT();
                 addAlt(8); // T end
                 Expect(8 /*end*/);
@@ -225,7 +197,6 @@ public override void Prime(ref Token t) {
 
         void Class‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 26 /*Class*/)))
                 {
@@ -233,32 +204,26 @@ public override void Prime(ref Token t) {
                     Get();
                 }
                 addAlt(26); // T "class"
-                using(astbuilder.createMarker("typ", null, false, true, false))
                 Expect(26 /*Class*/);
                 if (!types.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, types.name), la);
                 alternatives.stdeclares = types;
                 addAlt(1); // T ident
-                using(astbuilder.createMarker("name", null, false, true, false))
                 Expect(1 /*[ident]*/);
                 addAlt(6); // OPT
                 if (isKind(la, 6 /*[braced]*/))
                 {
-                    using(astbuilder.createMarker("title", null, false, false, false))
                     Title‿NT();
                 }
                 addAlt(28); // OPT
                 if (isKind(la, 28 /*Inherits*/))
                 {
-                    using(astbuilder.createMarker("inherits", null, false, false, false))
                     Inherits‿NT();
                 }
                 addAlt(27); // OPT
                 if (isKind(la, 27 /*Via*/))
                 {
-                    using(astbuilder.createMarker("via", null, false, false, false))
                     Via‿NT();
                 }
-                using(astbuilder.createMarker("properties", null, true, false, false))
                 Properties‿NT();
                 addAlt(8); // T end
                 Expect(8 /*end*/);
@@ -270,7 +235,6 @@ public override void Prime(ref Token t) {
 
         void SubSystem‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 62 /*SubSystem*/)))
                 {
@@ -282,33 +246,27 @@ public override void Prime(ref Token t) {
                 if (!types.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, types.name), la);
                 alternatives.stdeclares = types;
                 addAlt(1); // T ident
-                using(astbuilder.createMarker("name", null, false, true, false))
                 Expect(1 /*[ident]*/);
                 addAlt(63); // T "ssname"
                 Expect(63 /*SSName*/);
                 addAlt(1); // T ident
-                using(astbuilder.createMarker("ssname", null, false, true, false))
                 Expect(1 /*[ident]*/);
                 addAlt(64); // T "ssconfig"
                 Expect(64 /*SSConfig*/);
                 addAlt(1); // T ident
-                using(astbuilder.createMarker("ssconfig", null, false, true, false))
                 Expect(1 /*[ident]*/);
                 addAlt(65); // T "sstyp"
                 Expect(65 /*SSTyp*/);
                 addAlt(1); // T ident
-                using(astbuilder.createMarker("sstyp", null, false, true, false))
                 Expect(1 /*[ident]*/);
                 addAlt(66); // T "sscommands"
                 Expect(66 /*SSCommands*/);
-                using(astbuilder.createMarker("sscommands", null, true, false, false))
                 SSCommands‿NT();
                 addAlt(67); // OPT
                 if (isKind(la, 67 /*SSKey*/))
                 {
                     Get();
                     addAlt(5); // T string
-                    using(astbuilder.createMarker("sskey", null, false, true, true))
                     Expect(5 /*[string]*/);
                 }
                 addAlt(68); // OPT
@@ -316,13 +274,11 @@ public override void Prime(ref Token t) {
                 {
                     Get();
                     addAlt(5); // T string
-                    using(astbuilder.createMarker("ssclear", null, false, true, true))
                     Expect(5 /*[string]*/);
                 }
                 addAlt(30); // ITER start
                 while (isKind(la, 30 /*InfoProperty*/))
                 {
-                    using(astbuilder.createMarker("properties", null, true, false, false))
                     InfoProperty‿NT();
                     addAlt(30); // ITER end
                 }
@@ -336,7 +292,6 @@ public override void Prime(ref Token t) {
 
         void Enum‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 70 /*Enum*/)))
                 {
@@ -348,7 +303,6 @@ public override void Prime(ref Token t) {
                 if (!enumtypes.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, enumtypes.name), la);
                 alternatives.stdeclares = enumtypes;
                 addAlt(1); // T ident
-                using(astbuilder.createMarker(null, null, false, true, false))
                 Expect(1 /*[ident]*/);
                 EnumValues‿NT();
                 addAlt(8); // T end
@@ -361,7 +315,6 @@ public override void Prime(ref Token t) {
 
         void Flags‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 while (!(isKind(la, 0 /*[EOF]*/) || isKind(la, 69 /*Flags*/)))
                 {
@@ -373,7 +326,6 @@ public override void Prime(ref Token t) {
                 if (!types.Add(la)) SemErr(71, string.Format(DuplicateSymbol, "ident", la.val, types.name), la);
                 alternatives.stdeclares = types;
                 addAlt(1); // T ident
-                using(astbuilder.createMarker(null, null, false, true, false))
                 Expect(1 /*[ident]*/);
                 addAlt(1); // ITER start
                 while (isKind(la, 1 /*[ident]*/))
@@ -391,7 +343,6 @@ public override void Prime(ref Token t) {
 
         void EndNamespace‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(8); // T end
                 Expect(8 /*end*/);
@@ -403,35 +354,6 @@ public override void Prime(ref Token t) {
 
         void DottedIdent‿NT()
         {
-            using(astbuilder.createBarrier("."))
-            {
-                addAlt(2); // OPT
-                if (isKind(la, 2 /*[dottedident]*/))
-                {
-                    using(astbuilder.createMarker(null, null, false, true, false))
-                    Get();
-                    addAlt(9); // T dot
-                    Expect(9 /*.*/);
-                    addAlt(2); // ITER start
-                    while (isKind(la, 2 /*[dottedident]*/))
-                    {
-                        using(astbuilder.createMarker(null, null, false, true, false))
-                        Get();
-                        addAlt(9); // T dot
-                        Expect(9 /*.*/);
-                        addAlt(2); // ITER end
-                    }
-                }
-                addAlt(1); // T ident
-                using(astbuilder.createMarker(null, null, false, true, false))
-                Expect(1 /*[ident]*/);
-            }
-        }
-
-
-        void DottedIdentBare‿NT()
-        {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(2); // OPT
                 if (isKind(la, 2 /*[dottedident]*/))
@@ -456,7 +378,6 @@ public override void Prime(ref Token t) {
 
         void Properties‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(set0, 2); // ITER start
                 while (StartOf(2))
@@ -470,10 +391,8 @@ public override void Prime(ref Token t) {
 
         void Title‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(6); // T braced
-                using(astbuilder.createMarker(null, null, false, true, false))
                 Expect(6 /*[braced]*/);
             }
         }
@@ -481,7 +400,6 @@ public override void Prime(ref Token t) {
 
         void Inherits‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(28); // T "inherits"
                 Expect(28 /*Inherits*/);
@@ -492,7 +410,6 @@ public override void Prime(ref Token t) {
 
         void Via‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(27); // T "via"
                 Expect(27 /*Via*/);
@@ -503,7 +420,6 @@ public override void Prime(ref Token t) {
 
         void Prop‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 while (!(StartOf(3)))
                 {
@@ -570,15 +486,11 @@ public override void Prime(ref Token t) {
 
         void Property‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(29); // T "property"
-                using(astbuilder.createMarker("writeable", "t", false, true, false))
                 Expect(29 /*Property*/);
                 addAlt(1); // T ident
-                using(astbuilder.createMarker("name", null, false, true, false))
                 Expect(1 /*[ident]*/);
-                using(astbuilder.createMarker("type", null, false, false, false))
                 Type‿NT();
             }
         }
@@ -586,15 +498,11 @@ public override void Prime(ref Token t) {
 
         void InfoProperty‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(30); // T "infoproperty"
-                using(astbuilder.createMarker("writeable", "f", false, true, false))
                 Expect(30 /*InfoProperty*/);
                 addAlt(1); // T ident
-                using(astbuilder.createMarker("name", null, false, true, false))
                 Expect(1 /*[ident]*/);
-                using(astbuilder.createMarker("type", null, false, false, false))
                 Type‿NT();
             }
         }
@@ -602,16 +510,11 @@ public override void Prime(ref Token t) {
 
         void APProperty‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(31); // T "approperty"
-                using(astbuilder.createMarker("writeable", "t", false, true, false))
-                using(astbuilder.createMarker("autopostback", "t", false, true, false))
                 Expect(31 /*APProperty*/);
                 addAlt(1); // T ident
-                using(astbuilder.createMarker("name", null, false, true, false))
                 Expect(1 /*[ident]*/);
-                using(astbuilder.createMarker("type", null, false, false, false))
                 Type‿NT();
             }
         }
@@ -619,18 +522,14 @@ public override void Prime(ref Token t) {
 
         void List‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(32); // T "list"
-                using(astbuilder.createMarker("list", "t", false, true, false))
                 Expect(32 /*List*/);
                 addAlt(1); // T ident
-                using(astbuilder.createMarker("name", null, false, true, false))
                 Expect(1 /*[ident]*/);
                 addAlt(41); // OPT
                 if (isKind(la, 41 /*As*/))
                 {
-                    using(astbuilder.createMarker("type", null, false, false, false))
                     As‿NT();
                 }
             }
@@ -639,16 +538,11 @@ public override void Prime(ref Token t) {
 
         void SelectList‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(33); // T "selectlist"
-                using(astbuilder.createMarker("list", "t", false, true, false))
-                using(astbuilder.createMarker("select", "t", false, true, false))
                 Expect(33 /*SelectList*/);
                 addAlt(1); // T ident
-                using(astbuilder.createMarker("name", null, false, true, false))
                 Expect(1 /*[ident]*/);
-                using(astbuilder.createMarker("type", null, false, false, false))
                 As‿NT();
             }
         }
@@ -656,16 +550,11 @@ public override void Prime(ref Token t) {
 
         void FlagsList‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(34); // T "flagslist"
-                using(astbuilder.createMarker("list", "t", false, true, false))
-                using(astbuilder.createMarker("flags", "t", false, true, false))
                 Expect(34 /*FlagsList*/);
                 addAlt(1); // T ident
-                using(astbuilder.createMarker("name", null, false, true, false))
                 Expect(1 /*[ident]*/);
-                using(astbuilder.createMarker("type", null, false, false, false))
                 Mimics‿NT();
             }
         }
@@ -673,14 +562,10 @@ public override void Prime(ref Token t) {
 
         void LongProperty‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(35); // T "longproperty"
-                using(astbuilder.createMarker("writeable", "t", false, true, false))
-                using(astbuilder.createMarker("long", "t", false, true, false))
                 Expect(35 /*LongProperty*/);
                 addAlt(1); // T ident
-                using(astbuilder.createMarker("name", null, false, true, false))
                 Expect(1 /*[ident]*/);
             }
         }
@@ -688,14 +573,10 @@ public override void Prime(ref Token t) {
 
         void InfoLongProperty‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(36); // T "infolongproperty"
-                using(astbuilder.createMarker("writeable", "f", false, true, false))
-                using(astbuilder.createMarker("long", "t", false, true, false))
                 Expect(36 /*InfoLongProperty*/);
                 addAlt(1); // T ident
-                using(astbuilder.createMarker("name", null, false, true, false))
                 Expect(1 /*[ident]*/);
             }
         }
@@ -703,23 +584,20 @@ public override void Prime(ref Token t) {
 
         void Type‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
-                addAlt(set0, 4); // ALT
                 addAlt(41); // ALT
                 addAlt(57); // ALT
-                if (StartOf(4))
-                {
-                    using(astbuilder.createMarker("basic", "String", false, true, false))
-                    EmptyType‿NT();
-                }
-                else if (isKind(la, 41 /*As*/))
+                addAlt(set0, 4); // ALT
+                if (isKind(la, 41 /*As*/))
                 {
                     As‿NT();
                 }
                 else if (isKind(la, 57 /*Mimics*/))
                 {
                     Mimics‿NT();
+                }
+                else if (StartOf(4))
+                {
                 } // end if
                 else
                     SynErr(83);
@@ -727,13 +605,11 @@ public override void Prime(ref Token t) {
                 if (isKind(la, 37 /*=*/))
                 {
                     Get();
-                    using(astbuilder.createMarker("initvalue", null, false, false, false))
                     InitValue‿NT();
                 }
                 addAlt(6); // OPT
                 if (isKind(la, 6 /*[braced]*/))
                 {
-                    using(astbuilder.createMarker("samplevalue", null, false, false, false))
                     SampleValue‿NT();
                 }
             }
@@ -742,7 +618,6 @@ public override void Prime(ref Token t) {
 
         void As‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(41); // T "as"
                 Expect(41 /*As*/);
@@ -757,12 +632,10 @@ public override void Prime(ref Token t) {
                 else if (isKind(la, 1 /*[ident]*/))
                 {
                     if (!types.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "ident", la.val, types.name), la);
-                    using(astbuilder.createMarker("basic", null, false, true, false))
                     Get();
                 }
                 else if (isKind(la, 1 /*[ident]*/) || isKind(la, 2 /*[dottedident]*/))
                 {
-                    using(astbuilder.createMarker("basic", null, false, false, false))
                     DottedIdent‿NT();
                 } // end if
                 else
@@ -773,24 +646,19 @@ public override void Prime(ref Token t) {
 
         void Mimics‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(57); // T "mimics"
-                using(astbuilder.createMarker("basic", "String", false, true, false))
                 Expect(57 /*Mimics*/);
                 addAlt(set0, 6); // ALT
                 addAlt(1); // ALT
                 addAlt(1, enumtypes); // ALT ident uses symbol table 'enumtypes'
                 if (StartOf(6))
                 {
-                    using(astbuilder.createMarker("mimicsspec", null, false, false, false))
                     MimicsSpec‿NT();
                 }
                 else if (isKind(la, 1 /*[ident]*/))
                 {
                     if (!enumtypes.Use(la, alternatives)) SemErr(72, string.Format(MissingSymbol, "ident", la.val, enumtypes.name), la);
-                    using(astbuilder.createMarker("mimicsspec", null, false, true, false))
-                    using(astbuilder.createMarker("enum", "t", false, true, false))
                     Get();
                 } // end if
                 else
@@ -799,17 +667,8 @@ public override void Prime(ref Token t) {
         }
 
 
-        void EmptyType‿NT()
-        {
-            using(astbuilder.createBarrier(null))
-            {
-            }
-        }
-
-
         void InitValue‿NT()
         {
-            using(astbuilder.createBarrier(""))
             {
                 addAlt(3); // ALT
                 addAlt(4); // ALT
@@ -883,10 +742,8 @@ public override void Prime(ref Token t) {
 
         void SampleValue‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(6); // T braced
-                using(astbuilder.createMarker(null, null, false, true, true))
                 Expect(6 /*[braced]*/);
             }
         }
@@ -894,9 +751,8 @@ public override void Prime(ref Token t) {
 
         void FunctionCall‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
-                DottedIdentBare‿NT();
+                DottedIdent‿NT();
                 addAlt(7); // T bracketed
                 Expect(7 /*[bracketed]*/);
             }
@@ -905,7 +761,6 @@ public override void Prime(ref Token t) {
 
         void BaseType‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(42); // ALT
                 addAlt(43); // ALT
@@ -926,101 +781,76 @@ public override void Prime(ref Token t) {
                 {
                     case 42: /*double*/
                         { // scoping
-                            using(astbuilder.createMarker("basic", null, false, true, false))
-                            using(astbuilder.createMarker("format", "c", false, true, false))
                             Get();
                         }
                         break;
                     case 43: /*date*/
                         { // scoping
-                            using(astbuilder.createMarker("basic", null, false, true, false))
-                            using(astbuilder.createMarker("format", "d", false, true, false))
                             Get();
                         }
                         break;
                     case 44: /*datetime*/
                         { // scoping
-                            using(astbuilder.createMarker("basic", null, false, true, false))
-                            using(astbuilder.createMarker("format", "{0:d} {0:t}", false, true, false))
                             Get();
                         }
                         break;
                     case 45: /*integer*/
                         { // scoping
-                            using(astbuilder.createMarker("basic", null, false, true, false))
-                            using(astbuilder.createMarker("format", "n0", false, true, false))
                             Get();
                         }
                         break;
                     case 46: /*percent*/
                         { // scoping
-                            using(astbuilder.createMarker("basic", "double", false, true, false))
-                            using(astbuilder.createMarker("format", "p", false, true, false))
                             Get();
                         }
                         break;
                     case 47: /*percentwithdefault*/
                         { // scoping
-                            using(astbuilder.createMarker("basic", null, false, true, false))
-                            using(astbuilder.createMarker("format", "p", false, true, false))
                             Get();
                         }
                         break;
                     case 48: /*doublewithdefault*/
                         { // scoping
-                            using(astbuilder.createMarker("basic", null, false, true, false))
-                            using(astbuilder.createMarker("format", "c", false, true, false))
                             Get();
                         }
                         break;
                     case 49: /*integerwithdefault*/
                         { // scoping
-                            using(astbuilder.createMarker("basic", null, false, true, false))
-                            using(astbuilder.createMarker("format", "n0", false, true, false))
                             Get();
                         }
                         break;
                     case 50: /*n2*/
                         { // scoping
-                            using(astbuilder.createMarker("basic", "double", false, true, false))
-                            using(astbuilder.createMarker("format", "n2", false, true, false))
                             Get();
                         }
                         break;
                     case 51: /*n0*/
                         { // scoping
-                            using(astbuilder.createMarker("basic", "integer", false, true, false))
-                            using(astbuilder.createMarker("format", "n0", false, true, false))
                             Get();
                         }
                         break;
                     case 52: /*String*/
                         { // scoping
-                            using(astbuilder.createMarker("basic", null, false, true, false))
                             Get();
                         }
                         break;
                     case 53: /*boolean*/
                         { // scoping
-                            using(astbuilder.createMarker("basic", null, false, true, false))
                             Get();
                         }
                         break;
                     case 54: /*Guid*/
                         { // scoping
-                            using(astbuilder.createMarker("basic", null, false, true, false))
                             Get();
                         }
                         break;
                     case 55: /*String()*/
                         { // scoping
-                            using(astbuilder.createMarker("basic", null, false, true, false))
                             Get();
                         }
                         break;
                     case 56: /*XML*/
                         { // scoping
-                            using(astbuilder.createMarker("basic", null, false, true, false))
                             Get();
                         }
                         break;
@@ -1034,7 +864,6 @@ public override void Prime(ref Token t) {
 
         void MimicsSpec‿NT()
         {
-            using(astbuilder.createBarrier(""))
             {
                 addAlt(58); // ALT
                 addAlt(59); // ALT
@@ -1064,7 +893,6 @@ public override void Prime(ref Token t) {
 
         void Query‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(58); // T "query"
                 Expect(58 /*query*/);
@@ -1085,7 +913,6 @@ public override void Prime(ref Token t) {
 
         void Txt‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(59); // T "txt"
                 Expect(59 /*txt*/);
@@ -1106,7 +933,6 @@ public override void Prime(ref Token t) {
 
         void XL‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(60); // T "xl"
                 Expect(60 /*xl*/);
@@ -1127,7 +953,6 @@ public override void Prime(ref Token t) {
 
         void Ref‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(61); // T "ref"
                 Expect(61 /*ref*/);
@@ -1154,7 +979,6 @@ public override void Prime(ref Token t) {
 
         void StringOrIdent‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(5); // ALT
                 addAlt(new int[] {1, 2}); // ALT
@@ -1164,7 +988,7 @@ public override void Prime(ref Token t) {
                 }
                 else if (isKind(la, 1 /*[ident]*/) || isKind(la, 2 /*[dottedident]*/))
                 {
-                    DottedIdentBare‿NT();
+                    DottedIdent‿NT();
                 } // end if
                 else
                     SynErr(90);
@@ -1174,15 +998,12 @@ public override void Prime(ref Token t) {
 
         void SSCommands‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
-                using(astbuilder.createMarker(null, null, true, true, false))
                 SSCommand‿NT();
                 addAlt(10); // ITER start
                 while (isKind(la, 10 /*|*/))
                 {
                     Get();
-                    using(astbuilder.createMarker(null, null, true, true, false))
                     SSCommand‿NT();
                     addAlt(10); // ITER end
                 }
@@ -1192,7 +1013,6 @@ public override void Prime(ref Token t) {
 
         void SSCommand‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(14); // ALT
                 addAlt(15); // ALT
@@ -1227,7 +1047,6 @@ public override void Prime(ref Token t) {
 
         void EnumValue‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(1); // T ident
                 Expect(1 /*[ident]*/);
@@ -1242,7 +1061,6 @@ public override void Prime(ref Token t) {
 
         void EnumValues‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(1); // ITER start
                 while (isKind(la, 1 /*[ident]*/))
@@ -1265,7 +1083,6 @@ public override void Prime(ref Token t) {
 
         void EnumIntValue‿NT()
         {
-            using(astbuilder.createBarrier(null))
             {
                 addAlt(37); // T "="
                 Expect(37 /*=*/);
@@ -1282,7 +1099,7 @@ public override void Prime(ref Token t) {
             lb = Token.Zero;
             la = Token.Zero;
             Get();
-            WFModel‿NT();
+            CodeLens‿NT();
             Expect(0);
             types.CheckDeclared();
             enumtypes.CheckDeclared();
@@ -1401,8 +1218,6 @@ public override void Prime(ref Token t) {
 
         protected override bool StartOf(int s, int kind) => set[s, kind];
 
-        public readonly AST.Builder astbuilder; // can also be private  
-        public AST ast { get { return astbuilder.current; }}
 
 
         public override string Syntaxerror(int n) 
@@ -1491,7 +1306,7 @@ public override void Prime(ref Token t) {
                 case 80: return "symbol not expected in Flags (SYNC error)";
                 case 81: return "symbol not expected in Prop (SYNC error)";
                 case 82: return "invalid Prop, expected Property InfoProperty APProperty List SelectList FlagsList LongProperty InfoLongProperty";
-                case 83: return "invalid Type, expected [braced] end Property InfoProperty APProperty List SelectList FlagsList LongProperty InfoLongProperty = As Mimics";
+                case 83: return "invalid Type, expected As Mimics [braced] end Property InfoProperty APProperty List SelectList FlagsList LongProperty InfoLongProperty =";
                 case 84: return "invalid As, expected double date datetime integer percent percentwithdefault doublewithdefault integerwithdefault n2 n0 String boolean Guid String() XML [ident] [dottedident]";
                 case 85: return "invalid Mimics, expected query txt xl ref [ident]";
                 case 86: return "invalid InitValue, expected [number] [int] [string] true false # [ident] [dottedident]";

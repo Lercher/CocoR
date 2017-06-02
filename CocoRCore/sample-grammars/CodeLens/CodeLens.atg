@@ -1,17 +1,6 @@
-﻿// See C:\Daten\GitHub\CocoR\CSharp\WFModel
+﻿$namespace=CocoRCore.Samples.CodeLens
 
-$namespace=CocoRCore.Samples.WFModel
-
-COMPILER WFModel
-
-	public override void Prime(ref Token t) { 
-		if (t.kind == _string || t.kind == _braced || t.kind == _bracketed)
-		{
-			var tb = t.Copy(); 
-			tb.setValue(t.valScanned.Substring(1, t.val.Length - 2), scanner.casingString);
-			t = tb.Freeze();
-		}
-	}
+COMPILER CodeLens
 
 IGNORECASE
 
@@ -68,23 +57,22 @@ SYMBOLTABLES
 
 PRODUCTIONS
 
-WFModel =
-	Version^
-	Namespace^
-	[ ReaderWriterPrefix^ ]
-	RootClass^
-	{
-	Class^^
-	| SubSystem^^
-	| Enum^^
-	| Flags^^
+CodeLens =
+	Version
+	Namespace
+	[ ReaderWriterPrefix ]
+	RootClass
+	{ Class
+	| SubSystem
+	| Enum
+	| Flags
 	} 
 	EndNamespace
 	.	
 
 Version =
 	version
-	versionnumber #
+	versionnumber 
 	.
 
 Namespace = 
@@ -98,36 +86,32 @@ EndNamespace =
 	"Namespace"
 	.
 
-DottedIdent +"." = 
-	[ dottedident # dot { dottedident # dot } ] ident # 
-	.
-
-DottedIdentBare = 
+DottedIdent = 
 	[ dottedident dot { dottedident dot } ] ident 
 	.
 
 ReaderWriterPrefix = 
 	SYNC
 	"ReaderWriterPrefix"
-	ident #
+	ident
 	.
 
 RootClass =
 	SYNC
-	"RootClass" #:typ
-	"Data" #:name
-	Properties^^
+	"RootClass"
+	"Data" 
+	Properties
 	end "Class"
 	.
 	
 Class =
 	SYNC
-	"Class" #:typ
-	ident>types #:name
-	[ Title^ ]
-	[ Inherits^]
-	[ Via^ ]
-	Properties^^
+	"Class"
+	ident>types 
+	[ Title ]
+	[ Inherits]
+	[ Via ]
+	Properties
 	end "Class"
 	.
 
@@ -137,7 +121,7 @@ Via =
 	.
 	
 Title =
-	braced	#
+	braced
 	.
 	
 Inherits =
@@ -145,16 +129,14 @@ Inherits =
 	DottedIdent
 	.
 	
+DELETEABLE
 Properties =
-	{
-	Prop
-	}
+	{ Prop	}
 	.
 
 Prop =
 	SYNC
-	(
-	Property
+	( Property
 	| InfoProperty
 	| APProperty
 	| List
@@ -166,116 +148,113 @@ Prop =
 	.
 
 Property =
-	"Property"      #:writeable=t
-	ident           #:name
-	Type^
+	"Property"      
+	ident           
+	Type
 	.
 
 InfoProperty =
-	"InfoProperty"   #:writeable=f 
-	ident            #:name
-	Type^
+	"InfoProperty"   
+	ident            
+	Type
 	.
 
 APProperty =
-	"APProperty" 	#:writeable=t, #:autopostback=t 
-	ident           #:name
-	Type^
+	"APProperty" 	
+	ident           
+	Type
 	.
 
 List =
-	"List"          #:list=t
-	ident           #:name
-	[ As^:type ]
+	"List"          
+	ident           
+	[ As ]
 	.
 
 SelectList =
-	"SelectList"    #:list=t, #:select=t 
-	ident     	    #:name
-	As^:type
+	"SelectList"
+	ident
+	As
 	.
 
 FlagsList =
-	"FlagsList"		#:list=t, #:flags=t 
-	ident           #:name
-	Mimics^:type
+	"FlagsList"
+	ident
+	Mimics
 	.
 
 LongProperty =
-	"LongProperty"  #:writeable=t, #:long=t
-	ident           #:name
+	"LongProperty"
+	ident
 	.
 
 InfoLongProperty =
-	"InfoLongProperty" #:writeable=f, #:long=t
-	ident              #:name
+	"InfoLongProperty"
+	ident             
 	.
 
+DELETEABLE
 Type =
-	(
-	EmptyType #:basic=String
-	| As
+	( As
 	| Mimics
+	| (. /*empty*/ .)
 	)
-	[ "=" InitValue^ ]
-	[ SampleValue^ ]
+	[ "=" InitValue ]
+	[ SampleValue ]
 	.
 
-InitValue+ =
+InitValue =
 	number 
 	| int 
 	| string
 	| "true"
 	| "false"
-	| "#" { ANY } "#"
+	| "#" { ANY } "#"  // a VB date literal e.g #12/31/2017#
 	| FunctionCall
 	.
 
 FunctionCall =
-	DottedIdentBare bracketed
+	DottedIdent bracketed
 	.
 
 SampleValue =
-	braced #'
+	braced
 	.
-
-EmptyType = .
 	
 As =
 	"As"
-	(
-	BaseType
-	| ident:types #:basic
-	| DottedIdent ^:basic
+	( BaseType
+	| ident:types
+	| DottedIdent
 	)
 	.
 
 BaseType =
-	"double" 				#:basic, 			#:format=c
-	| "date" 				#:basic, 			#:format=d
-	| "datetime"        	#:basic, 			#:format="{0:d} {0:t}"
-	| "integer" 			#:basic, 			#:format=n0
-	| "percent"         	#:basic=double, 	#:format=p
-	| "percentwithdefault" 	#:basic, 			#:format=p
-	| "doublewithdefault"  	#:basic, 			#:format=c
-	| "integerwithdefault" 	#:basic, 			#:format=n0
-	| "n2" 					#:basic=double, 	#:format=n2
-	| "n0" 					#:basic=integer, 	#:format=n0
-	| "String" 				#:basic
-	| "boolean" 			#:basic
-	| "Guid" 				#:basic
-	| "String()" 			#:basic
-	| "XML" 				#:basic
+	"double"
+	| "date"
+	| "datetime"
+	| "integer"
+	| "percent"
+	| "percentwithdefault"
+	| "doublewithdefault"
+	| "integerwithdefault"
+	| "n2"
+	| "n0"
+	| "String"
+	| "boolean"
+	| "Guid"
+	| "String()"
+	| "XML"
 	.
 
 Mimics =
-	"Mimics" #:basic=String
-	( MimicsSpec^
-	| ident:enumtypes #:mimicsspec, #:enum=t
+	"Mimics"
+	( MimicsSpec
+	| ident:enumtypes
 	)
 	.
 
-MimicsSpec+ =
+MimicsSpec =
 	(
 	Query
 	| Txt
@@ -309,36 +288,36 @@ XL =
 
 Ref =
 	"ref" colon
-	( keys | displayname )
+	( keys 
+	| displayname 
+	)
 	colon
 	StringOrIdent
 	.
 
 StringOrIdent =
 	string
-	| DottedIdentBare
+	| DottedIdent
 	.
 	
 	
 SubSystem = 
 	SYNC
 	"SubSystem" 
-	ident>types #:name
-	"SSName" ident #:ssname
-	"SSConfig" ident #:ssconfig
-	"SSTyp" ident #:sstyp
-	"SSCommands" SSCommands^^
-	[ "SSKey" string #':sskey ]
-	[ "SSClear" string #':ssclear ] 
-	{ InfoProperty^^:properties }
+	ident>types
+	"SSName" ident
+	"SSConfig" ident
+	"SSTyp" ident
+	"SSCommands" SSCommands
+	[ "SSKey" string ]
+	[ "SSClear" string  ] 
+	{ InfoProperty }
 	end "SubSystem"
 	.
 
 SSCommands = 
-	SSCommand ##
-	{ 
-	bar SSCommand ## 
-	}
+	SSCommand 
+	{ bar SSCommand }
 	.
 	
 SSCommand = 
@@ -352,7 +331,7 @@ SSCommand =
 Flags =
 	SYNC
 	"Flags"
-	ident>types #
+	ident>types 
 	{ EnumValue }
 	end "Flags"
 	.
@@ -360,7 +339,7 @@ Flags =
 Enum =
 	SYNC
 	"Enum" 
-	ident>enumtypes #
+	ident>enumtypes 
 	EnumValues
 	end "Enum"
 	.
@@ -381,4 +360,4 @@ EnumIntValue =
 	int
 	.
 
-END WFModel .
+END CodeLens .

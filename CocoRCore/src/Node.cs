@@ -66,6 +66,19 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             asts.Add(ao);
             return ao;
         }
+
+        public override string ToString()
+        {
+            switch (typ)
+            {
+                case NodeKind.alt: // |
+                case NodeKind.iter: // { }
+                case NodeKind.opt: // [ ]
+                    return $"{typ}>{sub}";
+                default:
+                    return $"{typ}:{sym}{pos?.start}";
+            }
+        }
     }
 
 } // end namespace

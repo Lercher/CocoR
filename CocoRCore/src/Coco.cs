@@ -108,10 +108,18 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                     if (parser.errors.CountError == 0) 
                         retVal = 0;
                 }
+                catch (FatalError ex)
+                {
+                    Console.WriteLine("***FATAL** " + ex.Message);
+                }
+                catch (IOException ex)
+                {
+                    Console.WriteLine("***IO*** " + ex.Message);
+                }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("*** " + ex.Message);
-                }
+                    Console.WriteLine($"*** {ex.Message} ***\n{ex}");
+                }   
             }
             else
             {

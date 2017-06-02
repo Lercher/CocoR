@@ -30,7 +30,7 @@ const int // types
 
 	public SymbolTable   tab;
 	public CodeGenerator gen;
-  
+
 /*--------------------------------------------------------------------------*/
 
         public Parser()
