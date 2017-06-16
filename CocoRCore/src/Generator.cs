@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 
 namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 {
@@ -29,6 +31,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             gen?.Dispose();
         }
 
+
         public FileInfo OpenFrame(string frame)
         {
             if (Tab.frameDir != null)
@@ -36,9 +39,15 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             if (frameFile == null || !File.Exists(frameFile))
                 frameFile = Path.Combine(Tab.srcDir, frame);
             if (frameFile == null || !File.Exists(frameFile))
-                frameFile = frame;
-            if (frameFile == null || !File.Exists(frameFile))
-                throw new FatalError($"Can't find frame file {frame}");
+            {
+                var ass = this.GetType().GetTypeInfo().Assembly;
+                var n = ass.GetManifestResourceNames().FirstOrDefault(r => r.EndsWith(frame, StringComparison.OrdinalIgnoreCase));
+                if (n == null) 
+                    throw new FatalError($"Can't find frame file {frame}");
+                frameReader = new StreamReader(ass.GetManifestResourceStream(n));
+                return new FileInfo(frame);
+            }
+
 
             try
             {

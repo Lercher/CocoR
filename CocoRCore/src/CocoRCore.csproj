@@ -14,6 +14,9 @@
     -->
   </PropertyGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="*.frame" />
+  </ItemGroup>
 
   <!-- https://freetodev.wordpress.com/2009/06/24/msbuild-4-0-beforetargets-and-aftertargets/
   dotnet build /t:grammars
