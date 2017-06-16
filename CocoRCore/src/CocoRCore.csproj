@@ -25,11 +25,11 @@
     <Message Importance="High" Text="---------------------------- Build Coco/R grammar"/>
     <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -noinfo Coco.atg" />
     <Message Importance="High" Text="---------------------------- Build sample grammars"/>
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -frames . -noinfo -nowarn -ac     ../sample-grammars/Taste/Taste.atg" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -frames . -noinfo -nowarn -ac     ../sample-grammars/Inheritance/inheritance.atg" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -frames . -noinfo -nowarn -ac -is ../sample-grammars/Coco/Coco.atg" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -frames . -noinfo -nowarn -ac     ../sample-grammars/wfmodel/WFModel.atg" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -frames . -noinfo -nowarn -ac     ../sample-grammars/ExternalTables/ExternalTables.atg" />
-    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -frames . -noinfo         -ac     ../sample-grammars/CodeLens/CodeLens.atg" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -noinfo -nowarn -ac     ../sample-grammars/Taste/Taste.atg" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -noinfo -nowarn -ac     ../sample-grammars/Inheritance/inheritance.atg" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -noinfo -nowarn -ac -is ../sample-grammars/Coco/Coco.atg" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -noinfo -nowarn -ac     ../sample-grammars/wfmodel/WFModel.atg" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -noinfo -nowarn -ac     ../sample-grammars/ExternalTables/ExternalTables.atg" />
+    <Exec Command="dotnet bin/Debug/netcoreapp1.1/CocoRCore.dll -noinfo         -ac     ../sample-grammars/CodeLens/CodeLens.atg" />
   </Target>
 </Project>
