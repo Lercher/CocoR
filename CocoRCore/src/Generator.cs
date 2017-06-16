@@ -27,12 +27,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
 
         public void Dispose()
         {
+            frameReader?.BaseStream?.Dispose();
             frameReader?.Dispose();
             gen?.Dispose();
         }
 
 
-        public FileInfo OpenFrame(string frame)
+        public string OpenFrame(string frame)
         {
             if (Tab.frameDir != null)
                 frameFile = Path.Combine(Tab.frameDir, frame);
@@ -45,14 +46,13 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
                 if (n == null) 
                     throw new FatalError($"Can't find frame file {frame}");
                 frameReader = new StreamReader(ass.GetManifestResourceStream(n));
-                return new FileInfo(frame);
+                return $"resource:{frame}";
             }
-
 
             try
             {
                 frameReader = File.OpenText(frameFile);
-                return new FileInfo(frameFile);
+                return new FileInfo(frameFile).FullName;
             }
             catch (IOException ex)
             {

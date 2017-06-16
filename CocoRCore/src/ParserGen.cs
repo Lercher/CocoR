@@ -720,7 +720,7 @@ namespace CocoRCore.CSharp // was at.jku.ssw.Coco for .Net V2
             using (Gen = new Generator(Tab))
             {
                 var frame = Gen.OpenFrame("Parser.frame");
-                parser.errors.Info(0, 0, $"using {frame.FullName}", 21);
+                parser.errors.Info(0, 0, $"using {frame}", 21);
                 var pars = Gen.OpenGen("Parser.cs");
                 parser.errors.Info(0, 0, $"generating parser {pars.FullName}", 22);
 
