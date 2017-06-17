@@ -3,7 +3,7 @@
 
   <PropertyGroup>  
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>netcoreapp1.1;net40</TargetFrameworks>
+    <TargetFrameworks>netcoreapp1.1;net451</TargetFrameworks>
     <GenerateFullPaths>true</GenerateFullPaths>
     <!-- 
     if <RuntimeIdentifier> or <RuntimeIdentifiers> are added
